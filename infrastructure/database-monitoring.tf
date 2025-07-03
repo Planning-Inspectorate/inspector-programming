@@ -37,10 +37,13 @@ resource "azurerm_storage_container" "sql_server" {
   container_access_type = "private"
 }
 
-resource "azurerm_advanced_threat_protection" "sql_server_storage" {
-  target_resource_id = azurerm_storage_account.sql_server.id
-  enabled            = true
-}
+# resource "azurerm_security_center_storage_defender" "sql_server_storage" {
+#   storage_account_id                          = azurerm_storage_account.sql_server.id
+#   override_subscription_settings_enabled      = true
+#   malware_scanning_on_upload_enabled          = true
+#   malware_scanning_on_upload_cap_gb_per_month = -1
+#   sensitive_data_discovery_enabled            = true
+# }
 
 resource "azurerm_role_assignment" "sql_server_storage" {
   scope                = azurerm_storage_account.sql_server.id
