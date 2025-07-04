@@ -80,13 +80,13 @@ environment = "dev"
 front_door_config = {
   name        = "pins-fd-common-tooling"
   rg          = "pins-rg-common-tooling"
-  ep_name     = "pins-fde-scheduling-dev"
+  ep_name     = "pins-fde-scheduling"
   use_tooling = true
 }
 
-monitoring_config = {
-  app_insights_web_test_enabled = false
-}
+# monitoring_config = {
+#   app_insights_web_test_enabled = false
+# }
 
 sql_config = {
   admin = {

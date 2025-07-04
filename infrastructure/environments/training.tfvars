@@ -84,7 +84,7 @@ environment = "training"
 # front_door_config = {
 #   name        = "pins-fd-common-tooling"
 #   rg          = "pins-rg-common-tooling"
-#   ep_name     = "pins-fde-schedulingdev"
+#   ep_name     = "pins-fde-scheduling"
 #   use_tooling = true
 # }
 
