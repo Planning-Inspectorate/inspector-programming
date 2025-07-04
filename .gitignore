@@ -87,9 +87,6 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Terraform lock files in modules
-.terraform.lock.hcl
-
 # Pre-commit hooks
 providers-tmp.tf
 
