@@ -14,18 +14,18 @@ data "azurerm_monitor_action_group" "common" {
   name                = each.value
 }
 
-# data "azurerm_cdn_frontdoor_profile" "shared" {
-#   name                = var.front_door_config.name
-#   resource_group_name = var.front_door_config.rg
-#   provider            = azurerm.front_door
-# }
+data "azurerm_cdn_frontdoor_profile" "shared" {
+  name                = var.front_door_config.name
+  resource_group_name = var.front_door_config.rg
+  provider            = azurerm.front_door
+}
 
-# data "azurerm_cdn_frontdoor_endpoint" "shared" {
-#   name                = var.front_door_config.ep_name
-#   resource_group_name = var.front_door_config.rg
-#   profile_name        = var.front_door_config.name
-#   provider            = azurerm.front_door
-# }
+data "azurerm_cdn_frontdoor_endpoint" "shared" {
+  name                = var.front_door_config.ep_name
+  resource_group_name = var.front_door_config.rg
+  profile_name        = var.front_door_config.name
+  provider            = azurerm.front_door
+}
 
 data "azurerm_private_dns_zone" "redis_cache" {
   name                = "privatelink.redis.cache.windows.net"

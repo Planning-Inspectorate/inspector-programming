@@ -77,16 +77,16 @@ common_config = {
 
 environment = "dev"
 
-# front_door_config = {
-#   name        = "pins-fd-common-tooling"
-#   rg          = "pins-rg-common-tooling"
-#   ep_name     = "pins-fde-scheduling-dev"
-#   use_tooling = true
-# }
+front_door_config = {
+  name        = "pins-fd-common-tooling"
+  rg          = "pins-rg-common-tooling"
+  ep_name     = "pins-fde-scheduling-dev"
+  use_tooling = true
+}
 
-# monitoring_config = {
-#   app_insights_web_test_enabled = false
-# }
+monitoring_config = {
+  app_insights_web_test_enabled = false
+}
 
 sql_config = {
   admin = {
@@ -118,8 +118,8 @@ vnet_config = {
 
 web_domains = { web = "https://scheduling-dev.planninginspectorate.gov.uk" }
 
-# waf_rate_limits = {
-#   enabled             = true
-#   duration_in_minutes = 5
-#   threshold           = 1500
-# }
+waf_rate_limits = {
+  enabled             = true
+  duration_in_minutes = 5
+  threshold           = 1500
+}
