@@ -1,0 +1,24 @@
+{
+  "name": "@pins/service-name-lib",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@azure/msal-node": "*",
+    "@pins/service-name-database": "*",
+    "connect-redis": "*",
+    "express-session": "*",
+    "notifications-node-client": "*",
+    "pino": "*",
+    "pino-pretty": "*",
+    "redis": "*"
+  },
+  "devDependencies": {
+    "sass": "*"
+  }
+}
