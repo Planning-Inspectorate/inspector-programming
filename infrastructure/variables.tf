@@ -177,8 +177,9 @@ variable "waf_rate_limits" {
 }
 
 variable "web_domains" {
-  description = "Settings for the web app"
-  type = object({
-    web = string
-  })
+  description = "value for web domain"
+  type        = map(string)
+  default = {
+    web = ""
+  }
 }

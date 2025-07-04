@@ -116,7 +116,9 @@ vnet_config = {
   secondary_subnet_address_space      = "10.30.17.0/24"
 }
 
-web_domains = { web = "https://scheduling-dev.planninginspectorate.gov.uk" }
+web_domains = {
+  web = "scheduling-dev.planninginspectorate.gov.uk"
+}
 
 waf_rate_limits = {
   enabled             = true
