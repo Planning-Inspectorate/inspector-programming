@@ -29,8 +29,8 @@ repos:
         exclude: ^examples
         args:
           - --args=--config=__GIT_WORKING_DIR__./infrastructure/.tflint.hcl
-  # - id: terraform_trivy
-  #   stages: [pre-commit]
+      # - id: terraform_trivy
+      #   stages: [pre-commit]
       - id: terraform_checkov
         stages: [pre-push]
 
