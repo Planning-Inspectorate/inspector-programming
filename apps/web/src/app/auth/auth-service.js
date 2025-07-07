@@ -24,7 +24,7 @@ export class AuthService {
 	 * @param {Object} opts
 	 * @param {import('../config-types.js').Config['auth']} opts.config
 	 * @param {import('pino').Logger} opts.logger
-	 * @param {import('@pins/service-name-lib/redis/redis-client').RedisClient|null} [opts.redisClient]
+	 * @param {import('@pins/inspector-programming-lib/redis/redis-client').RedisClient|null} [opts.redisClient]
 	 */
 	constructor({ config, logger, redisClient }) {
 		this.#config = config;

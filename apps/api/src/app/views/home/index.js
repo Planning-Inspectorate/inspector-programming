@@ -1,6 +1,6 @@
 import { Router as createRouter } from 'express';
 import { buildHomePage } from './controller.js';
-import { asyncHandler } from '@pins/service-name-lib/util/async-handler.js';
+import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 
 /**
  * @param {import('#service').App1Service} service

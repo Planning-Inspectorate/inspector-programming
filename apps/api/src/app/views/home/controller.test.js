@@ -1,7 +1,7 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
 import { buildHomePage } from './controller.js';
-import { mockLogger } from '@pins/service-name-lib/testing/mock-logger.js';
+import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 import { configureNunjucks } from '../../nunjucks.js';
 
 describe('home page', () => {

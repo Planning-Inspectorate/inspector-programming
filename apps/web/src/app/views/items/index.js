@@ -1,5 +1,5 @@
 import { Router as createRouter } from 'express';
-import { asyncHandler } from '@pins/service-name-lib/util/async-handler.js';
+import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildListItems } from './list/controller.js';
 
 /**

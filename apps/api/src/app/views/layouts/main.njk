@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block pageTitle %}
-	{% set suffix = serviceName | default(config.headerTitle) %}
+	{% set suffix = inspectorProgramming | default(config.headerTitle) %}
 	{% if pageTitle %}
 		{{ pageTitle }} – {{ suffix }}
 	{% else %}

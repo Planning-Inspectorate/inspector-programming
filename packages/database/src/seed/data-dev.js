@@ -1,5 +1,5 @@
 /**
- * @param {import('@pins/service-name-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
  */
 export async function seedDev(dbClient) {
 	// TODO: add seed data

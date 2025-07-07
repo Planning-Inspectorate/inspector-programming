@@ -1,4 +1,4 @@
-import { BaseService } from '@pins/service-name-lib/app/base-service.js';
+import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js';
 
 /**
  * This class encapsulates all the services and clients for the application

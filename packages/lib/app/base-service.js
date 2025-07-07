@@ -1,4 +1,4 @@
-import { initDatabaseClient } from '@pins/service-name-database';
+import { initDatabaseClient } from '@pins/inspector-programming-database';
 import { initLogger } from '../util/logger.js';
 import { initRedis } from '../redis/index.js';
 
@@ -16,7 +16,7 @@ export class BaseService {
 	 */
 	logger;
 	/**
-	 * @type {import('@pins/service-name-database/src/client').PrismaClient}
+	 * @type {import('@pins/inspector-programming-database/src/client').PrismaClient}
 	 */
 	dbClient;
 	/**
@@ -42,7 +42,7 @@ export class BaseService {
 	/**
 	 * Alias of dbClient
 	 *
-	 * @returns {import('@pins/service-name-database/src/client').PrismaClient}
+	 * @returns {import('@pins/inspector-programming-database/src/client').PrismaClient}
 	 */
 	get db() {
 		return this.dbClient;

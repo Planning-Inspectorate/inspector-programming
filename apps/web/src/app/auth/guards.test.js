@@ -1,6 +1,6 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { mockLogger } from '@pins/service-name-lib/testing/mock-logger.js';
+import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 import { buildAssertGroupAccess, buildAssertIsAuthenticated } from './guards.js';
 
 const mockRes = () => {

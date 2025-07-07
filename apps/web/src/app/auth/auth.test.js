@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import supertest from 'supertest';
 import express from 'express';
 import { createRoutesAndGuards } from './router.js';
-import { mockLogger } from '@pins/service-name-lib/testing/mock-logger.js';
+import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
 describe('auth', () => {
 	describe('authentication', () => {
