@@ -1,8 +1,8 @@
 import { Router as createRouter } from 'express';
-import { createMonitoringRoutes } from '@pins/service-name-lib/controllers/monitoring.js';
+import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controllers/monitoring.js';
 import { createRoutes as appRoutes } from './views/home/index.js';
 import { createErrorRoutes } from './views/static/error/index.js';
-import { cacheNoCacheMiddleware } from '@pins/service-name-lib/middleware/cache.js';
+import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middleware/cache.js';
 
 /**
  * @param {import('#service').App1Service} service

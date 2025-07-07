@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { assertRenders404Page } from '@pins/service-name-lib/testing/custom-asserts.js';
+import { assertRenders404Page } from '@pins/inspector-programming-lib/testing/custom-asserts.js';
 import { notFoundHandler } from '../middleware/errors.js';
 
 describe('custom-assert', () => {

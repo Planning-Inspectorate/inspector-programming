@@ -1,5 +1,5 @@
 {
-  "name": "service-name-app-2",
+  "name": "inspector-programming-web",
   "version": "0.0.0",
   "private": true,
   "main": "index.js",
@@ -14,8 +14,8 @@
   "dependencies": {
     "@azure/msal-node": "*",
     "@microsoft/microsoft-graph-client": "*",
-    "@pins/service-name-database": "^0.0.0",
-    "@pins/service-name-lib": "^0.0.0",
+    "@pins/inspector-programming-database": "^0.0.0",
+    "@pins/inspector-programming-lib": "^0.0.0",
     "accessible-autocomplete": "*",
     "body-parser": "*",
     "connect-redis": "*",

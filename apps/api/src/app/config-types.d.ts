@@ -1,3 +1,3 @@
-import { BaseConfig } from '@pins/service-name-lib/app/config-types';
+import { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
 
 interface Config extends BaseConfig {}

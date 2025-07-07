@@ -1,5 +1,5 @@
 {
-  "name": "service-name-app-1",
+  "name": "inspector-programming-api",
   "version": "0.0.0",
   "private": true,
   "main": "index.js",
@@ -12,8 +12,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@pins/service-name-database": "^0.0.0",
-    "@pins/service-name-lib": "^0.0.0",
+    "@pins/inspector-programming-database": "^0.0.0",
+    "@pins/inspector-programming-lib": "^0.0.0",
     "body-parser": "*",
     "connect-redis": "*",
     "dotenv": "*",

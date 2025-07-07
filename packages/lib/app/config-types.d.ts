@@ -1,4 +1,4 @@
-import { Prisma } from '@pins/service-name-database/src/client';
+import { Prisma } from '@pins/inspector-programming-database/src/client';
 
 interface BaseConfig {
 	appHostname: string;

@@ -13,12 +13,12 @@ COPY package-lock.json .
 COPY packages ./packages
 COPY apps/app-2 ./apps/app-2
 
-RUN npm ci --loglevel notice --workspace=service-name-app-2 --ignore-scripts
+RUN npm ci --loglevel notice --workspace=inspector-programming-web --ignore-scripts
 
 ENV NODE_ENV=production
 ENV GIT_SHA=$GIT_SHA
 
-RUN npm run build --workspace=service-name-app-2
+RUN npm run build --workspace=inspector-programming-web
 RUN npm run db-generate
 
 # --------------------------------
