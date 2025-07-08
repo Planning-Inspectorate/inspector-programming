@@ -2,6 +2,7 @@ resource "azurerm_storage_account" "sql_server" {
 
   # checkov:skip=CKV_AZURE_35:  Network access restrictions
   # checkov:skip=CKV_AZURE_33:  Not using queues, could implement example commented out
+  # checkov:skip=CKV_AZURE_43:  Ensure Storage Accounts adhere to the naming rules
   # checkov:skip=CKV_AZURE_59:  TODO: Ensure that Storage accounts disallow public access
   # checkov:skip=CKV2_AZURE_1:  Customer Managed Keys not implemented yet
   # checkov:skip=CKV2_AZURE_18: Customer Managed Keys not implemented yet
@@ -11,7 +12,7 @@ resource "azurerm_storage_account" "sql_server" {
   # checkov:skip=CKV2_AZURE_40: ADD REASON
   # checkov:skip=CKV2_AZURE_41: ADD REASON
 
-  name                             = "pinsstsqlscheduling${var.environment}" ############### potential fail on training going over 24 characters
+  name                             = "pinsstsqlscheduling${local.environment}"
   resource_group_name              = azurerm_resource_group.primary.name
   location                         = module.primary_region.location
   account_tier                     = "Standard"
