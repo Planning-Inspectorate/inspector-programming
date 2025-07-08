@@ -91,3 +91,6 @@ providers-tmp.tf
 # Structurizr
 workspace.json
 .structurizr/*
+
+# generated Prisma client
+packages/database/src/client
