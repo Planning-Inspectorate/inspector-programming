@@ -7,6 +7,10 @@ locals {
   resource_suffix           = "${local.service_name}-${var.environment}"
   secondary_resource_suffix = "${local.service_name}-secondary-${var.environment}"
 
+  environment = var.environment == "training" ? "trai" : var.environment
+
+  shorter_resource_suffix = var.environment == "training" ? "${local.service_name}trai" : local.resource_suffix
+
   secrets = [
     "scheduling-client-secret",
     "scheduling-gov-notify-api-key"
