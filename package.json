@@ -20,8 +20,7 @@
     "format-check": "prettier --check .",
     "lint": "npx eslint .",
     "prepare": "node .husky/install.mjs",
-    "web": "npm run dev --workspace=@pins/inspector-programming-api",
-    "api": "npm run dev --workspace=@pins/inspector-programming-web",
+    "web": "npm run dev --workspace=@pins/inspector-programming-web",
     "test": "node --test",
     "test-coverage": "node --test --experimental-test-coverage"
   },
