@@ -1,4 +1,4 @@
-import { initDatabaseClient } from '@pins/inspector-programming-database';
+import { initDatabaseClient } from '@pins/inspector-programming-database/src/index.js';
 import { initLogger } from '../util/logger.js';
 import { initRedis } from '../redis/index.js';
 

@@ -5,6 +5,6 @@
  */
 export function loadConfig() {
 	return {
-		db: process.env.SQL_CONNECTION_STRING
+		db: process.env.QL_CONNECTION_STRING
 	};
 }
