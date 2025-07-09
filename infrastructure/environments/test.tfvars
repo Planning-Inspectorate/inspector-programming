@@ -11,26 +11,9 @@ apps_config = {
   private_endpoint_enabled = true
 
   auth = {
-    client_id                = "ce13607b-4065-4f3f-92a8-aac2b13edd81"
-    group_application_access = "6094f824-8941-4536-aa7f-6d5cc60d0bbe"
+    client_id                = "d014bf1d-a98d-4db8-999d-cb58834b5ae1"
+    group_application_access = "bee16f0c-7e6f-49e3-823c-2a2b88301b8e"
   }
-
-  contact_email = "not.real@fake.example.com"
-
-  entra = {
-    group_ids = {
-      # use app access group for now
-      case_officers = "6094f824-8941-4536-aa7f-6d5cc60d0bbe"
-      inspectors    = "6094f824-8941-4536-aa7f-6d5cc60d0bbe"
-    }
-  }
-
-  feature_flags = {
-    # portal_not_live      = false
-    upload_docs_not_live = false
-  }
-
-  google_analytics_id = "G-PLMHFK18S7" # not sure on these values
 
   logging = {
     level = "info"
@@ -41,30 +24,7 @@ apps_config = {
     family   = "C"
     sku_name = "Basic"
   }
-
-  # gov_notify = {
-  #   disabled = false
-  #   templates = {
-  #     test_template_id                = "4b8adfb1-1b7c-4333-b512-761eeedfdca2"
-  #     pre_ack_template_id             = "298a986d-c142-46f5-804a-9cb853ba8b3d"
-  #     ack_rep_template_id             = "52312d8e-2af8-4212-a280-bfc6106cc56d"
-  #     lpa_qnr_template_id             = "fff17679-d63d-49e4-baaa-ccbf0bdfbf98"
-  #     app_rec_with_fee_template_id    = "68ad45c9-3ea7-4670-a058-61383ee0bcfc"
-  #     app_rec_without_fee_template_id = "ca391a7c-1f16-4d43-8cc9-f9a4007fa23f"
-  #     app_not_nat_imp_template_id     = "b821dda1-839f-4093-b3d1-273f49a3b7eb"
-  #   }
-  # }
-
-  sharepoint = {
-    disabled = false
-  }
 }
-
-# auth_config_portal = {
-#   auth_enabled   = true
-#   auth_client_id = "8e64dbf3-99f8-4b31-94ee-b621ad68c56f"
-#   application_id = "f8f9d69d-75d3-4a68-8976-f28dabfa5cd3"
-# }
 
 common_config = {
   resource_group_name = "pins-rg-common-test-ukw-001"
@@ -83,10 +43,6 @@ front_door_config = {
   ep_name     = "pins-fde-scheduling"
   use_tooling = true
 }
-
-# monitoring_config = {
-#   app_insights_web_test_enabled = false
-# }
 
 sql_config = {
   admin = {
@@ -116,7 +72,8 @@ vnet_config = {
   secondary_subnet_address_space      = "10.30.21.0/24"
 }
 
-web_domains = { web = "scheduling-test.planninginspectorate.gov.uk"
+web_domains = {
+  web = "scheduling-test.planninginspectorate.gov.uk"
 }
 
 waf_rate_limits = {
