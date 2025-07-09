@@ -48,6 +48,7 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@microsoft/microsoft-graph-types": "^2.40.0",
+    "cookie-parser": "^1.4.7",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
@@ -56,8 +57,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^6.10.1",
-    "sass": "^1.89.2",
-    "supertest": "^7.1.1"
+    "sass": "^1.89.2"
   },
   "lint-staged": {
     "*.js": [

@@ -19,6 +19,7 @@
     "redis": "*"
   },
   "devDependencies": {
+    "cookie-parser": "*",
     "sass": "*"
   }
 }
