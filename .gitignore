@@ -19,7 +19,7 @@ size-plugin.json
 temp
 .turbo
 .build
-.static
+**/.static
 
 # Code coverage
 coverage
