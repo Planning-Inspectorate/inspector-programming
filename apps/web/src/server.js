@@ -1,11 +1,13 @@
-import { createApp } from './app/app.js';
+import { getApp } from './app/app.js';
 import { loadConfig } from './app/config.js';
-import { App2Service } from '#service';
+import { initLogger } from '@pins/inspector-programming-lib/util/logger.js';
 
 const config = loadConfig();
-const service = new App2Service(config);
+const logger = initLogger(config);
 
-const app = createApp(service);
+const app = getApp(config, logger);
+
+
 
 // Trust proxy, because our application is behind Front Door
 // required for secure session cookies
@@ -17,5 +19,5 @@ app.set('http-port', config.httpPort);
 
 // start the app, listening for incoming requests on the given port
 app.listen(app.get('http-port'), () => {
-	service.logger.info(`Server is running at http://localhost:${app.get('http-port')} in ${app.get('env')} mode`);
+	logger.info(`Server is running at http://localhost:${app.get('http-port')} in ${app.get('env')} mode`);
 });

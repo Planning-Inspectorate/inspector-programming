@@ -14,12 +14,13 @@ export const ENVIRONMENT_NAME = Object.freeze({
 	PROD: 'prod'
 });
 
+
 // cache the config
-/** @type {undefined|import('./config-types.js').Config} */
+/** @type {undefined|Config} */
 let config;
 
 /**
- * @returns {import('./config-types.js').Config}
+ * @returns {Config}
  */
 export function loadConfig() {
 	if (config) {
@@ -43,7 +44,8 @@ export function loadConfig() {
 		NODE_ENV,
 		REDIS_CONNECTION_STRING,
 		SESSION_SECRET,
-		SQL_CONNECTION_STRING
+		SQL_CONNECTION_STRING,
+		GOV_NOTIFY_API_KEY
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -70,7 +72,10 @@ export function loadConfig() {
 			AUTH_CLIENT_ID,
 			AUTH_CLIENT_SECRET,
 			AUTH_GROUP_APPLICATION_ACCESS,
-			AUTH_TENANT_ID
+			AUTH_TENANT_ID,
+		ENTRA_GROUP_ID_CASE_OFFICERS,
+		ENTRA_GROUP_ID_INSPECTORS,
+			GOV_NOTIFY_API_KEY
 		};
 		for (const [k, v] of Object.entries(props)) {
 			if (v === undefined || v === '') {
@@ -114,7 +119,13 @@ export function loadConfig() {
 			secret: SESSION_SECRET
 		},
 		// the static directory to serve assets from (images, css, etc..)
-		staticDir: buildConfig.staticDir
+		staticDir: buildConfig.staticDir,
+		notify: {
+			key: GOV_NOTIFY_API_KEY
+		},
+
+
+
 	};
 
 	return config;
