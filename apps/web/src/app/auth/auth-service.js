@@ -8,7 +8,7 @@ const scopes = [
 	'user.read',
 	'User.ReadBasic.All', // for group membership displayName
 	'GroupMember.Read.All', // for group memberships
-	'Sites.ReadWrite.All' // for sharepoint sites
+	'Calendars.ReadWrite.Shared' // for calendar access
 ];
 
 export class AuthService {
