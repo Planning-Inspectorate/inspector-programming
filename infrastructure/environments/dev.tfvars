@@ -46,8 +46,8 @@ front_door_config = {
 
 sql_config = {
   admin = {
-    login_username = "pins-scheduling-sql-dev"
-    object_id      = "1c69f6a2-c0ef-42fa-b754-5da26608299f"
+    login_username = "pins-inspector-programming-sql-dev"
+    object_id      = "519c661d-c6d9-47e7-8560-7dbe98043ceb"
   }
   sku_name    = "Basic"
   max_size_gb = 2
