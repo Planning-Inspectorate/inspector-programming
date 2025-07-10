@@ -58,6 +58,10 @@ resource "azurerm_virtual_network_peering" "tooling_to_scheduling" {
   provider = azurerm.tooling
 }
 
+## DNS Zones for Azure Services
+## Private DNS Zones exist in the tooling subscription and are shared
+## here we link them to the VNet
+
 resource "azurerm_private_dns_zone_virtual_network_link" "dns_app_service" {
   name                  = "${local.org}-vnetlink-app-service-${local.resource_suffix}"
   resource_group_name   = var.tooling_config.network_rg
@@ -71,6 +75,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dns_database" {
   name                  = "${local.org}-vnetlink-db-${local.resource_suffix}"
   resource_group_name   = var.tooling_config.network_rg
   private_dns_zone_name = data.azurerm_private_dns_zone.database.name
+  virtual_network_id    = azurerm_virtual_network.main.id
+
+  provider = azurerm.tooling
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "redis_cache" {
+  name                  = "${local.org}-vnetlink-redis-cache-${local.resource_suffix}"
+  resource_group_name   = var.tooling_config.network_rg
+  private_dns_zone_name = data.azurerm_private_dns_zone.redis_cache.name
   virtual_network_id    = azurerm_virtual_network.main.id
 
   provider = azurerm.tooling
