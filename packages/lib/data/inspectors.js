@@ -283,13 +283,15 @@ const inspectors = [
 ];
 
 /**
- * @param {Object} config
+ * @param {import('apps/web/src/app/config-types.js').Config} config
  * @returns {Promise<import('./types.js').Inspector[]>}
  */
 export async function fetchInspectors(config) {
-	for (let i = 0; i < config.inspectors.length; i++) {
-		inspectors[i].id = config.inspectors[i].id;
-		inspectors[i].emailAddress = config.inspectors[i].emailAddress;
+	if (config.inspectors) {
+		for (let i = 0; i < config.inspectors.length; i++) {
+			inspectors[i].id = config.inspectors[i].id;
+			inspectors[i].emailAddress = config.inspectors[i].emailAddress;
+		}
 	}
 
 	return inspectors.toSorted((a, b) => {
