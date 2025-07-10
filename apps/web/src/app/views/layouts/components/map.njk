@@ -1,0 +1,222 @@
+{% macro map(apiKey, cases, inspectorPin) %}
+
+<style>
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .pins-map {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-top: calc(2.5 / 4 * 100%);
+    }
+
+    .pins-map__container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .pins-map__content {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<div class="pins-map">
+    <div class="pins-map__container">
+        <div id="map" class="pins-map__content"></div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.3.1/os-api-branding.css" />
+<link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css">
+<script {% if cspNonce %}nonce={{ cspNonce }}{% endif %} src="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.3.1/os-api-branding.js"></script>
+<script {% if cspNonce %}nonce={{ cspNonce }}{% endif %} src="https://js.arcgis.com/4.30/"></script>
+<script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
+
+    const apiKey = '{{ apiKey }}';
+    const serviceUrl = 'https://api.os.uk/maps/vector/v1/vts';
+    const pins = {{ cases | dump | safe }};
+
+    require([
+        'esri/Map',
+        'esri/views/MapView',
+        'esri/Graphic',
+        'esri/layers/VectorTileLayer',
+        'esri/geometry/Point',
+        'esri/config',
+        'esri/core/reactiveUtils'
+    ], function(Map, MapView, Graphic, VectorTileLayer, Point, esriConfig, reactiveUtils) {
+        esriConfig.request.interceptors.push({
+            urls: serviceUrl,
+            before: function(params) {
+                if (!params.requestOptions.query) {
+                    params.requestOptions.query = {};
+                }
+                params.requestOptions.query.key = apiKey;
+            }
+        });
+
+        const tileLayer = new VectorTileLayer({
+            url: serviceUrl
+        });
+
+        const map = new Map({
+            layers: [tileLayer]
+        });
+
+        const center = pins.reduce((acc, { siteAddressLatLong: { latitude, longitude } }) => {
+            acc.longitude += longitude;
+            acc.latitude += latitude;
+            return acc;
+        }, {longitude: 0, latitude: 0});
+
+        center.longitude /= pins.length;
+        center.latitude /= pins.length;
+
+        const view = new MapView({
+            container: 'map',
+            map: map,
+            zoom: 3,
+            center: new Point(center),
+            constraints: {
+                minZoom: 2,
+                maxZoom: 15,
+                rotationEnabled: false
+            },
+            popup: {
+                defaultPopupTemplateEnabled: false,
+                dockEnabled: true,
+                dockOptions: {
+                    buttonEnabled: false,
+                    breakpoint: false
+                }
+            }
+        });
+
+        reactiveUtils.on(
+            () => view.popup,
+            "trigger-action",
+            (event) => {
+                if (event.action.title === "Select Case" || event.action.title === "Unselect Case") {
+                    const selectedCase = event.action.id.replace('toggle-select-case-', '');
+                    document.dispatchEvent(new CustomEvent('caseStateChange', {
+                        detail: {
+                            caseId: selectedCase,
+                            selected: !pins.find(({ caseId }) => caseId === selectedCase).selected
+                        }
+                    }));
+                }
+            }
+        );
+
+        document.addEventListener('caseStateChange', function (event) {
+            const graphic = view.graphics.find((graphic) => graphic.attributes?.caseId === event.detail.caseId);
+
+            if (graphic) {
+                const caseData = pins.find(({ caseId }) => caseId === event.detail.caseId);
+                caseData.selected = event.detail.selected;
+
+                updatePopupAction(caseData, graphic);
+            }
+        });
+
+        function updatePopupAction(caseData, pointGraphic) {
+            const actionTitle = caseData.selected ? 'Unselect Case' : 'Select Case';
+            pointGraphic.popupTemplate = {
+                title: `Case ID: ${caseData.caseId}`,
+                content: `
+                    <strong>Case Age:</strong> ${caseData.caseAge} Weeks<br>
+                    <strong>LPA Name:</strong> ${caseData.lpaName}<br>
+                    <strong>Case Status:</strong> ${caseData.caseStatus}<br>
+                    <strong>Site Postcode:</strong> ${caseData.siteAddressPostcode}<br>
+                    <strong>Case Specialism:</strong> ${caseData.caseSpecialisms}<br>
+                    <strong>Appeal Type:</strong> ${caseData.appealEventType}<br>
+                    <strong>Procedure:</strong> ${caseData.caseProcedure}<br>
+                    <strong>Allocation Level:</strong> ${caseData.allocationLevel}<br>
+                    <strong>Final Comments Date:</strong> ${caseData.finalCommentsDate}
+                `,
+                actions: [
+                    {
+                        id: 'toggle-select-case-' + caseData.caseId,
+                        title: actionTitle
+                    }
+                ]
+            };
+            pointGraphic.symbol = {
+                type: 'simple-marker',
+                color: caseData.markerColor,
+                outline: {
+                    color: !caseData.selected ? [255, 255, 255] : [0, 0, 0],
+                    width: 1
+                }
+            }
+        }
+
+        function addMarker(caseData, color) {
+            const point = {
+                type: 'point',
+                ...caseData.siteAddressLatLong
+            };
+
+            const pointGraphic = new Graphic({
+                geometry: point,
+                attributes: caseData
+            });
+
+            updatePopupAction(caseData, pointGraphic);
+
+            view.graphics.add(pointGraphic);
+        }
+
+        for (const caseData of pins) {
+            caseData.selected = false;
+            caseData.markerColor = `#${caseData.color}`;
+            addMarker(caseData);
+        }
+
+        function addInspectorMarker(inspectorData) {
+            const point = {
+                type: 'point',
+                ...inspectorData.homeLatLong
+            };
+
+            const pictureMarkerSymbol = {
+                type: 'picture-marker',
+                url: `/assets/images/people.png`,
+                width: '50px',
+                height: '50px'
+            };
+
+            const inspectorTooltip = {
+                title: `Inspector: ${inspectorData.firstName} ${inspectorData.lastName}`,
+                content: `
+                    <strong>Address:</strong> ${inspectorData.address}<br>
+                    <strong>Grade:</strong> ${inspectorData.grade}<br>
+                    <strong>FTE:</strong> ${inspectorData.fte}<br>
+                    <strong>Specialisms:</strong> ${inspectorData.caseSpecialisms}<br>
+                `
+            };
+
+            const pointGraphic = new Graphic({
+                geometry: point,
+                symbol: pictureMarkerSymbol,
+                popupTemplate: inspectorTooltip
+            });
+
+            view.graphics.add(pointGraphic);
+        }
+
+        {% if inspectorPin %}
+            addInspectorMarker({{ inspectorPin | dump | safe }});
+        {% endif %}
+    });
+
+</script>
+{% endmacro %}

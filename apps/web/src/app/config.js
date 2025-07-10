@@ -14,7 +14,6 @@ export const ENVIRONMENT_NAME = Object.freeze({
 	PROD: 'prod'
 });
 
-
 // cache the config
 /** @type {undefined|Config} */
 let config;
@@ -45,7 +44,9 @@ export function loadConfig() {
 		REDIS_CONNECTION_STRING,
 		SESSION_SECRET,
 		SQL_CONNECTION_STRING,
-		GOV_NOTIFY_API_KEY
+		GOV_NOTIFY_API_KEY,
+		MAPS_API_KEY,
+		MAPS_API_SECRET
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -73,9 +74,8 @@ export function loadConfig() {
 			AUTH_CLIENT_SECRET,
 			AUTH_GROUP_APPLICATION_ACCESS,
 			AUTH_TENANT_ID,
-		ENTRA_GROUP_ID_CASE_OFFICERS,
-		ENTRA_GROUP_ID_INSPECTORS,
-			GOV_NOTIFY_API_KEY
+			ENTRA_GROUP_ID_CASE_OFFICERS,
+			ENTRA_GROUP_ID_INSPECTORS
 		};
 		for (const [k, v] of Object.entries(props)) {
 			if (v === undefined || v === '') {
@@ -120,12 +120,13 @@ export function loadConfig() {
 		},
 		// the static directory to serve assets from (images, css, etc..)
 		staticDir: buildConfig.staticDir,
+		maps: {
+			key: MAPS_API_KEY,
+			secret: MAPS_API_SECRET
+		},
 		notify: {
 			key: GOV_NOTIFY_API_KEY
-		},
-
-
-
+		}
 	};
 
 	return config;
