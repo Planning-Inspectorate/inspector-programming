@@ -15,11 +15,11 @@ export const ENVIRONMENT_NAME = Object.freeze({
 });
 
 // cache the config
-/** @type {undefined|import('./config-types.js').Config} */
+/** @type {undefined|Config} */
 let config;
 
 /**
- * @returns {import('./config-types.js').Config}
+ * @returns {Config}
  */
 export function loadConfig() {
 	if (config) {
@@ -43,7 +43,10 @@ export function loadConfig() {
 		NODE_ENV,
 		REDIS_CONNECTION_STRING,
 		SESSION_SECRET,
-		SQL_CONNECTION_STRING
+		SQL_CONNECTION_STRING,
+		GOV_NOTIFY_API_KEY,
+		MAPS_API_KEY,
+		MAPS_API_SECRET
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -114,7 +117,14 @@ export function loadConfig() {
 			secret: SESSION_SECRET
 		},
 		// the static directory to serve assets from (images, css, etc..)
-		staticDir: buildConfig.staticDir
+		staticDir: buildConfig.staticDir,
+		maps: {
+			key: MAPS_API_KEY,
+			secret: MAPS_API_SECRET
+		},
+		notify: {
+			key: GOV_NOTIFY_API_KEY
+		}
 	};
 
 	return config;

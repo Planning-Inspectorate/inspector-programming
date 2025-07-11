@@ -1,0 +1,252 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
+
+{% block pageContent %}
+<nav class="govuk-header__navigation pins-header-navigation" aria-label="Menu">
+    <ul class="govuk-header__navigation-list">
+        <li class="govuk-header__navigation-item">
+            <a href="/" class="govuk-back-link govuk-!-font-size-19">Back</a>
+        </li>
+    </ul>
+</nav>
+{% set inspectorDetails %}
+<div class="pins-container-wide govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+        <h2 class="govuk-heading-m">{{ inspector.firstName + " " + inspector.lastName }}</h2>
+        <h2 class="govuk-heading-m">Contact details</h2>
+            {{ govukSummaryList({
+                rows: [
+                    { key: { text: "Address" }, value: { text: inspector.address.addressLine1 + ", " + inspector.address.postcode } },
+                    { key: { text: "Work phone" }, value: { text: inspector.inspectorPhone } },
+                    { key: { text: "Mobile phone" }, value: { text: inspector.inspectorPhone  } }
+                ]
+            }) }}
+
+            <h2 class="govuk-heading-m">Work details</h2>
+            {{ govukSummaryList({
+                rows: [
+                    { key: { text: "Resource group" }, value: { text: "" } },
+                    { key: { text: "Grade" }, value: { text: inspector.grade } },
+                    { key: { text: "FTE" }, value: { text: inspector.fte } },
+                    { key: { text: "Charting officer" }, value: { text: inspector.chartingOfficerId } },
+                    { key: { text: "Charting officer phone" }, value: { text: inspector.chartingOfficerPhone } },
+                    { key: { text: "Inspector manager" }, value: { text: inspector.inspectorManager } }
+                ]
+            }) }}    
+    </div>
+    <div class="govuk-grid-column-one-half govuk-!-margin-top-8">
+        {{ govukTable({
+            caption: "Specialisms",
+            captionClasses: "govuk-table__caption--m",
+            firstCellIsHeader: true,
+            head: [
+                { text: "Name", classes: "govuk-!-width-one-half" },
+                { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
+                { text: "Valid from", classes: "govuk-!-width-one-quarter" }
+            ],
+            rows: [
+                [ { text: "Advertisements" }, { text: "Trained" }, { text: "11/03/24" } ],
+                [ { text: "Appeal against conditions" }, { text: "Trained" }, { text: "17/11/23" } ],
+                [ { text: "General allocation" }, { text: "Trained" }, { text: "12/12/21" } ],
+                [ { text: "Appearance design" }, { text: "Trained" }, { text: "02/06/23" } ],
+                [ { text: "Green belt" }, { text: "Trained" }, { text: "29/11/24" } ],
+                [ { text: "Hearings trained" }, { text: "Trained" }, { text: "01/01/19" } ],
+                [ { text: "Special protection area" }, { text: "Trained" }, { text: "25/08/19" } ]
+                ],
+            classes: 'custom-table-header'
+            }) }}
+    </div>
+</div>
+{% endset %}
+
+{% set outlookView %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<div class="calendar-container">
+    <div class="calendar-header">
+        <button onclick="goToToday()">Today</button>
+        <div class="nav-buttons">
+            <button onclick="prevWeek()">&lt;</button>
+            <button onclick="nextWeek()">&gt;</button>
+        </div>
+        <h2 id="monthYear"></h2>
+        <label for="weekPicker" class="arrow-button">↓</label>
+        <input type="text" id="weekPicker" placeholder="Select date" readonly>
+    </div>
+    <table class="calendar-table">
+        <thead>
+            <tr>
+                <th class="time-column"></th>
+                <th id="mon"></th>
+                <th id="tue"></th>
+                <th id="wed"></th>
+                <th id="thu"></th>
+                <th id="fri"></th>
+            </tr>
+        </thead>
+        <tbody id="calendar-body">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let currentWeek = 0;
+    const year = new Date().getFullYear();
+    const events = {{ events | dump | safe }};
+
+    function getCurrentWeek() {
+        const today = new Date();
+        const startDate = new Date(year, 0, 1);
+        while (startDate.getDay() !== 1) {
+            startDate.setDate(startDate.getDate() - 1);
+        }
+        const diff = Math.floor((today - startDate) / (7 * 24 * 60 * 60 * 1000));
+        return diff;
+    }
+
+    function generateCalendar(weekOffset) {
+        const startDate = new Date(year, 0, 1 + (weekOffset * 7));
+        while (startDate.getDay() !== 1) {
+            startDate.setDate(startDate.getDate() - 1);
+        }
+
+        const weekStartDate = startDate.toLocaleDateString("en-GB");
+        const weekEndDate = new Date(startDate);
+        weekEndDate.setDate(weekEndDate.getDate() + 4);
+        weekEndDate.setHours(23, 59, 59, 999);
+        const formattedTitle = `${("0" + startDate.getDate()).slice(-2)}-${("0" + weekEndDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${year}`;
+        document.getElementById("monthYear").innerText = formattedTitle;
+        
+        const headers = ["mon", "tue", "wed", "thu", "fri"];
+        for (let i = 0; i < 5; i++) {
+            const day = new Date(startDate);
+            day.setDate(day.getDate() + i);
+            document.getElementById(headers[i]).innerText = `${("0" + day.getDate()).slice(-2)} ${day.toLocaleString('en-US', { weekday: 'short' })}`;
+        }
+        
+        const tbody = document.getElementById("calendar-body");
+        tbody.innerHTML = "";
+        
+        for (let hour = 8; hour < 18; hour++) {
+            for (let min of [0, 30]) {
+                const row = document.createElement("tr");
+                const timeCell = document.createElement("td");
+                timeCell.classList.add("time-column");
+                if (min === 0) {
+                    timeCell.innerText = `${hour}:00`;
+                } else {
+                    timeCell.innerText = ``;
+                }
+                row.appendChild(timeCell);
+                
+                for (let i = 0; i < 5; i++) {
+                    const cell = document.createElement("td");
+                    cell.classList.add("calendar-cell");
+                    row.appendChild(cell);
+                }
+                tbody.appendChild(row);
+            }
+        }
+
+        events.forEach(event => {
+            const start = new Date(event.startDateTime);
+            const end = new Date(event.endDateTime);
+
+            if (start >= startDate && start <= weekEndDate) {
+                const dayIndex = start.getDay() - 1;
+                const startHour = start.getHours();
+                const startMinutes = start.getMinutes();
+                const endHour = end.getHours();
+                const endMinutes = end.getMinutes();
+
+                const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
+                const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
+
+                let backgroundColor = "lightblue";
+                if (event.subject.includes("Planning")) {
+                    backgroundColor = "lightblue";
+                } else if (event.subject.includes("Site Visit")) {
+                    backgroundColor = "lightcoral";
+                } else if (event.subject.includes("Report")) {
+                    backgroundColor = "lightgrey";
+                }
+
+                const rows = tbody.querySelectorAll("tr");
+                const validStartRow = Math.max(0, startRow);
+                for (let i = validStartRow; i <= endRow && i < rows.length; i++) {
+                    const cell = rows[i].children[dayIndex + 1];
+                    cell.style.backgroundColor = backgroundColor;
+
+                    if (i === startRow) {
+                        cell.innerText = event.subject;
+                    } else {
+                        cell.innerText = "";
+                    }
+                }
+            }
+        });
+    }
+
+    function prevWeek() {
+        if (currentWeek > 0) {
+            currentWeek--;
+            generateCalendar(currentWeek);
+        }
+    }
+
+    function nextWeek() {
+        if (currentWeek < 51) {
+            currentWeek++;
+            generateCalendar(currentWeek);
+        }
+    }
+
+    function goToToday() {
+        currentWeek = getCurrentWeek();
+        generateCalendar(currentWeek); 
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        currentWeek = getCurrentWeek();
+        generateCalendar(currentWeek);
+
+        flatpickr("#weekPicker", {
+            enableTime: false,
+            dateFormat: "d/m/Y",
+            weekNumbers: true,
+            onChange: function(selectedDates) {
+                const selectedDate = selectedDates[0];
+                const startDate = new Date(year, 0, 1);
+                while (startDate.getDay() !== 1) {
+                    startDate.setDate(startDate.getDate() - 1);
+                }
+                const diff = Math.floor((selectedDate - startDate) / (7 * 24 * 60 * 60 * 1000));
+                currentWeek = diff;
+                generateCalendar(currentWeek);
+            },
+        });
+    });
+</script>
+{% endset %}
+
+    {{ govukTabs({
+            items: [
+                {
+                    label: "Inspector details",
+                    id: "cases",
+                    panel: { html: inspectorDetails }
+                },
+                {
+                    label: "Calendar view",
+                    id: "outlookView",
+                    panel: { html: outlookView }
+                }
+            ]
+        }) }}
+{% endblock %}
+
+
+

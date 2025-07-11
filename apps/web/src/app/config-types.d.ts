@@ -13,4 +13,9 @@ interface Config extends BaseConfig {
 		redirectUri: string;
 		signoutUrl: string;
 	};
+	inspectors: [{ emailAddress: string; id: string }];
+	maps: {
+		key: string;
+		secret: string;
+	};
 }

@@ -16,7 +16,6 @@ export function initDatabaseClient(config, logger) {
 
 	return newDatabaseClient(config.database, prismaLogger);
 }
-
 /**
  * @param {prismaConfig} prismaConfig
  * @param {import('pino').Logger} [logger]

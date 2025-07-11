@@ -1,0 +1,623 @@
+{% extends "views/layouts/main.njk" %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "views/layouts/components/map.njk" import map %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% block pageContent %}
+<div class="filter-container">
+    <div class="app-filter">
+        <div class="app-filter__header">
+            <div class="app-filter__header-title">
+                <h2 class="govuk-heading-m bold-title">Select inspector</h2>
+            </div>
+        </div>
+        <form method="post" novalidate>
+            <div class="govuk-form-group" style="display: flex; gap: 5px; margin-bottom 0">
+                {% set inspectorList = [] %}
+                {% for i in inspectors %}
+                    {% set inspectorList = (inspectorList.push({
+                        text: i.lastName + ', ' + i.firstName,
+                        value: i.id,
+                        selected: i.id == data.inspectorId
+                    }), inspectorList) %}
+                {% endfor %}
+                {{ govukSelect({
+                    id: "inspectors",
+                    name: "inspectorId",
+                    items: inspectorList
+                }) }}
+                {{ govukButton({
+                    text: "Select",
+                    classes: "govuk-button--secondary",
+                    value: "select",
+                    name: "action",
+                    type: "submit"
+                }) }}
+            </div>
+        </form>
+        <div class="app-filter__content">
+            <div class="app-filter__options">
+                <form method="get" novalidate>
+                    <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+                    <input type="hidden" name="limit" value="{{ data.limit }}">
+                    <input type="hidden" name="page" value="{{ data.page }}">
+
+                    {% for key, value in data.filters %}
+                        {% if value is iterable and not value is string %}
+                            {% for item in value %}
+                                <input type="hidden" name="filters[{{ key }}][]" value="{{ item }}">
+                            {% endfor %}
+                        {% else %}
+                            <input type="hidden" name="filters[{{ key }}]" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <div class="app-filter__header">
+                        <div class="app-filter__header-title">
+                            <h2 class="govuk-heading-m bold-title">Sort by</h2>
+                        </div>
+                    </div>
+                    <div class="govuk-form-group" style="display: flex; gap: 5px; margin-bottom 0">
+                        {{ govukSelect({
+                            id: "sort",
+                            name: "sort",
+                            items: [
+                                { text: "Age", value: "age", selected: data.sort == "age" },
+                                { text: "Distance", value: "distance", selected: data.sort == "distance" },
+                                { text: "Hybrid", value: "hybrid", selected: data.sort == "hybrid" }
+                            ]
+                        }) }}
+                        {{ govukButton({
+                            text: "Sort",
+                            classes: "govuk-button--secondary",
+                            type: "submit"
+                        }) }}
+                    </div>
+                </form>
+                <div class="app-filter__header">
+                    <div class="app-filter__header-title">
+                        <h2 class="govuk-heading-m">Case filters</h2>
+                    </div>
+                </div>
+                <form method="get" novalidate>
+                    <button class="govuk-button" data-module="govuk-button">
+                        Apply filters
+                    </button>
+
+                    {{ govukDetails({
+                        summaryText: "Case age",
+                        html: govukSelect({
+                        id: "filters[ageRange]",
+                        name: "filters[ageRange]",
+                        classes: "govuk-select--width-10",
+                        label: {
+                            text: "Case age (weeks)",
+                            classes: "govuk-label--s"
+                        },
+                        items: [
+                            { text: "All", value: "all", selected: data.filters.ageRange == 'all' },
+                            { text: "> 24 weeks", value: "24-99999", selected: data.filters.ageRange == '24-99999' },
+                            { text: "22 – 24 weeks", value: "22-24", selected: data.filters.ageRange == '22-24' },
+                            { text: "20 – 22 weeks", value: "20-22", selected: data.filters.ageRange == '20-22' },
+                            { text: "18 – 20 weeks", value: "18-20", selected: data.filters.ageRange == '18-20' },
+                            { text: "16 – 18 weeks", value: "16-18", selected: data.filters.ageRange == '16-18' },
+                            { text: "14 – 16 weeks", value: "14-16", selected: data.filters.ageRange == '14-16' },
+                            { text: "12 – 14 weeks", value: "12-14", selected: data.filters.ageRange == '12-14' },
+                            { text: "10 – 12 weeks", value: "10-12", selected: data.filters.ageRange == '10-12' },
+                            { text: "8 – 10 weeks", value: "8-10", selected: data.filters.ageRange == '8-10' },
+                            { text: "6 – 8 weeks", value: "6-8", selected: data.filters.ageRange == '6-8' },
+                            { text: "4 – 6 weeks", value: "4-6", selected: data.filters.ageRange == '4-6' },
+                            { text: "2 – 4 weeks", value: "2-4", selected: data.filters.ageRange == '2-4' },
+                            { text: "< 1 week", value: "0-1", selected: data.filters.ageRange == '0-1' }
+                        ]
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+
+                    {{ govukDetails({
+                        summaryText: "Procedure",
+                        html: govukCheckboxes({
+                            idPrefix: "filters[caseProcedure]",
+                            name: "filters[caseProcedure]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more procedures",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: [
+                                { value: 'Written reps', text: 'Written representations' },
+                                { value: 'Hearing', text: 'Hearing' },
+                                { value: 'Inquiry', text: 'Inquiry' }
+                            ],
+                            values: data.filters.caseProcedure
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+                    {{ govukDetails({
+                        summaryText: "LPA region",
+                        html: govukCheckboxes({
+                            idPrefix: "filters[lpaRegion]",
+                            name: "filters[lpaRegion]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more LPA regions",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: [
+                                { value: 'North', text: 'North' },
+                                { value: 'South', text: 'South' },
+                                { value: 'East', text: 'East' },
+                                { value: 'West', text: 'West' }
+                            ],
+                            values: data.filters.lpaRegion
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+                    {{ govukDetails({
+                        summaryText: "Case type",
+                        html: govukCheckboxes({
+                            idPrefix: "filters[caseType]",
+                            name: "filters[caseType]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more case types",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: [
+                                { value: 'W', text: 'W' },
+                                { value: 'D', text: 'D' }
+                            ],
+                            values: data.filters.caseType
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+                    {{ govukDetails({
+                        summaryText: "Specialism",
+                        html: govukCheckboxes({
+                            idPrefix: "filters[caseSpecialisms]",
+                            name: "filters[caseSpecialisms]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more specialisms",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: [
+                                { value: 'Access', text: 'Access' },
+                                { value: 'Listed building and enforcement', text: 'Listed building and enforcement' },
+                                { value: 'Roads and traffics', text: 'Roads and traffics' },
+                                { value: 'Natural heritage', text: 'Natural heritage' },
+                                { value: 'Schedule 1', text: 'Schedule 1' }
+                            ],
+                            values: data.filters.caseSpecialisms
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+
+                    {{ govukDetails({
+                        summaryText: "Specialism code",
+                        html: govukCheckboxes({
+                            idPrefix: "filters[allocationLevel]",
+                            name: "filters[allocationLevel]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more specialism codes",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: [
+                                { value: 'A', text: 'A' },
+                                { value: 'B', text: 'B' },
+                                { value: 'C', text: 'C' },
+                                { value: 'D', text: 'D' },
+                                { value: 'E', text: 'E' },
+                                { value: 'F', text: 'F' },
+                                { value: 'G', text: 'G' },
+                                { value: 'H', text: 'H' }
+                            ],
+                            values: data.filters.allocationLevel
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+                    <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+                    <input type="hidden" name="limit" value="{{ data.limit }}">
+                    <input type="hidden" name="page" value="{{ data.page }}">
+                    <input type="hidden" name="sort" value="{{ data.sort }}">
+                </form>
+            </div>
+        </div>
+    </div>
+<div class="cases-inspectors-container">
+    <div id="table-view" class="view">
+
+        {% set caseRows = [] %}
+        {% for c in cases %}
+            {% set caseRows = (caseRows.push([
+                { html: govukCheckboxes({
+                    name: "selectedCases",
+                    classes: "govuk-checkboxes--small",
+                    items: [{ value: c.caseId, text: " ", checked: false }]
+                }) },
+                { html: '<a href="/case/' + c.caseId + '?inspectorId=' + data.inspectorId + '" class="govuk-link">' + c.caseId + '</a>' },
+                { text: c.caseType },
+                { text: c.caseProcedure },
+                { text: c.allocationBand },
+                { text: c.caseLevel },
+                { text: c.siteAddressPostcode },
+                { text: c.lpaName },
+                { text: c.lpaRegion },
+                { text: c.caseStatus },
+                { html: '<span style="padding: 3px; border: 5px solid #' + c.color + '; display: inline-block; width: 25px; height: 25px; text-align: center;">' + c.caseAge + '</span>' },
+                { html: '<a href="/case/' + c.linkedCases + '" class="govuk-link">' + c.linkedCases + '</a>' },
+                { text: c.finalCommentsDate },
+                { text: c.programmingStatus }
+            ]), caseRows) %}
+        {% endfor %}
+
+        {% set casesTable %}
+        <div style="margin: 0; padding: 0;">
+            <form method="get" action="/" class="govuk-form-group" style="margin: 0; padding: 0;">
+                <label class="govuk-label" for="limit" style="margin-right: 10px;">Cases per page:</label>
+                <select class="govuk-select" id="limit" name="limit" onchange="this.form.submit()">
+                    <option value="5" {% if data.limit == 5 %}selected{% endif %}>5</option>
+                    <option value="10" {% if data.limit == 10 %}selected{% endif %}>10</option>
+                    <option value="12" {% if data.limit == 12 %}selected{% endif %}>12</option>
+                    <option value="15" {% if data.limit == 15 %}selected{% endif %}>15</option>
+                </select>
+            </form>
+        </div>
+        <form method="post" action="/notify" novalidate>
+                <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+                <div class="align-right">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="assignment-date">Event date: </label>
+                    </div>
+                    <div class="govuk-form-group">
+                        <input type="date" class="govuk-input" id="assignment-date" name="assignmentDate">
+                    </div>
+                    <div class="govuk-form-group">
+                        {{ govukButton({
+                            text: "Assign selected cases",
+                            type: "submit"
+                        }) }}
+                    </div>
+                </div>
+                {{ govukTable({
+                    classes: "govuk-!-font-size-14 home-cases-table",
+                    head: [
+                        { html: govukCheckboxes({
+                            idPrefix: "select-all",
+                            name: "select-all",
+                            classes: "govuk-checkboxes--small",
+                            items: [{ value: "select-all", text: " ", checked: false }]
+                        }) },
+                        { text: "Reference" },
+                        { text: "Type" },
+                        { text: "Procedure" },
+                        { text: "Band" },
+                        { text: "Level" },
+                        { text: "Location" },
+                        { text: "LPA" },
+                        { text: "Region" },
+                        { text: "Case status" },
+                        { text: "Weeks" },
+                        { text: "Linked cases" },
+                        { text: "Final comments date" },
+                        { text: "Prog status" }
+                    ],
+                    rows: caseRows
+                }) }}
+            </form>
+
+            <div class="govuk-form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0; padding: 0;">
+                <div style="margin: 0; padding: 0;">
+                    {{ govukPagination({
+                        next: nextPage,
+                        previous: previousPage,
+                        items: pageItems
+                    }) }}
+                </div>
+            </div>
+        {% endset %}
+
+        {% set mapView %}
+            <div class="home-map">
+                {{ map(apiKey, cases, inspectorPin) }}
+            </div>
+        {% endset %}
+
+        {% set inspectorDetails %}
+            <div class="pins-container-wide govuk-grid-row">
+                <div class="govuk-grid-column-one-half">
+                    <h2 class="govuk-heading-m">{{ inspectorPin.firstName + " " + inspectorPin.lastName }}</h2>
+                    <h2 class="govuk-heading-m">Contact details</h2>
+                        {{ govukSummaryList({
+                            rows: [
+                                { key: { text: "Address" }, value: { text: inspectorPin.address.addressLine1 + ", " + inspectorPin.address.postcode } },
+                                { key: { text: "Work phone" }, value: { text: inspectorPin.inspectorPhone } },
+                                { key: { text: "Mobile phone" }, value: { text: inspectorPin.inspectorPhone  } }
+                            ]
+                        }) }}
+
+                        <h2 class="govuk-heading-m">Work details</h2>
+                        {{ govukSummaryList({
+                            rows: [
+                                { key: { text: "Resource group" }, value: { text: "" } },
+                                { key: { text: "Grade" }, value: { text: inspectorPin.grade } },
+                                { key: { text: "FTE" }, value: { text: inspectorPin.fte } },
+                                { key: { text: "Charting officer" }, value: { text: inspectorPin.chartingOfficerId } },
+                                { key: { text: "Charting officer phone" }, value: { text: inspectorPin.chartingOfficerPhone } },
+                                { key: { text: "Inspector manager" }, value: { text: inspectorPin.inspectorManager } }
+                            ]
+                        }) }}    
+                </div>
+                <div class="govuk-grid-column-one-half govuk-!-margin-top-8">
+                    {{ govukTable({
+                        caption: "Specialisms",
+                        captionClasses: "govuk-table__caption--m",
+                        firstCellIsHeader: true,
+                        head: [
+                            { text: "Name", classes: "govuk-!-width-one-half" },
+                            { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
+                            { text: "Valid from", classes: "govuk-!-width-one-quarter" }
+                        ],
+                        rows: [
+                            [ { text: "Advertisements" }, { text: "Trained" }, { text: "11/03/24" } ],
+                            [ { text: "Appeal against conditions" }, { text: "Trained" }, { text: "17/11/23" } ],
+                            [ { text: "General allocation" }, { text: "Trained" }, { text: "12/12/21" } ],
+                            [ { text: "Appearance design" }, { text: "Trained" }, { text: "02/06/23" } ],
+                            [ { text: "Green belt" }, { text: "Trained" }, { text: "29/11/24" } ],
+                            [ { text: "Hearings trained" }, { text: "Trained" }, { text: "01/01/19" } ],
+                            [ { text: "Special protection area" }, { text: "Trained" }, { text: "25/08/19" } ]
+                            ],
+                        classes: 'custom-table-header'
+                        }) }}
+                </div>
+            </div>
+        {% endset %}
+
+        {% set outlookView %}
+        <div class="calendar-container">
+            {% if calendarData.error %}
+                <div class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> {{ calendarData.error }}
+                </div>
+            {% else %}
+                <div class="calendar-header">
+                    <button onclick="goToToday()">Today</button>
+                    <div class="nav-buttons">
+                        <button onclick="prevWeek()">&lt;</button>
+                        <button onclick="nextWeek()">&gt;</button>
+                    </div>
+                    <h2 id="monthYear"></h2>
+                    <label for="weekPicker" class="arrow-button">↓</label>
+                    <input type="text" id="weekPicker" placeholder="Select date" readonly>
+                </div>
+                <table class="calendar-table">
+                    <thead>
+                        <tr>
+                            <th class="time-column"></th>
+                            <th id="mon"></th>
+                            <th id="tue"></th>
+                            <th id="wed"></th>
+                            <th id="thu"></th>
+                            <th id="fri"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+        <script>
+            {% if not calendarError %}
+            let currentWeek = 0;
+            const year = new Date().getFullYear();
+            const events = {{ calendarData.events | dump | safe }};
+
+            function getCurrentWeek() {
+                const today = new Date();
+                const startDate = new Date(year, 0, 1);
+                while (startDate.getDay() !== 1) {
+                    startDate.setDate(startDate.getDate() - 1);
+                }
+                const diff = Math.floor((today - startDate) / (7 * 24 * 60 * 60 * 1000));
+                return diff;
+            }
+
+            function generateCalendar(weekOffset) {
+                if (events.length === 0) {
+                    return;
+                }
+
+                const startDate = new Date(year, 0, 1 + (weekOffset * 7));
+                while (startDate.getDay() !== 1) {
+                    startDate.setDate(startDate.getDate() - 1);
+                }
+
+                const weekStartDate = startDate.toLocaleDateString("en-GB");
+                const weekEndDate = new Date(startDate);
+                weekEndDate.setDate(weekEndDate.getDate() + 4);
+                weekEndDate.setHours(23, 59, 59, 999);
+                const formattedTitle = `${("0" + startDate.getDate()).slice(-2)}-${("0" + weekEndDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${year}`;
+                document.getElementById("monthYear").innerText = formattedTitle;
+
+                const headers = ["mon", "tue", "wed", "thu", "fri"];
+                for (let i = 0; i < 5; i++) {
+                    const day = new Date(startDate);
+                    day.setDate(day.getDate() + i);
+                    document.getElementById(headers[i]).innerText = `${("0" + day.getDate()).slice(-2)} ${day.toLocaleString('en-US', { weekday: 'short' })}`;
+                }
+
+                const tbody = document.getElementById("calendar-body");
+                tbody.innerHTML = "";
+
+                for (let hour = 8; hour < 18; hour++) {
+                    for (let min of [0, 30]) {
+                        const row = document.createElement("tr");
+                        const timeCell = document.createElement("td");
+                        timeCell.classList.add("time-column");
+                        if (min === 0) {
+                            timeCell.innerText = `${hour}:00`;
+                        } else {
+                            timeCell.innerText = ``;
+                        }
+                        row.appendChild(timeCell);
+
+                        for (let i = 0; i < 5; i++) {
+                            const cell = document.createElement("td");
+                            cell.classList.add("calendar-cell");
+                            row.appendChild(cell);
+                        }
+                        tbody.appendChild(row);
+                    }
+                }
+
+                events.forEach(event => {
+                    const start = new Date(event.startDateTime);
+                    const end = new Date(event.endDateTime);
+
+                    if (start >= startDate && start <= weekEndDate) {
+                        const dayIndex = start.getDay() - 1;
+                        const startHour = start.getHours();
+                        const startMinutes = start.getMinutes();
+                        const endHour = end.getHours();
+                        const endMinutes = end.getMinutes();
+
+                        const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
+                        const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
+
+                        let backgroundColor = "lightblue";
+                        if (event.subject.includes("Planning")) {
+                            backgroundColor = "lightblue";
+                        } else if (event.subject.includes("Site Visit")) {
+                            backgroundColor = "lightcoral";
+                        } else if (event.subject.includes("Report")) {
+                            backgroundColor = "lightgrey";
+                        }
+
+                        const rows = tbody.querySelectorAll("tr");
+                        const validStartRow = Math.max(0, startRow);
+                        for (let i = validStartRow; i <= endRow && i < rows.length; i++) {
+                            const cell = rows[i].children[dayIndex + 1];
+                            cell.style.backgroundColor = backgroundColor;
+
+                            if (i === startRow) {
+                                cell.innerText = event.subject;
+                            } else {
+                                cell.innerText = "";
+                            }
+                        }
+                    }
+                });
+            }
+
+            function prevWeek() {
+                if (currentWeek > 0) {
+                    currentWeek--;
+                    generateCalendar(currentWeek);
+                }
+            }
+
+            function nextWeek() {
+                if (currentWeek < 51) {
+                    currentWeek++;
+                    generateCalendar(currentWeek);
+                }
+            }
+
+            function goToToday() {
+                currentWeek = getCurrentWeek();
+                generateCalendar(currentWeek);
+            }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                currentWeek = getCurrentWeek();
+                generateCalendar(currentWeek);
+
+            });
+            {% endif %}
+        </script>
+        {% endset %}
+
+        {{ govukTabs({
+            items: [
+                {
+                    label: "Cases",
+                    id: "cases",
+                    panel: { html: casesTable }
+                },
+                {
+                    label: "Map view",
+                    id: "mapView",
+                    panel: { html: mapView }
+                },
+                {
+                    label: "Inspector personal details",
+                    id: "inspector",
+                    panel: { html: inspectorDetails }
+                },
+                {
+                    label: "Inspector calendar",
+                    id: "outlookView",
+                    panel: { html: outlookView }
+                }
+            ]
+        }) }}
+    </div>
+</div>
+<script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectAllCheckbox = document.querySelector('#select-all');
+        const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedCases"]');
+
+        selectAllCheckbox.addEventListener('change', function () {
+            checkboxes.forEach(checkbox => {
+                document.dispatchEvent(new CustomEvent('caseStateChange', {
+                    detail: {
+                        caseId: checkbox.value,
+                        selected: selectAllCheckbox.checked
+                    }
+                }));
+            });
+        });
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                document.dispatchEvent('caseStateChange', {
+                    caseId: checkbox.value,
+                    selected: checkbox.checked
+                });
+            });
+        });
+
+        document.addEventListener('caseStateChange', function (event) {
+            const { caseId, selected } = event.detail;
+
+            document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
+        });
+
+    });
+</script>
+{% endblock %}

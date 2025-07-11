@@ -27,7 +27,7 @@
   "dependencies": {
     "@azure/identity": "^4.10.1",
     "@azure/msal-node": "^3.6.2",
-    "@prisma/client": "^6.9.0",
+    "@prisma/client": "^6.11.1",
     "accessible-autocomplete": "^3.0.1",
     "body-parser": "^2.2.0",
     "connect-redis": "^9.0.0",
@@ -54,6 +54,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "nodemon": "^3.1.10",
+    "pins-data-model": "github:Planning-Inspectorate/data-model#1.9.14",
     "prettier": "^3.5.3",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^6.10.1",

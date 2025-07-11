@@ -20,3 +20,19 @@ datasource db {
 // not everything needs this, but easier to make them all consistent and the increase in size (vs int) is negligible
 
 // TODO: add models here!
+model Inspector {
+  id                   Int    @id @default(autoincrement())
+  address              String
+  workPhone            String
+  mobilePhone          String
+  resourceGroup        String
+  grade                String
+  fte                  String
+  chartingOfficer      String
+  chartingOfficerPhone String
+  inspectorManager     String
+  name                 String
+  proficiency          String
+  validFrom            String
+  specialisms          String
+}
