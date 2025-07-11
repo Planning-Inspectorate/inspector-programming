@@ -7,22 +7,21 @@ import { PrismaClient } from '@pins/inspector-programming-database/src/client/in
  * @param {import('pino').Logger} logger
  * @returns {import('@pins/service-name-database/src/client').PrismaClient}
  */
-	export function initDatabaseClient(config, logger) {
-		let prismaLogger;
+export function initDatabaseClient(config, logger) {
+	let prismaLogger;
 
-		if (config.NODE_ENV !== 'production') {
-			prismaLogger = logger;
-		}
-
-		return newDatabaseClient(config.database, prismaLogger);
+	if (config.NODE_ENV !== 'production') {
+		prismaLogger = logger;
 	}
+
+	return newDatabaseClient(config.database, prismaLogger);
+}
 /**
  * @param {prismaConfig} prismaConfig
  * @param {import('pino').Logger} [logger]
  * @returns {import('@pins/service-name-database/src/client').PrismaClient}
  */
 export function newDatabaseClient(prismaConfig, logger) {
-
 	prismaConfig.log = [
 		{
 			emit: 'event',
@@ -68,6 +67,3 @@ export function newDatabaseClient(prismaConfig, logger) {
 
 	return prisma;
 }
-
-
-

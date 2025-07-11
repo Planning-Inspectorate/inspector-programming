@@ -23,7 +23,6 @@ export function buildRouter({ logger, config }) {
 	const { router: authRoutes, guards: authGuards } = createAuthRoutesAndGuards({
 		config,
 		logger
-
 	});
 
 	router.use('/', monitoringRoutes);
