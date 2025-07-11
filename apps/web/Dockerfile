@@ -11,7 +11,7 @@ COPY package.json .
 COPY package-lock.json .
 
 COPY packages ./packages
-COPY apps/app-2 ./apps/app-2
+COPY apps/web ./apps/web
 
 RUN npm ci --loglevel notice --workspace=inspector-programming-web --ignore-scripts
 
@@ -28,7 +28,7 @@ FROM base
 
 ARG GIT_SHA
 
-WORKDIR /usr/src/app/apps/app-2
+WORKDIR /usr/src/app/apps/web
 
 ENV NODE_ENV=production
 ENV GIT_SHA=$GIT_SHA

@@ -23,22 +23,6 @@ variable "apps_config" {
       group_application_access = string
     })
 
-    contact_email = string
-
-    entra = object({
-      group_ids = object({
-        case_officers = string
-        inspectors    = string
-      })
-    })
-
-    feature_flags = object({
-      # portal_not_live      = bool
-      upload_docs_not_live = bool
-    })
-
-    google_analytics_id = string
-
     logging = object({
       level = string
     })
@@ -48,34 +32,8 @@ variable "apps_config" {
       family   = string
       sku_name = string
     })
-
-    # gov_notify = object({
-    #   disabled = bool
-    #   templates = object({
-    #     test_template_id                = string
-    #     pre_ack_template_id             = string
-    #     ack_rep_template_id             = string
-    #     lpa_qnr_template_id             = string
-    #     app_rec_with_fee_template_id    = string
-    #     app_rec_without_fee_template_id = string
-    #     app_not_nat_imp_template_id     = string
-    #   })
-    # })
-
-    sharepoint = object({
-      disabled = bool
-    })
   })
 }
-
-# variable "auth_config_portal" {
-#   description = "Config for the azure authentication scheduling portal"
-#   type = object({
-#     auth_enabled   = bool
-#     auth_client_id = string
-#     application_id = string
-#   })
-# }
 
 variable "common_config" {
   description = "Config for the common resources, such as action groups"
@@ -110,12 +68,6 @@ variable "health_check_eviction_time_in_min" {
   default     = 10
 }
 
-# variable "monitoring_config" {
-#   description = "Config for monitoring"
-#   type = object({
-#     app_insights_web_test_enabled = bool
-#   })
-# }
 
 variable "sql_config" {
   description = "Config for SQL Server and DB"
@@ -178,8 +130,7 @@ variable "waf_rate_limits" {
 
 variable "web_domains" {
   description = "value for web domain"
-  type        = map(string)
-  default = {
-    web = ""
-  }
+  type = object({
+    web = string
+  })
 }

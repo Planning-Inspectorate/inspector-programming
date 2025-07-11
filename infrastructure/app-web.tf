@@ -49,14 +49,6 @@ module "app_web" {
     AUTH_CLIENT_SECRET            = local.key_vault_refs["scheduling-client-secret"]
     AUTH_GROUP_APPLICATION_ACCESS = var.apps_config.auth.group_application_access
     AUTH_TENANT_ID                = data.azurerm_client_config.current.tenant_id
-    ENTRA_GROUP_ID_CASE_OFFICERS  = var.apps_config.entra.group_ids.case_officers
-    ENTRA_GROUP_ID_INSPECTORS     = var.apps_config.entra.group_ids.inspectors
-
-    #Sharepoint
-    SHAREPOINT_DISABLED = var.apps_config.sharepoint.disabled
-    # SHAREPOINT_DRIVE_ID         = local.key_vault_refs["scheduling-sharepoint-drive-id"]
-    # SHAREPOINT_ROOT_ID          = local.key_vault_refs["scheduling-sharepoint-root-id"]
-    # SHAREPOINT_CASE_TEMPLATE_ID = local.key_vault_refs["scheduling-sharepoint-template-folder-id"]
 
     # logging
     LOG_LEVEL = var.apps_config.logging.level
@@ -65,26 +57,8 @@ module "app_web" {
     SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
 
     # sessions
-    # REDIS_CONNECTION_STRING = local.key_vault_refs["redis-connection-string"]
-    SESSION_SECRET = local.key_vault_refs["session-secret-web"]
-
-    #Auth
-    # MICROSOFT_PROVIDER_AUTHENTICATION_SECRET = local.key_vault_refs["microsoft-provider-authentication-secret"]
-    WEBSITE_AUTH_AAD_ALLOWED_TENANTS = data.azurerm_client_config.current.tenant_id
-
-    # gov notify
-    # GOV_NOTIFY_DISABLED                        = var.apps_config.gov_notify.disabled
-    # GOV_NOTIFY_API_KEY                         = local.key_vault_refs["scheduling-gov-notify-api-key"]
-    # GOV_NOTIFY_TEST_TEMPLATE_ID                = var.apps_config.gov_notify.templates.test_template_id
-    # GOV_NOTIFY_PRE_ACK_TEMPLATE_ID             = var.apps_config.gov_notify.templates.pre_ack_template_id
-    # GOV_NOTIFY_ACK_REP_TEMPLATE_ID             = var.apps_config.gov_notify.templates.ack_rep_template_id
-    # GOV_NOTIFY_LPA_QNR_TEMPLATE_ID             = var.apps_config.gov_notify.templates.lpa_qnr_template_id
-    # GOV_NOTIFY_APP_REC_WITH_FEE_TEMPLATE_ID    = var.apps_config.gov_notify.templates.app_rec_with_fee_template_id
-    # GOV_NOTIFY_APP_REC_WITHOUT_FEE_TEMPLATE_ID = var.apps_config.gov_notify.templates.app_rec_without_fee_template_id
-    # GOV_NOTIFY_APP_NOT_NAT_IMP_TEMPLATE_ID     = var.apps_config.gov_notify.templates.app_not_nat_imp_template_id
-
-    #feature flags
-    FEATURE_FLAG_UPLOAD_DOCS_REPS_NOT_LIVE = var.apps_config.feature_flags.upload_docs_not_live
+    REDIS_CONNECTION_STRING = local.key_vault_refs["redis-connection-string"]
+    SESSION_SECRET          = local.key_vault_refs["session-secret-web"]
   }
 
   providers = {

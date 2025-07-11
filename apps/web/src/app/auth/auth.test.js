@@ -1,17 +1,19 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import supertest from 'supertest';
 import express from 'express';
 import { createRoutesAndGuards } from './router.js';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
+import { TestServer } from '@pins/inspector-programming-lib/testing/test-server.js';
 
 describe('auth', () => {
 	describe('authentication', () => {
-		const authService = {
-			acquireTokenByCode: mock.fn(),
-			acquireTokenSilent: mock.fn(),
-			clearCacheForAccount: mock.fn(),
-			getAuthCodeUrl: mock.fn()
+		const mockAuthService = () => {
+			return {
+				acquireTokenByCode: mock.fn(),
+				acquireTokenSilent: mock.fn(),
+				clearCacheForAccount: mock.fn(),
+				getAuthCodeUrl: mock.fn()
+			};
 		};
 
 		const mockSession = (data) => {
@@ -30,9 +32,15 @@ describe('auth', () => {
 			return session;
 		};
 
-		const setupApp = (sessionData = mockSession()) => {
-			// basic app to test auth
+		/**
+		 * @param {import('node:test').TestContext} ctx
+		 * @param {any} sessionData
+		 * @returns {Promise<{server: TestServer, authService: import('./auth-service.js').AuthService, session: import('express-session')}>}
+		 */
+		async function setupApp(ctx, sessionData = {}) {
 			const app = express();
+			const authService = mockAuthService();
+			const session = mockSession(sessionData);
 			const { router: authRoutes, guards: authGuards } = createRoutesAndGuards(
 				{
 					authConfig: {
@@ -50,7 +58,7 @@ describe('auth', () => {
 				authService
 			);
 			app.use((req, res, next) => {
-				req.session = sessionData;
+				req.session = session;
 				next();
 			});
 			app.use('/unauthenticated', (req, res) => res.send('Unauthenticated'));
@@ -63,131 +71,107 @@ describe('auth', () => {
 			app.get('/home', (req, res) => {
 				res.status(200);
 			});
+			const server = new TestServer(app, { rememberCookies: true });
+			await server.start();
+			ctx.after(async () => await server.stop());
+			return { server, authService, session };
+		}
 
-			return supertest(app);
-		};
-
-		it('should redirect users to sign-in page', async () => {
+		it('should redirect users to sign-in page', async (ctx) => {
 			// this test requires session data to persist between the two calls
-			const sessionData = mockSession();
-			const request = setupApp(sessionData);
+			const { server, authService } = await setupApp(ctx);
 			const signInUrl = 'example.com/single-sign-on';
 			let nonce; // save the nonce to return later
-			authService.getAuthCodeUrl.mock.mockImplementationOnce((opts) => {
+			authService.getAuthCodeUrl.mock.mockImplementation((opts) => {
 				nonce = opts.nonce;
 				return signInUrl;
 			});
 
-			// try and access a page guarded by auth - check redirect
-			const response = await request.get('/home').redirects(1);
-			assert.deepStrictEqual(response.get('Location'), signInUrl);
+			const res = await server.getWithRedirects('/home', 1);
+			assert.equal(authService.getAuthCodeUrl.mock.callCount(), 1);
+			assert.equal(res.status, 302);
+			assert.equal(res.headers.get('location'), signInUrl);
 
 			const code = 'msal_code';
-			authService.acquireTokenByCode.mock.mockImplementationOnce(() => {
-				return {
-					idTokenClaims: {
-						nonce
-					}
-				};
-			});
+			authService.acquireTokenByCode.mock.mockImplementationOnce(() => ({ idTokenClaims: { nonce } }));
 			// access redirect page once auth'd
-			const redirect = await request.get(`/auth/redirect?code=${code}`);
-			assert.deepStrictEqual(redirect.get('Location'), '/home');
+			const redirectRes = await server.get(`/auth/redirect?code=${code}`, { redirect: 'manual' });
+			assert.equal(redirectRes.status, 302);
+			assert.equal(redirectRes.headers.get('location'), '/home');
 		});
 
-		it('should redirect to an error page when the redirect from MSAL is incomplete', async () => {
-			const request = setupApp();
-			const response = await request.get('/auth/redirect').redirects(1);
-			assert.match(response.redirects[0], /\/unauthenticated/);
+		it('should redirect to an error page when the redirect from MSAL is incomplete', async (ctx) => {
+			const { server } = await setupApp(ctx);
+			const res = await server.get('/auth/redirect', { redirect: 'manual' });
+			assert.equal(res.status, 302);
+			assert.match(res.headers.get('location'), /\/unauthenticated/);
 		});
 
-		it('should redirect to an error page when the nonce is absent from the acquired token', async () => {
-			// this test requires session data to persist between the two calls
-			const sessionData = mockSession();
-			const request = setupApp(sessionData);
+		it('should redirect to an error page when the nonce is absent from the acquired token', async (ctx) => {
+			const { server, authService } = await setupApp(ctx);
+			await server.getWithRedirects('/', 1);
 
-			await request.get('/').redirects(1);
+			authService.acquireTokenByCode.mock.mockImplementationOnce(() => ({ idTokenClaims: {} }));
 
-			authService.acquireTokenByCode.mock.mockImplementationOnce(() => {
-				return {
-					idTokenClaims: {}
-				};
-			});
-
-			const response = await request.get('/auth/redirect?code=msal_code').redirects(1);
-
-			assert.match(response.redirects[0], /\/unauthenticated/);
+			const res = await server.get('/auth/redirect?code=msal_code', { redirect: 'manual' });
+			assert.equal(authService.acquireTokenByCode.mock.callCount(), 1);
+			assert.equal(res.status, 302);
+			assert.match(res.headers.get('location'), /\/unauthenticated/);
 		});
 
-		it('should redirect to an error page when the nonce in the acquired token does not match', async () => {
-			// this test requires session data to persist between the two calls
-			const sessionData = mockSession();
-			const request = setupApp(sessionData);
+		it('should redirect to an error page when the nonce in the acquired token does not match', async (ctx) => {
+			const { server, authService } = await setupApp(ctx);
 
-			await request.get('/').redirects(1);
+			await server.getWithRedirects('/', 1);
 
-			authService.acquireTokenByCode.mock.mockImplementationOnce(() => {
-				return {
-					idTokenClaims: {
-						nonce: 'wrong'
-					}
-				};
-			});
+			authService.acquireTokenByCode.mock.mockImplementationOnce(() => ({ idTokenClaims: { nonce: 'wrong' } }));
 
-			const response = await request.get('/auth/redirect?code=msal_code').redirects(1);
-
-			assert.match(response.redirects[0], /\/unauthenticated/);
+			const res = await server.getWithRedirects('/auth/redirect?code=msal_code', 1);
+			assert.match(res.url, /\/unauthenticated/);
 		});
 
-		it('should redirect to an error page when fetching the auth url fails', async () => {
-			const request = setupApp();
+		it('should redirect to an error page when fetching the auth url fails', async (ctx) => {
+			const { server, authService } = await setupApp(ctx);
 			authService.getAuthCodeUrl.mock.mockImplementationOnce(() => Promise.reject(new Error('uh oh')));
 
-			const response = await request.get(`/`).redirects(1);
-			assert.match(response.text, /Error: uh oh/);
+			const res = await server.get('/', { redirect: 'follow' });
+			const text = await res.text();
+			assert.match(text, /Error: uh oh/);
 		});
 
-		it('should redirect to an error page when acquiring the access token fails', async () => {
-			const request = setupApp();
-			await request.get('/auth/signin');
+		it('should redirect to an error page when acquiring the access token fails', async (ctx) => {
+			const { server, authService } = await setupApp(ctx);
+			await server.get('/auth/signin', { redirect: 'manual' });
 
 			authService.acquireTokenByCode.mock.mockImplementationOnce(() => Promise.reject(new Error('uh oh')));
 
-			const response = await request.get('/auth/redirect?code=msal_code').redirects(1);
-			assert.match(response.text, /Error: uh oh/);
+			const res = await server.get('/auth/redirect?code=msal_code', { redirect: 'manual' });
+			const text = await res.text();
+			assert.match(text, /Error: uh oh/);
 		});
 
-		it('should silently reacquire a token on each route navigation', async () => {
-			const sessionData = mockSession({
-				account: {}
-			});
-			const request = setupApp(sessionData);
-			await request.get('/');
+		it('should silently reacquire a token on each route navigation', async (ctx) => {
+			const { server, authService } = await setupApp(ctx, { account: {} });
+			await server.get('/', { redirect: 'manual' });
 			assert.strictEqual(authService.acquireTokenSilent.mock.callCount(), 1);
 		});
 
-		it('should clear any pending authentication data if the MSAL redirect is not subsequently invoked', async () => {
-			const sessionData = mockSession({});
-			const request = setupApp(sessionData);
-			// start the MSAL authentication flow
-			await request.get('/auth/signin');
-			// trigger an intermediary request while awaiting MSAL redirect
-			await request.get('/');
-
-			// complete MSAL redirect after authentication data has been cleared
-			const response = await request.get('/auth/redirect?code=msal_code').redirects(1);
-			assert.match(response.redirects[0], /\/unauthenticated/);
+		it('should clear any pending authentication data if the MSAL redirect is not subsequently invoked', async (ctx) => {
+			const { server } = await setupApp(ctx);
+			await server.get('/auth/signin', { redirect: 'manual' });
+			await server.get('/', { redirect: 'manual' });
+			const res = await server.get('/auth/redirect?code=msal_code', { redirect: 'manual' });
+			assert.equal(res.status, 302);
+			assert.match(res.headers.get('location'), /\/unauthenticated/);
 		});
 
-		it('should destroy the msal token cache and session upon logging out', async () => {
-			const sessionData = mockSession({ account: {} });
-			const request = setupApp(sessionData);
-			await request.get('/auth/signout');
-			assert.strictEqual(sessionData.destroy.mock.callCount(), 1);
-
-			// access an authenticated route to determine if we're signed out
-			const response = await request.get('/home').redirects(1);
-			assert.match(response.redirects[0], /\/auth\/signin/);
+		it('should destroy the msal token cache and session upon logging out', async (ctx) => {
+			const { server, session } = await setupApp(ctx, { account: {} });
+			await server.get('/auth/signout', { redirect: 'manual' });
+			assert.strictEqual(session.destroy.mock.callCount(), 1);
+			const res = await server.get('/home', { redirect: 'manual' });
+			assert.equal(res.status, 302);
+			assert.match(res.headers.get('location'), /\/auth\/signin/);
 		});
 	});
 });
