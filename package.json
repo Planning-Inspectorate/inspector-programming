@@ -21,8 +21,6 @@
     "lint": "npx eslint .",
     "prepare": "node .husky/install.mjs",
     "web": "npm run dev --workspace=inspector-programming-web",
-    "start": "node apps/web/src/server.js",
-    "generate": "prisma generate",
     "test": "node --test",
     "test-coverage": "node --test --experimental-test-coverage"
   },
