@@ -13,7 +13,7 @@ build-tmp
 .cache
 .esm-cache
 .sass-cache
-.tmp
+tmp
 .webpack-monitor
 size-plugin.json
 temp
