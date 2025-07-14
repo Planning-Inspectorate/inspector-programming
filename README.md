@@ -8,7 +8,7 @@ This repository contains all components of the Inspector Programming service, in
 
 First run 'npm i' to install packages.
 
-Ensure you have two .env files configured: one in top level directory (/) and another in /packages/database. Please ask a member of the team for their .env files.
+Ensure you have two .env files configured: one in top level directory /apps/web and another in /packages/database. Please ask a member of the team for their .env files.
 
 You should now be able to run the client using 'npm run start' or 'npm run web'.
 
