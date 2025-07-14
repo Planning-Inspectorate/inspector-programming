@@ -28,4 +28,8 @@ export class App2Service extends BaseService {
 	get authDisabled() {
 		return this.#config.auth.disabled;
 	}
+
+	get maps() {
+		return this.#config.maps;
+	}
 }
