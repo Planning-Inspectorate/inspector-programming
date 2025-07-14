@@ -1,7 +1,6 @@
 import { Router as createRouter } from 'express';
 import { createRoutesAndGuards as createAuthRoutesAndGuards } from './auth/router.js';
 import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controllers/monitoring.js';
-// import { createRoutes as createItemRoutes } from './views/items/index.js';
 import { createErrorRoutes } from './views/static/error/index.js';
 import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middleware/cache.js';
 import { buildPostHome, buildViewHome } from './views/home/controller.js';
@@ -18,7 +17,6 @@ export function buildRouter(service) {
 	const router = createRouter();
 	const monitoringRoutes = createMonitoringRoutes(service);
 	const { router: authRoutes, guards: authGuards } = createAuthRoutesAndGuards(service);
-	// const itemsRoutes = createItemRoutes(service);
 
 	router.use('/', monitoringRoutes);
 
@@ -42,8 +40,6 @@ export function buildRouter(service) {
 		service.logger.warn('auth disabled; auth routes and guards skipped');
 	}
 
-	// router.get('/', (req, res) => res.redirect('/items'));
-	// router.use('/items', itemsRoutes);
 	router.use('/error', createErrorRoutes(service));
 
 	const entraClientMiddleware = buildEntraClientMiddleware(service);
