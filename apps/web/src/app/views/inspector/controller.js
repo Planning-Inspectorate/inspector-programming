@@ -1,14 +1,12 @@
 import { fetchInspectors } from '@pins/inspector-programming-lib/data/inspectors.js';
 
 /**
- * @param {Object} opts
- * @param {import('pino').BaseLogger} opts.logger
- * @param {import('../config-types.js').Config} opts.config
+ * @param {import('#service').App2Service} service
  * @returns {import('express').Handler}
  */
-export function buildViewInspector({ config }) {
+export function buildViewInspector(service) {
 	return async (req, res) => {
-		const inspectors = await fetchInspectors(config);
+		const inspectors = await fetchInspectors(service.authConfig);
 		const inspector = inspectors.find((i) => i.id === req.params.inspectorId);
 
 		const eventsResponse = await req.entraClient.getEvents(inspector.id);

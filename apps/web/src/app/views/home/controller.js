@@ -7,14 +7,12 @@ import {
 import { fetchInspectors } from '@pins/inspector-programming-lib/data/inspectors.js';
 
 /**
- * @param {Object} opts
- * @param {import('pino').BaseLogger} opts.logger
- * @param {import('../config-types.js').Config} opts.config
+ * @param {import('#service').App2Service} service
  * @returns {import('express').Handler}
  */
-export function buildViewHome({ config }) {
+export function buildViewHome(service) {
 	return async (req, res) => {
-		const inspectors = await fetchInspectors(config);
+		const inspectors = await fetchInspectors(service.authConfig);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id) || inspectors[3];
 		const filters = req.query.filters || selectedInspector.filters;
 		const sort = getSort(req.query.sort, selectedInspector);
@@ -48,7 +46,7 @@ export function buildViewHome({ config }) {
 			inspectors,
 			...pagination,
 			data: formData,
-			apiKey: config.maps.key,
+			apiKey: service.maps.key,
 			inspectorPin: {
 				...selectedInspector
 			},
@@ -127,9 +125,9 @@ export function caseViewModel(c) {
 	};
 }
 
-export function buildPostHome({ logger }) {
+export function buildPostHome(service) {
 	return async (req, res) => {
-		logger.info('post home');
+		service.logger.info('post home');
 
 		const redirectUrl =
 			req.body.action === 'view' ? `/inspector/${req.body.inspectorId}` : `/?inspectorId=${req.body.inspectorId}`;
