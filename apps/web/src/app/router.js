@@ -68,7 +68,6 @@ export function buildRouter(service) {
 // import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controllers/monitoring.js';
 // import { buildPostHome, buildViewHome } from './views/home/controller.js';
 
-
 // /**
 //  * @param {Object} params
 //  * @param {import('pino').BaseLogger} params.logger
