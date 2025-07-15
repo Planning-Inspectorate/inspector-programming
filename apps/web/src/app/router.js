@@ -6,7 +6,6 @@ import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middlewa
 import { buildPostHome, buildViewHome } from './views/home/controller.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildViewCase } from './views/case/controller.js';
-import { buildEntraClientMiddleware } from '@pins/inspector-programming-lib/middleware/entra-client.js';
 import { buildViewInspector } from './views/inspector/controller.js';
 
 /**
@@ -42,17 +41,17 @@ export function buildRouter(service) {
 
 	router.use('/error', createErrorRoutes(service));
 
-	const entraClientMiddleware = buildEntraClientMiddleware(service);
+	// const entraClientMiddleware = buildEntraClientMiddleware(service);
 	const viewHome = buildViewHome(service);
 	const postHome = buildPostHome(service);
 	const viewCase = buildViewCase(service);
 	const viewInspector = buildViewInspector(); // TODO - pass service as param (currently unused)
 
-	router.get('/', entraClientMiddleware, asyncHandler(viewHome));
+	router.get('/', asyncHandler(viewHome));
 	router.post('/notify', (req, res) => res.redirect('/'));
 	router.post('/', asyncHandler(postHome));
 	router.get('/case/:caseId', asyncHandler(viewCase));
-	router.get('/inspector/:inspectorId', entraClientMiddleware, asyncHandler(viewInspector));
+	router.get('/inspector/:inspectorId', asyncHandler(viewInspector));
 
 	return router;
 }
