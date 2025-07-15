@@ -73,9 +73,7 @@ export function loadConfig() {
 			AUTH_CLIENT_ID,
 			AUTH_CLIENT_SECRET,
 			AUTH_GROUP_APPLICATION_ACCESS,
-			AUTH_TENANT_ID,
-			ENTRA_GROUP_ID_CASE_OFFICERS,
-			ENTRA_GROUP_ID_INSPECTORS
+			AUTH_TENANT_ID
 		};
 		for (const [k, v] of Object.entries(props)) {
 			if (v === undefined || v === '') {
