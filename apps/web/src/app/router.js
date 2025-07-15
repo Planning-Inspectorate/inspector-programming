@@ -46,7 +46,7 @@ export function buildRouter(service) {
 	const viewHome = buildViewHome(service);
 	const postHome = buildPostHome(service);
 	const viewCase = buildViewCase(service);
-	const viewInspector = buildViewInspector(service);
+	const viewInspector = buildViewInspector(); // TODO - pass service as param (currently unused)
 
 	router.get('/', entraClientMiddleware, asyncHandler(viewHome));
 	router.post('/notify', (req, res) => res.redirect('/'));
