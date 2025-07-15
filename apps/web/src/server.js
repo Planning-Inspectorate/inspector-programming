@@ -1,9 +1,9 @@
 import { createApp } from './app/app.js';
 import { loadConfig } from './app/config.js';
-import { App2Service } from '#service';
+import { WebService } from '#service';
 
 const config = loadConfig();
-const service = new App2Service(config);
+const service = new WebService(config);
 
 const app = createApp(service);
 

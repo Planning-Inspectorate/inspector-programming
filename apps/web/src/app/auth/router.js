@@ -5,7 +5,7 @@ import { assertIsUnauthenticated, buildAssertGroupAccess, buildAssertIsAuthentic
 import { AuthService, clearAuthenticationData, registerAuthLocals } from './auth-service.js';
 
 /**
- * @param {import('#service').App2Service} service
+ * @param {import('#service').WebService} service
  * @param {import('./auth-service.js').AuthService} [authService] - for testing
  * @returns {{router: import('express').Router, guards: {assertIsAuthenticated: import('express').Handler, assertGroupAccess: import('express').Handler}}}
  */
