@@ -10,7 +10,7 @@ services:
       - 'ACCEPT_EULA=1'
       - 'MSSQL_SA_PASSWORD=DockerDatabaseP@22word!'
     ports:
-      - 1433:1433
+      - 1436:1433
     hostname: mssql
     volumes:
       - ./packages/database/src/configuration/mssql.conf:/var/opt/mssql/mssql.conf
