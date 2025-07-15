@@ -1,9 +1,3 @@
-import {
-	createSortByDistance,
-	fetchCases,
-	sortByAgeAndDistance,
-	sortCasesByAge
-} from '@pins/inspector-programming-lib/data/cases.js';
 import { fetchInspectors } from '@pins/inspector-programming-lib/data/inspectors.js';
 
 /**
@@ -15,10 +9,10 @@ export function buildViewHome(service) {
 		const inspectors = await fetchInspectors(service.authConfig);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id) || inspectors[3];
 		const filters = req.query.filters || selectedInspector.filters;
-		const sort = getSort(req.query.sort, selectedInspector);
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-		const { cases, total } = fetchCases(limit, page, filters, sort);
+		const cases = [];
+		const total = 0;
 		const formData = {
 			filters,
 			limit,
@@ -96,16 +90,6 @@ function getCurrentUrl(url, formData, prefix = '') {
 	}
 
 	return url;
-}
-
-function getSort(sort, selectedInspector) {
-	const sortFunctions = {
-		age: sortCasesByAge,
-		distance: createSortByDistance(selectedInspector.homeLatLong),
-		hybrid: sortByAgeAndDistance(selectedInspector.homeLatLong)
-	};
-
-	return sortFunctions[sort] || sortFunctions.age;
 }
 
 export function caseViewModel(c) {
