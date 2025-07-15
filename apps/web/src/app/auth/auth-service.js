@@ -107,6 +107,17 @@ export class AuthService {
 		});
 	}
 
+	get discoveryKeysEndpoint() {
+		return this.#config.discoveryKeysEndpoint;
+	}
+
+	get validationOptions() {
+		return {
+			audience: this.#config.clientId,
+			issuer: this.#config.authority
+		};
+	}
+
 	/**
 	 *
 	 * If not using Redis, behave as a singleton and return the one global MSAL client.
