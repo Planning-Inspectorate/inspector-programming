@@ -9,7 +9,7 @@ import { buildViewCase } from './views/case/controller.js';
 import { buildViewInspector } from './views/inspector/controller.js';
 
 /**
- * @param {import('#service').App2Service} service
+ * @param {import('#service').WebService} service
  * @returns {import('express').Router}
  */
 export function buildRouter(service) {
