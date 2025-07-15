@@ -90,6 +90,7 @@ export function loadConfig() {
 			authority: `https://login.microsoftonline.com/${AUTH_TENANT_ID}`,
 			clientId: AUTH_CLIENT_ID,
 			clientSecret: AUTH_CLIENT_SECRET,
+			discoveryKeysEndpoint: `https://login.microsoftonline.com/${AUTH_TENANT_ID}/discovery/v2.0/keys`,
 			disabled: authDisabled,
 			groups: {
 				applicationAccess: AUTH_GROUP_APPLICATION_ACCESS
