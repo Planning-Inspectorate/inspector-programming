@@ -1,34 +1,15 @@
-import { fetchInspectors } from '@pins/inspector-programming-lib/data/inspectors.js';
-
 /**
- * @param {import('#service').App2Service} service
  * @returns {import('express').Handler}
  */
-export function buildViewInspector(service) {
+export function buildViewInspector() {
 	return async (req, res) => {
-		const inspectors = await fetchInspectors(service.authConfig);
-		const inspector = inspectors.find((i) => i.id === req.params.inspectorId);
+		const inspector = null;
 
-		const eventsResponse = await req.entraClient.getEvents(inspector.id);
-		const events = Array.isArray(eventsResponse.value) ? eventsResponse.value : [];
-
-		const simplifiedEvents = events.map((event) => {
-			const startDateTime = new Date(event.start.dateTime);
-			const endDateTime = new Date(event.end.dateTime);
-			const durationMinutes = (endDateTime - startDateTime) / (1000 * 60);
-			const roundedDurationMinutes = Math.ceil(durationMinutes / 30) * 30;
-			const adjustedEndDateTime = new Date(startDateTime.getTime() + roundedDurationMinutes * 60 * 1000);
-
-			return {
-				subject: event.subject,
-				startDateTime: startDateTime.toISOString(),
-				endDateTime: adjustedEndDateTime.toISOString()
-			};
-		});
+		const events = [];
 
 		return res.render('views/inspector/view.njk', {
 			inspector,
-			events: simplifiedEvents,
+			events: events,
 			containerClasses: 'pins-container-wide',
 			title: 'Inspector details'
 		});
