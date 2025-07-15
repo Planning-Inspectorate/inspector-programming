@@ -3,7 +3,7 @@ import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js
 /**
  * This class encapsulates all the services and clients for the application
  */
-export class App2Service extends BaseService {
+export class WebService extends BaseService {
 	/**
 	 * @type {import('./config-types.js').Config}
 	 * @private
