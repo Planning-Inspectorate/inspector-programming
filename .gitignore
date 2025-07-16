@@ -94,4 +94,3 @@ workspace.json
 
 # generated Prisma client
 packages/database/src/client
-packages/database/src/migrations
