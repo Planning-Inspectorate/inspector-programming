@@ -8,11 +8,12 @@ export function buildAssertIsAuthenticated(logger, authService) {
 		const authHeader = req.get('authorization');
 		if (!authHeader || !authHeader.startsWith('Bearer ')) {
 			logger.debug('not authorized');
-			const url = await authService.getAuthCodeUrl({});
-			res.set('WWW-Authenticate', 'Bearer authorization_uri=' + url);
+			res.set('WWW-Authenticate', 'Bearer authorization_uri=' + authService.authTokenUrl);
 			res.status(401).send({ status: 401, message: 'Unauthorized' });
 			return;
 		}
+
+		// token does not need verifying, it is used to call the Graph API and that will verify it
 
 		next();
 	};
