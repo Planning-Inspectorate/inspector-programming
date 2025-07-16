@@ -107,15 +107,13 @@ export class AuthService {
 		});
 	}
 
-	get discoveryKeysEndpoint() {
-		return this.#config.discoveryKeysEndpoint;
-	}
-
-	get validationOptions() {
-		return {
-			audience: this.#config.clientId,
-			issuer: this.#config.authority
-		};
+	get authTokenUrl() {
+		const params = new URLSearchParams({
+			client_id: this.#config.clientId,
+			response_type: 'token',
+			scope: scopes.join(' ')
+		});
+		return this.#config.authority + '/oauth2/v2.0/authorize?' + params.toString();
 	}
 
 	/**
