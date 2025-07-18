@@ -1,10 +1,11 @@
 import { caseViewModel } from '../home/controller.js';
+import { getInspectorList } from '@pins/inspector-programming-lib/data/inspectors.js';
 
 export function buildViewCase(service) {
 	return async (req, res) => {
 		const mapsKey = service.maps.key;
 		const caseData = null;
-		const inspectors = [];
+		const inspectors = getInspectorList();
 		const inspectorId = req.query.inspectorId;
 		const inspectorLatLong = null;
 
