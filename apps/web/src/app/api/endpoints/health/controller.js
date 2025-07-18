@@ -13,7 +13,7 @@ export function buildApiHealth(service) {
 		}
 		const client = Client.initWithMiddleware({
 			authProvider: {
-				getAccessToken() {
+				async getAccessToken() {
 					return req.get('authorization')?.substring(7) || ''; // Remove 'Bearer ' prefix
 				}
 			}
