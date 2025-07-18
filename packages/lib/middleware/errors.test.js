@@ -84,7 +84,7 @@ describe('errors', () => {
 			assert.strictEqual(wrapped.message.endsWith('(code: InitCode1)'), true);
 		});
 		test('wraps initialisation errors and add P1001 error code', () => {
-			const error = new Prisma.PrismaClientInitializationError(`Can't reach database server at localhost:1433`, '');
+			const error = new Prisma.PrismaClientInitializationError(`Can't reach database server at localhost:1436`, '');
 			const wrapped = wrapPrismaErrors(error);
 			assert.notStrictEqual(error, wrapped);
 			assert.strictEqual(wrapped.message.startsWith('Connection error'), true);
