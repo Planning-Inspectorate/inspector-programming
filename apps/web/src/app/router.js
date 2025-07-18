@@ -3,19 +3,21 @@ import { createRoutesAndGuards as createAuthRoutesAndGuards } from './auth/route
 import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controllers/monitoring.js';
 import { createErrorRoutes } from './views/static/error/index.js';
 import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middleware/cache.js';
+import { createRoutes as createApiRoutes } from './api/index.js';
 import { buildPostHome, buildViewHome } from './views/home/controller.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildViewCase } from './views/case/controller.js';
 import { buildViewInspector } from './views/inspector/controller.js';
 
 /**
- * @param {import('#service').App2Service} service
+ * @param {import('#service').WebService} service
  * @returns {import('express').Router}
  */
 export function buildRouter(service) {
 	const router = createRouter();
 	const monitoringRoutes = createMonitoringRoutes(service);
 	const { router: authRoutes, guards: authGuards } = createAuthRoutesAndGuards(service);
+	const apiRoutes = createApiRoutes(service);
 
 	router.use('/', monitoringRoutes);
 
@@ -24,6 +26,9 @@ export function buildRouter(service) {
 	router.use(cacheNoCacheMiddleware);
 
 	router.get('/unauthenticated', (req, res) => res.status(401).render('views/errors/401.njk'));
+
+	// API routes don't use the Entra auth, auth is TBC but must be implemented
+	router.use('/api/v1', apiRoutes);
 
 	if (!service.authDisabled) {
 		service.logger.info('registering auth routes');

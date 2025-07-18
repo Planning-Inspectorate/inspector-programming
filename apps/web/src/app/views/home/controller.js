@@ -1,5 +1,5 @@
 /**
- * @param {import('#service').App2Service} service
+ * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  */
 export function buildViewHome(service) {
