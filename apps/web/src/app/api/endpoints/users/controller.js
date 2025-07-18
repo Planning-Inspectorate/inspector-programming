@@ -9,7 +9,7 @@ import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler
 export function createRoutes(service) {
 	const router = createRouter();
 
-	router.get('/', asyncHandler(buildUsersApi(service)));
+	router.get('/:groupId', asyncHandler(buildUsersApi(service)));
 
 	return router;
 }
@@ -22,11 +22,9 @@ export function buildUsersApi(service) {
 	const { logger } = service;
 	return async (req, res) => {
 		const client = authenticateGraphClient(req);
-		const tempGroupId = '0ae5fff7-2cf9-4ea5-ad83-cc2c8d4fbef9';
-		const apiResult = await client.api(`/groups/${tempGroupId}/transitiveMembers`).get();
+		const apiResult = await client.api(`/groups/${req.params.groupId}/transitiveMembers`).get();
 
 		//TODO
-		//enable group id to be passed as parameter
 		//update openapi doc once endpoint is working and grabbing users properly
 
 		logger.info('API /users endpoint');
