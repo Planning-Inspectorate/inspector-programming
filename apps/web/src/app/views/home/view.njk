@@ -19,7 +19,7 @@
             </div>
         </div>
         <form method="post" novalidate>
-            <div class="govuk-form-group" style="display: flex; gap: 5px; margin-bottom 0">
+            <div class="govuk-form-group flex-gap">
                 {% set inspectorList = [] %}
                 {% for i in inspectors %}
                     {% set inspectorList = (inspectorList.push({
@@ -64,7 +64,7 @@
                             <h2 class="govuk-heading-m bold-title">Sort by</h2>
                         </div>
                     </div>
-                    <div class="govuk-form-group" style="display: flex; gap: 5px; margin-bottom 0">
+                    <div class="govuk-form-group flex-gap">
                         {{ govukSelect({
                             id: "sort",
                             name: "sort",
