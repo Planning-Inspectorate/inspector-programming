@@ -21,8 +21,14 @@ export function createRoutes(service) {
 export function buildUsersApi(service) {
 	const { logger } = service;
 	return async (req, res) => {
+		//sanitise groupid param to only contain numbers, letters and hyphens (as GraphAPI id's do)
+		if (!/^[A-Za-z0-9-]+$/.test(req.params.groupId)) {
+			res.status(400).json({ status: 'Invalid groupId' });
+			return;
+		}
+
 		const client = authenticateGraphClient(req);
-		const apiResult = await client.api(`/groups/${req.params.groupId}/transitiveMembers`).get();
+		const apiResult = await client.api(`/groups/${encodeURIComponent(req.params.groupId)}/transitiveMembers`).get();
 
 		//TODO
 		//update openapi doc once endpoint is working and grabbing users properly
