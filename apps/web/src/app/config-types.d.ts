@@ -5,6 +5,7 @@ interface Config extends BaseConfig {
 		authority: string;
 		clientId: string;
 		clientSecret: string;
+		discoveryKeysEndpoint: string;
 		disabled: boolean;
 		groups: {
 			// group ID for accessing the application

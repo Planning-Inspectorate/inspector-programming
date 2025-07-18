@@ -2,7 +2,7 @@ import { Router as createRouter } from 'express';
 import { firewallErrorPage } from './controller.js';
 
 /**
- * @param {import('#service').App2Service} service
+ * @param {import('#service').WebService} service
  * @returns {import('express').Router}
  */
 export function createErrorRoutes(service) {
