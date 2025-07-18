@@ -35,6 +35,13 @@ export interface Specialism {
 	validFrom: Date | string;
 }
 
+export interface User {
+	id: string;
+	displayName: string;
+	email: string;
+	groupID: string;
+}
+
 export type Preclusion = LpaPreclusion | LocationPreclusion | OrganisationPreclusion;
 
 export interface LpaPreclusion {
