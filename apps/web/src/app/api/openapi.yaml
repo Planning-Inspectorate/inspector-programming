@@ -6,10 +6,10 @@ info:
 paths:
   /users:
     get:
-      summary: Get users by group
+      summary: Get PINS users from Microsoft Graph API based on Entra group
       parameters:
         - name: group
-          in: query
+          in: path
           required: true
           schema:
             type: string
@@ -31,11 +31,14 @@ components:
       properties:
         id:
           type: string
-        name:
+        displayName:
           type: string
         email:
           type: string
+        groupId:
+          type: string
       required:
         - id
-        - name
+        - displayName
         - email
+        - groupId
