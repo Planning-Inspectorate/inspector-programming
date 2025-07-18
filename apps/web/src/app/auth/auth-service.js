@@ -111,7 +111,8 @@ export class AuthService {
 		const params = new URLSearchParams({
 			client_id: this.#config.clientId,
 			response_type: 'token',
-			scope: scopes.join(' ')
+			scope: scopes.join(' '),
+			resource: 'https://scheduling-test.planninginspectorate.gov.uk'
 		});
 		return this.#config.authority + '/oauth2/v2.0/authorize?' + params.toString();
 	}
