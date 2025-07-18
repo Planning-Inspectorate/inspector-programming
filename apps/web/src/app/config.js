@@ -47,10 +47,9 @@ export function loadConfig() {
 		GOV_NOTIFY_API_KEY,
 		MAPS_API_KEY,
 		MAPS_API_SECRET,
-		ENTRA_GROUP_CACHE_TTL,
-		ENTRA_GROUP_ID_INSPECTORS,
-		ENTRA_GROUP_ID_TEAM_LEADS,
-		ENTRA_GROUP_ID_NATIONAL_TEAM
+		TEST_POWERBI_ENTRA_GROUP_A,
+		TEST_POWERBI_ENTRA_GROUP_B,
+		TEST_POWERBI_ENTRA_GROUP_C
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -133,13 +132,7 @@ export function loadConfig() {
 			key: GOV_NOTIFY_API_KEY
 		},
 		entra: {
-			// in minutes
-			cacheTtl: parseInt(ENTRA_GROUP_CACHE_TTL || 15),
-			groupIds: {
-				inspectors: ENTRA_GROUP_ID_INSPECTORS,
-				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,
-				nationalTeam: ENTRA_GROUP_ID_NATIONAL_TEAM
-			}
+			groupIds: [TEST_POWERBI_ENTRA_GROUP_A, TEST_POWERBI_ENTRA_GROUP_B, TEST_POWERBI_ENTRA_GROUP_C]
 		}
 	};
 

@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: Inspector Programming API
+  version: 1.0.0
+
+paths:
+  /users:
+    get:
+      summary: Get PINS users from Microsoft Graph API who are a members of each Entra groups listed in entra.groupIds config
+      responses:
+        '200':
+          description: Return an array of users who are members of any of the groups found in the config
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: An server error occurred
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        groupId:
+          type: string
+      required:
+        - id
+        - displayName
+        - email
+        - groupId

@@ -4,12 +4,15 @@ import { buildAssertIsAuthenticated } from './auth/guards.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { ApiAuthService } from './auth/api-auth-service.js';
 
+import { createRoutes as createUsersRoutes } from './endpoints/users/controller.js';
+
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Router}
  */
 export function createRoutes(service) {
 	const router = createRouter({ mergeParams: true });
+	const usersRoutes = createUsersRoutes(service);
 
 	if (!service.authDisabled) {
 		const authService = new ApiAuthService({
@@ -21,7 +24,8 @@ export function createRoutes(service) {
 	router.get('/health', asyncHandler(buildApiHealth(service)));
 
 	// todo: /events
-	// todo: /users
+
+	router.use('/users', usersRoutes);
 
 	return router;
 }
