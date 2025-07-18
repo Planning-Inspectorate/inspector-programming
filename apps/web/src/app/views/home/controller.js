@@ -1,11 +1,13 @@
+import { getInspectorList } from '@pins/inspector-programming-lib/data/inspectors.js';
+
 /**
  * @param {import('#service').App2Service} service
  * @returns {import('express').Handler}
  */
 export function buildViewHome(service) {
 	return async (req, res) => {
-		const inspectors = [];
-		const selectedInspector = null;
+		const inspectors = getInspectorList();
+		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const filters = req.query.filters;
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
@@ -15,7 +17,7 @@ export function buildViewHome(service) {
 			limit,
 			page,
 			sort: req.query.sort || 'age',
-			inspectorId: null
+			inspectorId: req.query.inspectorId
 		};
 		const calendarData = {};
 
