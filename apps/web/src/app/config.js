@@ -47,7 +47,9 @@ export function loadConfig() {
 		GOV_NOTIFY_API_KEY,
 		MAPS_API_KEY,
 		MAPS_API_SECRET,
-		TEST_ENTRA_GROUP_ID
+		TEST_POWERBI_ENTRA_GROUP_A,
+		TEST_POWERBI_ENTRA_GROUP_B,
+		TEST_POWERBI_ENTRA_GROUP_C
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -128,7 +130,7 @@ export function loadConfig() {
 			key: GOV_NOTIFY_API_KEY
 		},
 		entra: {
-			groupIds: [TEST_ENTRA_GROUP_ID]
+			groupIds: [TEST_POWERBI_ENTRA_GROUP_A, TEST_POWERBI_ENTRA_GROUP_B, TEST_POWERBI_ENTRA_GROUP_C]
 		}
 	};
 
