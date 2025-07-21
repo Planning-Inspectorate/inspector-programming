@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { sortInspectorList } from './inspectors.js';
+import { sortInspectorList } from './inspector.js';
 
 describe('inspectors', () => {
 	it('should sort inspectors list by last name', () => {
