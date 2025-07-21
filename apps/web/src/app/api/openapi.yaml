@@ -6,17 +6,10 @@ info:
 paths:
   /users:
     get:
-      summary: Get PINS users from Microsoft Graph API based on Entra group
-      parameters:
-        - name: group
-          in: path
-          required: true
-          description: The ID of the Entra group to retrieve members from
-          schema:
-            type: string
+      summary: Get PINS users from Microsoft Graph API who are a members of each Entra groups listed in entra.groupIds config
       responses:
         '200':
-          description: Return an array of users who are a member of the group
+          description: Return an array of users who are members of any of the groups found in the config
           content:
             application/json:
               schema:
