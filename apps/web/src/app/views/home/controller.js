@@ -1,4 +1,5 @@
-import { getInspectorList } from '@pins/inspector-programming-lib/data/inspectors.js';
+import { checkAccountGroupAccess, getAccountId } from '#util/account.js';
+import { getInspectorById, getSortedInspectorList } from '../../inspector/inspector.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -6,7 +7,34 @@ import { getInspectorList } from '@pins/inspector-programming-lib/data/inspector
  */
 export function buildViewHome(service) {
 	return async (req, res) => {
-		const inspectors = getInspectorList();
+		/**
+		 * @type {(import("../../inspector/types.js").Inspector)[]}
+		 */
+		let inspectors = [];
+
+		if (
+			checkAccountGroupAccess(req.session, service.entraGroupIds.teamLeads) ||
+			checkAccountGroupAccess(req.session, service.entraGroupIds.nationalTeam)
+		) {
+			inspectors = await getSortedInspectorList(
+				service.entraClient,
+				req.session,
+				service.logger,
+				service.entraGroupIds.inspectors
+			);
+		} else if (checkAccountGroupAccess(req.session, service.entraGroupIds.inspectors)) {
+			let inspector = await getInspectorById(
+				service.entraClient,
+				req.session,
+				service.logger,
+				service.entraGroupIds.inspectors,
+				getAccountId(req.session)
+			);
+			if (inspector) {
+				inspectors.push(inspector);
+			}
+		}
+
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const filters = req.query.filters;
 		const page = req.query.page ? parseInt(req.query.page) : 1;
