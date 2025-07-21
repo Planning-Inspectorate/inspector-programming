@@ -19,4 +19,7 @@ interface Config extends BaseConfig {
 		key: string;
 		secret: string;
 	};
+	entra: {
+		groupIds: Array<string>;
+	};
 }

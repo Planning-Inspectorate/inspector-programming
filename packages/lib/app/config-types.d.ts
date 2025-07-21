@@ -17,4 +17,5 @@ interface BaseConfig {
 		secret: string;
 	};
 	staticDir: string;
+	entraGroupIds: Array<string>;
 }

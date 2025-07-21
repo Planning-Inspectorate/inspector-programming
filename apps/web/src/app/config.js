@@ -46,7 +46,8 @@ export function loadConfig() {
 		SQL_CONNECTION_STRING,
 		GOV_NOTIFY_API_KEY,
 		MAPS_API_KEY,
-		MAPS_API_SECRET
+		MAPS_API_SECRET,
+		TEST_ENTRA_GROUP_ID
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -125,6 +126,9 @@ export function loadConfig() {
 		},
 		notify: {
 			key: GOV_NOTIFY_API_KEY
+		},
+		entra: {
+			groupIds: [TEST_ENTRA_GROUP_ID]
 		}
 	};
 
