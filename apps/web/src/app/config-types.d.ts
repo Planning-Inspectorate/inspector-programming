@@ -13,6 +13,15 @@ interface Config extends BaseConfig {
 		redirectUri: string;
 		signoutUrl: string;
 	};
+	entra: {
+		// group cache ttl in minutes
+		cacheTtl: number;
+		groupIds: {
+			inspectors: string;
+			teamLeads: string;
+			nationalTeam: string;
+		};
+	};
 	inspectors: [{ emailAddress: string; id: string }];
 	maps: {
 		key: string;
