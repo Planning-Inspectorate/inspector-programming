@@ -4,23 +4,6 @@ import { Event } from '@microsoft/microsoft-graph-types';
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;
 
-export interface Inspector {
-	id: string;
-	firstName: string;
-	lastName: string;
-	emailAddress: string;
-	address: Address;
-
-	grade: string;
-	fte: number;
-
-	inspectorManager: boolean;
-	chartingOfficerId: string;
-
-	specialisms: Specialism[];
-	preclusions: Preclusion[];
-}
-
 export interface Address {
 	addressLine1?: string;
 	addressLine2?: string;
