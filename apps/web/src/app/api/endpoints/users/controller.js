@@ -9,7 +9,7 @@ import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler
 export function createRoutes(service) {
 	const router = createRouter();
 
-	router.get('/:groupId', asyncHandler(buildUsersApi(service)));
+	router.get('/', asyncHandler(getUsersInEntraGroups(service)));
 
 	return router;
 }
@@ -18,37 +18,40 @@ export function createRoutes(service) {
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  */
-export function buildUsersApi(service) {
+export function getUsersInEntraGroups(service) {
 	const { logger } = service;
 	return async (req, res) => {
-		//sanitise groupid param to only contain numbers, letters and hyphens (as GraphAPI id's do)
-		if (!/^[A-Za-z0-9-]+$/.test(req.params.groupId)) {
-			res.status(400).json({ status: 'Invalid groupId' });
+		const { groupIds } = service.entraConfig;
+		if (!groupIds?.length) {
+			res.status(404).send('No Entra groups configured');
 			return;
 		}
 
 		try {
+			//PLACEHOLDER - WILL BE REPLACED WITH GABI'S PROPER ENTRA CLIENT
 			const client = authenticateGraphClient(req);
-			const apiResult = await client.api(`/groups/${encodeURIComponent(req.params.groupId)}/transitiveMembers`).get();
 
-			res.status(200).send(
-				!apiResult?.value?.length
-					? []
-					: apiResult.value.map(
-							/** @param {{id: string, displayName: string, mail: string}} user */
-							(user) => {
-								return {
-									id: user.id,
-									displayName: user.displayName,
-									email: user.mail,
-									groupId: req.params.groupId
-								};
-							}
-						)
+			const allUsers = await Promise.all(
+				groupIds.map(async (id) => {
+					const response = await client.api(`/groups/${encodeURIComponent(id)}/transitiveMembers`).get();
+
+					const usersInGroup = [];
+					for (const user of response?.value || []) {
+						usersInGroup.push({
+							id: user.id,
+							displayName: user.displayName,
+							email: user.mail,
+							groupId: id
+						});
+					}
+					return usersInGroup;
+				})
 			);
+
+			res.status(200).send(allUsers.flat());
 		} catch (err) {
 			logger.error(`API /users error: ${err}`);
-			res.status(500).send('An server error occurred');
+			res.status(500).send('A server error occurred');
 		} finally {
 			logger.info('API /users endpoint');
 		}
