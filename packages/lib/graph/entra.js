@@ -31,7 +31,7 @@ export class EntraClient {
 	async listAllGroupMembers(groupId) {
 		const listMembers = this.#client
 			.api(`groups/${groupId}/transitiveMembers`)
-			.select(['id', 'displayName'])
+			.select(['id', 'givenName', 'surname', 'mail'])
 			.top(PER_PAGE);
 
 		const members = [];
@@ -47,7 +47,6 @@ export class EntraClient {
 			const token = EntraClient.extractSkipToken(nextLink);
 			listMembers.skipToken(token);
 		}
-		console.log(members);
 		return members;
 	}
 
