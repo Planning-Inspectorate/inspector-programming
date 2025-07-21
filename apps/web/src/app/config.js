@@ -52,7 +52,10 @@ export function loadConfig() {
 		ENTRA_GROUP_ID_TEAM_LEADS,
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
 		API_MOCK_DATA,
-		API_INSPECTOR_ENTRA_GROUPS
+		API_INSPECTOR_ENTRA_GROUPS,
+		CBOS_API_TIMEOUT,
+		CBOS_API_URL,
+		CBOS_APPEAL_TYPE_CACHE_TTL
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -146,6 +149,11 @@ export function loadConfig() {
 				nationalTeam: ENTRA_GROUP_ID_NATIONAL_TEAM,
 				inspectorGroups: API_INSPECTOR_ENTRA_GROUPS
 			}
+		},
+		cbos: {
+			apiUrl: CBOS_API_URL,
+			timeoutMs: parseInt(CBOS_API_TIMEOUT || 10000),
+			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL || 1440
 		}
 	};
 
