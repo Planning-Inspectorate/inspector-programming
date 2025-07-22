@@ -2,19 +2,94 @@ import { test, beforeEach, describe } from 'node:test';
 import assert from 'node:assert';
 import express from 'express';
 import request from 'supertest';
+import nock from 'nock';
 import { createRoutes } from './controller.js';
-import { loadConfig } from '#config';
 import { WebService } from '#service';
 
-// Manual mocking since node:test doesn't auto-mock like Jest
 /** @type {WebService}} */
 let mockService;
 /** @type {import('express').Express} */
 let app;
 
 beforeEach(() => {
-	const config = loadConfig();
-	mockService = new WebService(config);
+	//set up service
+	mockService = new WebService({
+		logLevel: 'info',
+		database: {
+			datasourceUrl: 'lalala'
+		},
+		session: {
+			redisPrefix: 'manage:',
+			redis: undefined,
+			secret: 'testSecret'
+		},
+		entra: {
+			groupIds: ['groupA', 'groupB', 'groupC']
+		}
+	});
+
+	//intercept requests to graph api
+	const graphApi = nock('https://graph.microsoft.com');
+
+	graphApi.get('/v1.0/groups/groupA/transitiveMembers').reply(200, {
+		'@odata.context': 'https://graph.microsoft.com/v1.0/$metadata#directoryObjects',
+		value: [
+			{
+				'@odata.type': '#microsoft.graph.user',
+				id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+				businessPhones: [],
+				displayName: 'inspector-programming-test-1',
+				givenName: null,
+				jobTitle: null,
+				mail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
+				mobilePhone: null,
+				officeLocation: null,
+				preferredLanguage: null,
+				surname: null,
+				userPrincipalName: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+			}
+		]
+	});
+
+	graphApi.get('/v1.0/groups/groupB/transitiveMembers').reply(200, {
+		'@odata.context': 'https://graph.microsoft.com/v1.0/$metadata#directoryObjects',
+		value: [
+			{
+				'@odata.type': '#microsoft.graph.user',
+				id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+				businessPhones: [],
+				displayName: 'inspector-programming-test-2',
+				givenName: null,
+				jobTitle: null,
+				mail: 'inspector-programming-test-2@planninginspectorate.gov.uk',
+				mobilePhone: null,
+				officeLocation: null,
+				preferredLanguage: null,
+				surname: null,
+				userPrincipalName: 'inspector-programming-test-2@planninginspectorate.gov.uk'
+			}
+		]
+	});
+
+	graphApi.get('/v1.0/groups/groupC/transitiveMembers').reply(200, {
+		'@odata.context': 'https://graph.microsoft.com/v1.0/$metadata#directoryObjects',
+		value: [
+			{
+				'@odata.type': '#microsoft.graph.user',
+				id: '37b55445-d616-49e1-9050-2efe2880fff4',
+				businessPhones: [],
+				displayName: 'inspector-programming-test-3',
+				givenName: null,
+				jobTitle: null,
+				mail: 'inspector-programming-test-3@planninginspectorate.gov.uk',
+				mobilePhone: null,
+				officeLocation: null,
+				preferredLanguage: null,
+				surname: null,
+				userPrincipalName: 'inspector-programming-test-3@planninginspectorate.gov.uk'
+			}
+		]
+	});
 
 	app = express();
 	app.use('/', createRoutes(mockService));
@@ -31,34 +106,35 @@ describe('users', () => {
 		});
 
 		test('returns users from all groups', async () => {
-			mockService.entraConfig.groupIds = mockService.entraConfig.testGroupIds;
+			mockService.entraConfig.groupIds = ['groupA', 'groupB', 'groupC'];
 
-			const res = await request(app).get('/');
-			console.info(res.text);
+			const res = await request(app).get('/').set('Authorization', 'Bearer fake-token');
+
 			assert.strictEqual(res.statusCode, 200);
-
-			//ensure a user from all three groups enumerated is retrieved
-			const userA = res.body.find(
-				(u) => u.id === 'baf4bc6f-fe93-406c-a1ff-93b562739f11' && u.groupId === 'de84d4ca-279b-4e43-bab0-6417bfb4e06a'
-			);
-			assert.ok(userA);
-			assert.strictEqual(userA.displayName, 'inspector-programming-test-1');
-
-			const userB = res.body.find(
-				(u) => u.id === 'd53dea42-369b-44aa-b3ca-a8537018b422' && u.groupId === 'bb3853ea-2e2d-49e0-8b9a-449a31e27bb4'
-			);
-			assert.ok(userB);
-			assert.strictEqual(userB.displayName, 'inspector-programming-test-2');
-
-			const userC = res.body.find(
-				(u) => u.id === 'b62bce27-eb35-40e5-9164-1ad47786abcb' && u.groupId === '6f59e9c5-dd46-4bd4-ab92-f576dcc29b48'
-			);
-			assert.ok(userC);
-			assert.strictEqual(userC.displayName, 'inspector-programming-test-4');
+			assert.deepStrictEqual(res.body, [
+				{
+					id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+					displayName: 'inspector-programming-test-1',
+					email: 'inspector-programming-test-1@planninginspectorate.gov.uk',
+					groupId: 'groupA'
+				},
+				{
+					id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+					displayName: 'inspector-programming-test-2',
+					email: 'inspector-programming-test-2@planninginspectorate.gov.uk',
+					groupId: 'groupB'
+				},
+				{
+					id: '37b55445-d616-49e1-9050-2efe2880fff4',
+					displayName: 'inspector-programming-test-3',
+					email: 'inspector-programming-test-3@planninginspectorate.gov.uk',
+					groupId: 'groupC'
+				}
+			]);
 		});
 
-		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId', async () => {
-			mockService.entraConfig.groupIds = ['wrong-group-id', 'another-wrong-group-id'];
+		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async () => {
+			mockService.entraConfig.groupIds = ['groupA', 'another-wrong-group-id'];
 
 			const res = await request(app).get('/');
 			assert.strictEqual(res.statusCode, 500);
