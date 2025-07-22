@@ -45,7 +45,7 @@ export async function getInspectorById(initEntraClient, authSession, logger, gro
 /**
  * @param {import("./types").Inspector[]} inspectorList
  */
-export function sortInspectorList(inspectorList) {
+function sortInspectorList(inspectorList) {
 	return inspectorList.toSorted((a, b) => {
 		if (a.lastName !== b.lastName) {
 			return a.lastName < b.lastName ? -1 : 1;
