@@ -37,6 +37,7 @@
   },
   "imports": {
     "#service": "./src/app/service.js",
-    "#util/*": "./src/util/*"
+    "#util/*": "./src/util/*",
+    "#config": "./src/app/config.js"
   }
 }
