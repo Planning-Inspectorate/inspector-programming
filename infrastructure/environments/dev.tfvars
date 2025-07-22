@@ -13,6 +13,11 @@ apps_config = {
   auth = {
     client_id                = "18150378-c026-4833-af9a-fef6e6dbc70d"
     group_application_access = "c1232a02-e4c5-4ac4-9efd-14f05e597023"
+    groups = {
+      inspectors    = "b9dbe461-04fe-43b3-b3c3-bbb6407d624f"
+      team_leads    = "5d68af6f-3c26-4216-bd2d-16805e070d2e"
+      national_team = "75ed385c-6351-4065-8280-463d4bb86e61"
+    }
   }
 
   logging = {
