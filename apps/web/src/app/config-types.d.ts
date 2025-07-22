@@ -2,6 +2,7 @@ import { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
 
 interface Config extends BaseConfig {
 	auth: {
+		appDomain: string;
 		authority: string;
 		clientId: string;
 		clientSecret: string;
@@ -13,6 +14,7 @@ interface Config extends BaseConfig {
 		};
 		redirectUri: string;
 		signoutUrl: string;
+		tenantId: string;
 	};
 	entra: {
 		// group cache ttl in minutes

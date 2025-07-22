@@ -95,15 +95,18 @@ export function loadConfig() {
 	config = {
 		appHostname: APP_HOSTNAME,
 		auth: {
+			appDomain: `${protocol}${APP_HOSTNAME}`,
 			authority: `https://login.microsoftonline.com/${AZURE_TENANT_ID}`,
 			clientId: AZURE_CLIENT_ID,
 			clientSecret: AZURE_CLIENT_SECRET,
+			discoveryKeysEndpoint: `https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys`,
 			disabled: authDisabled,
 			groups: {
 				applicationAccess: AUTH_GROUP_APPLICATION_ACCESS
 			},
 			redirectUri: `${protocol}${APP_HOSTNAME}/auth/redirect`,
-			signoutUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/logout'
+			signoutUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/logout',
+			tenantId: AZURE_TENANT_ID
 		},
 		cacheControl: {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'

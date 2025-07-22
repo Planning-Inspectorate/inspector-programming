@@ -12,6 +12,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@azure/identity": "*",
     "@azure/msal-node": "*",
     "@microsoft/microsoft-graph-client": "*",
     "@pins/inspector-programming-database": "^0.0.0",
@@ -25,6 +26,8 @@
     "express-validator": "*",
     "govuk-frontend": "*",
     "helmet": "*",
+    "jsonwebtoken": "*",
+    "jwks-rsa": "*",
     "nunjucks": "*",
     "pino": "*",
     "pino-pretty": "*",

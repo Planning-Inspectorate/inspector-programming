@@ -1,6 +1,7 @@
 import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js';
 import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cached-entra-client.js';
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { ApiService } from './api/api-service.js';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -20,6 +21,8 @@ export class WebService extends BaseService {
 		this.#config = config;
 		const entraGroupCache = new MapCache(config.entra.cacheTtl);
 		this.entraClient = buildInitEntraClient(!config.auth.disabled, entraGroupCache);
+
+		this.apiService = new ApiService(this);
 	}
 
 	/**
