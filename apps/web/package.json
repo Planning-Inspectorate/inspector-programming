@@ -32,8 +32,7 @@
   },
   "devDependencies": {
     "nodemon": "*",
-    "sass": "*",
-    "supertest": "*"
+    "sass": "*"
   },
   "imports": {
     "#service": "./src/app/service.js",
