@@ -32,11 +32,11 @@ export function loadConfig() {
 	// get values from the environment
 	const {
 		APP_HOSTNAME,
-		AUTH_CLIENT_ID,
-		AUTH_CLIENT_SECRET,
 		AUTH_DISABLED,
 		AUTH_GROUP_APPLICATION_ACCESS,
-		AUTH_TENANT_ID,
+		AZURE_CLIENT_ID,
+		AZURE_CLIENT_SECRET,
+		AZURE_TENANT_ID,
 		CACHE_CONTROL_MAX_AGE,
 		GIT_SHA,
 		LOG_LEVEL,
@@ -78,10 +78,10 @@ export function loadConfig() {
 	const authDisabled = AUTH_DISABLED === 'true' && !isProduction;
 	if (!authDisabled) {
 		const props = {
-			AUTH_CLIENT_ID,
-			AUTH_CLIENT_SECRET,
 			AUTH_GROUP_APPLICATION_ACCESS,
-			AUTH_TENANT_ID
+			AZURE_CLIENT_ID,
+			AZURE_CLIENT_SECRET,
+			AZURE_TENANT_ID
 		};
 		for (const [k, v] of Object.entries(props)) {
 			if (v === undefined || v === '') {
@@ -95,10 +95,9 @@ export function loadConfig() {
 	config = {
 		appHostname: APP_HOSTNAME,
 		auth: {
-			authority: `https://login.microsoftonline.com/${AUTH_TENANT_ID}`,
-			clientId: AUTH_CLIENT_ID,
-			clientSecret: AUTH_CLIENT_SECRET,
-			discoveryKeysEndpoint: `https://login.microsoftonline.com/${AUTH_TENANT_ID}/discovery/v2.0/keys`,
+			authority: `https://login.microsoftonline.com/${AZURE_TENANT_ID}`,
+			clientId: AZURE_CLIENT_ID,
+			clientSecret: AZURE_CLIENT_SECRET,
 			disabled: authDisabled,
 			groups: {
 				applicationAccess: AUTH_GROUP_APPLICATION_ACCESS
