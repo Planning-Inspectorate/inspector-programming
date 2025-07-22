@@ -1,4 +1,4 @@
-import { AppealHASCase, AppealS78Case } from 'pins-data-model/src/schemas.d.ts';
+import { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/src/schemas.d.ts';
 import { Event } from '@microsoft/microsoft-graph-types';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
