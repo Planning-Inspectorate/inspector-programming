@@ -50,6 +50,11 @@ module "app_web" {
     AUTH_GROUP_APPLICATION_ACCESS = var.apps_config.auth.group_application_access
     AUTH_TENANT_ID                = data.azurerm_client_config.current.tenant_id
 
+    # Entra groups
+    ENTRA_GROUP_ID_INSPECTORS    = var.apps_config.auth.groups.inspectors
+    ENTRA_GROUP_ID_TEAM_LEADS    = var.apps_config.auth.groups.team_leads
+    ENTRA_GROUP_ID_NATIONAL_TEAM = var.apps_config.auth.groups.national_team
+
     # logging
     LOG_LEVEL = var.apps_config.logging.level
 
