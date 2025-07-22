@@ -26,7 +26,8 @@ export function loadConfig() {
 		return config;
 	}
 	// load configuration from .env file into process.env
-	dotenv.config();
+	const __dirname = path.dirname(fileURLToPath(import.meta.url));
+	dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 	// get values from the environment
 	const {
@@ -130,7 +131,9 @@ export function loadConfig() {
 			key: GOV_NOTIFY_API_KEY
 		},
 		entra: {
-			groupIds: [TEST_POWERBI_ENTRA_GROUP_A, TEST_POWERBI_ENTRA_GROUP_B, TEST_POWERBI_ENTRA_GROUP_C]
+			groupIds: [TEST_POWERBI_ENTRA_GROUP_A, TEST_POWERBI_ENTRA_GROUP_B, TEST_POWERBI_ENTRA_GROUP_C],
+			//ensures unit tests use a constant set of group ids regardless of how production groupIds may change
+			testGroupIds: [TEST_POWERBI_ENTRA_GROUP_A, TEST_POWERBI_ENTRA_GROUP_B, TEST_POWERBI_ENTRA_GROUP_C]
 		}
 	};
 

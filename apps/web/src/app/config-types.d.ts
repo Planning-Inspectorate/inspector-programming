@@ -21,5 +21,6 @@ interface Config extends BaseConfig {
 	};
 	entra: {
 		groupIds: Array<string>;
+		testGroupIds: Array<string>;
 	};
 }
