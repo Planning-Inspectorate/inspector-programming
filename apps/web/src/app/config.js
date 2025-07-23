@@ -26,8 +26,7 @@ export function loadConfig() {
 		return config;
 	}
 	// load configuration from .env file into process.env
-	const __dirname = path.dirname(fileURLToPath(import.meta.url));
-	dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+	dotenv.config();
 
 	// get values from the environment
 	const {

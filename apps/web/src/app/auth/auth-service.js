@@ -107,15 +107,6 @@ export class AuthService {
 		});
 	}
 
-	get authTokenUrl() {
-		const params = new URLSearchParams({
-			client_id: this.#config.clientId,
-			response_type: 'token',
-			scope: scopes.join(' ')
-		});
-		return this.#config.authority + '/oauth2/v2.0/authorize?' + params.toString();
-	}
-
 	/**
 	 *
 	 * If not using Redis, behave as a singleton and return the one global MSAL client.

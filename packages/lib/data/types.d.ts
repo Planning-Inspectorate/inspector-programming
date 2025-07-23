@@ -3,7 +3,6 @@ import { Event } from '@microsoft/microsoft-graph-types';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;
-
 export interface FetchCasesResponse {
 	cases: AppealCase[];
 	total: number;
