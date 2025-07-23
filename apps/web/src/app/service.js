@@ -4,6 +4,8 @@ import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from './api/api-service.js';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { getAccountId } from '../util/account.js';
+import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
+
 /**
  * This class encapsulates all the services and clients for the application
  */
@@ -23,6 +25,8 @@ export class WebService extends BaseService {
 		const entraGroupCache = new MapCache(config.entra.cacheTtl);
 		this.entraClient = buildInitEntraClient(!config.auth.disabled, entraGroupCache);
 		this.apiService = new ApiService(this);
+
+		this.osApiClient = new OsApiClient(config.osApi.key);
 	}
 
 	/**
