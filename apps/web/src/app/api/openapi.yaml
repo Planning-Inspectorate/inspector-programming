@@ -6,7 +6,7 @@ info:
 paths:
   /users:
     get:
-      summary: Get PINS users from Microsoft Graph API who are a members of each Entra groups listed in entra.groupIds config
+      summary: Get PINS users from Microsoft Graph API who are a members of each Entra group listed in entra.groupIds.powerBiGroups config
       responses:
         '200':
           description: Return an array of users who are members of any of the groups found in the config
@@ -18,6 +18,8 @@ paths:
                   $ref: '#/components/schemas/User'
         '500':
           description: An server error occurred
+        '404':
+          description: No Entra groups configured
 
 components:
   schemas:
