@@ -16,6 +16,9 @@ export function createRoutes(service) {
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
+ *
+ * Used to retrieve information about all PINS users in the Entra groups specified in config.
+ * Mainly intended for use in PowerBI reporting
  */
 export function getUsersInEntraGroups(service) {
 	const { logger, apiService } = service;
