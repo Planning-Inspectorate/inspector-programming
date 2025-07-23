@@ -45,8 +45,7 @@ export function loadConfig() {
 		SESSION_SECRET,
 		SQL_CONNECTION_STRING,
 		GOV_NOTIFY_API_KEY,
-		MAPS_API_KEY,
-		MAPS_API_SECRET,
+		OS_API_KEY,
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_TEAM_LEADS,
@@ -133,9 +132,8 @@ export function loadConfig() {
 		},
 		// the static directory to serve assets from (images, css, etc..)
 		staticDir: buildConfig.staticDir,
-		maps: {
-			key: MAPS_API_KEY,
-			secret: MAPS_API_SECRET
+		osApi: {
+			key: OS_API_KEY
 		},
 		notify: {
 			key: GOV_NOTIFY_API_KEY
