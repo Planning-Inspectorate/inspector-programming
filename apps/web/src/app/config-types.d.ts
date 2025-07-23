@@ -23,15 +23,12 @@ interface Config extends BaseConfig {
 			inspectors: string;
 			teamLeads: string;
 			nationalTeam: string;
+			powerBiGroups: Array<string>;
 		};
 	};
 	inspectors: [{ emailAddress: string; id: string }];
 	maps: {
 		key: string;
 		secret: string;
-	};
-	entra: {
-		groupIds: Array<string>;
-		testGroupIds: Array<string>;
 	};
 }

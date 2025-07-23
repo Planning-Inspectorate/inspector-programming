@@ -24,7 +24,9 @@ beforeEach(() => {
 			secret: 'testSecret'
 		},
 		entra: {
-			groupIds: ['groupA', 'groupB', 'groupC']
+			groupIds: {
+				powerBiGroups: ['groupA', 'groupB', 'groupC']
+			}
 		}
 	});
 
@@ -98,7 +100,7 @@ beforeEach(() => {
 describe('users', () => {
 	describe('GET /users', () => {
 		test('returns 404 if no groupIds are configured', async () => {
-			mockService.entraConfig.groupIds = [];
+			mockService.entraConfig.groupIds.powerBiGroups = [];
 
 			const res = await request(app).get('/');
 			assert.strictEqual(res.statusCode, 404);
@@ -106,7 +108,7 @@ describe('users', () => {
 		});
 
 		test('returns users from all groups', async () => {
-			mockService.entraConfig.groupIds = ['groupA', 'groupB', 'groupC'];
+			mockService.entraConfig.groupIds.powerBiGroups = ['groupA', 'groupB', 'groupC'];
 
 			const res = await request(app).get('/').set('Authorization', 'Bearer fake-token');
 
@@ -134,7 +136,7 @@ describe('users', () => {
 		});
 
 		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async () => {
-			mockService.entraConfig.groupIds = ['groupA', 'another-wrong-group-id'];
+			mockService.entraConfig.groupIds.powerBiGroups = ['groupA', 'another-wrong-group-id'];
 
 			const res = await request(app).get('/');
 			assert.strictEqual(res.statusCode, 500);
