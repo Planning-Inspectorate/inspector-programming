@@ -21,8 +21,8 @@ export function createRoutes(service) {
 export function getUsersInEntraGroups(service) {
 	const { logger } = service;
 	return async (req, res) => {
-		const { groupIds } = service.entraConfig;
-		if (!groupIds?.length) {
+		const { powerBiGroups } = service.entraConfig.groupIds;
+		if (!powerBiGroups?.length) {
 			res.status(404).send('No Entra groups configured');
 			return;
 		}
@@ -32,7 +32,7 @@ export function getUsersInEntraGroups(service) {
 			const client = authenticateGraphClient(req);
 
 			const allUsers = await Promise.all(
-				groupIds.map(async (id) => {
+				powerBiGroups.map(async (id) => {
 					const response = await client.api(`/groups/${encodeURIComponent(id)}/transitiveMembers`).get();
 
 					const usersInGroup = [];
