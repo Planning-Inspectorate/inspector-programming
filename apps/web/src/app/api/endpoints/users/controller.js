@@ -1,4 +1,3 @@
-import { authenticateGraphClient } from '../../auth/graph-client.js';
 import { Router as createRouter } from 'express';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 
@@ -19,7 +18,7 @@ export function createRoutes(service) {
  * @returns {import('express').Handler}
  */
 export function getUsersInEntraGroups(service) {
-	const { logger } = service;
+	const { logger, apiService } = service;
 	return async (req, res) => {
 		const { powerBiGroups } = service.entraConfig.groupIds;
 		if (!powerBiGroups?.length) {
@@ -28,18 +27,16 @@ export function getUsersInEntraGroups(service) {
 		}
 
 		try {
-			//PLACEHOLDER - WILL BE REPLACED WITH GABI'S PROPER ENTRA CLIENT
-			const client = authenticateGraphClient(req);
-
 			const allUsers = await Promise.all(
 				powerBiGroups.map(async (id) => {
-					const response = await client.api(`/groups/${encodeURIComponent(id)}/transitiveMembers`).get();
+					const groupMembers = await apiService.entraClient.listAllGroupMembers(id);
 
+					//format returned members for PowerBI
 					const usersInGroup = [];
-					for (const user of response?.value || []) {
+					for (const user of groupMembers || []) {
 						usersInGroup.push({
 							id: user.id,
-							displayName: user.displayName,
+							displayName: `${user.givenName} ${user.surname}`,
 							email: user.mail,
 							groupId: id
 						});
