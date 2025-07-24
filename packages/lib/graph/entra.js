@@ -31,7 +31,7 @@ export class EntraClient {
 	async listAllGroupMembers(groupId) {
 		const listMembers = this.#client
 			.api(`groups/${groupId}/transitiveMembers`)
-			.select(['id', 'givenName', 'surname', 'mail'])
+			.select(['id', 'displayName', 'givenName', 'surname', 'mail'])
 			.top(PER_PAGE);
 
 		const members = [];

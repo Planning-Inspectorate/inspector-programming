@@ -46,7 +46,7 @@ export function getUsersInEntraGroups(service) {
 					for (const user of groupMembers || []) {
 						usersInGroup.push({
 							id: user.id,
-							displayName: `${user.givenName} ${user.surname}`,
+							displayName: user.displayName,
 							email: user.mail,
 							groupId: id
 						});
@@ -57,7 +57,7 @@ export function getUsersInEntraGroups(service) {
 
 			res.status(200).send(allUsers.flat());
 		} catch (err) {
-			logger.error(`API /users error: ${err}`);
+			logger.error({ err }, `API /users error`);
 			res.status(500).send('A server error occurred');
 		} finally {
 			logger.info('API /users endpoint');
