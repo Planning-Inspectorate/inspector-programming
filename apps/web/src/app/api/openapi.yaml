@@ -6,7 +6,7 @@ info:
 paths:
   /users:
     get:
-      summary: Get PINS users from Microsoft Graph API who are a members of each Entra group listed in entra.groupIds.powerBiGroups config
+      summary: Get PINS users from Microsoft Graph API who are a members of each Entra group listed in entra.groupIds.inspectorGroups config
       responses:
         '200':
           description: Return an array of users who are members of any of the groups found in the config

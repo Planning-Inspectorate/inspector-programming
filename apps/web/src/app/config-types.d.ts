@@ -23,7 +23,7 @@ interface Config extends BaseConfig {
 			inspectors: string;
 			teamLeads: string;
 			nationalTeam: string;
-			powerBiGroups: string;
+			inspectorGroups: string;
 		};
 	};
 	inspectors: [{ emailAddress: string; id: string }];
