@@ -12,6 +12,7 @@ locals {
   shorter_resource_suffix = var.environment == "training" ? "${local.service_name}trai" : local.resource_suffix
 
   secrets = [
+    "os-api-key",
     "scheduling-client-secret",
     "scheduling-gov-notify-api-key"
   ]
