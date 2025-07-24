@@ -1,8 +1,7 @@
-import { test, beforeEach, describe } from 'node:test';
+import { test, beforeEach, describe, mock } from 'node:test';
 import assert from 'node:assert';
 import express from 'express';
 import request from 'supertest';
-import sinon from 'sinon';
 import { createRoutes } from './controller.js';
 import { WebService } from '#service';
 
@@ -33,9 +32,6 @@ beforeEach(() => {
 		}
 	});
 
-	//restore any stubs
-	sinon.restore();
-
 	app = express();
 	app.use('/', createRoutes(mockService));
 });
@@ -61,35 +57,43 @@ describe('users', () => {
 		test('returns users from all groups', async () => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB,groupC';
 
-			//stub function replaces any real calls to graph api
-			const stub = sinon.stub(mockService.apiService.entraClient, 'listAllGroupMembers');
-			stub.withArgs('groupA').resolves([
-				{
-					id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
-					displayName: 'test 1',
-					givenName: 'test',
-					surname: '1',
-					mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+			//mock the Entra client to return expected results for each group
+			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+				switch (groupId) {
+					case 'groupA':
+						return [
+							{
+								id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+								displayName: 'test 1',
+								givenName: 'test',
+								surname: '1',
+								mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+							}
+						];
+					case 'groupB':
+						return [
+							{
+								id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+								displayName: 'test 2',
+								givenName: 'test',
+								surname: '2',
+								mail: 'inspector-programming-test-2@planninginspectorate.gov.uk'
+							}
+						];
+					case 'groupC':
+						return [
+							{
+								id: '37b55445-d616-49e1-9050-2efe2880fff4',
+								displayName: 'test 3',
+								givenName: 'test',
+								surname: '3',
+								mail: 'inspector-programming-test-3@planninginspectorate.gov.uk'
+							}
+						];
+					default:
+						throw new Error(`Unexpected groupId: ${groupId}`);
 				}
-			]);
-			stub.withArgs('groupB').resolves([
-				{
-					id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
-					displayName: 'test 2',
-					givenName: 'test',
-					surname: '2',
-					mail: 'inspector-programming-test-2@planninginspectorate.gov.uk'
-				}
-			]);
-			stub.withArgs('groupC').resolves([
-				{
-					id: '37b55445-d616-49e1-9050-2efe2880fff4',
-					displayName: 'test 3',
-					givenName: 'test',
-					surname: '3',
-					mail: 'inspector-programming-test-3@planninginspectorate.gov.uk'
-				}
-			]);
+			});
 
 			const res = await request(app).get('/').set('Authorization', 'Bearer fake-token');
 
@@ -119,16 +123,17 @@ describe('users', () => {
 		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async () => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,another-wrong-group-id';
 
-			const stub = sinon.stub(mockService.apiService.entraClient, 'listAllGroupMembers');
-			stub.withArgs('groupA').resolves([
-				{
-					id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
-					givenName: 'test',
-					surname: '1',
-					mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+				if (groupId === 'groupA') {
+					return {
+						id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+						givenName: 'test',
+						surname: '1',
+						mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+					};
 				}
-			]);
-			stub.withArgs('another-wrong-group-id').rejects(new Error());
+				return new Error();
+			});
 
 			const res = await request(app).get('/');
 			assert.strictEqual(res.statusCode, 500);
