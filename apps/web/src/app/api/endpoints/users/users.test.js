@@ -66,6 +66,7 @@ describe('users', () => {
 			stub.withArgs('groupA').resolves([
 				{
 					id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+					displayName: 'test 1',
 					givenName: 'test',
 					surname: '1',
 					mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
@@ -74,6 +75,7 @@ describe('users', () => {
 			stub.withArgs('groupB').resolves([
 				{
 					id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+					displayName: 'test 2',
 					givenName: 'test',
 					surname: '2',
 					mail: 'inspector-programming-test-2@planninginspectorate.gov.uk'
@@ -82,6 +84,7 @@ describe('users', () => {
 			stub.withArgs('groupC').resolves([
 				{
 					id: '37b55445-d616-49e1-9050-2efe2880fff4',
+					displayName: 'test 3',
 					givenName: 'test',
 					surname: '3',
 					mail: 'inspector-programming-test-3@planninginspectorate.gov.uk'
