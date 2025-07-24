@@ -17,7 +17,7 @@ export function createRoutes(service) {
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  *
- * Used to retrieve information about all PINS users in the Entra groups specified in config.
+ * Used to retrieve information about all PINS users in the Entra groups specified in config as a CSV string.
  * Mainly intended for use in PowerBI reporting
  */
 export function getUsersInEntraGroups(service) {
@@ -29,9 +29,16 @@ export function getUsersInEntraGroups(service) {
 			return;
 		}
 
+		//validate the powerBiGroups csv string and reject if will obviously fail
+		const groupsArray = powerBiGroups.split(',').map((id) => id.trim());
+		if (groupsArray.some((id) => !id)) {
+			res.status(400).send('Invalid Entra group configuration');
+			return;
+		}
+
 		try {
 			const allUsers = await Promise.all(
-				powerBiGroups.map(async (id) => {
+				groupsArray.map(async (id) => {
 					const groupMembers = await apiService.entraClient.listAllGroupMembers(id);
 
 					//format returned members for PowerBI
