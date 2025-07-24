@@ -23,14 +23,14 @@ export function createRoutes(service) {
 export function getUsersInEntraGroups(service) {
 	const { logger, apiService } = service;
 	return async (req, res) => {
-		const { powerBiGroups } = service.entraConfig.groupIds;
-		if (!powerBiGroups?.length) {
+		const { inspectorGroups } = service.entraConfig.groupIds;
+		if (!inspectorGroups?.length) {
 			res.status(404).send('No Entra groups configured');
 			return;
 		}
 
-		//validate the powerBiGroups csv string and reject if will obviously fail
-		const groupsArray = powerBiGroups.split(',').map((id) => id.trim());
+		//validate the inspectorGroups csv string and reject if will obviously fail
+		const groupsArray = inspectorGroups.split(',').map((id) => id.trim());
 		if (groupsArray.some((id) => !id)) {
 			res.status(400).send('Invalid Entra group configuration');
 			return;

@@ -140,7 +140,7 @@ export function loadConfig() {
 				inspectors: ENTRA_GROUP_ID_INSPECTORS,
 				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,
 				nationalTeam: ENTRA_GROUP_ID_NATIONAL_TEAM,
-				powerBiGroups: TEST_POWERBI_ENTRA_GROUPS
+				inspectorGroups: TEST_POWERBI_ENTRA_GROUPS
 			}
 		}
 	};
