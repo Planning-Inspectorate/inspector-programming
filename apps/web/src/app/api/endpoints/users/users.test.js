@@ -28,7 +28,7 @@ beforeEach(() => {
 		},
 		entra: {
 			groupIds: {
-				powerBiGroups: ['groupA', 'groupB', 'groupC']
+				powerBiGroups: 'groupA,groupB,groupC'
 			}
 		}
 	});
@@ -43,15 +43,23 @@ beforeEach(() => {
 describe('users', () => {
 	describe('GET /users', () => {
 		test('returns 404 if no groupIds are configured', async () => {
-			mockService.entraConfig.groupIds.powerBiGroups = [];
+			mockService.entraConfig.groupIds.powerBiGroups = '';
 
 			const res = await request(app).get('/');
 			assert.strictEqual(res.statusCode, 404);
 			assert.strictEqual(res.text, 'No Entra groups configured');
 		});
 
+		test('returns 400 if powerBiGroups is malformed', async () => {
+			mockService.entraConfig.groupIds.powerBiGroups = 'groupA,groupB,';
+
+			const res = await request(app).get('/');
+			assert.strictEqual(res.statusCode, 400);
+			assert.strictEqual(res.text, 'Invalid Entra group configuration');
+		});
+
 		test('returns users from all groups', async () => {
-			mockService.entraConfig.groupIds.powerBiGroups = ['groupA', 'groupB', 'groupC'];
+			mockService.entraConfig.groupIds.powerBiGroups = 'groupA,groupB,groupC';
 
 			//stub function replaces any real calls to graph api
 			const stub = sinon.stub(mockService.apiService.entraClient, 'listAllGroupMembers');
@@ -106,7 +114,7 @@ describe('users', () => {
 		});
 
 		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async () => {
-			mockService.entraConfig.groupIds.powerBiGroups = ['groupA', 'another-wrong-group-id'];
+			mockService.entraConfig.groupIds.powerBiGroups = 'groupA,another-wrong-group-id';
 
 			const stub = sinon.stub(mockService.apiService.entraClient, 'listAllGroupMembers');
 			stub.withArgs('groupA').resolves([
