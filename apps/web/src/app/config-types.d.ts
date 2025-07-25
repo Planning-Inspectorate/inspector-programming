@@ -1,6 +1,9 @@
 import { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
 
 interface Config extends BaseConfig {
+	api: {
+		mockData: boolean;
+	};
 	auth: {
 		appDomain: string;
 		authority: string;

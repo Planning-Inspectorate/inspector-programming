@@ -3,7 +3,7 @@ import { buildApiHealth } from './endpoints/health/controller.js';
 import { buildAssertIsAuthenticated } from './auth/guards.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { ApiAuthService } from './auth/api-auth-service.js';
-
+import { buildMockApiControllers } from './endpoints/mock/controller.js';
 import { createRoutes as createUsersRoutes } from './endpoints/users/controller.js';
 
 /**
@@ -12,7 +12,6 @@ import { createRoutes as createUsersRoutes } from './endpoints/users/controller.
  */
 export function createRoutes(service) {
 	const router = createRouter({ mergeParams: true });
-	const usersRoutes = createUsersRoutes(service);
 
 	if (!service.authDisabled) {
 		const authService = new ApiAuthService({
@@ -24,8 +23,14 @@ export function createRoutes(service) {
 	router.get('/health', asyncHandler(buildApiHealth(service)));
 
 	// todo: /events
-
-	router.use('/users', usersRoutes);
+	if (service.mockApiData) {
+		const { inspectors, events } = buildMockApiControllers(service);
+		router.get('/users', asyncHandler(inspectors));
+		router.get('/events', asyncHandler(events));
+	} else {
+		const usersRoutes = createUsersRoutes(service);
+		router.use('/users', usersRoutes);
+	}
 
 	return router;
 }

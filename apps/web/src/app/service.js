@@ -47,4 +47,8 @@ export class WebService extends BaseService {
 	get entraGroupIds() {
 		return this.#config.entra.groupIds;
 	}
+
+	get mockApiData() {
+		return this.#config.api.mockData;
+	}
 }
