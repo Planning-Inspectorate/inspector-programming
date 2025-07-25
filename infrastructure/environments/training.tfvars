@@ -21,7 +21,7 @@ apps_config = {
       inspectors           = ""
       team_leads           = ""
       national_team        = ""
-      api_inspector_groups = ""
+      api_inspector_groups = []
     }
   }
 
