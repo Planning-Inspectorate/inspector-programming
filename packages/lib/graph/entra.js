@@ -22,6 +22,9 @@ export class EntraClient {
 		this.#client = client;
 	}
 
+	//time to add some stuff to here
+	//we want to grab calendar events for our given users
+
 	/**
 	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
 	 *

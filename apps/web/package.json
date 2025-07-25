@@ -44,6 +44,7 @@
   },
   "imports": {
     "#service": "./src/app/service.js",
+    "#api-service": "./src/app/api/api-service.js",
     "#util/*": "./src/util/*",
     "#config": "./src/app/config.js"
   }
