@@ -18,9 +18,10 @@ apps_config = {
     client_id                = "de661bed-3aad-47dc-9a57-c7ad99929856"
     group_application_access = "41cbad78-b817-45a8-9791-915c89d4b8bf"
     groups = { # TODO - set these
-      inspectors    = ""
-      team_leads    = ""
-      national_team = ""
+      inspectors           = ""
+      team_leads           = ""
+      national_team        = ""
+      api_inspector_groups = ""
     }
   }
 

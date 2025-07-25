@@ -26,9 +26,10 @@ variable "apps_config" {
       client_id                = string
       group_application_access = string
       groups = object({
-        inspectors    = string
-        team_leads    = string
-        national_team = string
+        inspectors           = string
+        team_leads           = string
+        national_team        = string
+        api_inspector_groups = string
       })
     })
 

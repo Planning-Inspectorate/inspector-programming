@@ -18,9 +18,10 @@ apps_config = {
     client_id                = "d014bf1d-a98d-4db8-999d-cb58834b5ae1"
     group_application_access = "bee16f0c-7e6f-49e3-823c-2a2b88301b8e"
     groups = {
-      inspectors    = "b9dbe461-04fe-43b3-b3c3-bbb6407d624f"
-      team_leads    = "5d68af6f-3c26-4216-bd2d-16805e070d2e"
-      national_team = "75ed385c-6351-4065-8280-463d4bb86e61"
+      inspectors           = "b9dbe461-04fe-43b3-b3c3-bbb6407d624f"
+      team_leads           = "5d68af6f-3c26-4216-bd2d-16805e070d2e"
+      national_team        = "75ed385c-6351-4065-8280-463d4bb86e61"
+      api_inspector_groups = ""
     }
   }
 
