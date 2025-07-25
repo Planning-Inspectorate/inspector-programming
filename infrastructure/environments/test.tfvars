@@ -21,7 +21,7 @@ apps_config = {
       inspectors           = "b9dbe461-04fe-43b3-b3c3-bbb6407d624f"
       team_leads           = "5d68af6f-3c26-4216-bd2d-16805e070d2e"
       national_team        = "75ed385c-6351-4065-8280-463d4bb86e61"
-      api_inspector_groups = ""
+      api_inspector_groups = []
     }
   }
 
