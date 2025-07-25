@@ -5,6 +5,7 @@ import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler
 import { ApiAuthService } from './auth/api-auth-service.js';
 
 import { createRoutes as createUsersRoutes } from './endpoints/users/controller.js';
+import { createRoutes as createEventsRoutes } from './endpoints/events/controller.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -13,6 +14,7 @@ import { createRoutes as createUsersRoutes } from './endpoints/users/controller.
 export function createRoutes(service) {
 	const router = createRouter({ mergeParams: true });
 	const usersRoutes = createUsersRoutes(service);
+	const eventsRoutes = createEventsRoutes(service);
 
 	if (!service.authDisabled) {
 		const authService = new ApiAuthService({
@@ -23,9 +25,8 @@ export function createRoutes(service) {
 
 	router.get('/health', asyncHandler(buildApiHealth(service)));
 
-	// todo: /events
-
 	router.use('/users', usersRoutes);
+	router.use('/events', eventsRoutes);
 
 	return router;
 }
