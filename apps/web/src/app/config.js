@@ -51,7 +51,8 @@ export function loadConfig() {
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_TEAM_LEADS,
-		ENTRA_GROUP_ID_NATIONAL_TEAM
+		ENTRA_GROUP_ID_NATIONAL_TEAM,
+		API_MOCK_DATA
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -90,6 +91,9 @@ export function loadConfig() {
 	const protocol = APP_HOSTNAME?.startsWith('localhost') ? 'http://' : 'https://';
 
 	config = {
+		api: {
+			mockData: API_MOCK_DATA === 'true'
+		},
 		appHostname: APP_HOSTNAME,
 		auth: {
 			appDomain: `${protocol}${APP_HOSTNAME}`,
