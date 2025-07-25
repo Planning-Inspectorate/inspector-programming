@@ -10,6 +10,10 @@ apps_config = {
   node_environment         = "development"
   private_endpoint_enabled = true
 
+  api = {
+    mock_data = false
+  }
+
   auth = {
     client_id                = "18150378-c026-4833-af9a-fef6e6dbc70d"
     group_application_access = "c1232a02-e4c5-4ac4-9efd-14f05e597023"

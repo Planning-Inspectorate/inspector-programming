@@ -44,6 +44,7 @@ module "app_web" {
     NODE_ENV                                   = var.apps_config.node_environment
     ENVIRONMENT                                = var.environment
 
+    API_MOCK_DATA                 = var.apps_config.api.mock_data
     APP_HOSTNAME                  = var.web_domains.web
     AUTH_GROUP_APPLICATION_ACCESS = var.apps_config.auth.group_application_access
     AZURE_CLIENT_ID               = var.apps_config.auth.client_id
