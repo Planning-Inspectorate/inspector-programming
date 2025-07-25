@@ -124,8 +124,8 @@ export class CbosApiClient {
 			const data = await response.json();
 			return data.items?.map((item) => item.appealId) || [];
 		} catch (error) {
-			this.config.logger.error({ error }, 'Error fetching appeal IDs');
-			throw error;
+			const message = error?.error || error?.message || 'Failed to fetch appeal IDs';
+			throw new Error(`Failed to fetch appeal IDs: ${message}`);
 		}
 	}
 
