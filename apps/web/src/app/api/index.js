@@ -5,6 +5,7 @@ import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler
 import { ApiAuthService } from './auth/api-auth-service.js';
 import { buildMockApiControllers } from './endpoints/mock/controller.js';
 import { createRoutes as createUsersRoutes } from './endpoints/users/controller.js';
+import { createRoutes as createEventsRoutes } from './endpoints/events/controller.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -29,7 +30,9 @@ export function createRoutes(service) {
 		router.get('/events', asyncHandler(events));
 	} else {
 		const usersRoutes = createUsersRoutes(service);
+		const eventsRoutes = createEventsRoutes(service);
 		router.use('/users', usersRoutes);
+		router.use('/events', eventsRoutes);
 	}
 
 	// fallback to 404 for any unmatched routes
