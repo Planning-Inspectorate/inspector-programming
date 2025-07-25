@@ -1,5 +1,6 @@
 import { Router as createRouter } from 'express';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
+import { getUsersInEntraGroups } from '../users/controller.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -24,8 +25,9 @@ export function getCalendarEventsForEntraUsers(service) {
 	const { logger, apiService } = service;
 	return async (req, res) => {
 		try {
-			await apiService.entraClient.listAllGroupMembers('blah'); // Placeholder for actual group ID
-			res.status(200).send('WIP');
+			const { inspectorGroups } = service.entraConfig.groupIds;
+			const usersInGroups = await getUsersInEntraGroups(apiService, inspectorGroups);
+			res.status(200).send(usersInGroups);
 			return;
 		} catch (err) {
 			logger.error({ err }, `API /events error`);
