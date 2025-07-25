@@ -11,7 +11,8 @@ export function buildViewHome(service) {
 		const filters = req.query.filters;
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-		const cases = [];
+		const cases = await service.getCbosApiClientForSession(req.session).getCases();
+		const sortedCases = cases.sort((a, b) => b.caseAge - a.caseAge);
 		const formData = {
 			filters,
 			limit,
@@ -25,10 +26,10 @@ export function buildViewHome(service) {
 			"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
 
 		return res.render('views/home/view.njk', {
-			pageHeading: 'Inspector Programming PoC',
+			pageHeading: 'Inspector Programming',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: cases.map(caseViewModel),
+			cases: sortedCases.map(caseViewModel),
 			inspectors,
 			data: formData,
 			apiKey: service.maps.key,
