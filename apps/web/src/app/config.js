@@ -47,12 +47,12 @@ export function loadConfig() {
 		GOV_NOTIFY_API_KEY,
 		MAPS_API_KEY,
 		MAPS_API_SECRET,
-		TEST_POWERBI_ENTRA_GROUPS,
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_TEAM_LEADS,
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
-		API_MOCK_DATA
+		API_MOCK_DATA,
+		API_INSPECTOR_ENTRA_GROUPS
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -144,7 +144,7 @@ export function loadConfig() {
 				inspectors: ENTRA_GROUP_ID_INSPECTORS,
 				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,
 				nationalTeam: ENTRA_GROUP_ID_NATIONAL_TEAM,
-				inspectorGroups: TEST_POWERBI_ENTRA_GROUPS
+				inspectorGroups: API_INSPECTOR_ENTRA_GROUPS
 			}
 		}
 	};
