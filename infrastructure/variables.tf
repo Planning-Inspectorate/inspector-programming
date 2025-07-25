@@ -18,6 +18,10 @@ variable "apps_config" {
     node_environment         = string
     private_endpoint_enabled = bool
 
+    api = object({
+      mock_data = bool
+    })
+
     auth = object({
       client_id                = string
       group_application_access = string
