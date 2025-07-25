@@ -1,12 +1,14 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { logger } from '@azure/identity';
 
 export class CbosApiClient {
 	static appealTypesCache = null;
 	static fetchPromise = null;
 
-	constructor(cbosConfig) {
+	constructor(cbosConfig, logger) {
 		this.config = cbosConfig;
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
+		this.logger = logger;
 	}
 
 	/**
@@ -17,12 +19,12 @@ export class CbosApiClient {
 		try {
 			const appealIds = await this.fetchAppealIds();
 			if (appealIds.length === 0) {
-				this.config.logger.warn('[CaseController] No appeal IDs found for the user.');
+				logger.warn('[CaseController] No appeal IDs found for the user.');
 			}
 			const appealDetails = await this.fetchAppealDetails(appealIds);
 			return await Promise.all(appealDetails.map((c) => this.appealToViewModel(c)));
 		} catch (error) {
-			this.config.logger.error({ error: error }, '[CaseController] Error fetching cases');
+			logger.error({ error: error }, '[CaseController] Error fetching cases');
 			throw new Error('Failed to fetch cases. Please try again later.');
 		}
 	}
@@ -172,7 +174,7 @@ export class CbosApiClient {
 			this.appealTypesCache.set(cacheKey, data);
 			return data;
 		} catch (error) {
-			this.config.logger.error(`Error fetching appeal types from ${url}:`, error.message);
+			logger.error(`Error fetching appeal types from ${url}:`, error.message);
 			throw error;
 		}
 	}
