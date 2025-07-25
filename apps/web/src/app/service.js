@@ -38,10 +38,13 @@ export class WebService extends BaseService {
 	 */
 	getCbosApiClientForSession(session) {
 		const userId = getAccountId(session);
-		return new CbosApiClient({
-			...this.#config.cbos,
-			apiHeader: userId
-		});
+		return new CbosApiClient(
+			{
+				...this.#config.cbos,
+				apiHeader: userId
+			},
+			this.logger
+		);
 	}
 
 	get entraConfig() {
