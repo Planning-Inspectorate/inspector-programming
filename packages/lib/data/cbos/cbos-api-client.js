@@ -1,9 +1,33 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 
+/**
+ * Client for interacting with the CBOS API, providing methods to fetch cases,
+ * and handle caching and request timeouts.
+ *
+ * @module CbosApiClient
+ */
 export class CbosApiClient {
+	/**
+	 * Static cache for appeal types, shared across all instances.
+	 * @type {?Object[]}
+	 */
 	static appealTypesCache = null;
+
+	/**
+	 * Static promise for fetching appeal types, to prevent duplicate requests.
+	 * @type {?Promise<Object[]>}
+	 */
 	static fetchPromise = null;
 
+	/**
+	 * Creates an instance of CbosApiClient.
+	 * @param {Object} cbosConfig - Configuration object for the API client.
+	 * @param {string} cbosConfig.apiUrl - Base URL for the CBOS API.
+	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
+	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
+	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
+	 * @param {Object} logger - Logger instance for logging warnings and errors.
+	 */
 	constructor(cbosConfig, logger) {
 		this.config = cbosConfig;
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
@@ -13,6 +37,7 @@ export class CbosApiClient {
 	/**
 	 * Fetches all cases for the user.
 	 * @returns {Promise<{ cases: Object[] }>} An object containing the array of case view models.
+	 * @throws {Error} If fetching cases fails.
 	 */
 	async getCases() {
 		try {
@@ -30,9 +55,11 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch wrapper with timeout.
-	 * @param {string} url
-	 * @param {Object} options
-	 * @param {number} timeout Timeout in milliseconds
+	 * @param {string} url - The URL to fetch.
+	 * @param {Object} options - Fetch options (currently unused).
+	 * @param {number} timeout - Timeout in milliseconds.
+	 * @returns {Promise<Response>} The fetch response.
+	 * @throws {Error} If the request times out or fails.
 	 */
 	async fetchWithTimeout(url) {
 		const defaultHeaders = {
@@ -113,7 +140,8 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch appeal IDs for a given Azure AD user.
-	 * @returns {Promise<string[]>}
+	 * @returns {Promise<string[]>} Promise resolving to an array of appeal IDs.
+	 * @throws {Error} If fetching appeal IDs fails.
 	 */
 	async fetchAppealIds() {
 		const url = `${this.config.apiUrl}/appeals?hasInspector=false`;
@@ -132,8 +160,9 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch details for each appeal ID in parallel.
-	 * @param {string[]} appealIds
-	 * @returns {Promise<Object[]>}
+	 * @param {string[]} appealIds - Array of appeal IDs.
+	 * @returns {Promise<Object[]>} Promise resolving to an array of appeal detail objects.
+	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetails(appealIds) {
 		const detailPromises = appealIds.map(async (appealId) => {
@@ -150,9 +179,9 @@ export class CbosApiClient {
 	}
 
 	/**
-	 * Fetches the list of appeal types from the external API.
-	 * @returns {Promise<Object[]>} A promise that resolves to an array of appeal type objects.
-	 * @throws Will throw an error if the request fails or the response is not OK.
+	 * Fetches the list of appeal types from the external API, with caching.
+	 * @returns {Promise<Object[]>} Promise resolving to an array of appeal type objects.
+	 * @throws {Error} If the request fails or the response is not OK.
 	 */
 	async fetchAppealTypes() {
 		const cacheKey = 'appealTypes';
