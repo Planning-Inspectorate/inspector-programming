@@ -29,6 +29,11 @@ apps_config = {
     }
   }
 
+  cbos = {
+    api_app_name = "pins-app-appeals-bo-api-dev"
+    api_app_rg   = "pins-rg-appeals-bo-dev"
+  }
+
   logging = {
     level = "info"
   }
