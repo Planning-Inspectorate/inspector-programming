@@ -8,7 +8,8 @@ export const ODATA = Object.freeze({
 	NEXT_LINK: '@odate.nextLink',
 	TYPE: '@odata.type',
 	GROUP_TYPE: '#microsoft.graph.group',
-	USER_TYPE: '#microsoft.graph.user'
+	USER_TYPE: '#microsoft.graph.user',
+	EVENT_TYPE: '#microsoft.graph.event'
 });
 
 export class EntraClient {
@@ -21,9 +22,6 @@ export class EntraClient {
 	constructor(client) {
 		this.#client = client;
 	}
-
-	//time to add some stuff to here
-	//we want to grab calendar events for our given users
 
 	/**
 	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
@@ -51,6 +49,26 @@ export class EntraClient {
 			listMembers.skipToken(token);
 		}
 		return members;
+	}
+
+	/**
+	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
+	 *
+	 * @param {string} userId
+	 * @returns {Promise<import('./types').CalendarEvent[]>}
+	 */
+	async listAllUserCalendarEvents(userId) {
+		const listEvents = this.#client
+			.api(`users/${userId}/calendar/events`)
+			.select(['id', 'subject', 'start', 'end'])
+			.top(PER_PAGE);
+
+		const events = [];
+		for (let i = 0; i < MAX_PAGES; i++) {
+			const res = await listEvents.get();
+			events.push(res.value);
+		}
+		return events;
 	}
 
 	/**
