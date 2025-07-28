@@ -33,9 +33,36 @@ export function getCalendarEventsForEntraUsers(service) {
 				return;
 			}
 
-			const event = await apiService.entraClient.listAllUserCalendarEvents(usersInGroups[0].id);
+			/**
+			 * @type {(import("./types").CalendarEvent)[]}
+			 */
+			let calendarEvents = [];
 
-			res.status(200).send(event);
+			const chunkedUsers = chunkArray(usersInGroups, 5);
+			for (const userChunk of chunkedUsers) {
+				const chunkEvents = await Promise.all(
+					userChunk.map(async (user) => {
+						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id);
+
+						//format returned events for PowerBI
+						//startDate and endDate are in UTC timezone
+						const formattedEvents = [];
+						for (const event of usersEvents || []) {
+							formattedEvents.push({
+								id: event.id,
+								userEmail: user.email,
+								title: event.subject,
+								startDate: event.start?.dateTime || 'N/A',
+								endDate: event.end?.dateTime || 'N/A'
+							});
+						}
+						return formattedEvents;
+					})
+				);
+				calendarEvents = calendarEvents.concat(chunkEvents.flat());
+			}
+
+			res.status(200).send(calendarEvents);
 			return;
 		} catch (err) {
 			logger.error({ err }, `API /events error`);
@@ -44,4 +71,18 @@ export function getCalendarEventsForEntraUsers(service) {
 			logger.info('API /events endpoint');
 		}
 	};
+}
+
+/**
+ *
+ * @param {any[]} array
+ * @param {number} chunkSize
+ * @returns
+ */
+function chunkArray(array, chunkSize) {
+	const chunks = [];
+	for (let i = 0; i < array.length; i += chunkSize) {
+		chunks.push(array.slice(i, i + chunkSize));
+	}
+	return chunks;
 }
