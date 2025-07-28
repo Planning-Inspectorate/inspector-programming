@@ -32,5 +32,10 @@ export function createRoutes(service) {
 		router.use('/users', usersRoutes);
 	}
 
+	// fallback to 404 for any unmatched routes
+	router.use((req, res) => {
+		res.status(404).json({ error: 'Not Found' });
+	});
+
 	return router;
 }
