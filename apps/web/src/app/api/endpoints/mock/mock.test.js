@@ -6,6 +6,7 @@ import {
 	generateMockData,
 	groups,
 	newEvent,
+	startOfTomorrow,
 	timesBetween,
 	timeZone,
 	weekdayDates,
@@ -280,7 +281,7 @@ describe('mock', () => {
 		test('events are within the specified date range', () => {
 			const mockData = generateMockData(mockService, config);
 
-			const startDate = new Date();
+			const startDate = startOfTomorrow();
 			const endDate = addWeeks(endOfDay(startDate), config.weeksFromToday, { in: timeZone });
 
 			mockData.events.forEach((event) => {
