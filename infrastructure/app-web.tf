@@ -51,6 +51,9 @@ module "app_web" {
     AZURE_CLIENT_SECRET           = local.key_vault_refs["scheduling-client-secret"]
     AZURE_TENANT_ID               = data.azurerm_client_config.current.tenant_id
 
+    # cbos
+    CBOS_API_URL = data.azurerm_linux_web_app.cbos_api.default_hostname
+
     # Entra groups
     API_INSPECTOR_ENTRA_GROUPS   = join(",", var.apps_config.auth.groups.api_inspector_groups)
     ENTRA_GROUP_ID_INSPECTORS    = var.apps_config.auth.groups.inspectors

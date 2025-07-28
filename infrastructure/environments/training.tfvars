@@ -25,6 +25,11 @@ apps_config = {
     }
   }
 
+  cbos = {
+    api_app_name = "pins-app-appeals-bo-api-training"
+    api_app_rg   = "pins-rg-appeals-bo-training"
+  }
+
   logging = {
     level = "warn"
   }

@@ -33,6 +33,11 @@ variable "apps_config" {
       })
     })
 
+    cbos = object({
+      api_app_name = string
+      api_app_rg   = string
+    })
+
     logging = object({
       level = string
     })
