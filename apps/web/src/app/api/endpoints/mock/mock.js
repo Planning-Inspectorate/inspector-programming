@@ -166,7 +166,7 @@ export function generateInspectors(count = 10) {
  *
  * @returns {import('@date-fns/tz').TZDate}
  */
-function startOfTomorrow() {
+export function startOfTomorrow() {
 	// start from tomorrow
 	let date = addDays(new Date(), 1, { in: timeZone });
 	// set to start of the day
