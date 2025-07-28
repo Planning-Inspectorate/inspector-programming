@@ -15,6 +15,7 @@
     "@azure/identity": "*",
     "@azure/msal-node": "*",
     "@date-fns/tz": "*",
+    "@faker-js/faker": "*",
     "@microsoft/microsoft-graph-client": "*",
     "@pins/inspector-programming-database": "^0.0.0",
     "@pins/inspector-programming-lib": "^0.0.0",
