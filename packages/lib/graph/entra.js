@@ -66,9 +66,17 @@ export class EntraClient {
 		const events = [];
 		for (let i = 0; i < MAX_PAGES; i++) {
 			const res = await listEvents.get();
-			events.push(res.value);
+			if (res.value?.length) events.push(res.value);
+
+			const nextLink = res[ODATA.NEXT_LINK];
+			if (!nextLink) {
+				break;
+			}
+			// make the next request with the skipToken value to fetch the next page
+			const token = EntraClient.extractSkipToken(nextLink);
+			listEvents.skipToken(token);
 		}
-		return events;
+		return events.flat();
 	}
 
 	/**

@@ -76,7 +76,6 @@ export class CachedEntraClient {
 	async listAllUserCalendarEvents(userId) {
 		const key = CACHE_PREFIX + userId;
 		let members = this.#cache.get(key);
-		console.info('members', members);
 		if (members) {
 			return members;
 		}
