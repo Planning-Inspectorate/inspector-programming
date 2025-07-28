@@ -8,6 +8,8 @@ export interface GroupMember {
 	mail: string;
 }
 
+export interface CalendarEvent {}
+
 interface AuthSession {
 	account?: {
 		accessToken?: string;

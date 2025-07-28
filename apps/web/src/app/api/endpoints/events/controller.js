@@ -33,7 +33,9 @@ export function getCalendarEventsForEntraUsers(service) {
 				return;
 			}
 
-			res.status(200).send(usersInGroups);
+			const event = await apiService.entraClient.listAllUserCalendarEvents(usersInGroups[0].id);
+
+			res.status(200).send(event);
 			return;
 		} catch (err) {
 			logger.error({ err }, `API /events error`);
