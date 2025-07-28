@@ -56,8 +56,6 @@ export class CbosApiClient {
 	/**
 	 * Fetch wrapper with timeout.
 	 * @param {string} url - The URL to fetch.
-	 * @param {Object} options - Fetch options (currently unused).
-	 * @param {number} timeout - Timeout in milliseconds.
 	 * @returns {Promise<Response>} The fetch response.
 	 * @throws {Error} If the request times out or fails.
 	 */
