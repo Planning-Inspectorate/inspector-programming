@@ -55,11 +55,17 @@ export class EntraClient {
 	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
 	 *
 	 * @param {string} userId
+	 * @param {number} calendarEventsDayRange
 	 * @returns {Promise<import('./types').CalendarEvent[]>}
 	 */
-	async listAllUserCalendarEvents(userId) {
+	async listAllUserCalendarEvents(userId, calendarEventsDayRange) {
+		const startDate = new Date();
+		startDate.setUTCHours(0, 0, 0, 0);
+		startDate.setDate(startDate.getDate() - calendarEventsDayRange);
+
 		const listEvents = this.#client
-			.api(`users/${userId}/calendar/events`)
+			.api(`users/${userId}/calendarView`)
+			.query({ startDateTime: startDate.toISOString(), endDateTime: new Date().toISOString() })
 			.select(['id', 'subject', 'start', 'end'])
 			.top(PER_PAGE);
 
