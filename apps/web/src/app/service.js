@@ -59,15 +59,15 @@ export class WebService extends BaseService {
 		return this.#config.auth.disabled;
 	}
 
-	get maps() {
-		return this.#config.maps;
-	}
-
 	get entraGroupIds() {
 		return this.#config.entra.groupIds;
 	}
 
 	get mockApiData() {
 		return this.#config.api.mockData;
+	}
+
+	get osMapsApiKey() {
+		return this.#config.osApi.key;
 	}
 }

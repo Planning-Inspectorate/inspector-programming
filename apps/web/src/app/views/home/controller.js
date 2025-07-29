@@ -32,7 +32,7 @@ export function buildViewHome(service) {
 			cases: sortedCases.map(caseViewModel),
 			inspectors,
 			data: formData,
-			apiKey: service.maps.key,
+			apiKey: service.osMapsApiKey,
 			inspectorPin: {
 				...selectedInspector
 			},
