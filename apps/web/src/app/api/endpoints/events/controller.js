@@ -38,11 +38,18 @@ export function getCalendarEventsForEntraUsers(service) {
 			 */
 			let calendarEvents = [];
 
+			//should not be able to use endpoint without valid config: fetch far too many events otherwise
+			const { calendarEventsDayRange } = service.entraConfig;
+			if (+calendarEventsDayRange < 0) {
+				res.status(400).send('Invalid calendar events day range configuration');
+				return;
+			}
+
 			const chunkedUsers = chunkArray(usersInGroups, 5);
 			for (const userChunk of chunkedUsers) {
 				const chunkEvents = await Promise.all(
 					userChunk.map(async (user) => {
-						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id);
+						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, calendarEventsDayRange);
 
 						//format returned events for PowerBI
 						//startDate and endDate are in UTC timezone
