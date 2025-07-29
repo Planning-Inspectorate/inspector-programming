@@ -18,14 +18,24 @@ variable "apps_config" {
     node_environment         = string
     private_endpoint_enabled = bool
 
+    api = object({
+      mock_data = bool
+    })
+
     auth = object({
       client_id                = string
       group_application_access = string
       groups = object({
-        inspectors    = string
-        team_leads    = string
-        national_team = string
+        inspectors           = string
+        team_leads           = string
+        national_team        = string
+        api_inspector_groups = list(string)
       })
+    })
+
+    cbos = object({
+      api_app_name = string
+      api_app_rg   = string
     })
 
     logging = object({

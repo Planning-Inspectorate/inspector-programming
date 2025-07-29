@@ -47,11 +47,15 @@ export function loadConfig() {
 		GOV_NOTIFY_API_KEY,
 		MAPS_API_KEY,
 		MAPS_API_SECRET,
-		TEST_POWERBI_ENTRA_GROUPS,
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_TEAM_LEADS,
-		ENTRA_GROUP_ID_NATIONAL_TEAM
+		ENTRA_GROUP_ID_NATIONAL_TEAM,
+		API_MOCK_DATA,
+		API_INSPECTOR_ENTRA_GROUPS,
+		CBOS_API_TIMEOUT,
+		CBOS_API_URL,
+		CBOS_APPEAL_TYPE_CACHE_TTL
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -90,6 +94,9 @@ export function loadConfig() {
 	const protocol = APP_HOSTNAME?.startsWith('localhost') ? 'http://' : 'https://';
 
 	config = {
+		api: {
+			mockData: API_MOCK_DATA === 'true'
+		},
 		appHostname: APP_HOSTNAME,
 		auth: {
 			appDomain: `${protocol}${APP_HOSTNAME}`,
@@ -140,8 +147,13 @@ export function loadConfig() {
 				inspectors: ENTRA_GROUP_ID_INSPECTORS,
 				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,
 				nationalTeam: ENTRA_GROUP_ID_NATIONAL_TEAM,
-				inspectorGroups: TEST_POWERBI_ENTRA_GROUPS
+				inspectorGroups: API_INSPECTOR_ENTRA_GROUPS
 			}
+		},
+		cbos: {
+			apiUrl: CBOS_API_URL,
+			timeoutMs: parseInt(CBOS_API_TIMEOUT || 10000),
+			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL || 1440
 		}
 	};
 

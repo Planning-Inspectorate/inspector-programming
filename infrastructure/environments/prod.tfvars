@@ -10,14 +10,24 @@ apps_config = {
   node_environment         = "production"
   private_endpoint_enabled = true
 
+  api = {
+    mock_data = false
+  }
+
   auth = {
     client_id                = "d26a7ba3-6f35-4ab6-b395-7e1e971ab6c7"
     group_application_access = "128f1af5-2438-443b-bec0-99e93e3989d0"
     groups = { # TODO - set these
-      inspectors    = ""
-      team_leads    = ""
-      national_team = ""
+      inspectors           = ""
+      team_leads           = ""
+      national_team        = ""
+      api_inspector_groups = []
     }
+  }
+
+  cbos = {
+    api_app_name = "pins-app-appeals-bo-api-prod"
+    api_app_rg   = "pins-rg-appeals-bo-prod"
   }
 
   logging = {

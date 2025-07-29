@@ -10,6 +10,10 @@ apps_config = {
   node_environment         = "development"
   private_endpoint_enabled = true
 
+  api = {
+    mock_data = false
+  }
+
   auth = {
     client_id                = "18150378-c026-4833-af9a-fef6e6dbc70d"
     group_application_access = "c1232a02-e4c5-4ac4-9efd-14f05e597023"
@@ -17,7 +21,17 @@ apps_config = {
       inspectors    = "b9dbe461-04fe-43b3-b3c3-bbb6407d624f"
       team_leads    = "5d68af6f-3c26-4216-bd2d-16805e070d2e"
       national_team = "75ed385c-6351-4065-8280-463d4bb86e61"
+      api_inspector_groups = [
+        "de84d4ca-279b-4e43-bab0-6417bfb4e06a",
+        "bb3853ea-2e2d-49e0-8b9a-449a31e27bb4",
+        "6f59e9c5-dd46-4bd4-ab92-f576dcc29b48"
+      ]
     }
+  }
+
+  cbos = {
+    api_app_name = "pins-app-appeals-bo-api-dev"
+    api_app_rg   = "pins-rg-appeals-bo-dev"
   }
 
   logging = {

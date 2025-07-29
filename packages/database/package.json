@@ -20,7 +20,6 @@
     "@prisma/client": "*"
   },
   "devDependencies": {
-    "@faker-js/faker": "*",
     "prisma": "*"
   }
 }

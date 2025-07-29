@@ -47,3 +47,8 @@ data "azurerm_private_dns_zone" "app_service" {
 
   provider = azurerm.tooling
 }
+
+data "azurerm_linux_web_app" "cbos_api" {
+  name                = var.apps_config.cbos.api_app_name
+  resource_group_name = var.apps_config.cbos.api_app_rg
+}

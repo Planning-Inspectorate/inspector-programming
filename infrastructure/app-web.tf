@@ -44,13 +44,18 @@ module "app_web" {
     NODE_ENV                                   = var.apps_config.node_environment
     ENVIRONMENT                                = var.environment
 
+    API_MOCK_DATA                 = var.apps_config.api.mock_data
     APP_HOSTNAME                  = var.web_domains.web
     AUTH_GROUP_APPLICATION_ACCESS = var.apps_config.auth.group_application_access
     AZURE_CLIENT_ID               = var.apps_config.auth.client_id
     AZURE_CLIENT_SECRET           = local.key_vault_refs["scheduling-client-secret"]
     AZURE_TENANT_ID               = data.azurerm_client_config.current.tenant_id
 
+    # cbos
+    CBOS_API_URL = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
+
     # Entra groups
+    API_INSPECTOR_ENTRA_GROUPS   = join(",", var.apps_config.auth.groups.api_inspector_groups)
     ENTRA_GROUP_ID_INSPECTORS    = var.apps_config.auth.groups.inspectors
     ENTRA_GROUP_ID_TEAM_LEADS    = var.apps_config.auth.groups.team_leads
     ENTRA_GROUP_ID_NATIONAL_TEAM = var.apps_config.auth.groups.national_team
