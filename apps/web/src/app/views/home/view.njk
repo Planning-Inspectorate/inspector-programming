@@ -272,8 +272,7 @@
                 { text: c.lpaName },
                 { text: c.lpaRegion },
                 { text: c.caseStatus },
-                { html: '<span class="case-border case-border-' + c.color + '">' + c.caseAge + '</span>' },
-                { html: '<a href="/case/' + c.linkedCases + '" class="govuk-link">' + c.linkedCases + '</a>' },
+          { html: '<span class="case-border ' + c.color + '">' + c.caseAge + '</span>' },      { html: '<a href="/case/' + c.linkedCases + '" class="govuk-link">' + c.linkedCases + '</a>' },
                 { text: c.finalCommentsDate },
                 { text: c.programmingStatus }
             ]), caseRows) %}

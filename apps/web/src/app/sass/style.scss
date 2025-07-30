@@ -263,14 +263,14 @@ $font-family: arial, helvetica, sans-serif;
 	text-align: center;
 	border-width: 5px;
 	border-style: solid;
-}
 
-.case-border-d4351c {
-	border-color: #d4351c;
-}
-.case-border-00703c {
-	border-color: #00703c;
-}
-.case-border-f47738 {
-	border-color: #f47738;
+	&.d4351c {
+		border-color: #d4351c;
+	}
+	&._00703c {
+		border-color: #00703c;
+	}
+	&.f47738 {
+		border-color: #f47738;
+	}
 }
