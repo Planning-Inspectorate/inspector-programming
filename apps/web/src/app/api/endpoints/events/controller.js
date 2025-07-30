@@ -40,11 +40,12 @@ export function getCalendarEventsForEntraUsers(service) {
 
 			//should not be able to use endpoint without valid config: fetch far too many events otherwise
 			const { calendarEventsDayRange } = service.entraConfig;
-			if (+calendarEventsDayRange < 0) {
+			if (!+calendarEventsDayRange) {
 				res.status(400).send('Invalid calendar events day range configuration');
 				return;
 			}
 
+			//chunk users into groups of 5 to avoid overwhelming the API with requests
 			const chunkedUsers = chunkArray(usersInGroups, 5);
 			for (const userChunk of chunkedUsers) {
 				const chunkEvents = await Promise.all(

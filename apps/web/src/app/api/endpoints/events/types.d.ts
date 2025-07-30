@@ -5,3 +5,10 @@ export interface CalendarEvent {
 	startDate: string;
 	endDate: string;
 }
+
+export interface NamedTestDates {
+	oneDayAgo: Date;
+	twoDaysAgo: Date;
+	threeDaysAgo: Date;
+	fourDaysAgo: Date;
+}
