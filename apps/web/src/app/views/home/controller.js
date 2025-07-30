@@ -9,6 +9,14 @@ export function buildViewHome(service) {
 		const inspectors = await getInspectorList(service, req.session);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const filters = req.query.filters;
+		const errors = {};
+
+		if (filters) {
+			if (filters.minimumAge && (isNaN(filters.minimumAge) || filters.minimumAge < 0 || filters.minimumAge > 500)) {
+				errors.minimumAge = 'Please enter a number between 0 and 500';
+			}
+		}
+
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 		const cases = await service.getCbosApiClientForSession(req.session).getCases();
@@ -38,7 +46,8 @@ export function buildViewHome(service) {
 			inspectorPin: {
 				...selectedInspector
 			},
-			calendarData
+			calendarData,
+			errors
 		});
 	};
 }
