@@ -47,14 +47,11 @@ export function caseViewModel(c) {
 		finalCommentsDate: c.finalCommentsDate.toLocaleDateString(),
 		color:
 			c.caseAge > 45
-				? 'fa72a8'
-				: c.caseAge > 39
-					? 'dea529'
-					: c.caseAge > 28
-						? 'd0b300'
-						: c.caseAge > 24
-							? 'd0b300'
-							: '89a63a'
+				? 'd4351c' // red (46+ weeks)
+				: c.caseAge > 25
+					? 'f47738' // orange (26-45 weeks)
+					: '00703c', // green (0-25 weeks)
+		currentDate: new Date().toLocaleDateString()
 	};
 }
 
