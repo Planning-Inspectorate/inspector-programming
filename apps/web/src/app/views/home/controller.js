@@ -1,4 +1,6 @@
 import { getInspectorList } from '../../inspector/inspector.js';
+import qs from 'qs';
+import { parse as parseUrl } from 'url';
 
 /**
  * @param {import('#service').WebService} service
@@ -8,8 +10,11 @@ export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
-		const filters = req.query.filters;
 		const errors = {};
+
+		// Convert the raw query string into a nested object
+		const query = qs.parse(parseUrl(req.url).query || '');
+		const { filters } = query;
 
 		if (filters) {
 			if (filters.minimumAge && (isNaN(filters.minimumAge) || filters.minimumAge < 0 || filters.minimumAge > 500)) {
