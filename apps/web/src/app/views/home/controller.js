@@ -50,7 +50,7 @@ export function caseViewModel(c) {
 				? 'd4351c' // red (46+ weeks)
 				: c.caseAge > 25
 					? 'f47738' // orange (26-45 weeks)
-					: '00703c', // green (0-25 weeks)
+					: '_00703c', // green (0-25 weeks)
 		currentDate: new Date().toLocaleDateString()
 	};
 }
