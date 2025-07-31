@@ -13,6 +13,8 @@ export function buildViewHome(service) {
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 		const cases = await service.getCbosApiClientForSession(req.session).getCases();
 		const sortedCases = cases.sort((a, b) => b.caseAge - a.caseAge);
+		const start = (page - 1) * limit;
+		const paginatedCases = sortedCases.slice(start, start + limit);
 		const formData = {
 			filters,
 			limit,
@@ -29,7 +31,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Inspector Programming',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: sortedCases.map(caseViewModel),
+			cases: paginatedCases.map(caseViewModel),
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
