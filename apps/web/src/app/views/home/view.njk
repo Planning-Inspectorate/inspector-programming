@@ -272,24 +272,44 @@
                 { text: c.lpaName },
                 { text: c.lpaRegion },
                 { text: c.caseStatus },
-          { html: '<span class="case-border ' + c.color + '">' + c.caseAge + '</span>' },      { html: '<a href="/case/' + c.linkedCases + '" class="govuk-link">' + c.linkedCases + '</a>' },
+          { html: '<span class="case-border ' + c.color + '">' + c.caseAge + '</span>' },
+             { html: '<a href="/case/' + c.linkedCases + '" class="govuk-link">' + c.linkedCases + '</a>' },
                 { text: c.finalCommentsDate },
                 { text: c.programmingStatus }
             ]), caseRows) %}
         {% endfor %}
 
         {% set casesTable %}
-        <div style="margin: 0; padding: 0;">
-            <form method="get" action="/" class="govuk-form-group" style="margin: 0; padding: 0;">
-                <label class="govuk-label" for="limit" style="margin-right: 10px;">Cases per page:</label>
-                <select class="govuk-select" id="limit" name="limit" onchange="this.form.submit()">
-                    <option value="5" {% if data.limit == 5 %}selected{% endif %}>5</option>
-                    <option value="10" {% if data.limit == 10 %}selected{% endif %}>10</option>
-                    <option value="12" {% if data.limit == 12 %}selected{% endif %}>12</option>
-                    <option value="15" {% if data.limit == 15 %}selected{% endif %}>15</option>
-                </select>
-            </form>
-        </div>
+        <div style="margin-bottom: 10px;">
+                  <span class="govuk-body" style="margin-right: 10px;">Sort by:</span>
+                  {% set sorts = [
+                      { label: "Age", value: "age" },
+                      { label: "Distance", value: "distance" },
+                      { label: "Hybrid", value: "hybrid" }
+                  ] %}
+                  {% for s in sorts %}
+                      <a href="?sort={{ s.value }}{% if data.limit %}&limit={{ data.limit }}{% endif %}{% if data.inspectorId %}&inspectorId={{ data.inspectorId }}{% endif %}"
+                         class="govuk-link{% if data.sort == s.value %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
+                          {{ s.label }}
+                      </a>{% if not loop.last %} | {% endif %}
+                  {% endfor %}
+              </div>
+              <br>
+                 <div style="margin-bottom: 20px;">
+                     <span class="govuk-body" style="margin-right: 10px;">Cases per page:</span>
+                     {% set limits = [5, 10, 15, 25] %}
+                     {% for l in limits %}
+                         {% if data.limit == l %}
+                             <span class="govuk-!-font-weight-bold">{{ l }}</span>
+                         {% else %}
+                             <a href="?limit={{ l }}{% if data.sort %}&sort={{ data.sort }}{% endif %}{% if data.inspectorId %}&inspectorId={{ data.inspectorId }}{% endif %}"
+                                class="govuk-link">
+                                 {{ l }}
+                             </a>
+                         {% endif %}
+                         {% if not loop.last %} | {% endif %}
+                     {% endfor %}
+                 </div>
         <form method="post" action="/notify" novalidate>
                 <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
                 <div class="align-right">
