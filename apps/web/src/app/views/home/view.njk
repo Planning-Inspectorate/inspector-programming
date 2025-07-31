@@ -64,28 +64,7 @@
                             <input type="hidden" name="filters[{{ key }}]" value="{{ value }}">
                         {% endif %}
                     {% endfor %}
-                    
-                    <div class="app-filter__header">
-                        <div class="app-filter__header-title">
-                            <h2 class="govuk-heading-m bold-title">Sort by</h2>
-                        </div>
-                    </div>
-                    <div class="govuk-form-group flex-gap">
-                        {{ govukSelect({
-                            id: "sort",
-                            name: "sort",
-                            items: [
-                                { text: "Age", value: "age", selected: data.sort == "age" },
-                                { text: "Distance", value: "distance", selected: data.sort == "distance" },
-                                { text: "Hybrid", value: "hybrid", selected: data.sort == "hybrid" }
-                            ]
-                        }) }}
-                        {{ govukButton({
-                            text: "Sort",
-                            classes: "govuk-button--secondary",
-                            type: "submit"
-                        }) }}
-                    </div>
+                                
                 </form>
                 <div class="app-filter__header">
                     <div class="app-filter__header-title">
