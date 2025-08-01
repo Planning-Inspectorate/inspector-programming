@@ -42,6 +42,7 @@ export function buildViewHome(service) {
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
+		console.log(query);
 		const sortedCases = filteredCases.sort((a, b) => b.caseAge - a.caseAge);
 
 		const formData = {
