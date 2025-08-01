@@ -35,6 +35,8 @@ export function buildViewHome(service) {
 		const cases = await service.getCbosApiClientForSession(req.session).getCases();
 
 		const errors = validateFilters(filters);
+		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
+
 		const filteredCases = filterCases(cases, filters);
 
 		const sortedCases = filteredCases.sort((a, b) => b.caseAge - a.caseAge);
@@ -66,7 +68,8 @@ export function buildViewHome(service) {
 				...selectedInspector
 			},
 			calendarData,
-			errors
+			errors,
+			errorList
 		});
 	};
 }
@@ -121,7 +124,7 @@ function filterCases(cases, filters) {
 	if (!filters) return cases;
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
-		if (!(c.caseAge > (+filters.minimumAge || 0) && c.caseAge < (+filters.maximumAge || 500))) return false;
+		if (!(c.caseAge >= (+filters.minimumAge || 0) && c.caseAge <= (+filters.maximumAge || 999))) return false;
 		return true;
 	});
 }
