@@ -42,8 +42,7 @@ export function buildViewHome(service) {
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
-		console.log(query);
-		const sortedCases = filteredCases.sort((a, b) => b.caseAge - a.caseAge);
+		const sortedCases = sortCases(filteredCases, query.sort);
 
 		const formData = {
 			filters,
@@ -134,6 +133,25 @@ function getCaseColor(caseAge) {
 	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
 	return '_00703c'; // green (0-20 weeks)
+}
+
+/**
+ *
+ * @param {Case[]} cases
+ * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @returns
+ */
+function sortCases(cases, sort) {
+	switch (sort) {
+		case 'distance':
+			//WIP
+			return cases;
+		case 'hybrid':
+			//WIP
+			return cases;
+		default:
+			return cases.sort((a, b) => b.caseAge - a.caseAge);
+	}
 }
 
 export function caseViewModel(c) {
