@@ -11,6 +11,11 @@
 {% from "govuk/components/tabs/macro.njk" import govukTabs %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+
+
+
 
 {% block pageContent %}
 <div class="filter-container">
@@ -342,15 +347,14 @@
                 }) }}
             </form>
 
-            <div class="govuk-form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0; padding: 0;">
-                <div style="margin: 0; padding: 0;">
-                    {{ govukPagination({
-                        next: nextPage,
-                        previous: previousPage,
-                        items: pageItems
-                    }) }}
+            {% if cases.length > 0 %}
+                <div class="govuk-form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0; padding: 0;">
+                    <div style="margin: 0; padding: 0;">
+                        {{ govukPagination(paginationDetails) }}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
+
         {% endset %}
 
         {% set mapView %}

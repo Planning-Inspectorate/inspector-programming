@@ -34,7 +34,8 @@ export function buildViewHome(service) {
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
-		const cases = await service.casesClient.getAllCases();
+		//const cases = await service.casesClient.getAllCases();
+		const { cases, total } = await service.casesClient.getPaginatedCases(page, limit);
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
@@ -50,6 +51,7 @@ export function buildViewHome(service) {
 			sort: req.query.sort || 'age',
 			inspectorId: req.query.inspectorId
 		};
+		const paginationDetails = handlePagination(req, total, formData);
 		const calendarData = {};
 
 		calendarData.error =
@@ -68,7 +70,8 @@ export function buildViewHome(service) {
 			},
 			calendarData,
 			errors,
-			errorList
+			errorList,
+			paginationDetails
 		});
 	};
 }
@@ -170,4 +173,54 @@ export function buildPostHome(service) {
 
 		return res.redirect(redirectUrl);
 	};
+}
+
+/**
+ * @param {import('express').Request} req
+ * @param {number} total
+ * @param {Object} formData
+ * @returns {Object}
+ */
+
+export function handlePagination(req, total, formData) {
+	const page = formData.page;
+	const limit = formData.limit;
+	const totalPages = Math.max(1, Math.ceil(total / limit));
+
+	const params = { ...req.query, page: undefined };
+
+	return {
+		previous:
+			page > 1
+				? {
+						href: buildQueryString(params, page - 1)
+					}
+				: null,
+		next:
+			page < totalPages
+				? {
+						href: buildQueryString(params, page + 1)
+					}
+				: null,
+		items: Array.from({ length: totalPages }, (_, i) => ({
+			number: i + 1,
+			href: buildQueryString(params, i + 1),
+			current: page === i + 1
+		}))
+	};
+}
+
+/**
+ * @param {Object} params
+ * @param {number} newPage
+ * @returns {string}
+ */
+export function buildQueryString(params, newPage) {
+	const updatedParams = { ...params, page: newPage };
+	const searchParams = new URLSearchParams(
+		Object.entries(updatedParams)
+			.filter(([, v]) => v !== undefined && v !== null)
+			.map(([k, v]) => [k, String(v)])
+	);
+	return '?' + searchParams.toString();
 }
