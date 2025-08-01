@@ -4,6 +4,7 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "views/layouts/components/map.njk" import map %}
@@ -92,6 +93,12 @@
                     </div>
                 </div>
                 <form method="get" novalidate>
+                    {% if errorList.length %}
+                        {{ govukErrorSummary({
+                        titleText: "Filters could not be applied",
+                        errorList: errorList
+                        }) }}
+                    {% endif %}
                     <button class="govuk-button" data-module="govuk-button">
                         Apply filters
                     </button>
