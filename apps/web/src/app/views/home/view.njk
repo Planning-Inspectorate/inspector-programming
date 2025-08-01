@@ -71,7 +71,7 @@
                         <h2 class="govuk-heading-m">Case filters</h2>
                     </div>
                 </div>
-                <form method="get" novalidate>
+                <form id="filter-form" method="get" novalidate>
                     {% if errorList.length %}
                         {{ govukErrorSummary({
                         titleText: "Filters could not be applied",
@@ -265,38 +265,40 @@
                 { text: c.programmingStatus }
             ]), caseRows) %}
         {% endfor %}
-
         {% set casesTable %}
-        <div style="margin-bottom: 10px;">
-                  <span class="govuk-body" style="margin-right: 10px;">Sort by:</span>
-                  {% set sorts = [
-                      { label: "Age", value: "age" },
-                      { label: "Distance", value: "distance" },
-                      { label: "Hybrid", value: "hybrid" }
-                  ] %}
-                  {% for s in sorts %}
-                      <a href="?sort={{ s.value }}{% if data.limit %}&limit={{ data.limit }}{% endif %}{% if data.inspectorId %}&inspectorId={{ data.inspectorId }}{% endif %}"
-                         class="govuk-link{% if data.sort == s.value %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
-                          {{ s.label }}
-                      </a>{% if not loop.last %} | {% endif %}
-                  {% endfor %}
-              </div>
-              <br>
-                 <div style="margin-bottom: 20px;">
-                     <span class="govuk-body" style="margin-right: 10px;">Cases per page:</span>
-                     {% set limits = [5, 10, 15, 25] %}
-                     {% for l in limits %}
-                         {% if data.limit == l %}
-                             <span class="govuk-!-font-weight-bold">{{ l }}</span>
-                         {% else %}
-                             <a href="?limit={{ l }}{% if data.sort %}&sort={{ data.sort }}{% endif %}{% if data.inspectorId %}&inspectorId={{ data.inspectorId }}{% endif %}"
-                                class="govuk-link">
-                                 {{ l }}
-                             </a>
-                         {% endif %}
-                         {% if not loop.last %} | {% endif %}
-                     {% endfor %}
-                 </div>
+        <div style="margin: 0; padding: 0;">
+            <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">  
+                <div style="margin-bottom: 10px;">
+                    <span class="govuk-body" style="margin-right: 10px;">Sort by:</span>
+                    {% set sorts = [
+                        { label: "Age", value: "age" },
+                        { label: "Distance", value: "distance" },
+                        { label: "Hybrid", value: "hybrid" }
+                    ] %}
+                    {% for s in sorts %}
+                        <a data-sort="{{ s.value }}"
+                            class="sort-pagination-link govuk-link{% if data.sort == s.value %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
+                            {{ s.label }}
+                        </a>{% if not loop.last %} | {% endif %}
+                    {% endfor %}
+                </div>
+                    <br>
+                        <div style="margin-bottom: 20px;">
+                            <span class="govuk-body" style="margin-right: 10px;">Cases per page:</span>
+                            {% set limits = [20, 50, 100] %}
+                            {% for l in limits %}
+                                <a  data-limit="{{ l }}"
+                                    class="sort-pagination-link govuk-link{% if data.limit == l %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
+                                    {{ l }}
+                                </a>{% if not loop.last %} | {% endif %}
+                            {% endfor %}
+                        </div>
+                <input type="hidden" name="sort" value="{{ data.sort }}">
+                <input type="hidden" name="limit" value="{{ data.limit }}">
+                <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+                <input type="hidden" name="page" value="{{ data.page }}">
+            </form>
+        </div>
         <form method="post" action="/notify" novalidate>
                 <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
                 <div class="align-right">
@@ -634,6 +636,35 @@
             const { caseId, selected } = event.detail;
 
             document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
+        });
+
+        document.querySelectorAll('.sort-pagination-link').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const sortPaginationForm = document.getElementById('sort-pagination-form');
+                const filterForm = document.getElementById('filter-form');
+                if (!sortPaginationForm || !filterForm) return;
+
+                // Copy inputs from the filter form whose name attrs start with 'filters[' into sort form
+                const filterInputs = filterForm.querySelectorAll('input[name^="filters["]');
+                filterInputs.forEach(input => {
+                    const clone = document.createElement('input');
+                    clone.type = 'hidden';
+                    clone.name = input.name;
+                    clone.value = input.value;
+                    sortPaginationForm.appendChild(clone);
+                });
+
+                if(e.target?.dataset?.sort){
+                    const sortInput = sortPaginationForm.querySelector('input[name="sort"]');
+                    sortInput.value = e.target?.dataset?.sort || '';
+                }else if(e.target?.dataset?.limit){
+                    const limitInput = sortPaginationForm.querySelector('input[name="limit"]');
+                    limitInput.value = e.target?.dataset?.limit || '';
+                }
+
+                sortPaginationForm.submit();
+            })
         });
 
     });
