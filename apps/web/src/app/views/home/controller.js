@@ -37,7 +37,7 @@ export function buildViewHome(service) {
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
 
-		const filteredCases = filterCases(cases, filters);
+		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
 		const sortedCases = filteredCases.sort((a, b) => b.caseAge - a.caseAge);
 
