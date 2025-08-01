@@ -99,7 +99,7 @@ function validateFilters(filters) {
 	const keysToValidate = ['minimumAge', 'maximumAge'];
 	for (const key of keysToValidate) {
 		const value = filters[key];
-		if (value && (isNaN(+value) || +value <= 0 || +value > 500)) {
+		if (value && (isNaN(+value) || +value < 0 || +value > 500)) {
 			errors[key] = { text: 'Please enter a number between 0 and 500' };
 			filters[key] = '';
 		}
