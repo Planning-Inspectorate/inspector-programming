@@ -112,14 +112,12 @@ export class CbosApiClient {
 	}
 
 	/**
-	 * Returns the total count of linked and other appeals for a case.
-	 * @param {Object} c - Case object containing linkedAppeals and otherAppeals arrays.
-	 * @returns {number} Total count of linked cases, or 0 if both arrays are empty.
+	 * Returns the count of linked appeals for a case.
+	 * @param {Object} c - Case object containing linkedAppeals array.
+	 * @returns {number} Count of linked cases, or 0 if the array is empty or missing.
 	 */
 	getLinkedCasesCount(c) {
-		const linkedCount = Array.isArray(c.linkedAppeals) ? c.linkedAppeals.length : 0;
-		const otherCount = Array.isArray(c.otherAppeals) ? c.otherAppeals.length : 0;
-		return linkedCount + otherCount;
+		return Array.isArray(c.linkedAppeals) ? c.linkedAppeals.length : 0;
 	}
 
 	/**

@@ -31,8 +31,7 @@ interface Config extends BaseConfig {
 		};
 	};
 	inspectors: [{ emailAddress: string; id: string }];
-	maps: {
+	osApi: {
 		key: string;
-		secret: string;
 	};
 }

@@ -75,8 +75,8 @@ test('getCaseAgeInWeeks returns correct weeks', () => {
 });
 
 test('getLinkedCasesCount returns sum of linked and other appeals', () => {
-	const c = { linkedAppeals: [1, 2], otherAppeals: [3] };
-	assert.strictEqual(client.getLinkedCasesCount(c), 3);
+	const c = { linkedAppeals: [1, 2] };
+	assert.strictEqual(client.getLinkedCasesCount(c), 2);
 });
 
 test('appealToViewModel maps specified fields correctly', async () => {

@@ -3,34 +3,28 @@ import assert from 'node:assert';
 import express from 'express';
 import request from 'supertest';
 import { createRoutes } from './controller.js';
-import { WebService } from '#service';
+import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
-/** @type {WebService}} */
+/** @type {import('#service').WebService} */
 let mockService;
 /** @type {import('express').Express} */
 let app;
 
 beforeEach(() => {
 	//set up service
-	mockService = new WebService({
-		logLevel: 'info',
-		auth: {
-			disabled: true
+	mockService = {
+		logger: mockLogger(),
+		apiService: {
+			entraClient: {
+				listAllGroupMembers: mock.fn()
+			}
 		},
-		database: {
-			datasourceUrl: 'lalala'
-		},
-		session: {
-			redisPrefix: 'manage:',
-			redis: undefined,
-			secret: 'testSecret'
-		},
-		entra: {
+		entraConfig: {
 			groupIds: {
 				inspectorGroups: 'groupA,groupB,groupC'
 			}
 		}
-	});
+	};
 
 	app = express();
 	app.use('/', createRoutes(mockService));
@@ -58,7 +52,7 @@ describe('users', () => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB,groupC';
 
 			//mock the Entra client to return expected results for each group
-			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+			mockService.apiService.entraClient.listAllGroupMembers.mock.mockImplementation(async (groupId) => {
 				switch (groupId) {
 					case 'groupA':
 						return [
@@ -123,7 +117,7 @@ describe('users', () => {
 		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async () => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,another-wrong-group-id';
 
-			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+			mockService.apiService.entraClient.listAllGroupMembers.mock.mockImplementation(async (groupId) => {
 				if (groupId === 'groupA') {
 					return {
 						id: 'd53dea42-369b-44aa-b3ca-a8537018b422',

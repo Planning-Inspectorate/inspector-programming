@@ -13,6 +13,8 @@ export function buildViewHome(service) {
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 		const cases = await service.getCbosApiClientForSession(req.session).getCases();
 		const sortedCases = cases.sort((a, b) => b.caseAge - a.caseAge);
+		const start = (page - 1) * limit;
+		const paginatedCases = sortedCases.slice(start, start + limit);
 		const formData = {
 			filters,
 			limit,
@@ -29,10 +31,10 @@ export function buildViewHome(service) {
 			pageHeading: 'Inspector Programming',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: sortedCases.map(caseViewModel),
+			cases: paginatedCases.map(caseViewModel),
 			inspectors,
 			data: formData,
-			apiKey: service.maps.key,
+			apiKey: service.osMapsApiKey,
 			inspectorPin: {
 				...selectedInspector
 			},
@@ -47,14 +49,11 @@ export function caseViewModel(c) {
 		finalCommentsDate: c.finalCommentsDate.toLocaleDateString(),
 		color:
 			c.caseAge > 45
-				? 'fa72a8'
-				: c.caseAge > 39
-					? 'dea529'
-					: c.caseAge > 28
-						? 'd0b300'
-						: c.caseAge > 24
-							? 'd0b300'
-							: '89a63a'
+				? 'd4351c' // red (46+ weeks)
+				: c.caseAge > 25
+					? 'f47738' // orange (26-45 weeks)
+					: '_00703c', // green (0-25 weeks)
+		currentDate: new Date().toLocaleDateString()
 	};
 }
 
