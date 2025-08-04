@@ -176,5 +176,66 @@ describe('events', () => {
 				}
 			]);
 		});
+		test('returns 500 if an event is fetched outside the given date range', async () => {
+			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
+			mockService.entraConfig.calendarEventsDayRange = 2;
+			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+				switch (groupId) {
+					case 'groupA':
+						return [
+							{
+								id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+								displayName: 'test 1',
+								givenName: 'test',
+								surname: '1',
+								mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+							}
+						];
+					case 'groupB':
+						return [
+							{
+								id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+								displayName: 'test 2',
+								givenName: 'test',
+								surname: '2',
+								mail: 'inspector-programming-test-2@planninginspectorate.gov.uk'
+							}
+						];
+				}
+			});
+
+			mock.method(mockService.apiService.entraClient, 'listAllUserCalendarEvents', async (userId) => {
+				switch (userId) {
+					case 'd53dea42-369b-44aa-b3ca-a8537018b422':
+						return [
+							{
+								id: 'id1',
+								subject: 'Test Event 1',
+								start: { dateTime: dates.fourDaysAgo.toISOString() },
+								end: { dateTime: dates.threeDaysAgo.toISOString() }
+							},
+							{
+								id: 'id2',
+								subject: 'Test Event 2',
+								start: { dateTime: dates.fourDaysAgo.toISOString() },
+								end: { dateTime: dates.oneDayAgo.toISOString() }
+							}
+						];
+					case '7a0c62e2-182a-47a8-987a-26d0faa02876':
+						return [
+							{
+								id: 'id3',
+								subject: 'Test Event 3',
+								start: { dateTime: dates.threeDaysAgo.toISOString() },
+								end: { dateTime: dates.oneDayAgo.toISOString() }
+							}
+						];
+				}
+			});
+
+			const res = await request(app).get('/');
+			assert.strictEqual(res.statusCode, 500);
+			assert.strictEqual(res.text, 'A server error occurred');
+		});
 	});
 });

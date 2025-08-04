@@ -24,7 +24,7 @@ export class EntraClient {
 	}
 
 	/**
-	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
+	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 500 per page
 	 *
 	 * @param {string} groupId
 	 * @returns {Promise<import('./types').GroupMember[]>}
