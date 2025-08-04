@@ -52,10 +52,19 @@ export function getCalendarEventsForEntraUsers(service) {
 					userChunk.map(async (user) => {
 						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, calendarEventsDayRange);
 
+						//for validating that the events are within the date range
+						const endOfDateRange = new Date();
+						endOfDateRange.setDate(endOfDateRange.getDate() - calendarEventsDayRange);
+						endOfDateRange.setHours(0, 0, 0, 0); // Set to start of the day
+
 						//format returned events for PowerBI
 						//startDate and endDate are in UTC timezone
 						const formattedEvents = [];
 						for (const event of usersEvents || []) {
+							//if events are outside the configured date range Graph API may be incorrectly configured
+							if (new Date(event.end.dateTime) < endOfDateRange) {
+								throw new Error(`Event ${event.id} for user ${user.email} is outside the configured date range`);
+							}
 							formattedEvents.push({
 								id: event.id,
 								userEmail: user.email,
