@@ -32,7 +32,10 @@ export function buildViewHome(service) {
 
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-		const cases = await service.getCbosApiClientForSession(req.session).getCases();
+		const cases = await service.getCbosApiClientForSession(req.session).getCases({
+			pageNumber: page,
+			pageSize: limit
+		});
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
@@ -40,9 +43,6 @@ export function buildViewHome(service) {
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
 		const sortedCases = filteredCases.sort((a, b) => b.caseAge - a.caseAge);
-
-		const start = (page - 1) * limit;
-		const paginatedCases = sortedCases.slice(start, start + limit);
 
 		const formData = {
 			filters,
@@ -60,7 +60,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Inspector Programming',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: paginatedCases.map(caseViewModel),
+			cases: sortedCases.map(caseViewModel),
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
