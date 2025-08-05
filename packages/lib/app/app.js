@@ -70,10 +70,25 @@ export function createBaseApp({
 
 /** @type {import('helmet').ContentSecurityPolicyOptions['directives']} */
 const cspDirectiveDefaults = {
-	scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
-	defaultSrc: ["'self'"],
-	connectSrc: ["'self'"],
-	fontSrc: ["'self'"],
-	imgSrc: ["'self'"],
-	styleSrc: ["'self'"]
+	scriptSrc: [
+		"'self'",
+		"'unsafe-inline'",
+		"'unsafe-eval'",
+		'https://js.arcgis.com',
+		'https://cdn.jsdelivr.net',
+		'https://api.os.uk'
+	],
+	styleSrc: [
+		"'self'",
+		"'unsafe-inline'",
+		'https://js.arcgis.com',
+		'https://cdn.jsdelivr.net',
+		'https://fonts.googleapis.com',
+		'https://api.os.uk'
+	],
+	imgSrc: ["'self'", 'https://js.arcgis.com', 'https://cdn.jsdelivr.net', 'https://api.os.uk', 'data:', 'blob:'],
+	fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net', 'https://js.arcgis.com', 'data:'],
+	workerSrc: ["'self'", 'blob:', 'https://js.arcgis.com'],
+	connectSrc: ["'self'", 'https://api.os.uk', 'https://js.arcgis.com', 'blob:'],
+	defaultSrc: ["'self'"]
 };

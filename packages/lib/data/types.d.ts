@@ -15,6 +15,8 @@ export interface CaseViewModel {
 	allocationBand: string | number | null;
 	caseLevel: string | null;
 	siteAddressPostcode: string | null;
+	siteAddressLongitude: number | null;
+	siteAddressLatitude: number | null;
 	lpaName: string | null;
 	lpaRegion: string | null;
 	caseStatus: string | null;

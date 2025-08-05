@@ -38,6 +38,8 @@ export class CasesClient {
 			allocationBand: c.allocationBand || '',
 			caseLevel: c.allocationLevel || '',
 			siteAddressPostcode: c.siteAddressPostcode || '',
+			siteAddressLatitude: c.siteAddressLatitude,
+			siteAddressLongitude: c.siteAddressLongitude,
 			lpaName: c.lpaName || '',
 			lpaRegion: c.lpaRegion || '',
 			caseStatus: c.caseStatus || 'Unassigned',
