@@ -39,9 +39,9 @@ export class CbosApiClient {
 	 * @returns {Promise<{ cases: Object[] }>} An object containing the array of case view models.
 	 * @throws {Error} If fetching cases fails.
 	 */
-	async getCases() {
+	async getCases({ pageNumber = 1, pageSize = 10 } = {}) {
 		try {
-			const appealIds = await this.fetchAppealIds();
+			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize });
 			if (appealIds.length === 0) {
 				this.logger.warn('[CaseController] No appeal IDs found for the user.');
 			}
@@ -139,8 +139,8 @@ export class CbosApiClient {
 	 * @returns {Promise<string[]>} Promise resolving to an array of appeal IDs.
 	 * @throws {Error} If fetching appeal IDs fails.
 	 */
-	async fetchAppealIds() {
-		const url = `${this.config.apiUrl}/appeals?hasInspector=false`;
+	async fetchAppealIds({ pageNumber = 1, pageSize = 10 } = {}) {
+		const url = `${this.config.apiUrl}/appeals?hasInspector=false&pageNumber=${pageNumber}&pageSize=${pageSize}`;
 		try {
 			const response = await this.fetchWithTimeout(url);
 			if (!response.ok) {
