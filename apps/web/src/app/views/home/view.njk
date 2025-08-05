@@ -1,4 +1,5 @@
 {% extends "views/layouts/main.njk" %}
+
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
@@ -7,15 +8,12 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "views/layouts/components/map.njk" import map %}
 {% from "govuk/components/tabs/macro.njk" import govukTabs %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
-
-
-
+{% from "views/home/map/map.njk" import map %}
 
 {% block pageContent %}
 <div class="filter-container">
@@ -393,7 +391,7 @@
             {% if not calendarError %}
             let currentWeek = 0;
             const year = new Date().getFullYear();
-            const events = {{ calendarData.events | dump | safe }};
+            const events = {{ calendarData.events | default([]) | dump | safe}};
 
             function getCurrentWeek() {
                 const today = new Date();
