@@ -129,20 +129,20 @@ function filterCases(cases, filters) {
 	});
 }
 
+function getCaseColor(caseAge) {
+	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
+	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
+	return '_00703c'; // green (0-20 weeks)
+}
+
 export function caseViewModel(c) {
 	return {
 		...c,
 		finalCommentsDate: c.finalCommentsDate.toLocaleDateString(),
-		color:
-			c.caseAge > 40
-				? 'd4351c' // red (41+ weeks)
-				: c.caseAge > 20
-					? 'f47738' // orange (21-40 weeks)
-					: '_00703c', // green (0-20 weeks)
+		color: getCaseColor(c.caseAge),
 		currentDate: new Date().toLocaleDateString()
 	};
 }
-
 export function buildPostHome(service) {
 	return async (req, res) => {
 		service.logger.info('post home');
