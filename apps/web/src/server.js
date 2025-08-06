@@ -1,6 +1,7 @@
 import { createApp } from './app/app.js';
 import { loadConfig } from './app/config.js';
 import { WebService } from '#service';
+import { memoryUsage } from 'node:process';
 
 const config = loadConfig();
 const service = new WebService(config);
@@ -19,3 +20,14 @@ app.set('http-port', config.httpPort);
 app.listen(app.get('http-port'), () => {
 	service.logger.info(`Server is running at http://localhost:${app.get('http-port')} in ${app.get('env')} mode`);
 });
+
+let currentUsage = 0;
+setInterval(() => {
+  const usage = memoryUsage.rss();
+  const usageMB = Math.round(usage / 1024 / 1024);
+  if (usageMB === currentUsage) {
+    return;
+  }
+  currentUsage = usageMB;
+  console.log('Memory usage:', usageMB, 'MB');
+}, 500);

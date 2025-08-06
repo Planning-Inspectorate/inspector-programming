@@ -32,10 +32,16 @@ export function buildViewHome(service) {
 
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-		const cases = await service.getCbosApiClientForSession(req.session).getCases({
-			pageNumber: page,
-			pageSize: limit
-		});
+    const start = new Date();
+    const appealCases = await service.db.appealCase.findMany();
+    const end = new Date();
+    service.logger.info(`Time taken to fetch cases: ${end - start}ms`);
+    const cases = [];
+    service.logger.info(`Found ${appealCases.length} cases`);
+		// const cases = await service.getCbosApiClientForSession(req.session).getCases({
+		// 	pageNumber: page,
+		// 	pageSize: limit
+		// });
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
@@ -69,7 +75,8 @@ export function buildViewHome(service) {
 			},
 			calendarData,
 			errors,
-			errorList
+			errorList,
+      appealCases
 		});
 	};
 }

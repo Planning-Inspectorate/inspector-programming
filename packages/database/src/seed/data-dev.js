@@ -41,15 +41,15 @@ function generateAppeals() {
 		caseType: caseTypes
 	};
 	const variations = [{}];
-	for (const [k, values] of Object.entries(variables)) {
-		const newVariations = [];
-		for (const value of values) {
-			for (const variation of variations) {
-				newVariations.push({ ...variation, [k]: value });
-			}
-		}
-		variations.push(...newVariations);
-	}
+  for (const [k, values] of Object.entries(variables)) {
+    const newVariations = [];
+    for (const value of values) {
+      for (const variation of variations) {
+        newVariations.push({ ...variation, [k]: value });
+      }
+    }
+    variations.push(...newVariations);
+  }
 
 	return variations.map((variation, index) => {
 		// not concerned with time zone issues, just rough dates is OK
@@ -70,17 +70,33 @@ function generateAppeals() {
  * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
  */
 export async function seedDev(dbClient) {
-	const appeals = generateAppeals();
+	// const appeals = generateAppeals();
+  //
+	// console.log('seeding', appeals.length, 'appeals');
+  //
+	// for (const appeal of appeals) {
+	// 	await dbClient.appealCase.upsert({
+	// 		where: { caseReference: appeal.caseReference },
+	// 		create: appeal,
+	// 		update: appeal
+	// 	});
+	// }
 
-	console.log('seeding', appeals.length, 'appeals');
+  const SEED_COUNT = 30000;
 
-	for (const appeal of appeals) {
-		await dbClient.appealCase.upsert({
-			where: { caseReference: appeal.caseReference },
-			create: appeal,
-			update: appeal
-		});
-	}
+  console.log('seeding', SEED_COUNT, 'appeals');
+
+  for (let i = 0; i < SEED_COUNT; i++) {
+    if ((i + 1) % 1000 === 0) {
+      console.log(`Seeded ${i + 1} appeals`);
+    }
+    const reference = `69${String(i + 1).padStart(5, '0')}`;
+    await dbClient.appealCase.upsert({
+      where: { caseReference: reference },
+      create: {...mockAppeal, caseReference: reference },
+      update: { ...mockAppeal, caseReference: reference }
+    });
+  }
 
 	console.log('dev seed complete');
 }
