@@ -18,7 +18,8 @@
   "license": "MIT",
   "dependencies": {
     "@planning-inspectorate/data-model": "*",
-    "@prisma/client": "*"
+    "@prisma/client": "*",
+    "date-fns": "*"
   },
   "devDependencies": {
     "prisma": "*"
