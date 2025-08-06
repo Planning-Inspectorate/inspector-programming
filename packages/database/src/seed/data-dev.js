@@ -86,16 +86,26 @@ export async function seedDev(dbClient) {
 
   console.log('seeding', SEED_COUNT, 'appeals');
 
+  const start = new Date();
+  let promises = [];
   for (let i = 0; i < SEED_COUNT; i++) {
     if ((i + 1) % 1000 === 0) {
-      console.log(`Seeded ${i + 1} appeals`);
+      console.log(`Seeded ${i + 1} appeals in ${new Date() - start}ms`);
     }
     const reference = `69${String(i + 1).padStart(5, '0')}`;
-    await dbClient.appealCase.upsert({
+    promises.push(dbClient.appealCase.upsert({
       where: { caseReference: reference },
       create: {...mockAppeal, caseReference: reference },
       update: { ...mockAppeal, caseReference: reference }
-    });
+    }));
+
+    if (i % 500) {
+      await Promise.all(promises);
+      promises = [];
+    }
+  }
+  if (promises.length > 0) {
+    await Promise.all(promises);
   }
 
 	console.log('dev seed complete');
