@@ -4,12 +4,12 @@
  * @module CasesClient
  */
 export class CasesClient {
-	/** @type {import('@prisma/client').PrismaClient} */
+	/** @type {import('@pins/inspector-programming-database/src/client').PrismaClient} */
 	#client;
 
 	/**
 	 *
-	 * @param {import('@prisma/client').PrismaClient} dbClient
+	 * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
 	 */
 	constructor(dbClient) {
 		this.#client = dbClient;
@@ -18,10 +18,9 @@ export class CasesClient {
 	/**
 	 * Fetch all appeals cases currently held in the database
 	 *
-	 * @returns {Promise<import('../types').AppealCase[]>}
+	 * @returns {Promise<import('../types').dbCase[]>}
 	 */
 	async getAllCases() {
-		const cases = await this.#client.AppealCase.findMany();
-		return cases;
+		return this.#client.appealCase.findMany();
 	}
 }
