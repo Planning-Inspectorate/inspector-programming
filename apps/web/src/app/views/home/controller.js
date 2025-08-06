@@ -1,5 +1,4 @@
 import { getInspectorList } from '../../inspector/inspector.js';
-import { CasesClient } from '@pins/inspector-programming-lib/data/database/cases-client.js';
 import qs from 'qs';
 import { parse as parseUrl } from 'url';
 
@@ -31,16 +30,16 @@ export function buildViewHome(service) {
 		const query = qs.parse(parseUrl(req.url).query || '');
 		const { filters } = query;
 
-		const casesclient = new CasesClient(service.dbClient);
-		const f = await casesclient.getAllCases();
-		console.info(f);
-
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+		/* app uses case data from database, not cbos api 
 		const cases = await service.getCbosApiClientForSession(req.session).getCases({
 			pageNumber: page,
 			pageSize: limit
 		});
+		*/
+
+		const cases = await service.casesClient.getAllCases();
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
