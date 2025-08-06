@@ -1,4 +1,5 @@
 import { getInspectorList } from '../../inspector/inspector.js';
+import { CasesClient } from '@pins/inspector-programming-lib/data/database/cases-client.js';
 import qs from 'qs';
 import { parse as parseUrl } from 'url';
 
@@ -29,6 +30,10 @@ export function buildViewHome(service) {
 		// Convert the raw query string into a nested object
 		const query = qs.parse(parseUrl(req.url).query || '');
 		const { filters } = query;
+
+		const casesclient = new CasesClient(service.dbClient);
+		const f = await casesclient.getAllCases();
+		console.info(f);
 
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
