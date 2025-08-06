@@ -4,6 +4,7 @@ import {
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_TYPE
 } from '@planning-inspectorate/data-model';
+import { addWeeks } from 'date-fns';
 
 /**
  * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput}
@@ -29,6 +30,7 @@ const mockAppeal = {
  * @returns {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]}
  */
 function generateAppeals() {
+	const now = new Date();
 	const allocationLevels = Object.values(APPEAL_ALLOCATION_LEVEL);
 	const procedures = Object.values(APPEAL_CASE_PROCEDURE);
 	const caseTypes = [APPEAL_CASE_TYPE.D, APPEAL_CASE_TYPE.W]; // Householder and S78
@@ -50,11 +52,16 @@ function generateAppeals() {
 	}
 
 	return variations.map((variation, index) => {
+		// not concerned with time zone issues, just rough dates is OK
+		const valid = addWeeks(now, -Math.floor(index / 2));
+		const finalCommentsDue = addWeeks(valid, 5);
 		const paddedIndex = String(index + 1).padStart(5, '0');
 		return {
 			...mockAppeal,
 			...variation,
-			caseReference: `69${paddedIndex}`
+			caseReference: `69${paddedIndex}`,
+			caseValidDate: valid,
+			finalCommentsDueDate: finalCommentsDue
 		};
 	});
 }
