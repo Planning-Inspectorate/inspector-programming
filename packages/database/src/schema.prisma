@@ -55,20 +55,25 @@ model AppealCasePollStatus {
   casesFetched Int
 }
 
-// TODO: add models here!
 model Inspector {
-  id                   Int    @id @default(autoincrement())
-  address              String
-  workPhone            String
-  mobilePhone          String
-  resourceGroup        String
-  grade                String
-  fte                  String
-  chartingOfficer      String
-  chartingOfficerPhone String
-  inspectorManager     String
-  name                 String
-  proficiency          String
-  validFrom            String
-  specialisms          String
+  id               String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  firstName        String
+  lastName         String
+  postcode         String?
+  grade            String?
+  email            String?
+  entraId          String? // to link with logged in user
+  workingAboveBand Boolean?
+
+  Specialisms InspectorSpecialism[]
+}
+
+model InspectorSpecialism {
+  id          String    @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  inspectorId String    @db.UniqueIdentifier
+  name        String
+  proficiency String?
+  validFrom   DateTime?
+
+  Inspector Inspector @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
 }
