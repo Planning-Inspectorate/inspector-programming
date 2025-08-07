@@ -44,7 +44,7 @@ export function buildViewHome(service) {
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
-		const sortedCases = sortCases(filteredCases, query.sort);
+		const sortedCases = await sortCases(filteredCases, service, query.sort, selectedInspector?.postcode);
 
 		const formData = {
 			filters,
@@ -140,19 +140,25 @@ export function getCaseColor(caseAge) {
 /**
  *
  * @param {Case[]} cases
+ * @param {import('#service').WebService} service
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @param {string} inspectorPostcode
  * @returns
  */
-export function sortCases(cases, sort) {
-	switch (sort) {
-		case 'distance':
-			//WIP
-			return cases;
-		case 'hybrid':
-			//WIP
-			return cases;
-		default:
-			return cases.sort((a, b) => b.caseAge - a.caseAge);
+export async function sortCases(cases, service, sort, inspectorPostcode) {
+	try {
+		if (['hybrid', 'distance'].includes(sort) && inspectorPostcode?.length) {
+			//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
+			const inspectorAddressInfo = (await service.osApiClient.addressesForPostcode(inspectorPostcode)).results[0];
+			const record = 'LPI' in inspectorAddressInfo ? inspectorAddressInfo.LPI : inspectorAddressInfo.DPA;
+			const [inspectorLat, inspectorLong] = [record.LAT, record.LNG];
+			console.log(inspectorLat, inspectorLong);
+		}
+		//sort by age
+		return cases.sort((a, b) => b.caseAge - a.caseAge);
+	} catch (err) {
+		service.logger.error({ error: err }, '[sortCases] Error sorting cases');
+		return cases;
 	}
 }
 
