@@ -8,6 +8,10 @@ export interface GroupMember {
 	mail: string;
 }
 
+export interface CalendarEvents {
+	value: CalendarEvent[];
+}
+
 export interface CalendarEvent {
 	id: string;
 	subject: string;
