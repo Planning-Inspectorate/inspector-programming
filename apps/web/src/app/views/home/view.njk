@@ -285,7 +285,7 @@
                     <br>
                         <div style="margin-bottom: 20px;">
                             <span class="govuk-body" style="margin-right: 10px;">Cases per page:</span>
-                            {% set limits = [20, 50, 100] %}
+                            {% set limits = [5, 10, 15, 25] %}
                             {% for l in limits %}
                                 <a  data-limit="{{ l }}"
                                     class="sort-pagination-link govuk-link{% if data.limit == l %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
