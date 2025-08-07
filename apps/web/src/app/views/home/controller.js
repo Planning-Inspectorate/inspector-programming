@@ -1,5 +1,6 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
+import { caseTypes, specialisms, specialismTypes } from '../../specialism/specialism.js';
 import { parse as parseUrl } from 'url';
 
 /**
@@ -57,7 +58,7 @@ export function buildViewHome(service) {
 			"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
 
 		return res.render('views/home/view.njk', {
-			pageHeading: 'Inspector Programming',
+			pageHeading: 'Unassigned case list',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
 			cases: sortedCases.map(caseViewModel),
@@ -69,7 +70,10 @@ export function buildViewHome(service) {
 			},
 			calendarData,
 			errors,
-			errorList
+			errorList,
+			specialisms,
+			specialismTypes,
+			caseTypes
 		});
 	};
 }
