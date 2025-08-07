@@ -22,3 +22,11 @@ export interface CaseViewModel {
 	linkedCases: number;
 	finalCommentsDate: Date;
 }
+
+export interface InspectorViewModel {
+	id: string;
+	firstName: string;
+	lastName: string;
+	emailAddress: string | null;
+	postcode: string | null;
+}
