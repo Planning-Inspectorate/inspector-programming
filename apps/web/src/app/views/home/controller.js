@@ -32,12 +32,6 @@ export function buildViewHome(service) {
 
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-		/* app uses case data from database, not cbos api 
-		const cases = await service.getCbosApiClientForSession(req.session).getCases({
-			pageNumber: page,
-			pageSize: limit
-		});
-		*/
 
 		const cases = await service.casesClient.getAllCases();
 
@@ -94,7 +88,7 @@ export function buildViewHome(service) {
  * @param {Filters} filters
  * @returns {ValidationErrors}
  */
-function validateFilters(filters) {
+export function validateFilters(filters) {
 	/** @type {ValidationErrors} */
 	const errors = {};
 	if (!filters) return errors;
@@ -124,7 +118,7 @@ function validateFilters(filters) {
  * @param {Filters} filters
  * @returns
  */
-function filterCases(cases, filters) {
+export function filterCases(cases, filters) {
 	if (!filters) return cases;
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
@@ -133,7 +127,7 @@ function filterCases(cases, filters) {
 	});
 }
 
-function getCaseColor(caseAge) {
+export function getCaseColor(caseAge) {
 	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
 	return '_00703c'; // green (0-20 weeks)
@@ -145,7 +139,7 @@ function getCaseColor(caseAge) {
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
  * @returns
  */
-function sortCases(cases, sort) {
+export function sortCases(cases, sort) {
 	switch (sort) {
 		case 'distance':
 			//WIP
@@ -161,7 +155,7 @@ function sortCases(cases, sort) {
 export function caseViewModel(c) {
 	return {
 		...c,
-		finalCommentsDate: c.finalCommentsDate.toLocaleDateString(),
+		finalCommentsDate: c.finalCommentsDate?.toLocaleDateString(),
 		color: getCaseColor(c.caseAge),
 		currentDate: new Date().toLocaleDateString()
 	};
