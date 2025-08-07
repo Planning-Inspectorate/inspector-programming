@@ -54,9 +54,23 @@ function generateAppeals() {
 		return {
 			...mockAppeal,
 			...variation,
+			caseValidDate: getRandomDateInLast50Weeks(),
 			caseReference: `69${paddedIndex}`
 		};
 	});
+}
+
+/**
+ *
+ * @returns {Date}
+ */
+function getRandomDateInLast50Weeks() {
+	const now = new Date();
+	const millisecondsInAWeek = 7 * 24 * 60 * 60 * 1000;
+	const fiftyWeeksAgo = new Date(now.getTime() - 50 * millisecondsInAWeek);
+
+	const randomTimestamp = fiftyWeeksAgo.getTime() + Math.random() * (now.getTime() - fiftyWeeksAgo.getTime());
+	return new Date(randomTimestamp);
 }
 
 /**
