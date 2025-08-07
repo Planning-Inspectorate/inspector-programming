@@ -32,6 +32,15 @@
     <div class="pins-map__container">
         <div id="map" class="pins-map__content"></div>
     </div>
+    <div id="custom-popup" style="display:none; position:absolute; z-index:1000; background:#fff; border:1px solid #ccc; padding:16px; min-width:300px;">
+      <button id="minimise-btn">_</button>
+      <button id="maximise-btn" style="display:none;">[ ]</button>
+      <button id="close-btn">X</button>
+      <button id="zoom-btn">+</button>
+      <button id="prev-btn"><</button>
+      <button id="next-btn">></button>
+      <div id="popup-content"></div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.3.1/os-api-branding.css" />
@@ -71,122 +80,92 @@
             layers: [tileLayer]
         });
 
-        const center = pins.reduce((acc, { siteAddressLatLong: { latitude, longitude } }) => {
-            acc.longitude += longitude;
-            acc.latitude += latitude;
-            return acc;
-        }, {longitude: 0, latitude: 0});
+        // Filter valid pins
+        const validPins = pins.filter(
+            p => p.siteAddressLatLong && p.siteAddressLatLong.latitude != null && p.siteAddressLatLong.longitude != null
+        );
 
-        center.longitude /= pins.length;
-        center.latitude /= pins.length;
+        // Default center (UK)
+        const defaultCenter = { longitude: -1.5, latitude: 52.5 };
+        let center = { ...defaultCenter };
+
+        if (validPins.length) {
+            center = validPins.reduce((acc, { siteAddressLatLong: { latitude, longitude } }) => {
+                acc.longitude += longitude;
+                acc.latitude += latitude;
+                return acc;
+            }, { longitude: 0, latitude: 0 });
+            center.longitude /= validPins.length;
+            center.latitude /= validPins.length;
+        }
 
         const view = new MapView({
             container: 'map',
             map: map,
             zoom: 3,
-            center: new Point(center),
+            center: new Point({
+                x: center.longitude,
+                y: center.latitude
+            }),
             constraints: {
                 minZoom: 2,
                 maxZoom: 15,
                 rotationEnabled: false
-            },
-            popup: {
-                defaultPopupTemplateEnabled: false,
-                dockEnabled: true,
-                dockOptions: {
-                    buttonEnabled: false,
-                    breakpoint: false
-                }
             }
+
         });
 
-        reactiveUtils.on(
-            () => view.popup,
-            "trigger-action",
-            (event) => {
-                if (event.action.title === "Select Case" || event.action.title === "Unselect Case") {
-                    const selectedCase = event.action.id.replace('toggle-select-case-', '');
-                    document.dispatchEvent(new CustomEvent('caseStateChange', {
-                        detail: {
-                            caseId: selectedCase,
-                            selected: !pins.find(({ caseId }) => caseId === selectedCase).selected
-                        }
-                    }));
-                }
-            }
-        );
-
-        document.addEventListener('caseStateChange', function (event) {
-            const graphic = view.graphics.find((graphic) => graphic.attributes?.caseId === event.detail.caseId);
-
-            if (graphic) {
-                const caseData = pins.find(({ caseId }) => caseId === event.detail.caseId);
-                caseData.selected = event.detail.selected;
-
-                updatePopupAction(caseData, graphic);
-            }
-        });
-
-        function updatePopupAction(caseData, pointGraphic) {
-            const actionTitle = caseData.selected ? 'Unselect Case' : 'Select Case';
-            pointGraphic.popupTemplate = {
-                title: `Case ID: ${caseData.caseId}`,
-                content: `
-                    <strong>Case Age:</strong> ${caseData.caseAge} Weeks<br>
-                    <strong>LPA Name:</strong> ${caseData.lpaName}<br>
-                    <strong>Case Status:</strong> ${caseData.caseStatus}<br>
-                    <strong>Site Postcode:</strong> ${caseData.siteAddressPostcode}<br>
-                    <strong>Case Specialism:</strong> ${caseData.caseSpecialisms}<br>
-                    <strong>Appeal Type:</strong> ${caseData.appealEventType}<br>
-                    <strong>Procedure:</strong> ${caseData.caseProcedure}<br>
-                    <strong>Allocation Level:</strong> ${caseData.allocationLevel}<br>
-                    <strong>Final Comments Date:</strong> ${caseData.finalCommentsDate}
-                `,
-                actions: [
-                    {
-                        id: 'toggle-select-case-' + caseData.caseId,
-                        title: actionTitle
-                    }
-                ]
-            };
-            pointGraphic.symbol = {
-                type: 'simple-marker',
-                color: caseData.markerColor,
-                outline: {
-                    color: !caseData.selected ? [255, 255, 255] : [0, 0, 0],
-                    width: 1
-                }
-            }
-        }
 
         function addMarker(caseData, color) {
-            const point = {
-                type: 'point',
-                ...caseData.siteAddressLatLong
-            };
-
-            const pointGraphic = new Graphic({
-                geometry: point,
-                attributes: caseData
+            if (
+                !caseData.siteAddressLatLong ||
+                caseData.siteAddressLatLong.latitude == null ||
+                caseData.siteAddressLatLong.longitude == null
+            ) {
+                return;
+            }
+            const point = new Point({
+                x: caseData.siteAddressLatLong.longitude,
+                y: caseData.siteAddressLatLong.latitude
             });
-
-            updatePopupAction(caseData, pointGraphic);
-
-            view.graphics.add(pointGraphic);
-        }
-
-        for (const caseData of pins) {
-            caseData.selected = false;
-            caseData.markerColor = `#${caseData.color}`;
-            addMarker(caseData);
-        }
-
-        function addInspectorMarker(inspectorData) {
-            const point = {
-                type: 'point',
-                ...inspectorData.homeLatLong
+            const markerSymbol = {
+                type: 'simple-marker',
+                color: '#' + (caseData.color || color || '00703c'),
+                outline: {
+                    color: '#fff',
+                    width: 1
+                }
             };
+            const graphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol,
+                attributes: caseData,
+                popupTemplate: {
+                    title: 'Case ' + caseData.caseId,
+                    content: [
+                        { type: 'fields', fieldInfos: [
+                            { fieldName: 'caseType', label: 'Type' },
+                            { fieldName: 'caseProcedure', label: 'Procedure' },
+                            { fieldName: 'siteAddressPostcode', label: 'Postcode' },
+                            { fieldName: 'lpaName', label: 'LPA' },
+                            { fieldName: 'caseAge', label: 'Case Age' },
+                            { fieldName: 'caseStatus', label: 'Status' }
+                        ]}
+                    ]
+                }
+            });
+            view.graphics.add(graphic);
+        }
 
+        pins.forEach(caseData => addMarker(caseData));
+
+
+        {% if inspectorPin and inspectorPin.address and inspectorPin.address.latitude and inspectorPin.address.longitude %}
+        function addInspectorMarker(inspectorData) {
+            const point = new Point({
+                x: inspectorData.address.longitude,
+                y: inspectorData.address.latitude
+            });
             const pictureMarkerSymbol = {
                 type: 'picture-marker',
                 url: `/assets/images/people.png`,
@@ -209,14 +188,75 @@
                 symbol: pictureMarkerSymbol,
                 popupTemplate: inspectorTooltip
             });
-
-            view.graphics.add(pointGraphic);
+            view.graphics.add(graphic);
         }
-
-        {% if inspectorPin %}
-            addInspectorMarker({{ inspectorPin | dump | safe }});
+        addInspectorMarker({{ inspectorPin | dump | safe }});
         {% endif %}
     });
+    // Helper to build popup content from attributes
+    function buildPopupContent(attrs) {
+        return `
+            <strong>Case ID:</strong> ${attrs.caseId}<br>
+            <strong>Case Age:</strong> ${attrs.caseAge}<br>
+            <strong>LPA Name:</strong> ${attrs.lpaName}<br>
+            <strong>Status:</strong> ${attrs.caseStatus}<br>
+            <strong>Postcode:</strong> ${attrs.siteAddressPostcode}<br>
+            <strong>Specialism:</strong> ${attrs.caseSpecialism || ''}<br>
+            <strong>Appeal Type:</strong> ${attrs.caseType || ''}<br>
+            <strong>Procedure:</strong> ${attrs.caseProcedure || ''}<br>
+            <strong>Allocation Level:</strong> ${attrs.allocationLevel || ''}<br>
+        `;
+    }
+
+    let currentCaseIndex = -1;
+
+    view.on("click", function(event) {
+        view.hitTest(event).then(function(response) {
+            const graphic = response.results[0]?.graphic;
+            if (graphic && graphic.attributes && graphic.attributes.caseId) {
+                currentCaseIndex = pins.findIndex(p => p.caseId === graphic.attributes.caseId);
+                document.getElementById('popup-content').innerHTML = buildPopupContent(graphic.attributes);
+                document.getElementById('custom-popup').style.display = 'block';
+                document.getElementById('minimise-btn').style.display = '';
+                document.getElementById('maximise-btn').style.display = 'none';
+            }
+        });
+    });
+
+    document.getElementById('minimise-btn').onclick = function() {
+        document.getElementById('popup-content').style.display = 'none';
+        this.style.display = 'none';
+        document.getElementById('maximise-btn').style.display = '';
+    };
+    document.getElementById('maximise-btn').onclick = function() {
+        document.getElementById('popup-content').style.display = '';
+        this.style.display = 'none';
+        document.getElementById('minimise-btn').style.display = '';
+    };
+    document.getElementById('close-btn').onclick = function() {
+        document.getElementById('custom-popup').style.display = 'none';
+    };
+    document.getElementById('zoom-btn').onclick = function() {
+        if (currentCaseIndex >= 0) {
+            const pin = pins[currentCaseIndex];
+            view.goTo({
+                center: [pin.siteAddressLatLong.longitude, pin.siteAddressLatLong.latitude],
+                zoom: view.zoom + 1
+            });
+        }
+    };
+    document.getElementById('prev-btn').onclick = function() {
+        if (pins.length && currentCaseIndex > 0) {
+            currentCaseIndex--;
+            document.getElementById('popup-content').innerHTML = buildPopupContent(pins[currentCaseIndex]);
+        }
+    };
+    document.getElementById('next-btn').onclick = function() {
+        if (pins.length && currentCaseIndex < pins.length - 1) {
+            currentCaseIndex++;
+            document.getElementById('popup-content').innerHTML = buildPopupContent(pins[currentCaseIndex]);
+        }
+    };
 
 </script>
 {% endmacro %}

@@ -42,6 +42,24 @@ export function buildViewHome(service) {
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
 		const sortedCases = sortCases(filteredCases, query.sort);
+		const casesWithLatLong = await Promise.all(
+			sortedCases.map(async (c) => {
+				try {
+					const response = await service.osApiClient.addressesForPostcode(c.siteAddressPostcode);
+					const address = response.results?.[0].DPA;
+					c.siteAddressLatLong = {
+						latitude: address?.LAT ?? null,
+						longitude: address?.LNG ?? null
+					};
+				} catch {
+					c.siteAddressLatLong = {
+						latitude: null,
+						longitude: null
+					};
+				}
+				return caseViewModel(c);
+			})
+		);
 
 		const formData = {
 			filters,
@@ -59,7 +77,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Inspector Programming',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: sortedCases.map(caseViewModel),
+			cases: casesWithLatLong,
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
