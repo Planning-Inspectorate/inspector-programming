@@ -1,5 +1,6 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
+import { getSimplifiedEvents } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 
 /**
@@ -51,10 +52,26 @@ export function buildViewHome(service) {
 			sort: req.query.sort || 'age',
 			inspectorId: req.query.inspectorId
 		};
-		const calendarData = {};
 
-		calendarData.error =
-			"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
+		const calendarData = {};
+		// calendarData.events = [];
+
+		if (selectedInspector) {
+			try {
+				calendarData.events = await getSimplifiedEvents(
+					service.entraClient,
+					selectedInspector,
+					req.session,
+					service.logger
+				);
+			} catch (error) {
+				service.logger.error(error, 'Failed to fetch calendar events');
+				calendarData.error =
+					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
+			}
+		}
+
+		console.log(calendarData);
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Inspector Programming',

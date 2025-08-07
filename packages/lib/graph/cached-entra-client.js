@@ -66,4 +66,13 @@ export class CachedEntraClient {
 		this.#cache.set(key, members);
 		return members;
 	}
+
+	/**
+	 *
+	 * @param {string} userId
+	 * @returns {Promise<import('./types').CalendarEvents>}
+	 */
+	async getEvents(userId) {
+		return this.#client.getEvents(userId);
+	}
 }
