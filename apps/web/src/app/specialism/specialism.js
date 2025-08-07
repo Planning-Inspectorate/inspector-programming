@@ -1,63 +1,6 @@
 import { APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 
-export const specialismTypes = [
-	{
-		value: APPEAL_CASE_TYPE.C,
-		text: APPEAL_CASE_TYPE.C
-	},
-	{
-		value: APPEAL_CASE_TYPE.D,
-		text: APPEAL_CASE_TYPE.D
-	},
-	{
-		value: APPEAL_CASE_TYPE.F,
-		text: APPEAL_CASE_TYPE.F
-	},
-	{
-		value: APPEAL_CASE_TYPE.G,
-		text: APPEAL_CASE_TYPE.G
-	},
-	{
-		value: APPEAL_CASE_TYPE.H,
-		text: APPEAL_CASE_TYPE.H
-	},
-	{
-		value: APPEAL_CASE_TYPE.L,
-		text: APPEAL_CASE_TYPE.L
-	},
-	{
-		value: APPEAL_CASE_TYPE.Q,
-		text: APPEAL_CASE_TYPE.Q
-	},
-	{
-		value: APPEAL_CASE_TYPE.S,
-		text: APPEAL_CASE_TYPE.S
-	},
-	{
-		value: APPEAL_CASE_TYPE.V,
-		text: APPEAL_CASE_TYPE.V
-	},
-	{
-		value: APPEAL_CASE_TYPE.W,
-		text: APPEAL_CASE_TYPE.W
-	},
-	{
-		value: APPEAL_CASE_TYPE.X,
-		text: APPEAL_CASE_TYPE.X
-	},
-	{
-		value: APPEAL_CASE_TYPE.Y,
-		text: APPEAL_CASE_TYPE.Y
-	},
-	{
-		value: APPEAL_CASE_TYPE.ZA,
-		text: APPEAL_CASE_TYPE.ZA
-	},
-	{
-		value: APPEAL_CASE_TYPE.ZP,
-		text: APPEAL_CASE_TYPE.ZP
-	}
-];
+export const specialismTypes = Object.values(APPEAL_CASE_TYPE).map((v) => ({ value: v, text: v }));
 
 export const specialisms = [
 	{
