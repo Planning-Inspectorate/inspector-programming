@@ -17,9 +17,27 @@ paths:
                 items:
                   $ref: '#/components/schemas/User'
         '500':
-          description: An server error occurred
+          description: A server error occurred
         '404':
           description: No Entra groups configured
+  /events:
+    get:
+      summary: Get calendar events from Microsoft Graph API for all users who are members of each Entra group listed in entra.groupIds.inspectorGroups config
+      responses:
+        '200':
+          description: Return an array of calendar events for all users who are members of the groups found in the config
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '500':
+          description: A server error occurred
+        '404':
+          description: Possible reasons include;
+            - No Entra groups configured
+            - No calendar events found for users
 
 components:
   schemas:
@@ -39,3 +57,22 @@ components:
         - displayName
         - email
         - groupId
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        userEmail:
+          type: string
+        title:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+      required:
+        - id
+        - userEmail
+        - title
+        - startDate
+        - endDate

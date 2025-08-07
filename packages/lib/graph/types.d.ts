@@ -8,6 +8,19 @@ export interface GroupMember {
 	mail: string;
 }
 
+export interface CalendarEvent {
+	id: string;
+	subject: string;
+	start: {
+		dateTime: string;
+		timeZone: string;
+	};
+	end: {
+		dateTime: string;
+		timeZone: string;
+	};
+}
+
 interface AuthSession {
 	account?: {
 		accessToken?: string;

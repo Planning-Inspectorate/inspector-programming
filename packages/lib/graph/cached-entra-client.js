@@ -66,4 +66,22 @@ export class CachedEntraClient {
 		this.#cache.set(key, members);
 		return members;
 	}
+
+	/**
+	 * Fetch all calendar events for an Entra user ID, up to a maximum of 5000
+	 *
+	 * @param {string} userId
+	 * @param {number} calendarEventsDayRange
+	 * @returns {Promise<import('./types.js').CalendarEvent[]>}
+	 */
+	async listAllUserCalendarEvents(userId, calendarEventsDayRange) {
+		const key = CACHE_PREFIX + userId;
+		let members = this.#cache.get(key);
+		if (members) {
+			return members;
+		}
+		members = await this.#client.listAllUserCalendarEvents(userId, calendarEventsDayRange);
+		this.#cache.set(key, members);
+		return members;
+	}
 }

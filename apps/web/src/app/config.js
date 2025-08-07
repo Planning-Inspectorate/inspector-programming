@@ -52,6 +52,7 @@ export function loadConfig() {
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
 		API_MOCK_DATA,
 		API_INSPECTOR_ENTRA_GROUPS,
+		API_CALENDAR_EVENTS_DAY_RANGE,
 		CBOS_API_TIMEOUT,
 		CBOS_API_URL,
 		CBOS_APPEAL_TYPE_CACHE_TTL
@@ -141,6 +142,7 @@ export function loadConfig() {
 		entra: {
 			// in minutes
 			cacheTtl: parseInt(ENTRA_GROUP_CACHE_TTL || 15),
+			calendarEventsDayRange: API_CALENDAR_EVENTS_DAY_RANGE,
 			groupIds: {
 				inspectors: ENTRA_GROUP_ID_INSPECTORS,
 				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,

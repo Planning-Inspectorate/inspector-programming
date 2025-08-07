@@ -22,6 +22,7 @@ interface Config extends BaseConfig {
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;
+		calendarEventsDayRange: number;
 		groupIds: {
 			inspectors: string;
 			teamLeads: string;
