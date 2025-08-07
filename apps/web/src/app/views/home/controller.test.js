@@ -1,5 +1,5 @@
 import { describe, mock, test } from 'node:test';
-import { buildViewHome, filterCases, getCaseColor, sortCases } from './controller.js';
+import { buildViewHome, caseViewModel, filterCases, getCaseColor, sortCases } from './controller.js';
 import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
@@ -89,6 +89,22 @@ describe('controller.js', () => {
 			const sortedCases = sortCases(cases, 'age');
 			assert.strictEqual(sortedCases.length, 3, 'Should return the same number of cases');
 			assert.deepStrictEqual(sortedCases, [{ caseAge: 30 }, { caseAge: 20 }, { caseAge: 10 }]);
+		});
+	});
+	describe('caseViewModel', () => {
+		test('should return a view model with formatted finalCommentsDate and color', () => {
+			const caseData = {
+				id: 1,
+				caseAge: 30,
+				finalCommentsDate: new Date('2025-08-06T23:00:00Z') // 7th August 2025 in Europe/London timezone
+			};
+			const viewModel = caseViewModel(caseData);
+			assert.strictEqual(
+				viewModel.finalCommentsDate,
+				'07/08/2025',
+				'Final comments date should be formatted in Europe/London timezone'
+			);
+			assert.strictEqual(viewModel.color, 'f47738', 'Color should be orange for case age 30');
 		});
 	});
 });

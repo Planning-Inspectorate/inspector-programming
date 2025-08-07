@@ -1,6 +1,7 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { parse as parseUrl } from 'url';
+import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 
 /**
  * @typedef {Object} Case
@@ -155,9 +156,9 @@ export function sortCases(cases, sort) {
 export function caseViewModel(c) {
 	return {
 		...c,
-		finalCommentsDate: c.finalCommentsDate?.toLocaleDateString(),
+		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
 		color: getCaseColor(c.caseAge),
-		currentDate: new Date().toLocaleDateString()
+		currentDate: formatDateForDisplay(new Date(), { format: 'dd/MM/yyyy' })
 	};
 }
 export function buildPostHome(service) {
