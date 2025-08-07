@@ -154,7 +154,6 @@
                             },
                             items: [
                                 { value: 'North', text: 'North' },
-                                { value: 'South', text: 'South' },
                                 { value: 'East', text: 'East' },
                                 { value: 'West', text: 'West' }
                             ],
@@ -175,10 +174,7 @@
                                     classes: "govuk-fieldset__legend--s"
                                 }
                             },
-                            items: [
-                                { value: 'W', text: 'W' },
-                                { value: 'D', text: 'D' }
-                            ],
+                            items: caseTypes,
                             values: data.filters.caseType
                         }),
                         classes: "custom-filter-dropdown",
@@ -196,13 +192,7 @@
                                     classes: "govuk-fieldset__legend--s"
                                 }
                             },
-                            items: [
-                                { value: 'Access', text: 'Access' },
-                                { value: 'Listed building and enforcement', text: 'Listed building and enforcement' },
-                                { value: 'Roads and traffics', text: 'Roads and traffics' },
-                                { value: 'Natural heritage', text: 'Natural heritage' },
-                                { value: 'Schedule 1', text: 'Schedule 1' }
-                            ],
+                            items: specialisms,
                             values: data.filters.caseSpecialisms
                         }),
                         classes: "custom-filter-dropdown",
@@ -221,16 +211,7 @@
                                     classes: "govuk-fieldset__legend--s"
                                 }
                             },
-                            items: [
-                                { value: 'A', text: 'A' },
-                                { value: 'B', text: 'B' },
-                                { value: 'C', text: 'C' },
-                                { value: 'D', text: 'D' },
-                                { value: 'E', text: 'E' },
-                                { value: 'F', text: 'F' },
-                                { value: 'G', text: 'G' },
-                                { value: 'H', text: 'H' }
-                            ],
+                            items: specialismTypes,
                             values: data.filters.allocationLevel
                         }),
                         classes: "custom-filter-dropdown",
