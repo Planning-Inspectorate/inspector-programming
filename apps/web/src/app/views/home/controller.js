@@ -1,6 +1,7 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { caseTypes, specialisms, specialismTypes } from '../../specialism/specialism.js';
+import { getSimplifiedEvents } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 
@@ -58,9 +59,24 @@ export function buildViewHome(service) {
 		};
 		const paginationDetails = handlePagination(req, total, formData);
 		const calendarData = {};
+		// calendarData.events = [];
 
-		calendarData.error =
-			"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
+		if (selectedInspector) {
+			try {
+				calendarData.events = await getSimplifiedEvents(
+					service.entraClient,
+					selectedInspector,
+					req.session,
+					service.logger
+				);
+			} catch (error) {
+				service.logger.error(error, 'Failed to fetch calendar events');
+				calendarData.error =
+					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
+			}
+		}
+
+		console.log(calendarData);
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',

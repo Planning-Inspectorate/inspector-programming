@@ -45,7 +45,7 @@ export async function getInspectorById(initEntraClient, authSession, logger, gro
 }
 
 /**
- * @param {import('#service').App2Service} service
+ * @param {import('#service').WebService} service
  * @param {import("../auth/session.service").SessionWithAuth} authSession
  * @returns {Promise<import("./types").Inspector[]>}
  */
