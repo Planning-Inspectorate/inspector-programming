@@ -4,6 +4,7 @@ import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from './api/api-service.js';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { CasesClient } from '@pins/inspector-programming-lib/data/database/cases-client.js';
+import { InspectorClient } from '@pins/inspector-programming-lib/data/database/inspector-client.js';
 import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 
@@ -29,6 +30,7 @@ export class WebService extends BaseService {
 
 		this.osApiClient = new OsApiClient(config.osApi.key);
 		this.casesClient = new CasesClient(this.dbClient);
+		this.inspectorClient = new InspectorClient(this.dbClient);
 	}
 
 	/**
