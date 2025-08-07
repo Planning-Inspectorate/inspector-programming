@@ -20,8 +20,12 @@ export class CasesClient {
 	 *
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
-	async getAllCases() {
-		const cases = await this.#client.appealCase.findMany();
+	async getAllCases({ limit = 10, offset = 0 }) {
+		const cases = await this.#client.appealCase.findMany({
+			orderBy: { caseValidDate: 'asc' }, // oldest first
+			skip: offset,
+			take: limit
+		});
 		return cases.map((c) => this.caseToViewModel(c));
 	}
 

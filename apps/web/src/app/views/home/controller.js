@@ -33,8 +33,11 @@ export function buildViewHome(service) {
 
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-
-		const cases = await service.casesClient.getAllCases();
+		const offset = (page - 1) * limit;
+		const cases = await service.casesClient.getAllCases({
+			limit,
+			offset
+		});
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
