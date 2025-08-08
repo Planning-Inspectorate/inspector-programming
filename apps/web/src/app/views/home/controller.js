@@ -17,7 +17,10 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
  * @property {number} caseAge - The age of the case in weeks.
  * @property {number} linkedCases - The number of linked cases.
  * @property {Date} finalCommentsDate - The date of the final comments.
+ * @property {number | null} lat - The latitude of the case
+ * @property {number | null} lng - The longitude of the case
  */
+
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
@@ -156,17 +159,16 @@ export function getCaseColor(caseAge) {
 
 /**
  *
- * @param {Case[]} cases
+ * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel[]} cases
  * @param {import('#service').WebService} service
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
  * @param {string} inspectorPostcode
- * @returns
+ * @returns {Promise<import('@pins/inspector-programming-lib/data/types').CaseViewModel[]>}
  */
 export async function sortCases(cases, service, sort, inspectorPostcode) {
 	try {
 		if (['hybrid', 'distance'].includes(sort) && inspectorPostcode?.length) {
-			const inspectorCoordinates = await service.casesClient.getCaseCoordinates(inspectorPostcode);
-			console.log(inspectorCoordinates);
+			return sortByDistance(cases, service, inspectorPostcode);
 		}
 		//sort by age
 		return cases.sort((a, b) => b.caseAge - a.caseAge);
@@ -174,6 +176,45 @@ export async function sortCases(cases, service, sort, inspectorPostcode) {
 		service.logger.error({ error: err }, '[sortCases] Error sorting cases');
 		return cases;
 	}
+}
+
+/**
+ *	Sort cases by distance - decomposed from main sortCases due to complexity
+ * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel[]} cases
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorPostcode
+ * @returns {Promise<import('@pins/inspector-programming-lib/data/types').CaseViewModel[]>}
+ */
+async function sortByDistance(cases, service, inspectorPostcode) {
+	const inspectorCoordinates = await service.casesClient.getCaseCoordinates(inspectorPostcode);
+	if (inspectorCoordinates.lat === null || inspectorCoordinates.lng === null) return cases;
+
+	//if inspector coords are valid, cast as number instead of number | null
+	/** @type {import('@pins/inspector-programming-lib/data/types').LatLong} */
+	const validatedInspectorCoords = { lat: inspectorCoordinates.lat, lng: inspectorCoordinates.lng };
+
+	return cases.sort((a, b) => {
+		const [aValid, bValid] = [!(a.lat === null || a.lng === null), !(b.lat === null || b.lng === null)];
+		if (aValid && bValid) {
+			//ensure case coords are valid and cast to number if so
+			const validA = {
+				lat: /** @type {number} */ (a.lat),
+				lng: /** @type {number} */ (a.lng)
+			};
+			const validB = {
+				lat: /** @type {number} */ (b.lat),
+				lng: /** @type {number} */ (b.lng)
+			};
+			const [distA, distB] = [
+				service.casesClient.distanceBetween(validatedInspectorCoords, validA),
+				service.casesClient.distanceBetween(validatedInspectorCoords, validB)
+			];
+			return distA - distB;
+		}
+		if (aValid) return -1;
+		if (bValid) return 1;
+		return 0;
+	});
 }
 
 export function caseViewModel(c) {

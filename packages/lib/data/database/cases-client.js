@@ -85,14 +85,35 @@ export class CasesClient {
 	/**
 	 * Fetches latitude and longitude coordinates for a case postcode
 	 * @param {*} postcode
-	 * @returns {Promise<{lat?: number, lng?: number}>}
+	 * @returns {Promise<{lat: number | null, lng: number | null}>}
 	 */
 	async getCaseCoordinates(postcode) {
 		//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
 		const addressInfo = (await this.#osClient.addressesForPostcode(postcode)).results[0];
 		//LPI data is more precise
 		const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
-		return { lat: record.LAT, lng: record.LNG };
+		return { lat: record.LAT ?? null, lng: record.LNG ?? null };
+	}
+
+	/**
+	 * Fairly accurate distance calculation using the Haversine formula
+	 *
+	 * @param {import('../types').LatLong} latLongA
+	 * @param {import('../types').LatLong} latLongB
+	 * @returns {number} Distance in km
+	 */
+	distanceBetween(latLongA, latLongB) {
+		const earthRadius = 6371;
+		const latDiff = ((latLongB.lat - latLongA.lat) * Math.PI) / 180;
+		const longDiff = ((latLongB.lng - latLongA.lng) * Math.PI) / 180;
+		const a =
+			Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
+			Math.cos((latLongA.lat * Math.PI) / 180) *
+				Math.cos((latLongB.lat * Math.PI) / 180) *
+				Math.sin(longDiff / 2) *
+				Math.sin(longDiff / 2);
+		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		return earthRadius * c;
 	}
 
 	/**
