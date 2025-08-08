@@ -381,11 +381,13 @@
                         <tbody id="calendar-body">
                             {% for i in range(0, calendarGrid.length) %}
                                 <tr>
-                                        <td class="time-column">
-                                            {% if i % 2 == 0 %} {{timeList[i/2]}} {% endif %}
-                                        </td>
+                                        <td class="time-column">{% if i % 2 == 0 %} {{timeList[i/2]}} {% endif %}</td>
                                         {% for entry in calendarGrid[i] %}
-                                        <td class="calendar-cell"></td>
+                                            {% if entry.isEvent %}
+                                                <td class="event">{{entry.text}}</td>
+                                            {% else %}
+                                                <td class="calendar-cell"></td>
+                                            {% endif %}
                                         {% endfor %}
                                 </tr>
                             {% endfor %}
@@ -396,135 +398,6 @@
                 <p class="govuk-body"> No Inspector Selected. Please select an Inspector from the drop down to see this information. <p>
             {% endif %}
         </div>
-        <script>
-            {% if not calendarError %}
-            let currentWeek = 0;
-            const year = new Date().getFullYear();
-            const events = {{ calendarData.events | default([]) | dump | safe}};
-
-            function getCurrentWeek() {
-                const today = new Date();
-                const startDate = new Date(year, 0, 1);
-                while (startDate.getDay() !== 1) {
-                    startDate.setDate(startDate.getDate() - 1);
-                }
-                const diff = Math.floor((today - startDate) / (7 * 24 * 60 * 60 * 1000));
-                return diff;
-            }
-
-            function generateCalendar(weekOffset) {
-                if (events.length === 0) {
-                    return;
-                }
-
-                const startDate = new Date(year, 0, 1 + (weekOffset * 7));
-                while (startDate.getDay() !== 1) {
-                    startDate.setDate(startDate.getDate() - 1);
-                }
-
-                const weekStartDate = startDate.toLocaleDateString("en-GB");
-                const weekEndDate = new Date(startDate);
-                weekEndDate.setDate(weekEndDate.getDate() + 4);
-                weekEndDate.setHours(23, 59, 59, 999);
-                const formattedTitle = `${("0" + startDate.getDate()).slice(-2)}-${("0" + weekEndDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${year}`;
-                document.getElementById("monthYear").innerText = formattedTitle;
-
-                const headers = ["mon", "tue", "wed", "thu", "fri"];
-                for (let i = 0; i < 5; i++) {
-                    const day = new Date(startDate);
-                    day.setDate(day.getDate() + i);
-                    document.getElementById(headers[i]).innerText = `${("0" + day.getDate()).slice(-2)} ${day.toLocaleString('en-US', { weekday: 'short' })}`;
-                }
-
-                const tbody = document.getElementById("calendar-body");
-                tbody.innerHTML = "";
-
-                for (let hour = 8; hour < 18; hour++) {
-                    for (let min of [0, 30]) {
-                        const row = document.createElement("tr");
-                        const timeCell = document.createElement("td");
-                        timeCell.classList.add("time-column");
-                        if (min === 0) {
-                            timeCell.innerText = `${hour}:00`;
-                        } else {
-                            timeCell.innerText = ``;
-                        }
-                        row.appendChild(timeCell);
-
-                        for (let i = 0; i < 5; i++) {
-                            const cell = document.createElement("td");
-                            cell.classList.add("calendar-cell");
-                            row.appendChild(cell);
-                        }
-                        tbody.appendChild(row);
-                    }
-                }
-
-                events.forEach(event => {
-                    const start = new Date(event.startDateTime);
-                    const end = new Date(event.endDateTime);
-
-                    if (start >= startDate && start <= weekEndDate) {
-                        const dayIndex = start.getDay() - 1;
-                        const startHour = start.getHours();
-                        const startMinutes = start.getMinutes();
-                        const endHour = end.getHours();
-                        const endMinutes = end.getMinutes();
-
-                        const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
-                        const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
-
-                        let backgroundColor = "lightblue";
-                        if (event.subject.includes("Planning")) {
-                            backgroundColor = "lightblue";
-                        } else if (event.subject.includes("Site Visit")) {
-                            backgroundColor = "lightcoral";
-                        } else if (event.subject.includes("Report")) {
-                            backgroundColor = "lightgrey";
-                        }
-
-                        const rows = tbody.querySelectorAll("tr");
-                        const validStartRow = Math.max(0, startRow);
-                        for (let i = validStartRow; i <= endRow && i < rows.length; i++) {
-                            const cell = rows[i].children[dayIndex + 1];
-                            cell.style.backgroundColor = backgroundColor;
-
-                            if (i === startRow) {
-                                cell.innerText = event.subject;
-                            } else {
-                                cell.innerText = "";
-                            }
-                        }
-                    }
-                });
-            }
-
-            function prevWeek() {
-                if (currentWeek > 0) {
-                    currentWeek--;
-                    generateCalendar(currentWeek);
-                }
-            }
-
-            function nextWeek() {
-                if (currentWeek < 51) {
-                    currentWeek++;
-                    generateCalendar(currentWeek);
-                }
-            }
-
-            function goToToday() {
-                currentWeek = getCurrentWeek();
-                generateCalendar(currentWeek);
-            }
-
-            document.addEventListener("DOMContentLoaded", function() {
-                currentWeek = getCurrentWeek();
-                generateCalendar(currentWeek);
-
-            });
-            {% endif %}
-        </script>
         {% endset %}
 
         {{ govukTabs({
