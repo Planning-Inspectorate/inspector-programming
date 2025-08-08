@@ -165,7 +165,7 @@ export function getCaseColor(caseAge) {
 export async function sortCases(cases, service, sort, inspectorPostcode) {
 	try {
 		if (['hybrid', 'distance'].includes(sort) && inspectorPostcode?.length) {
-			const inspectorCoordinates = await getCoordinatesFromPostcode(service, inspectorPostcode);
+			const inspectorCoordinates = await service.casesClient.getCaseCoordinates(inspectorPostcode);
 			console.log(inspectorCoordinates);
 		}
 		//sort by age
@@ -174,19 +174,6 @@ export async function sortCases(cases, service, sort, inspectorPostcode) {
 		service.logger.error({ error: err }, '[sortCases] Error sorting cases');
 		return cases;
 	}
-}
-
-/**
- *
- * @param {import('#service').WebService} service
- * @param {string} postcode
- */
-async function getCoordinatesFromPostcode(service, postcode) {
-	//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
-	const addressInfo = (await service.osApiClient.addressesForPostcode(postcode)).results[0];
-	//LPI data is more precise
-	const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
-	return { lat: record.LAT, lng: record.LNG };
 }
 
 export function caseViewModel(c) {

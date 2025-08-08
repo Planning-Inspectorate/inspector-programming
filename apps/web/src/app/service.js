@@ -27,7 +27,7 @@ export class WebService extends BaseService {
 		this.apiService = new ApiService(this);
 
 		this.osApiClient = new OsApiClient(config.osApi.key);
-		this.casesClient = new CasesClient(this.dbClient);
+		this.casesClient = new CasesClient(this.dbClient, this.osApiClient);
 		this.inspectorClient = new InspectorClient(this.dbClient);
 	}
 

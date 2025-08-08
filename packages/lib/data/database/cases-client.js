@@ -6,13 +6,17 @@
 export class CasesClient {
 	/** @type {import('@pins/inspector-programming-database/src/client').PrismaClient} */
 	#client;
+	/** @type {import('@pins/inspector-programming-lib/os/os-api-client').OsApiClient} */
+	#osClient;
 
 	/**
 	 *
 	 * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+	 * @param {import('@pins/inspector-programming-lib/os/os-api-client').OsApiClient} osClient
 	 */
-	constructor(dbClient) {
+	constructor(dbClient, osClient) {
 		this.#client = dbClient;
+		this.#osClient = osClient;
 	}
 
 	/**
@@ -22,15 +26,44 @@ export class CasesClient {
 	 */
 	async getAllCases() {
 		const cases = await this.#client.appealCase.findMany();
-		return cases.map((c) => this.caseToViewModel(c));
+		const processedCases = await this.processCases(cases);
+		return processedCases.map((c) => this.caseToViewModel(c));
+	}
+
+	/**
+	 * Process cases to allow for additional calculations and values to be computed
+	 * @param {import('@pins/inspector-programming-database/src/client').AppealCase[]} cases
+	 * @returns {Promise<import('../types').ProcessedAppealCase[]>}
+	 */
+	async processCases(cases) {
+		/** @type {import('../types').ProcessedAppealCase[]} */
+		let processedCases = [];
+		const chunkedCases = this.chunkArray(cases, 5);
+		for (const caseChunk of chunkedCases) {
+			const chunkCoords = await Promise.all(
+				caseChunk.map(async (c) => {
+					try {
+						const coords = await this.getCaseCoordinates(c.siteAddressPostcode);
+						return { ...c, ...coords };
+					} catch (err) {
+						//if error occurs getting coords from os api then leave lat and long null
+						console.error(err);
+						return { ...c, lat: null, lng: null };
+					}
+				})
+			);
+			processedCases = [...processedCases, ...chunkCoords];
+		}
+		return processedCases;
 	}
 
 	/**
 	 * Maps a case object to a view model for UI consumption.
-	 * @param {import('@pins/inspector-programming-database/src/client').AppealCase} c
+	 * @param {import('../types').ProcessedAppealCase} c
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
+		console.info(c);
 		return {
 			caseId: c.caseReference,
 			caseType: c.caseType || '',
@@ -38,18 +71,33 @@ export class CasesClient {
 			allocationBand: c.allocationBand || '',
 			caseLevel: c.allocationLevel || '',
 			siteAddressPostcode: c.siteAddressPostcode || '',
-			lpaName: c.lpaName || '',
-			lpaRegion: c.lpaRegion || '',
+			lpaName: typeof c.lpaName === 'string' ? c.lpaName : '',
+			lpaRegion: typeof c.lpaRegion === 'string' ? c.lpaRegion : '',
 			caseStatus: c.caseStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.caseValidDate || new Date()),
 			linkedCases: this.getLinkedCasesCount(c),
-			finalCommentsDate: c.finalCommentsDueDate || new Date()
+			finalCommentsDate: c.finalCommentsDueDate instanceof Date ? c.finalCommentsDueDate : new Date(),
+			lat: c.lat,
+			lng: c.lng
 		};
 	}
 
 	/**
+	 * Fetches latitude and longitude coordinates for a case postcode
+	 * @param {*} postcode
+	 * @returns {Promise<{lat?: number, lng?: number}>}
+	 */
+	async getCaseCoordinates(postcode) {
+		//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
+		const addressInfo = (await this.#osClient.addressesForPostcode(postcode)).results[0];
+		//LPI data is more precise
+		const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
+		return { lat: record.LAT, lng: record.LNG };
+	}
+
+	/**
 	 * Returns the number of linked appeals for a case.
-	 * @param {import('@pins/inspector-programming-database/src/client').AppealCase} c
+	 * @param {import('@pins/inspector-programming-database/src/client').AppealCase | import('../types').ProcessedAppealCase} c
 	 * @returns {number}
 	 */
 	getLinkedCasesCount(c) {
@@ -92,5 +140,19 @@ export class CasesClient {
 			cases: cases.map((c) => this.caseToViewModel(c)),
 			total
 		};
+	}
+
+	/**
+	 * chunks array into sub-arrays for batch processing
+	 * @param {any[]} array
+	 * @param {number} chunkSize
+	 * @returns
+	 */
+	chunkArray(array, chunkSize) {
+		const chunks = [];
+		for (let i = 0; i < array.length; i += chunkSize) {
+			chunks.push(array.slice(i, i + chunkSize));
+		}
+		return chunks;
 	}
 }
