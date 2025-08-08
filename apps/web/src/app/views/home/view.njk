@@ -365,7 +365,7 @@
                             <button onclick="prevWeek()">&lt;</button>
                             <button onclick="nextWeek()">&gt;</button>
                         </div>
-                        <h2 id="monthYear"></h2>
+                        <h2>{{weekTitle}}</h2>
                         <label for="weekPicker" class="arrow-button">↓</label>
                         <input type="text" id="weekPicker" placeholder="Select date" readonly>
                     </div>
@@ -373,14 +373,22 @@
                         <thead>
                             <tr>
                                 <th class="time-column"></th>
-                                <th id="mon"></th>
-                                <th id="tue"></th>
-                                <th id="wed"></th>
-                                <th id="thu"></th>
-                                <th id="fri"></th>
+                                {% for date in dateList %}
+                                <th>{{date}}</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody id="calendar-body">
+                            {% for i in range(0, calendarGrid.length) %}
+                                <tr>
+                                        <td class="time-column">
+                                            {% if i % 2 == 0 %} {{timeList[i/2]}} {% endif %}
+                                        </td>
+                                        {% for entry in calendarGrid[i] %}
+                                        <td class="calendar-cell"></td>
+                                        {% endfor %}
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 {% endif %}
