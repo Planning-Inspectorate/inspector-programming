@@ -1,7 +1,7 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import {
-	generateCalendarGrid,
+	generateCalendar,
 	generateDatesList,
 	generateTimeList,
 	generateWeekTitle,
@@ -81,7 +81,7 @@ export function buildViewHome(service) {
 		const startDate = getCurrentWeekStartDate();
 		const dateList = generateDatesList(startDate);
 		const timeList = generateTimeList(8, 18);
-		const calendarGrid = generateCalendarGrid(7, 20);
+		const calendarGrid = generateCalendar(startDate, calendarData.events);
 		const weekTitle = generateWeekTitle(startDate);
 
 		return res.render('views/home/view.njk', {
