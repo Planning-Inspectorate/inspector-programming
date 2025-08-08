@@ -1,7 +1,14 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { caseTypes, specialisms, specialismTypes } from '../../specialism/specialism.js';
-import { getSimplifiedEvents } from '../../calendar/calendar.js';
+import {
+	generateCalendarGrid,
+	generateDatesList,
+	generateTimeList,
+	generateWeekTitle,
+	getCurrentWeekStartDate,
+	getSimplifiedEvents
+} from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 
@@ -76,7 +83,11 @@ export function buildViewHome(service) {
 			}
 		}
 
-		console.log(calendarData);
+		const startDate = getCurrentWeekStartDate();
+		const dateList = generateDatesList(startDate);
+		const timeList = generateTimeList(8, 18);
+		const calendarGrid = generateCalendarGrid(7, 20);
+		const weekTitle = generateWeekTitle(startDate);
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',
@@ -91,6 +102,10 @@ export function buildViewHome(service) {
 				...inspectorData
 			},
 			calendarData,
+			timeList,
+			dateList,
+			calendarGrid,
+			weekTitle,
 			errors,
 			errorList,
 			paginationDetails,
