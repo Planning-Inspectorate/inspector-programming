@@ -48,7 +48,13 @@ export function buildViewHome(service) {
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
-		const sortedCases = await sortCases(filteredCases, service, query.sort, selectedInspector?.postcode);
+		const sortingErrors = validateSorts(String(query.sort), selectedInspector);
+		const sortingErrorList = Object.values(sortingErrors).map((message) => ({ ...message, href: `#` }));
+
+		//if sort is invalid sort by age by default
+		const sortedCases = sortingErrorList.length
+			? filteredCases.sort((a, b) => b.caseAge - a.caseAge)
+			: await sortCases(filteredCases, service, String(query.sort), selectedInspector?.postcode ?? null);
 
 		const formData = {
 			filters,
@@ -77,7 +83,8 @@ export function buildViewHome(service) {
 			calendarData,
 			errors,
 			errorList,
-			paginationDetails
+			paginationDetails,
+			sortingErrorList
 		});
 	};
 }
@@ -162,7 +169,7 @@ export function getCaseColor(caseAge) {
  * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel[]} cases
  * @param {import('#service').WebService} service
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
- * @param {string} inspectorPostcode
+ * @param {string | null} inspectorPostcode
  * @returns {Promise<import('@pins/inspector-programming-lib/data/types').CaseViewModel[]>}
  */
 export async function sortCases(cases, service, sort, inspectorPostcode) {

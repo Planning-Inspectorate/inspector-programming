@@ -63,7 +63,6 @@ export class CasesClient {
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
-		console.info(c);
 		return {
 			caseId: c.caseReference,
 			caseType: c.caseType || '',
