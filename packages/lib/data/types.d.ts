@@ -44,3 +44,8 @@ export interface InspectorViewModel {
 	emailAddress: string | null;
 	postcode: string | null;
 }
+
+export interface LatLong {
+	lat: number;
+	lng: number;
+}
