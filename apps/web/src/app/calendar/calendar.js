@@ -39,7 +39,7 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
  */
 export function getCurrentWeekStartDate() {
 	const startDate = new Date();
-
+	startDate.setHours(0, 0, 0, 0);
 	while (startDate.getDay() !== 1) {
 		startDate.setDate(startDate.getDate() - 1);
 	}
@@ -116,32 +116,37 @@ export function generateCalendar(startDate, events) {
 	let calendarGrid = generateCalendarGrid(7, 20);
 	const weekEndDate = new Date(startDate);
 	weekEndDate.setDate(weekEndDate.getDate() + 6);
+	weekEndDate.setHours(23, 59, 59, 999);
 
-	events.forEach((event) => {
-		const start = new Date(event.startDateTime);
-		const end = new Date(event.endDateTime);
+	console.log(events);
 
-		if (start >= startDate && start <= weekEndDate) {
-			const dayIndex = start.getDay() - 1 != -1 ? start.getDay() - 1 : 6; // Monday = 0, Sunday = 6
-			const startHour = start.getHours();
-			const startMinutes = start.getMinutes();
-			const endHour = end.getHours();
-			const endMinutes = end.getMinutes();
+	if (events) {
+		events.forEach((event) => {
+			const start = new Date(event.startDateTime);
+			const end = new Date(event.endDateTime);
 
-			const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
-			const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
+			if (start.getTime() >= startDate.getTime() && start.getTime() <= weekEndDate.getTime()) {
+				const dayIndex = start.getDay() - 1 != -1 ? start.getDay() - 1 : 6; // Monday = 0, Sunday = 6
+				const startHour = start.getHours();
+				const startMinutes = start.getMinutes();
+				const endHour = end.getHours();
+				const endMinutes = end.getMinutes();
 
-			const validStartRow = Math.max(0, startRow);
-			for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
-				let cell = {
-					text: i == startRow ? event.subject : '',
-					isEvent: true
-				};
+				const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
+				const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 1 : 0);
 
-				calendarGrid[i][dayIndex] = cell;
+				const validStartRow = Math.max(0, startRow);
+				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
+					let cell = {
+						text: i == startRow ? event.subject : '',
+						isEvent: true
+					};
+
+					calendarGrid[i][dayIndex] = cell;
+				}
 			}
-		}
-	});
+		});
+	}
 
 	return calendarGrid;
 }

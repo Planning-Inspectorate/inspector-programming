@@ -58,6 +58,10 @@ export class EntraClient {
 	async getEvents(userId) {
 		const startDate = new Date();
 		startDate.setHours(0, 0, 0, 0);
+		while (startDate.getDay() !== 1) {
+			startDate.setDate(startDate.getDate() - 1);
+		}
+
 		const endDate = new Date();
 		endDate.setHours(23, 59, 59, 999);
 		endDate.setDate(endDate.getDate() + 90);
