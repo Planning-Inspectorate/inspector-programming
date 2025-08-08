@@ -1,6 +1,13 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
-import { getSimplifiedEvents } from '../../calendar/calendar.js';
+import {
+	generateCalendarGrid,
+	generateDatesList,
+	generateTimeList,
+	generateWeekTitle,
+	getCurrentWeekStartDate,
+	getSimplifiedEvents
+} from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 
 /**
@@ -71,7 +78,11 @@ export function buildViewHome(service) {
 			}
 		}
 
-		console.log(calendarData);
+		const startDate = getCurrentWeekStartDate();
+		const dateList = generateDatesList(startDate);
+		const timeList = generateTimeList(8, 18);
+		const calendarGrid = generateCalendarGrid(7, 20);
+		const weekTitle = generateWeekTitle(startDate);
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Inspector Programming',
@@ -85,6 +96,10 @@ export function buildViewHome(service) {
 				...selectedInspector
 			},
 			calendarData,
+			timeList,
+			dateList,
+			calendarGrid,
+			weekTitle,
 			errors,
 			errorList
 		});
