@@ -185,7 +185,16 @@ $font-family: arial, helvetica, sans-serif;
 	background-color: lightblue;
 }
 
+.calendar-table td.calendar-cell {
+	background-color: #ededeb;
+}
+
+.calendar-table td.calendar-cell-today {
+	background-color: white;
+}
+
 .nav-buttons {
+	display: inline;
 	margin: 0 10px;
 }
 

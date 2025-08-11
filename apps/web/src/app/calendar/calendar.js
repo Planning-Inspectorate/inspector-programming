@@ -54,10 +54,14 @@ export function getCurrentWeekStartDate() {
  */
 export function generateWeekTitle(startDate) {
 	const weekEndDate = new Date(startDate);
-	const year = weekEndDate.getFullYear();
 	weekEndDate.setDate(weekEndDate.getDate() + 6);
 	weekEndDate.setHours(23, 59, 59, 999);
-	return `${('0' + startDate.getDate()).slice(-2)}-${('0' + weekEndDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${year}`;
+	if (startDate.getFullYear() != weekEndDate.getFullYear()) {
+		return `${('0' + startDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${startDate.getFullYear()}-${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
+	} else if (startDate.getMonth() != weekEndDate.getMonth()) {
+		return `${('0' + startDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}-${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
+	}
+	return `${('0' + startDate.getDate()).slice(-2)}-${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
 }
 
 /**
@@ -101,7 +105,8 @@ export function generateCalendarGrid(rows, columns) {
 	return Array.from({ length: columns }, () =>
 		Array.from({ length: rows }, () => ({
 			text: '',
-			isEvent: false
+			isEvent: false,
+			isToday: false
 		}))
 	);
 }
@@ -114,11 +119,18 @@ export function generateCalendarGrid(rows, columns) {
  */
 export function generateCalendar(startDate, events) {
 	let calendarGrid = generateCalendarGrid(7, 20);
+	const today = new Date();
 	const weekEndDate = new Date(startDate);
 	weekEndDate.setDate(weekEndDate.getDate() + 6);
 	weekEndDate.setHours(23, 59, 59, 999);
 
-	console.log(events);
+	if (today.getTime() >= startDate.getTime() && today.getTime() <= weekEndDate.getTime()) {
+		const dayIndex = today.getDay() - 1 != -1 ? today.getDay() - 1 : 6; // Monday = 0, Sunday = 6
+
+		for (let i = 0; i < calendarGrid.length; i++) {
+			calendarGrid[i][dayIndex].isToday = true;
+		}
+	}
 
 	if (events) {
 		events.forEach((event) => {
@@ -137,12 +149,8 @@ export function generateCalendar(startDate, events) {
 
 				const validStartRow = Math.max(0, startRow);
 				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
-					let cell = {
-						text: i == startRow ? event.subject : '',
-						isEvent: true
-					};
-
-					calendarGrid[i][dayIndex] = cell;
+					calendarGrid[i][dayIndex].text = i == startRow ? event.subject : '';
+					calendarGrid[i][dayIndex].isEvent = true;
 				}
 			}
 		});
