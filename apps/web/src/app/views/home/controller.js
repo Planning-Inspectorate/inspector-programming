@@ -1,7 +1,7 @@
-//import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { parse as parseUrl } from 'url';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { CasesClient } from '@pins/inspector-programming-lib/data/database/cases-client.js';
 
 /**
  * @typedef {Object} Case
@@ -27,7 +27,6 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
  */
 export function buildViewHome(service) {
 	return async (req, res) => {
-		//for now use a simple db client for fetching inspectors in dev
 		//const inspectors = await getInspectorList(service, req.session);
 		const inspectors = await service.inspectorClient.getAllInspectors();
 
@@ -213,8 +212,8 @@ async function sortByDistance(cases, service, inspectorPostcode) {
 				lng: /** @type {number} */ (b.lng)
 			};
 			const [distA, distB] = [
-				service.casesClient.distanceBetween(validatedInspectorCoords, validA),
-				service.casesClient.distanceBetween(validatedInspectorCoords, validB)
+				CasesClient.distanceBetween(validatedInspectorCoords, validA),
+				CasesClient.distanceBetween(validatedInspectorCoords, validB)
 			];
 			return distA - distB;
 		}

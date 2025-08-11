@@ -45,9 +45,8 @@ export class CasesClient {
 					try {
 						const coords = await this.getCaseCoordinates(c.siteAddressPostcode);
 						return { ...c, ...coords };
-					} catch (err) {
+					} catch {
 						//if error occurs getting coords from os api then leave lat and long null
-						console.error(err);
 						return { ...c, lat: null, lng: null };
 					}
 				})
@@ -87,11 +86,16 @@ export class CasesClient {
 	 * @returns {Promise<{lat: number | null, lng: number | null}>}
 	 */
 	async getCaseCoordinates(postcode) {
-		//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
-		const addressInfo = (await this.#osClient.addressesForPostcode(postcode)).results[0];
-		//LPI data is more precise
-		const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
-		return { lat: record.LAT ?? null, lng: record.LNG ?? null };
+		try {
+			//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
+			const addressInfo = (await this.#osClient.addressesForPostcode(postcode)).results[0];
+			//LPI data is more precise
+			const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
+			return { lat: record.LAT ?? null, lng: record.LNG ?? null };
+		} catch (err) {
+			console.error('getCaseCoordinates error: ', err);
+			return { lat: null, lng: null };
+		}
 	}
 
 	/**
@@ -101,7 +105,7 @@ export class CasesClient {
 	 * @param {import('../types').LatLong} latLongB
 	 * @returns {number} Distance in km
 	 */
-	distanceBetween(latLongA, latLongB) {
+	static distanceBetween(latLongA, latLongB) {
 		const earthRadius = 6371;
 		const latDiff = ((latLongB.lat - latLongA.lat) * Math.PI) / 180;
 		const longDiff = ((latLongB.lng - latLongA.lng) * Math.PI) / 180;

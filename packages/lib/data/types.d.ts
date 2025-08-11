@@ -8,18 +8,10 @@ export interface FetchCasesResponse {
 	total: number;
 }
 
-interface ProcessedHASCase extends AppealHASCase {
+export type ProcessedAppealCase = AppealCase & {
 	lat: number | null;
 	lng: number | null;
-}
-
-interface ProcessedS78Case extends AppealS78Case {
-	lat: number | null;
-	lng: number | null;
-}
-
-export type ProcessedAppealCase = ProcessedHASCase | ProcessedS78Case;
-
+};
 export interface CaseViewModel {
 	caseId: string | null;
 	caseType: string | null;

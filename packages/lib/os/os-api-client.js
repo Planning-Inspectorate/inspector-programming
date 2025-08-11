@@ -63,4 +63,21 @@ export class OsApiClient {
 			clearTimeout(timeoutId);
 		}
 	}
+
+	/**
+	 * Fetches latitude and longitude coordinates for a case postcode
+	 * @param {*} postcode
+	 * @returns {Promise<{lat: number | null, lng: number | null}>}
+	 */
+	async getCaseCoordinates(postcode) {
+		try {
+			//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
+			const addressInfo = (await this.addressesForPostcode(postcode)).results[0];
+			//LPI data is more precise
+			const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
+			return { lat: record.LAT ?? null, lng: record.LNG ?? null };
+		} catch {
+			return { lat: null, lng: null };
+		}
+	}
 }
