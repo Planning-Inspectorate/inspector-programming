@@ -258,7 +258,8 @@
                     ] %}
                     {% for s in sorts %}
                         <a data-sort="{{ s.value }}"
-                            class="sort-pagination-link govuk-link{% if data.sort == s.value %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
+                            href=''
+                            class="sort-pagination-link {% if data.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
                             {{ s.label }}
                         </a>{% if not loop.last %} | {% endif %}
                     {% endfor %}
@@ -598,6 +599,7 @@
         document.querySelectorAll('.sort-pagination-link').forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();
+
                 const sortPaginationForm = document.getElementById('sort-pagination-form');
                 const filterForm = document.getElementById('filter-form');
                 if (!sortPaginationForm || !filterForm) return;
@@ -614,9 +616,13 @@
 
                 if(e.target?.dataset?.sort){
                     const sortInput = sortPaginationForm.querySelector('input[name="sort"]');
+                    //don't reload page if no change
+                    if(sortInput.value === e.target?.dataset?.sort) return;
                     sortInput.value = e.target?.dataset?.sort || '';
                 }else if(e.target?.dataset?.limit){
                     const limitInput = sortPaginationForm.querySelector('input[name="limit"]');
+                    //don't reload page if no change
+                    if(limitInput.value === e.target?.dataset?.limit) return;
                     limitInput.value = e.target?.dataset?.limit || '';
                 }
 

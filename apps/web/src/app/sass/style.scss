@@ -59,6 +59,12 @@ $font-family: arial, helvetica, sans-serif;
 	flex: 3;
 }
 
+.sort-pagination-link.selected {
+	cursor: text;
+	color: black;
+	text-decoration: none;
+}
+
 .app-filter__header {
 	display: flex;
 	justify-content: space-between;
