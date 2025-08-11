@@ -352,58 +352,11 @@
         {% endset %}
 
         {% set outlookView %}
-        {% if inspectorPin.id %}
-            <div class="calendar-container">
-                {% if calendarData.error %}
-                    <div class="govuk-error-message">
-                        <span class="govuk-visually-hidden">Error:</span> {{ calendarData.error }}
-                    </div>
-                {% else %}
-                    <div class="calendar-header">
-                        <form method="post">
-                            <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
-                            <input type="hidden" name="currentStartDate" value="{{ currentStartDate }}">
-                            <button type="submit" name="calendarAction" value="test2">Today</button>
-                            <div class="nav-buttons">
-                                <button type="submit" name="calendarAction" value="prevWeek">&lt;</button>
-                                <button type="submit" name="calendarAction" value="nextWeek">&gt;</button>
-                            </div>
-                        </form>
-                        <h2>{{weekTitle}}</h2>
-                        <label for="weekPicker" class="arrow-button">↓</label>
-                        <input type="text" id="weekPicker" placeholder="Select date" readonly>
-                    </div>
-                    <table class="calendar-table">
-                        <thead>
-                            <tr>
-                                <th class="time-column"></th>
-                                {% for date in dateList %}
-                                <th>{{date}}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody id="calendar-body">
-                            {% for i in range(0, calendarGrid.length) %}
-                                <tr>
-                                        <td class="time-column">{% if i % 2 == 0 %} {{timeList[i/2]}} {% endif %}</td>
-                                        {% for entry in calendarGrid[i] %}
-                                            {% if entry.isEvent %}
-                                                <td class="event">{{entry.text}}</td>
-                                            {% elif entry.isToday %}
-                                                <td class="calendar-cell-today"></td>
-                                            {% else %}
-                                                <td class="calendar-cell"></td>
-                                            {% endif %}
-                                        {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% endif %}
+            {% if inspectorPin.id %}
+                {% include 'views/home/calendar.njk' %}
             {% else %}
                 <p class="govuk-body"> No Inspector Selected. Please select an Inspector from the drop down to see this information. <p>
             {% endif %}
-        </div>
         {% endset %}
 
         {{ govukTabs({
