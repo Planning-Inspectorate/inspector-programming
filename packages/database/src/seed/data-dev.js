@@ -5,6 +5,7 @@ import {
 	APPEAL_CASE_TYPE
 } from '@planning-inspectorate/data-model';
 import { addWeeks } from 'date-fns';
+import { mockLocations } from './data-dev-mock-locations.js';
 
 /**
  * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput}
@@ -56,9 +57,13 @@ function generateAppeals() {
 		const valid = addWeeks(now, -Math.floor(index / 2));
 		const finalCommentsDue = addWeeks(valid, 5);
 		const paddedIndex = String(index + 1).padStart(5, '0');
+		const location = mockLocations[index % mockLocations.length];
 		return {
 			...mockAppeal,
 			...variation,
+			siteAddressPostcode: location.siteAddressPostcode,
+			siteAddressLatitude: location.siteAddressLatitude,
+			siteAddressLongitude: location.siteAddressLongitude,
 			caseReference: `69${paddedIndex}`,
 			caseValidDate: valid,
 			finalCommentsDueDate: finalCommentsDue
