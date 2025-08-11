@@ -34,7 +34,6 @@ export function buildViewHome(service) {
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
-		//const cases = await service.casesClient.getAllCases();
 		const { cases, total } = await service.casesClient.getPaginatedCases(page, limit);
 
 		const errors = validateFilters(filters);
@@ -182,7 +181,6 @@ export function buildPostHome(service) {
  * @param {Object} formData
  * @returns {Object}
  */
-
 export function handlePagination(req, total, formData) {
 	const page = formData.page;
 	const limit = formData.limit;
@@ -191,23 +189,9 @@ export function handlePagination(req, total, formData) {
 	const params = { ...req.query, page: undefined };
 
 	return {
-		previous:
-			page > 1
-				? {
-						href: buildQueryString(params, page - 1)
-					}
-				: null,
-		next:
-			page < totalPages
-				? {
-						href: buildQueryString(params, page + 1)
-					}
-				: null,
-		items: Array.from({ length: totalPages }, (_, i) => ({
-			number: i + 1,
-			href: buildQueryString(params, i + 1),
-			current: page === i + 1
-		}))
+		previous: page > 1 ? { href: buildQueryString(params, page - 1) } : null,
+		next: page < totalPages ? { href: buildQueryString(params, page + 1) } : null,
+		items: createPaginationItems(page, totalPages, params)
 	};
 }
 
@@ -224,4 +208,38 @@ export function buildQueryString(params, newPage) {
 			.map(([k, v]) => [k, String(v)])
 	);
 	return '?' + searchParams.toString();
+}
+
+/**
+ * @param {number} page .
+ * @param {number} totalPages
+ * @param {Object} params
+ * @returns {Array<Object>}
+ */
+export function createPaginationItems(page, totalPages, params) {
+	const items = [];
+	const addPage = (n) =>
+		items.push({
+			number: n,
+			href: buildQueryString(params, n),
+			current: page === n
+		});
+	const addEllipsis = () => items.push({ ellipsis: true, visuallyHiddenText: 'Ellipsis' });
+
+	if (totalPages <= 7) {
+		for (let i = 1; i <= totalPages; i++) addPage(i);
+	} else {
+		addPage(1);
+		if (page > 4) addEllipsis();
+
+		const start = Math.max(2, page - 2);
+		const end = Math.min(totalPages - 1, page + 2);
+
+		for (let i = start; i <= end; i++) addPage(i);
+
+		if (page < totalPages - 3) addEllipsis();
+		addPage(totalPages);
+	}
+
+	return items;
 }
