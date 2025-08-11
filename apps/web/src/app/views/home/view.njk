@@ -246,30 +246,6 @@
     </div>
 <div class="cases-inspectors-container">
     <div id="table-view" class="view">
-
-        {% set caseRows = [] %}
-        {% for c in cases %}
-            {% set caseRows = (caseRows.push([
-                { html: govukCheckboxes({
-                    name: "selectedCases",
-                    classes: "govuk-checkboxes--small",
-                    items: [{ value: c.caseId, text: " ", checked: false }]
-                }) },
-                { html: '<a href="/case/' + c.caseId + '?inspectorId=' + data.inspectorId + '" class="govuk-link">' + c.caseId + '</a>' },
-                { text: c.caseType },
-                { text: c.caseProcedure },
-                { text: c.allocationBand },
-                { text: c.caseLevel },
-                { text: c.siteAddressPostcode },
-                { text: c.lpaName },
-                { text: c.lpaRegion },
-                { text: c.caseStatus },
-          { html: '<span class="case-border ' + c.color + '">' + c.caseAge + '</span>' },
-             { html: '<a href="/case/' + c.linkedCases + '" class="govuk-link">' + c.linkedCases + '</a>' },
-                { text: c.finalCommentsDate },
-                { text: c.programmingStatus }
-            ]), caseRows) %}
-        {% endfor %}
         {% set casesTable %}
         <div style="margin: 0; padding: 0;">
             <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">  
@@ -320,31 +296,8 @@
                         }) }}
                     </div>
                 </div>
-                {{ govukTable({
-                    classes: "govuk-!-font-size-14 home-cases-table",
-                    head: [
-                        { html: govukCheckboxes({
-                            idPrefix: "select-all",
-                            name: "select-all",
-                            classes: "govuk-checkboxes--small",
-                            items: [{ value: "select-all", text: " ", checked: false }]
-                        }) },
-                        { text: "Reference" },
-                        { text: "Type" },
-                        { text: "Procedure" },
-                        { text: "Band" },
-                        { text: "Level" },
-                        { text: "Location" },
-                        { text: "LPA" },
-                        { text: "Region" },
-                        { text: "Case status" },
-                        { text: "Weeks" },
-                        { text: "Linked cases" },
-                        { text: "Final comments date" },
-                        { text: "Prog status" }
-                    ],
-                    rows: caseRows
-                }) }}
+
+            {% include 'views/home/cases-table.njk' %}
             </form>
 
             {% if cases.length > 0 %}
