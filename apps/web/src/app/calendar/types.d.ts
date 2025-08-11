@@ -7,4 +7,5 @@ export interface Event {
 export interface CalendarEntry {
 	text: string;
 	isEvent: boolean;
+	isToday: boolean;
 }

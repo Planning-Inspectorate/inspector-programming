@@ -360,11 +360,15 @@
                     </div>
                 {% else %}
                     <div class="calendar-header">
-                        <button onclick="goToToday()">Today</button>
-                        <div class="nav-buttons">
-                            <button onclick="prevWeek()">&lt;</button>
-                            <button onclick="nextWeek()">&gt;</button>
-                        </div>
+                        <form method="post">
+                            <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+                            <input type="hidden" name="currentStartDate" value="{{ currentStartDate }}">
+                            <button type="submit" name="calendarAction" value="test2">Today</button>
+                            <div class="nav-buttons">
+                                <button type="submit" name="calendarAction" value="prevWeek">&lt;</button>
+                                <button type="submit" name="calendarAction" value="nextWeek">&gt;</button>
+                            </div>
+                        </form>
                         <h2>{{weekTitle}}</h2>
                         <label for="weekPicker" class="arrow-button">↓</label>
                         <input type="text" id="weekPicker" placeholder="Select date" readonly>
@@ -385,6 +389,8 @@
                                         {% for entry in calendarGrid[i] %}
                                             {% if entry.isEvent %}
                                                 <td class="event">{{entry.text}}</td>
+                                            {% elif entry.isToday %}
+                                                <td class="calendar-cell-today"></td>
                                             {% else %}
                                                 <td class="calendar-cell"></td>
                                             {% endif %}

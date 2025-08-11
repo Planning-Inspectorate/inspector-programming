@@ -7,6 +7,8 @@ import {
 	generateTimeList,
 	generateWeekTitle,
 	getCurrentWeekStartDate,
+	getNextWeekStartDate,
+	getPreviousWeekStartDate,
 	getSimplifiedEvents
 } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
@@ -83,11 +85,13 @@ export function buildViewHome(service) {
 			}
 		}
 
-		const startDate = getCurrentWeekStartDate();
-		const dateList = generateDatesList(startDate);
+		const currentStartDate = req.query.calendarStartDate
+			? new Date(req.query.calendarStartDate.toString())
+			: getCurrentWeekStartDate();
+		const dateList = generateDatesList(currentStartDate);
 		const timeList = generateTimeList(8, 18);
-		const calendarGrid = generateCalendar(startDate, calendarData.events);
-		const weekTitle = generateWeekTitle(startDate);
+		const calendarGrid = generateCalendar(currentStartDate, calendarData.events);
+		const weekTitle = generateWeekTitle(currentStartDate);
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',
@@ -106,6 +110,7 @@ export function buildViewHome(service) {
 			dateList,
 			calendarGrid,
 			weekTitle,
+			currentStartDate,
 			errors,
 			errorList,
 			paginationDetails,
@@ -209,8 +214,20 @@ export function buildPostHome(service) {
 	return async (req, res) => {
 		service.logger.info('post home');
 
+		let newStartDate;
+
+		if (req.body.calendarAction == 'prevWeek') {
+			newStartDate = getPreviousWeekStartDate(new Date(req.body.currentStartDate));
+		} else if (req.body.calendarAction == 'nextWeek') {
+			newStartDate = getNextWeekStartDate(new Date(req.body.currentStartDate));
+		} else {
+			newStartDate = getCurrentWeekStartDate();
+		}
+
 		const redirectUrl =
-			req.body.action === 'view' ? `/inspector/${req.body.inspectorId}` : `/?inspectorId=${req.body.inspectorId}`;
+			req.body.action === 'view'
+				? `/inspector/${req.body.inspectorId}`
+				: `/?inspectorId=${req.body.inspectorId}&calendarStartDate=${newStartDate}`;
 
 		return res.redirect(redirectUrl);
 	};
