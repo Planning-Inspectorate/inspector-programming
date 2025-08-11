@@ -159,6 +159,7 @@ export function sortCases(cases, sort) {
 export function caseViewModel(c) {
 	return {
 		...c,
+		caseStatus: c.caseStatus?.replace('_', ' '),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
 		color: getCaseColor(c.caseAge),
 		currentDate: formatDateForDisplay(new Date(), { format: 'dd/MM/yyyy' })

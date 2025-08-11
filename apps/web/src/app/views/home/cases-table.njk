@@ -1,0 +1,50 @@
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set caseRows = [] %}
+    {% for c in cases %}
+        {% set caseRows = (caseRows.push([
+            { html: govukCheckboxes({
+                name: "selectedCases",
+                classes: "govuk-checkboxes--small",
+                items: [{ value: c.caseId, text: " ", checked: false }]
+            }) },
+            { html: '<a href="/case/' + c.caseId + '?inspectorId=' + data.inspectorId + '" class="govuk-link">' + c.caseId + '</a>' },
+            { text: c.caseType },
+            { text: c.caseProcedure },
+            { text: c.allocationBand },
+            { text: c.caseLevel },
+            { text: c.siteAddressPostcode },
+            { text: c.lpaName },
+            { text: c.lpaRegion },
+            { html: govukTag({text: c.caseStatus }) },
+            { html: '<span class="case-border ' + c.color + '">' + c.caseAge + '</span>' },
+            { text: c.linkedCases },
+            { text: c.finalCommentsDate }
+        ]), caseRows) %}
+{% endfor %}
+
+{{ govukTable({
+    classes: "govuk-!-font-size-14 home-cases-table",
+    head: [
+        { html: govukCheckboxes({
+            idPrefix: "select-all",
+            name: "select-all",
+            classes: "govuk-checkboxes--small",
+            items: [{ value: "select-all", text: " ", checked: false }]
+        }) },
+        { text: "Reference" },
+        { text: "Type" },
+        { text: "Procedure" },
+        { text: "Band" },
+        { text: "Level" },
+        { text: "Location" },
+        { text: "LPA" },
+        { text: "Region" },
+        { text: "Case status" },
+        { text: "Weeks" },
+        { text: "Linked cases" },
+        { text: "Final comments date" }
+    ],
+    rows: caseRows
+}) }}
