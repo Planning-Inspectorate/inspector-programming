@@ -6,7 +6,8 @@ import {
 	getCaseColor,
 	sortCases,
 	handlePagination,
-	buildQueryString
+	buildQueryString,
+	createPaginationItems
 } from './controller.js';
 import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
@@ -32,9 +33,6 @@ describe('controller.js', () => {
 		};
 		test('should get all cases', async () => {
 			const service = mockService();
-			// service.casesClient.getAllCases.mock.mockImplementationOnce(() =>
-			// 	Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 }))
-			// );
 			service.casesClient.getPaginatedCases.mock.mockImplementationOnce(() => ({
 				cases: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 })),
 				total: 10
@@ -43,7 +41,6 @@ describe('controller.js', () => {
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
 			await controller(req, res);
-			//assert.strictEqual(service.casesClient.getAllCases.mock.callCount(), 1);
 			assert.strictEqual(service.casesClient.getPaginatedCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -205,6 +202,48 @@ describe('controller.js', () => {
 			const params = {};
 			const result = buildQueryString(params, 1);
 			assert.strictEqual(result, '?page=1');
+		});
+	});
+	describe('createPaginationItems', () => {
+		const params = { sort: 'age' };
+		test('should return all pages when totalPages <= 7', () => {
+			const items = createPaginationItems(3, 5, params);
+			assert.strictEqual(items.length, 5);
+			assert.strictEqual(items[2].current, true);
+			assert.strictEqual(items[0].number, 1);
+			assert.strictEqual(items[4].number, 5);
+		});
+
+		test('should add ellipsis for large page sets', () => {
+			const items = createPaginationItems(10, 20, params);
+			assert.strictEqual(items[0].number, 1);
+			assert.ok(items.some((i) => i.ellipsis));
+			assert.strictEqual(items[items.length - 1].number, 20);
+			assert.ok(items.find((i) => i.current && i.number === 10));
+		});
+
+		test('should show correct pages near start', () => {
+			const items = createPaginationItems(2, 10, params);
+			assert.strictEqual(items[0].number, 1);
+			assert.strictEqual(items[1].number, 2);
+			assert.ok(!items[1].ellipsis);
+			assert.ok(items.some((i) => i.ellipsis));
+			assert.strictEqual(items[items.length - 1].number, 10);
+		});
+
+		test('should show correct pages near end', () => {
+			const items = createPaginationItems(9, 10, params);
+			assert.strictEqual(items[0].number, 1);
+			assert.ok(items.some((i) => i.ellipsis));
+			assert.strictEqual(items[items.length - 1].number, 10);
+			assert.ok(items.find((i) => i.current && i.number === 9));
+		});
+
+		test('should always have at least one page', () => {
+			const items = createPaginationItems(1, 1, params);
+			assert.strictEqual(items.length, 1);
+			assert.strictEqual(items[0].number, 1);
+			assert.strictEqual(items[0].current, true);
 		});
 	});
 });
