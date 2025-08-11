@@ -2,9 +2,7 @@ import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js
 import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cached-entra-client.js';
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from './api/api-service.js';
-import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { CasesClient } from '@pins/inspector-programming-lib/data/database/cases-client.js';
-import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 
 /**
@@ -36,21 +34,6 @@ export class WebService extends BaseService {
 	 */
 	get authConfig() {
 		return this.#config.auth;
-	}
-
-	/**
-	 * Returns a cbosApiClient instance for the current user session.
-	 * @param {object} session - The current request session
-	 */
-	getCbosApiClientForSession(session) {
-		const userId = getAccountId(session);
-		return new CbosApiClient(
-			{
-				...this.#config.cbos,
-				apiHeader: userId
-			},
-			this.logger
-		);
 	}
 
 	get entraConfig() {
