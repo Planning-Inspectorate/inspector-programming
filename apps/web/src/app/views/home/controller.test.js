@@ -25,11 +25,13 @@ describe('controller.js', () => {
 			},
 			casesClient: {
 				getAllCases: mock.fn(() => []),
-				getPaginatedCases: mock.fn(() => ({ cases: [], total: 0 })),
-				getCaseCoordinates: mock.fn(() => {})
+				getPaginatedCases: mock.fn(() => ({ cases: [], total: 0 }))
 			},
 			inspectorClient: {
 				getAllInspectors: mock.fn(() => [])
+			},
+			osApiClient: {
+				getCaseCoordinates: mock.fn(() => {})
 			}
 		};
 	};
@@ -128,7 +130,7 @@ describe('controller.js', () => {
 				{ siteAddressPostcode: 'PO1 5LT', lat: 50.8038674, lng: -1.0723581 } //portsmouth
 			];
 			//mock inspector coordinates in southampton
-			service.casesClient.getCaseCoordinates = mock.fn(async () => {
+			service.osApiClient.getCaseCoordinates = mock.fn(async () => {
 				return { lat: 50.909698, lng: -1.404351 };
 			});
 
@@ -150,7 +152,7 @@ describe('controller.js', () => {
 				{ siteAddressPostcode: 'invalid_address', lat: null, lng: null } //invalid
 			];
 			//mock inspector coordinates in southampton
-			service.casesClient.getCaseCoordinates = mock.fn(async () => {
+			service.osApiClient.getCaseCoordinates = mock.fn(async () => {
 				return { lat: 50.909698, lng: -1.404351 };
 			});
 

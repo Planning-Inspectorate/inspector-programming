@@ -43,7 +43,7 @@ export class CasesClient {
 			const chunkCoords = await Promise.all(
 				caseChunk.map(async (c) => {
 					try {
-						const coords = await this.getCaseCoordinates(c.siteAddressPostcode);
+						const coords = await this.#osClient.getCaseCoordinates(c.siteAddressPostcode);
 						return { ...c, ...coords };
 					} catch {
 						//if error occurs getting coords from os api then leave lat and long null
@@ -78,24 +78,6 @@ export class CasesClient {
 			lat: c.lat,
 			lng: c.lng
 		};
-	}
-
-	/**
-	 * Fetches latitude and longitude coordinates for a case postcode
-	 * @param {*} postcode
-	 * @returns {Promise<{lat: number | null, lng: number | null}>}
-	 */
-	async getCaseCoordinates(postcode) {
-		try {
-			//postcodes cover multiple properties (UPRNs) - only grab the first address under the postcode
-			const addressInfo = (await this.#osClient.addressesForPostcode(postcode)).results[0];
-			//LPI data is more precise
-			const record = 'LPI' in addressInfo ? addressInfo.LPI : addressInfo.DPA;
-			return { lat: record.LAT ?? null, lng: record.LNG ?? null };
-		} catch (err) {
-			console.error('getCaseCoordinates error: ', err);
-			return { lat: null, lng: null };
-		}
 	}
 
 	/**
@@ -160,8 +142,10 @@ export class CasesClient {
 			this.#client.appealCase.count()
 		]);
 
+		const processedCases = await this.processCases(cases);
+
 		return {
-			cases: cases.map((c) => this.caseToViewModel(c)),
+			cases: processedCases.map((c) => this.caseToViewModel(c)),
 			total
 		};
 	}

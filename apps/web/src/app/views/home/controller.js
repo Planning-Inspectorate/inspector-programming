@@ -192,7 +192,7 @@ export async function sortCases(cases, service, sort, inspectorPostcode) {
  * @returns {Promise<import('@pins/inspector-programming-lib/data/types').CaseViewModel[]>}
  */
 async function sortByDistance(cases, service, inspectorPostcode) {
-	const inspectorCoordinates = await service.casesClient.getCaseCoordinates(inspectorPostcode);
+	const inspectorCoordinates = await service.osApiClient.getCaseCoordinates(inspectorPostcode);
 	if (inspectorCoordinates.lat === null || inspectorCoordinates.lng === null) return cases;
 
 	//if inspector coords are valid, cast as number instead of number | null
