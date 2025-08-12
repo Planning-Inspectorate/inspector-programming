@@ -6,7 +6,7 @@ import {
 	generateDatesList,
 	generateTimeList,
 	generateWeekTitle,
-	getCurrentWeekStartDate,
+	getWeekStartDate,
 	getNextWeekStartDate,
 	getPreviousWeekStartDate,
 	getSimplifiedEvents
@@ -87,7 +87,7 @@ export function buildViewHome(service) {
 
 		const currentStartDate = req.query.calendarStartDate
 			? new Date(req.query.calendarStartDate.toString())
-			: getCurrentWeekStartDate();
+			: getWeekStartDate(new Date());
 		const dateList = generateDatesList(currentStartDate);
 		const timeList = generateTimeList(8, 18);
 		const calendarGrid = generateCalendar(currentStartDate, calendarData.events);
@@ -214,14 +214,18 @@ export function buildPostHome(service) {
 	return async (req, res) => {
 		service.logger.info('post home');
 
+		const currentDate = req.body.currentStartDate ? new Date(req.body.currentStartDate) : new Date();
+		currentDate.setHours(0, 0, 0, 0);
+
 		let newStartDate;
 
 		if (req.body.calendarAction == 'prevWeek') {
-			newStartDate = getPreviousWeekStartDate(new Date(req.body.currentStartDate));
+			newStartDate = getPreviousWeekStartDate(currentDate);
 		} else if (req.body.calendarAction == 'nextWeek') {
-			newStartDate = getNextWeekStartDate(new Date(req.body.currentStartDate));
+			newStartDate = getNextWeekStartDate(currentDate);
 		} else {
-			newStartDate = getCurrentWeekStartDate();
+			const today = new Date();
+			newStartDate = getWeekStartDate(today);
 		}
 
 		const redirectUrl =
