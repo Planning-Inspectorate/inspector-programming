@@ -20,15 +20,17 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 
 	return events.map((event) => {
 		const startDateTime = new Date(event.start.dateTime);
+		const roundedStartMinutes = Math.floor(startDateTime.getMinutes() / 30) * 30;
+		startDateTime.setMinutes(roundedStartMinutes);
+
 		const endDateTime = new Date(event.end.dateTime);
-		const durationMinutes = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60);
-		const roundedDurationMinutes = Math.ceil(durationMinutes / 30) * 30;
-		const adjustedEndDateTime = new Date(startDateTime.getTime() + roundedDurationMinutes * 60 * 1000);
+		const roundedEndMinutes = Math.ceil(endDateTime.getMinutes() / 30) * 30;
+		endDateTime.setMinutes(roundedEndMinutes);
 
 		return {
 			subject: event.subject,
 			startDateTime: startDateTime.toISOString(),
-			endDateTime: adjustedEndDateTime.toISOString()
+			endDateTime: endDateTime.toISOString()
 		};
 	});
 }
@@ -145,7 +147,7 @@ export function generateCalendar(startDate, events) {
 				const endMinutes = end.getMinutes();
 
 				const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
-				const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 1 : 0);
+				const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
 
 				const validStartRow = Math.max(0, startRow);
 				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
