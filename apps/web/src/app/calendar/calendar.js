@@ -34,11 +34,11 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 }
 
 /**
- *
+ * @param {Date} date
  * @returns {Date}
  */
-export function getCurrentWeekStartDate() {
-	const startDate = new Date();
+export function getWeekStartDate(date) {
+	const startDate = new Date(date);
 	startDate.setHours(0, 0, 0, 0);
 	while (startDate.getDay() !== 1) {
 		startDate.setDate(startDate.getDate() - 1);
