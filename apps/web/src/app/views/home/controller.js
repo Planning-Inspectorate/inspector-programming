@@ -195,30 +195,11 @@ async function sortByDistance(cases, service, inspectorPostcode) {
 	const inspectorCoordinates = await service.osApiClient.getCaseCoordinates(inspectorPostcode);
 	if (inspectorCoordinates.lat === null || inspectorCoordinates.lng === null) return cases;
 
-	//if inspector coords are valid, cast as number instead of number | null
-	/** @type {import('@pins/inspector-programming-lib/data/types').LatLong} */
-	const validatedInspectorCoords = { lat: inspectorCoordinates.lat, lng: inspectorCoordinates.lng };
-
 	return cases.sort((a, b) => {
-		const [aValid, bValid] = [!(a.lat === null || a.lng === null), !(b.lat === null || b.lng === null)];
-		if (aValid && bValid) {
-			//ensure case coords are valid and cast to number if so
-			const validA = {
-				lat: /** @type {number} */ (a.lat),
-				lng: /** @type {number} */ (a.lng)
-			};
-			const validB = {
-				lat: /** @type {number} */ (b.lat),
-				lng: /** @type {number} */ (b.lng)
-			};
-			const [distA, distB] = [
-				distanceBetween(validatedInspectorCoords, validA),
-				distanceBetween(validatedInspectorCoords, validB)
-			];
-			return distA - distB;
-		}
-		if (aValid) return -1;
-		if (bValid) return 1;
+		const [distA, distB] = [distanceBetween(inspectorCoordinates, a), distanceBetween(inspectorCoordinates, b)];
+		if (![distA, distB].includes(null)) return distA - distB;
+		if (distA !== null) return -1;
+		if (distB !== null) return 1;
 		return 0;
 	});
 }

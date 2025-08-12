@@ -30,11 +30,6 @@ export interface CaseViewModel {
 }
 
 export interface LatLong {
-	lat: number;
-	lng: number;
-}
-
-export interface LatLong {
-	lat: number;
-	lng: number;
+	lat: number | null;
+	lng: number | null;
 }

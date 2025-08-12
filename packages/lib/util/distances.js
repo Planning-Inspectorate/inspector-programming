@@ -3,9 +3,17 @@
  *
  * @param {import('../data/types').LatLong} latLongA
  * @param {import('../data/types').LatLong} latLongB
- * @returns {number} Distance in km
+ * @returns {number | null} Distance in km
  */
 export function distanceBetween(latLongA, latLongB) {
+	if (
+		typeof latLongA.lat !== 'number' ||
+		typeof latLongA.lng !== 'number' ||
+		typeof latLongB.lat !== 'number' ||
+		typeof latLongB.lng !== 'number'
+	)
+		return null;
+
 	const earthRadius = 6371;
 	const latDiff = ((latLongB.lat - latLongA.lat) * Math.PI) / 180;
 	const longDiff = ((latLongB.lng - latLongA.lng) * Math.PI) / 180;

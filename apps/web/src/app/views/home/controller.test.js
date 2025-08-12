@@ -105,8 +105,13 @@ describe('controller.js', () => {
 		});
 	});
 	describe('sortCases', () => {
+		const service = mockService();
+		//mock inspector coordinates in southampton
+		service.osApiClient.getCaseCoordinates = mock.fn(async () => {
+			return { lat: 50.909698, lng: -1.404351 };
+		});
+
 		test('should sort cases by age in descending order by default', async () => {
-			const service = mockService();
 			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
 
 			const sortedCases = await sortCases(cases, service, '', '');
@@ -114,7 +119,6 @@ describe('controller.js', () => {
 			assert.deepStrictEqual(sortedCases, [{ caseAge: 30 }, { caseAge: 20 }, { caseAge: 10 }]);
 		});
 		test('should sort cases by age in descending order when specified by sort parameter', async () => {
-			const service = mockService();
 			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
 
 			const sortedCases = await sortCases(cases, service, 'age', '');
@@ -122,17 +126,12 @@ describe('controller.js', () => {
 			assert.deepStrictEqual(sortedCases, [{ caseAge: 30 }, { caseAge: 20 }, { caseAge: 10 }]);
 		});
 		test('should sort cases by distance in descending order when specified by sort parameter', async () => {
-			const service = mockService();
 			const cases = [
 				{ siteAddressPostcode: 'NE1 7RU', lat: 54.980328, lng: -1.6157238 }, //newcastle
 				{ siteAddressPostcode: 'SW1A 0AA', lat: 51.4998415, lng: -0.1246377 }, //london
 				{ siteAddressPostcode: 'WA15 0RE', lat: 53.3497019, lng: -2.2962547 }, //manchester
 				{ siteAddressPostcode: 'PO1 5LT', lat: 50.8038674, lng: -1.0723581 } //portsmouth
 			];
-			//mock inspector coordinates in southampton
-			service.osApiClient.getCaseCoordinates = mock.fn(async () => {
-				return { lat: 50.909698, lng: -1.404351 };
-			});
 
 			let sortedCases = await sortCases(cases, service, 'distance', 'SO14 7LY');
 			assert.strictEqual(sortedCases.length, 4, 'Should return the same number of cases');
@@ -143,18 +142,13 @@ describe('controller.js', () => {
 				{ siteAddressPostcode: 'NE1 7RU', lat: 54.980328, lng: -1.6157238 }
 			]);
 		});
-		test('should place cases with invalid coordinates at the bottom of the list when sorting by distance', async () => {
-			const service = mockService();
+		test('should place cases with wholly invalid coordinates at the bottom of the list when sorting by distance', async () => {
 			const cases = [
 				{ siteAddressPostcode: 'NE1 7RU', lat: 54.980328, lng: -1.6157238 }, //newcastle
 				{ siteAddressPostcode: 'SW1A 0AA', lat: 51.4998415, lng: -0.1246377 }, //london
 				{ siteAddressPostcode: 'WA15 0RE', lat: 53.3497019, lng: -2.2962547 }, //manchester
 				{ siteAddressPostcode: 'invalid_address', lat: null, lng: null } //invalid
 			];
-			//mock inspector coordinates in southampton
-			service.osApiClient.getCaseCoordinates = mock.fn(async () => {
-				return { lat: 50.909698, lng: -1.404351 };
-			});
 
 			let sortedCases = await sortCases(cases, service, 'distance', 'SO14 7LY');
 			assert.strictEqual(sortedCases.length, 4, 'Should return the same number of cases');
@@ -163,6 +157,25 @@ describe('controller.js', () => {
 				{ siteAddressPostcode: 'WA15 0RE', lat: 53.3497019, lng: -2.2962547 },
 				{ siteAddressPostcode: 'NE1 7RU', lat: 54.980328, lng: -1.6157238 },
 				{ siteAddressPostcode: 'invalid_address', lat: null, lng: null }
+			]);
+		});
+		test('multiple cases with invalid coordinates in different permutations should all be sorted to the bottom of the list when sorting by distance', async () => {
+			const cases = [
+				{ siteAddressPostcode: 'invalid_address', lat: null, lng: null },
+				{ siteAddressPostcode: 'NE1 7RU', lat: 54.980328, lng: -1.6157238 },
+				{ siteAddressPostcode: 'other_invalid', lat: null, lng: -2.2962547 },
+				{ siteAddressPostcode: 'one_other_invalid', lat: 54.980328, lng: null },
+				{ siteAddressPostcode: 'SW1A 0AA', lat: 51.4998415, lng: -0.1246377 }
+			];
+
+			let sortedCases = await sortCases(cases, service, 'distance', 'SO14 7LY');
+			assert.strictEqual(sortedCases.length, 5, 'Should return the same number of cases');
+			assert.deepStrictEqual(sortedCases, [
+				{ siteAddressPostcode: 'SW1A 0AA', lat: 51.4998415, lng: -0.1246377 },
+				{ siteAddressPostcode: 'NE1 7RU', lat: 54.980328, lng: -1.6157238 },
+				{ siteAddressPostcode: 'invalid_address', lat: null, lng: null },
+				{ siteAddressPostcode: 'other_invalid', lat: null, lng: -2.2962547 },
+				{ siteAddressPostcode: 'one_other_invalid', lat: 54.980328, lng: null }
 			]);
 		});
 	});
