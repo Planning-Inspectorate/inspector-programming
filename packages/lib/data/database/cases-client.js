@@ -1,3 +1,4 @@
+import { chunkArray } from '../../util/array-utils.js';
 /**
  * Client for fetching case data from the Prisma database for the application,
  *
@@ -38,7 +39,7 @@ export class CasesClient {
 	async processCases(cases) {
 		/** @type {import('../types').ProcessedAppealCase[]} */
 		let processedCases = [];
-		const chunkedCases = this.chunkArray(cases, 5);
+		const chunkedCases = chunkArray(cases, 5);
 		for (const caseChunk of chunkedCases) {
 			const chunkCoords = await Promise.all(
 				caseChunk.map(async (c) => {
@@ -78,27 +79,6 @@ export class CasesClient {
 			lat: c.lat,
 			lng: c.lng
 		};
-	}
-
-	/**
-	 * Fairly accurate distance calculation using the Haversine formula
-	 *
-	 * @param {import('../types').LatLong} latLongA
-	 * @param {import('../types').LatLong} latLongB
-	 * @returns {number} Distance in km
-	 */
-	static distanceBetween(latLongA, latLongB) {
-		const earthRadius = 6371;
-		const latDiff = ((latLongB.lat - latLongA.lat) * Math.PI) / 180;
-		const longDiff = ((latLongB.lng - latLongA.lng) * Math.PI) / 180;
-		const a =
-			Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
-			Math.cos((latLongA.lat * Math.PI) / 180) *
-				Math.cos((latLongB.lat * Math.PI) / 180) *
-				Math.sin(longDiff / 2) *
-				Math.sin(longDiff / 2);
-		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		return earthRadius * c;
 	}
 
 	/**
@@ -148,19 +128,5 @@ export class CasesClient {
 			cases: processedCases.map((c) => this.caseToViewModel(c)),
 			total
 		};
-	}
-
-	/**
-	 * chunks array into sub-arrays for batch processing
-	 * @param {any[]} array
-	 * @param {number} chunkSize
-	 * @returns
-	 */
-	chunkArray(array, chunkSize) {
-		const chunks = [];
-		for (let i = 0; i < array.length; i += chunkSize) {
-			chunks.push(array.slice(i, i + chunkSize));
-		}
-		return chunks;
 	}
 }

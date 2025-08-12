@@ -1,7 +1,7 @@
 import qs from 'qs';
 import { parse as parseUrl } from 'url';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-import { CasesClient } from '@pins/inspector-programming-lib/data/database/cases-client.js';
+import { distanceBetween } from '@pins/inspector-programming-lib/util/distances.js';
 
 /**
  * @typedef {Object} Case
@@ -212,8 +212,8 @@ async function sortByDistance(cases, service, inspectorPostcode) {
 				lng: /** @type {number} */ (b.lng)
 			};
 			const [distA, distB] = [
-				CasesClient.distanceBetween(validatedInspectorCoords, validA),
-				CasesClient.distanceBetween(validatedInspectorCoords, validB)
+				distanceBetween(validatedInspectorCoords, validA),
+				distanceBetween(validatedInspectorCoords, validB)
 			];
 			return distA - distB;
 		}
