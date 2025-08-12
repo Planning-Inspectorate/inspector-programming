@@ -23,10 +23,7 @@ export interface CaseViewModel {
 	finalCommentsDate: Date;
 }
 
-export interface InspectorViewModel {
-	id: string;
-	firstName: string;
-	lastName: string;
-	emailAddress: string | null;
-	postcode: string | null;
+export interface LatLong {
+	lat: number;
+	lng: number;
 }

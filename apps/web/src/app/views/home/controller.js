@@ -120,6 +120,20 @@ export function validateFilters(filters) {
 }
 
 /**
+ * Any checks to apply before sorting will go here
+ * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @param {import('@pins/inspector-programming-database/src/client').Inspector | undefined} selectedInspector
+ * @returns {{ text: string }[]}
+ */
+export function validateSorts(sort, selectedInspector) {
+	const errors = [];
+	if (sort === 'distance') {
+		if (!selectedInspector) errors.push({ text: 'An inspector must be selected before sorting by distance.' });
+	}
+	return errors;
+}
+
+/**
  *
  * @param {Case[]} cases
  * @param {Filters} filters
