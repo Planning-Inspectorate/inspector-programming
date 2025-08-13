@@ -1,3 +1,9 @@
+import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
+import { tz } from '@date-fns/tz';
+
+const timeZoneName = 'Europe/London';
+const timeZone = tz(timeZoneName);
+
 /**
  *
  * @param {import('@pins/inspector-programming-lib/graph/types.js').InitEntraClient} initEntraClient
@@ -40,10 +46,10 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
  * @returns {Date}
  */
 export function getWeekStartDate(date) {
-	const startDate = new Date(date);
+	let startDate = new Date(date);
 	startDate.setHours(0, 0, 0, 0);
 	while (startDate.getDay() !== 1) {
-		startDate.setDate(startDate.getDate() - 1);
+		startDate = subDays(startDate, 1, { in: timeZone });
 	}
 
 	return startDate;
@@ -55,8 +61,7 @@ export function getWeekStartDate(date) {
  * @return {string}
  */
 export function generateWeekTitle(startDate) {
-	const weekEndDate = new Date(startDate);
-	weekEndDate.setDate(weekEndDate.getDate() + 6);
+	const weekEndDate = addDays(startDate, 6, { in: timeZone });
 	weekEndDate.setHours(23, 59, 59, 999);
 	if (startDate.getFullYear() != weekEndDate.getFullYear()) {
 		return `${('0' + startDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${startDate.getFullYear()}-${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
@@ -127,7 +132,7 @@ export function generateCalendar(startDate, events) {
 	weekEndDate.setHours(23, 59, 59, 999);
 
 	if (today.getTime() >= startDate.getTime() && today.getTime() <= weekEndDate.getTime()) {
-		const dayIndex = today.getDay() - 1 != -1 ? today.getDay() - 1 : 6; // Monday = 0, Sunday = 6
+		const dayIndex = parseInt(format(today, 'i', { in: timeZone })) - 1; // Monday = 0, Sunday = 6
 
 		for (let i = 0; i < calendarGrid.length; i++) {
 			calendarGrid[i][dayIndex].isToday = true;
@@ -140,7 +145,7 @@ export function generateCalendar(startDate, events) {
 			const end = new Date(event.endDateTime);
 
 			if (start.getTime() >= startDate.getTime() && start.getTime() <= weekEndDate.getTime()) {
-				const dayIndex = start.getDay() - 1 != -1 ? start.getDay() - 1 : 6; // Monday = 0, Sunday = 6
+				const dayIndex = parseInt(format(start, 'i', { in: timeZone })) - 1; // Monday = 0, Sunday = 6
 				const startHour = start.getHours();
 				const startMinutes = start.getMinutes();
 				const endHour = end.getHours();
@@ -167,9 +172,7 @@ export function generateCalendar(startDate, events) {
  * @return {Date}
  */
 export function getPreviousWeekStartDate(currentStartDate) {
-	const newStartDate = new Date(currentStartDate);
-	newStartDate.setDate(newStartDate.getDate() - 7);
-	return newStartDate;
+	return subWeeks(currentStartDate, 1, { in: timeZone });
 }
 
 /**
@@ -178,7 +181,5 @@ export function getPreviousWeekStartDate(currentStartDate) {
  * @return {Date}
  */
 export function getNextWeekStartDate(currentStartDate) {
-	const newStartDate = new Date(currentStartDate);
-	newStartDate.setDate(newStartDate.getDate() + 7);
-	return newStartDate;
+	return addWeeks(currentStartDate, 1, { in: timeZone });
 }
