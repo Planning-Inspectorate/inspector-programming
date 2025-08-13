@@ -3,23 +3,26 @@ import assert from 'node:assert';
 import { EntraClient, ODATA } from './entra.js';
 
 describe('EntraClient', () => {
-	describe('listAllGroupMembers', () => {
-		const mockClient = () => {
-			return {
-				api() {
-					return this;
-				},
-				select() {
-					return this;
-				},
-				top() {
-					return this;
-				},
-				skipToken: mock.fn(() => this),
-				get: mock.fn(() => ({ value: [] }))
-			};
+	const mockClient = () => {
+		return {
+			api() {
+				return this;
+			},
+			select() {
+				return this;
+			},
+			query() {
+				return this;
+			},
+			top() {
+				return this;
+			},
+			skipToken: mock.fn(() => this),
+			get: mock.fn(() => ({ value: [] }))
 		};
+	};
 
+	describe('listAllGroupMembers', () => {
 		it('should call get and return members', async () => {
 			const client = mockClient();
 			client.get.mock.mockImplementation(() => {
@@ -85,6 +88,125 @@ describe('EntraClient', () => {
 			});
 			const entra = new EntraClient(client);
 			await entra.listAllGroupMembers('group-1');
+			assert.strictEqual(client.get.mock.callCount(), 10);
+		});
+	});
+	describe('listAllUserCalendarEvents', () => {
+		it('should return a list of events', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => {
+				return {
+					value: [
+						{
+							[ODATA.TYPE]: ODATA.EVENT_TYPE,
+							id: 'id1',
+							subject: 'test event',
+							start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
+						}
+					]
+				};
+			});
+			const entra = new EntraClient(client);
+			const members = await entra.listAllUserCalendarEvents('testGroup', {
+				calendarEventsDayRange: 3,
+				calendarEventsStartDateOffset: 0
+			});
+			assert.strictEqual(client.get.mock.callCount(), 1);
+			assert.strictEqual(members.length, 1);
+		});
+		it('should only return events not users', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => {
+				return {
+					value: [
+						{
+							[ODATA.TYPE]: ODATA.EVENT_TYPE,
+							id: 'id1',
+							subject: 'test event',
+							start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
+						},
+						{
+							[ODATA.TYPE]: ODATA.USER_TYPE,
+							id: 'id2',
+							subject: 'test event 2',
+							start: { dateTime: '2025-08-10T14:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-14T14:00:00.0000000', timeZone: 'UTC' }
+						},
+						{
+							[ODATA.TYPE]: ODATA.GROUP_TYPE,
+							id: 'id3',
+							subject: 'test event 3',
+							start: { dateTime: '2025-08-11T14:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' }
+						}
+					]
+				};
+			});
+			const entra = new EntraClient(client);
+			const members = await entra.listAllUserCalendarEvents('testGroup', {
+				calendarEventsDayRange: 3,
+				calendarEventsStartDateOffset: 0
+			});
+			assert.strictEqual(client.get.mock.callCount(), 1);
+			assert.strictEqual(members.length, 1);
+		});
+		it('should call get until all events are fetched', async () => {
+			const client = mockClient();
+			const eventsList = Array.from({ length: 20 }, (v, i) => {
+				return {
+					[ODATA.TYPE]: ODATA.EVENT_TYPE,
+					id: i,
+					subject: `Event ${i + 1}`,
+					start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+					end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
+				};
+			});
+			let index = 0;
+			const perPage = 2;
+
+			client.get.mock.mockImplementation(() => {
+				const end = (index + 1) * perPage >= eventsList.length;
+				const value = eventsList.slice(index, index + perPage);
+				index++;
+				return {
+					[ODATA.NEXT_LINK]: end ? undefined : `https://example.com?$skipToken=token-${index}`,
+					[ODATA.TYPE]: ODATA.EVENT_TYPE,
+					value
+				};
+			});
+			const entra = new EntraClient(client);
+			const events = await entra.listAllUserCalendarEvents('testGroup', {
+				calendarEventsDayRange: 3,
+				calendarEventsStartDateOffset: 0
+			});
+			assert.strictEqual(client.get.mock.callCount(), 10);
+			assert.strictEqual(client.skipToken.mock.callCount(), 9);
+			assert.strictEqual(events.length, 20);
+		});
+		it('should call get a maximum of 10 times', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => {
+				return {
+					[ODATA.NEXT_LINK]: 'https://example.com?$skipToken=token-1',
+					value: [
+						{
+							[ODATA.TYPE]: ODATA.EVENT_TYPE,
+							id: 'id1',
+							subject: 'test event',
+							start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
+						}
+					]
+				};
+			});
+			const entra = new EntraClient(client);
+			await entra.listAllUserCalendarEvents('testGroup', {
+				calendarEventsDayRange: 3,
+				calendarEventsStartDateOffset: 0
+			});
+
 			assert.strictEqual(client.get.mock.callCount(), 10);
 		});
 	});
