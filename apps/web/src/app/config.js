@@ -53,7 +53,8 @@ export function loadConfig() {
 		API_MOCK_DATA,
 		API_INSPECTOR_ENTRA_GROUPS,
 		API_CALENDAR_EVENTS_DAY_RANGE,
-		API_CALENDAR_EVENTS_FROM_DATE_OFFSET
+		API_CALENDAR_EVENTS_FROM_DATE_OFFSET,
+		CASES_CACHE_TTL
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -118,7 +119,8 @@ export function loadConfig() {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'
 		},
 		database: {
-			datasourceUrl: SQL_CONNECTION_STRING
+			datasourceUrl: SQL_CONNECTION_STRING,
+			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
 		},
 		gitSha: GIT_SHA,
 		// the log level to use

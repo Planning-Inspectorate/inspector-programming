@@ -19,6 +19,10 @@ interface Config extends BaseConfig {
 		signoutUrl: string;
 		tenantId: string;
 	};
+	database: {
+		datasourceUrl: string;
+		casesCacheTtl: number;
+	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;
