@@ -21,7 +21,6 @@ interface Config extends BaseConfig {
 	};
 	database: {
 		datasourceUrl: string;
-		casesCacheTtl: number;
 	};
 	entra: {
 		// group cache ttl in minutes
@@ -38,5 +37,8 @@ interface Config extends BaseConfig {
 	inspectors: [{ emailAddress: string; id: string }];
 	osApi: {
 		key: string;
+	};
+	cases: {
+		casesCacheTtl: number;
 	};
 }

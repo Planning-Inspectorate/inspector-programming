@@ -1,6 +1,7 @@
 import { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/src/schemas.d.ts';
 import { Event } from '@microsoft/microsoft-graph-types';
 import { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client';
+import { CachedCasesClient } from './database/cached-cases-client.js';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;
