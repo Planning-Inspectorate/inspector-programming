@@ -87,11 +87,11 @@ describe('controller.js', () => {
 		});
 		test('should return green for case age 20 or less', () => {
 			const color = getCaseColor(20);
-			assert.strictEqual(color, '_00703c', 'Color should be green for case age <= 20');
+			assert.strictEqual(color, '00703c', 'Color should be green for case age <= 20');
 		});
 		test('should return green for case age 0', () => {
 			const color = getCaseColor(0);
-			assert.strictEqual(color, '_00703c', 'Color should be green for case age = 0');
+			assert.strictEqual(color, '00703c', 'Color should be green for case age = 0');
 		});
 	});
 	describe('sortCases', () => {
