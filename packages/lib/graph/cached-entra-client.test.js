@@ -46,5 +46,30 @@ describe('cached-entra-client', () => {
 			assert.strictEqual(cacheMock.get.mock.callCount(), 1);
 			assert.strictEqual(cacheMock.set.mock.callCount(), 1);
 		});
+		it('should calendar events', async () => {
+			const expectedEvents = {
+				value: [
+					{
+						subject: 'Test',
+						start: {
+							dateTime: '2025-08-20T15:00:00.000Z',
+							timeZone: 'Europe/London'
+						},
+						end: {
+							dateTime: '2025-08-20T16:00:00.000Z',
+							timeZone: 'Europe/London'
+						}
+					}
+				]
+			};
+			const cacheMock = {};
+			const clientMock = {
+				getEvents: mock.fn(() => expectedEvents)
+			};
+
+			const cacheClient = new CachedEntraClient(clientMock, cacheMock);
+			const events = await cacheClient.getEvents('userId');
+			assert.deepStrictEqual(events.value, expectedEvents.value);
+		});
 	});
 });

@@ -252,4 +252,39 @@ describe('calendar', () => {
 			}
 		});
 	});
+
+	it('should generate default calendar when the events are not scheduled for the current week', () => {
+		const events = [
+			{
+				subject: 'Test 1',
+				startDateTime: '2025-08-04T09:00:00.000Z',
+				endDateTime: '2025-08-04T09:30:00.000Z'
+			},
+			{
+				subject: 'Test 2',
+				startDateTime: '2025-08-05T10:30:00.000Z',
+				endDateTime: '2025-08-05T11:00:00.000Z'
+			},
+			{
+				subject: 'Test 3',
+				startDateTime: '2025-08-06T12:00:00.000Z',
+				endDateTime: '2025-08-06T13:00:00.000Z'
+			},
+			{
+				subject: 'Test 4',
+				startDateTime: '2025-08-07T13:30:00.000Z',
+				endDateTime: '2025-08-07T14:30:00.000Z'
+			},
+			{
+				subject: 'Test 5',
+				startDateTime: '2025-08-08T15:00:00.000Z',
+				endDateTime: '2025-08-08T16:30:00.000Z'
+			}
+		];
+
+		const expectedCalendar = generateCalendarGrid(7, 20);
+		const startDate = new Date(2025, 6, 28, 0, 0, 0, 0);
+		const calendar = generateCalendar(startDate, events);
+		assert.deepStrictEqual(calendar, expectedCalendar);
+	});
 });
