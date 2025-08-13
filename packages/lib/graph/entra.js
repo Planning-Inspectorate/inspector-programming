@@ -61,7 +61,7 @@ export class EntraClient {
 	async listAllUserCalendarEvents(userId, options) {
 		const [startDate, endDate] = [new Date(), new Date()];
 		startDate.setUTCDate(startDate.getUTCDate() - +options.calendarEventsDayRange);
-		endDate.setUTCDate(endDate.getUTCDate() + +options.calendarEventsStartDateOffset);
+		endDate.setUTCDate(endDate.getUTCDate() + +options.calendarEventsStartDateOffset || 0);
 		startDate.setUTCHours(0, 0, 0, 0);
 		endDate.setUTCHours(23, 59, 59, 999);
 
@@ -74,7 +74,7 @@ export class EntraClient {
 		const events = [];
 		for (let i = 0; i < MAX_PAGES; i++) {
 			const res = await listEvents.get();
-			if (res.value?.length) events.push(res.value);
+			if (res.value?.length) events.push(...res.value.filter((v) => v[ODATA.TYPE] === ODATA.EVENT_TYPE));
 
 			const nextLink = res[ODATA.NEXT_LINK];
 			if (!nextLink) {
