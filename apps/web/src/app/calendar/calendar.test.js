@@ -89,8 +89,8 @@ describe('calendar', () => {
 
 	it('should get date of the first day of the current week', () => {
 		const date = new Date(2025, 7, 10);
-		const expectedDate = new Date(2025, 7, 4, 0, 0, 0, 0);
-		const startDate = getWeekStartDate(date);
+		const expectedDate = new Date(2025, 7, 4, 0, 0, 0, 0).toUTCString();
+		const startDate = getWeekStartDate(date).toUTCString();
 
 		assert.deepStrictEqual(startDate, expectedDate);
 	});
@@ -244,12 +244,10 @@ describe('calendar', () => {
 		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0);
 		const calendar = generateCalendar(startDate, events);
 
+		const timezoneOffset = -Math.floor(new Date().getTimezoneOffset() / 30);
+
 		expectedCalendarData.forEach((item) => {
-			if (new Date().getTimezoneOffset() == -60) {
-				assert.deepStrictEqual(calendar[item.row + 2][item.day], item.event);
-			} else {
-				assert.deepStrictEqual(calendar[item.row][item.day], item.event);
-			}
+			assert.deepStrictEqual(calendar[item.row + timezoneOffset][item.day], item.event);
 		});
 	});
 
