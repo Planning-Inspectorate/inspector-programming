@@ -67,22 +67,29 @@ export function buildViewHome(service) {
 			inspectorId: req.query.inspectorId
 		};
 		const paginationDetails = handlePagination(req, total, formData);
-		const calendarData = {};
-		// calendarData.events = [];
+		/**
+		 * @type {import("../../calendar/types.js").Event[]}
+		 */
+		let calendarEvents = [];
+		let errorSummary = [];
+		let calendarError;
+		let inspectorError;
 
 		if (selectedInspector) {
 			try {
-				calendarData.events = await getSimplifiedEvents(
-					service.entraClient,
-					selectedInspector,
-					req.session,
-					service.logger
-				);
+				calendarEvents = await getSimplifiedEvents(service.entraClient, selectedInspector, req.session, service.logger);
 			} catch (error) {
 				service.logger.error(error, 'Failed to fetch calendar events');
-				calendarData.error =
+				calendarError =
 					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
 			}
+		} else {
+			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
+			inspectorError = calendarError;
+			errorSummary.push({
+				text: calendarError,
+				href: '#inspectors'
+			});
 		}
 
 		const currentStartDate = req.query.calendarStartDate
@@ -90,7 +97,7 @@ export function buildViewHome(service) {
 			: getWeekStartDate(new Date());
 		const dateList = generateDatesList(currentStartDate);
 		const timeList = generateTimeList(8, 18);
-		const calendarGrid = generateCalendar(currentStartDate, calendarData.events);
+		const calendarGrid = generateCalendar(currentStartDate, calendarEvents);
 		const weekTitle = generateWeekTitle(currentStartDate);
 
 		return res.render('views/home/view.njk', {
@@ -105,7 +112,6 @@ export function buildViewHome(service) {
 				...selectedInspector,
 				...inspectorData
 			},
-			calendarData,
 			timeList,
 			dateList,
 			calendarGrid,
@@ -116,7 +122,8 @@ export function buildViewHome(service) {
 			paginationDetails,
 			specialisms,
 			specialismTypes,
-			caseTypes
+			caseTypes,
+			errorSummary
 		});
 	};
 }

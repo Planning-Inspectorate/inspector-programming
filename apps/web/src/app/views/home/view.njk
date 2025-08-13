@@ -40,7 +40,8 @@
                 {{ govukSelect({
                     id: "inspectors",
                     name: "inspectorId",
-                    items: inspectorList
+                    items: inspectorList,
+                    errorMessage: { text: inspectorError } if inspectorError else null
                 }) }}
                 {{ govukButton({
                     text: "Select",
@@ -352,10 +353,10 @@
         {% endset %}
 
         {% set outlookView %}
-            {% if inspectorPin.id %}
+            {% if calendarError %}
+                <p class="govuk-error-message"> {{ calendarError }} <p>
+            {% elif inspectorPin.id %}
                 {% include 'views/home/calendar.njk' %}
-            {% else %}
-                <p class="govuk-body"> No Inspector Selected. Please select an Inspector from the drop down to see this information. <p>
             {% endif %}
         {% endset %}
 
