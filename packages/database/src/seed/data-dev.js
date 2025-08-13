@@ -6,6 +6,9 @@ import {
 } from '@planning-inspectorate/data-model';
 import { addWeeks } from 'date-fns';
 import { mockLocations } from './data-dev-mock-locations.js';
+import { SPECIALISMS } from './specialisms.js';
+import crypto from 'node:crypto';
+import { caseSpecialismIds, inspectorSpecialismIds } from './data-dev-guids.js';
 
 /**
  * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput}
@@ -58,6 +61,7 @@ function generateAppeals() {
 		const finalCommentsDue = addWeeks(valid, 5);
 		const paddedIndex = String(index + 1).padStart(5, '0');
 		const location = mockLocations[index % mockLocations.length];
+
 		return {
 			...mockAppeal,
 			...variation,
@@ -66,25 +70,44 @@ function generateAppeals() {
 			siteAddressLongitude: location.siteAddressLongitude,
 			caseReference: `69${paddedIndex}`,
 			caseValidDate: valid,
-			finalCommentsDueDate: finalCommentsDue
+			finalCommentsDueDate: finalCommentsDue,
+			Specialisms: generateCaseSpecialisms()
 		};
 	});
 }
 
-// generated with
-//  node -e "console.log(require('crypto').randomUUID())"
-const specialismIds = [
-	'03cde37b-f7e5-4abb-80be-f448dd24a4ea',
-	'c73fb6c9-fb2e-4303-8cb1-b4be49652d33',
-	'80fc2857-4321-468b-81a5-8628578ae6b0',
-	'196473d9-e2d1-4f71-842e-1b1ba9a01fd9',
-	'a60bfe1b-1f96-4d9d-b4e6-c163da19a045',
-	'2bc01f8d-c030-4725-950f-07cffeda3501',
-	'2a0d1bbb-1c07-4ec5-88e2-aca343ec6375',
-	'214346b2-7e4c-4ca2-92b4-c742d81a1fb0',
-	'27fe25d8-8e0a-409b-a22f-fea7104200d8',
-	'03918a8f-37fb-4d17-8fc6-56306a159226'
-];
+let specialismIdCounter = 0;
+
+function nextSpecialismId() {
+	const id = specialismIdCounter++;
+	if (id >= caseSpecialismIds.length) {
+		throw new Error('No more specialism IDs available');
+	}
+	return caseSpecialismIds[id];
+}
+
+function generateCaseSpecialisms() {
+	/** @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseSpecialismCreateNestedManyWithoutAppealCaseInput} */
+	const specialisms = { connectOrCreate: [] };
+	const randomPercent = crypto.randomInt(100);
+	// not the same IDs each time, or the same specialisms per case
+	// but using a set of IDs stops the list of specialisms growing each time seed is run
+	if (randomPercent > 35) {
+		const id = nextSpecialismId();
+		specialisms.connectOrCreate.push({
+			where: { id },
+			create: { id, specialism: SPECIALISMS[crypto.randomInt(SPECIALISMS.length)] }
+		});
+		if (randomPercent > 75) {
+			const id = nextSpecialismId();
+			specialisms.connectOrCreate.push({
+				where: { id },
+				create: { id, specialism: SPECIALISMS[crypto.randomInt(SPECIALISMS.length)] }
+			});
+		}
+	}
+	return specialisms;
+}
 
 /**
  * @type {import('@pins/inspector-programming-database/src/client').Prisma.InspectorUncheckedCreateInput[]}
@@ -102,18 +125,18 @@ const inspectors = [
 		Specialisms: {
 			connectOrCreate: [
 				{
-					where: { id: specialismIds[0] },
+					where: { id: inspectorSpecialismIds[0] },
 					create: {
-						id: specialismIds[0],
+						id: inspectorSpecialismIds[0],
 						name: 'Advertisements',
 						proficiency: 'Trained',
 						validFrom: '2024-03-11T00:00:00Z'
 					}
 				},
 				{
-					where: { id: specialismIds[1] },
+					where: { id: inspectorSpecialismIds[1] },
 					create: {
-						id: specialismIds[1],
+						id: inspectorSpecialismIds[1],
 						name: 'Green belt',
 						proficiency: 'In Training',
 						validFrom: '2025-06-09T23:00:00Z'
@@ -134,18 +157,18 @@ const inspectors = [
 		Specialisms: {
 			connectOrCreate: [
 				{
-					where: { id: specialismIds[2] },
+					where: { id: inspectorSpecialismIds[2] },
 					create: {
-						id: specialismIds[2],
+						id: inspectorSpecialismIds[2],
 						name: 'Special protection area',
 						proficiency: 'Trained',
 						validFrom: '2024-03-11T00:00:00Z'
 					}
 				},
 				{
-					where: { id: specialismIds[3] },
+					where: { id: inspectorSpecialismIds[3] },
 					create: {
-						id: specialismIds[3],
+						id: inspectorSpecialismIds[3],
 						name: 'Hearings trained',
 						proficiency: 'In Training',
 						validFrom: '2025-06-09T23:00:00Z'
@@ -166,18 +189,18 @@ const inspectors = [
 		Specialisms: {
 			connectOrCreate: [
 				{
-					where: { id: specialismIds[4] },
+					where: { id: inspectorSpecialismIds[4] },
 					create: {
-						id: specialismIds[4],
+						id: inspectorSpecialismIds[4],
 						name: 'Special protection area',
 						proficiency: 'Trained',
 						validFrom: '2024-03-11T00:00:00Z'
 					}
 				},
 				{
-					where: { id: specialismIds[5] },
+					where: { id: inspectorSpecialismIds[5] },
 					create: {
-						id: specialismIds[5],
+						id: inspectorSpecialismIds[5],
 						name: 'Appearance design',
 						proficiency: 'Trained',
 						validFrom: '2025-06-09T23:00:00Z'
@@ -198,18 +221,18 @@ const inspectors = [
 		Specialisms: {
 			connectOrCreate: [
 				{
-					where: { id: specialismIds[6] },
+					where: { id: inspectorSpecialismIds[6] },
 					create: {
-						id: specialismIds[6],
+						id: inspectorSpecialismIds[6],
 						name: 'Hearings trained',
 						proficiency: 'Trained',
 						validFrom: '2024-03-11T00:00:00Z'
 					}
 				},
 				{
-					where: { id: specialismIds[7] },
+					where: { id: inspectorSpecialismIds[7] },
 					create: {
-						id: specialismIds[7],
+						id: inspectorSpecialismIds[7],
 						name: 'Appeal against conditions',
 						proficiency: 'Trained',
 						validFrom: '2025-06-09T23:00:00Z'
@@ -230,18 +253,18 @@ const inspectors = [
 		Specialisms: {
 			connectOrCreate: [
 				{
-					where: { id: specialismIds[8] },
+					where: { id: inspectorSpecialismIds[8] },
 					create: {
-						id: specialismIds[8],
+						id: inspectorSpecialismIds[8],
 						name: 'Special protection area',
 						proficiency: 'Trained',
 						validFrom: '2025-03-11T00:00:00Z'
 					}
 				},
 				{
-					where: { id: specialismIds[9] },
+					where: { id: inspectorSpecialismIds[9] },
 					create: {
-						id: specialismIds[9],
+						id: inspectorSpecialismIds[9],
 						name: 'Hearings trained',
 						proficiency: 'In Training',
 						validFrom: '2025-06-09T23:00:00Z'
