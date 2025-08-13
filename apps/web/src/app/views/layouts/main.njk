@@ -36,7 +36,7 @@
 		{% endif %}
 	{% endblock %}
 	{% block error_summary %}
-		{% if errorSummary %}
+		{% if errorSummary and errorSummary.length != 0 %}
 			<div class="govuk-grid-row">
 				<div class="govuk-grid-column-two-thirds">
 					{{

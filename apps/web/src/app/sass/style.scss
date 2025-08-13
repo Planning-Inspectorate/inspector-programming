@@ -186,7 +186,7 @@ $font-family: arial, helvetica, sans-serif;
 }
 
 .calendar-table td.calendar-cell {
-	background-color: #ededeb;
+	background-color: #faf9f6;
 }
 
 .calendar-table td.calendar-cell-today {
@@ -273,7 +273,9 @@ $font-family: arial, helvetica, sans-serif;
 	display: flex;
 	gap: 5px;
 	margin-bottom: 0;
+	align-items: flex-start;
 }
+
 .case-border {
 	padding: 3px;
 	display: inline-block;
