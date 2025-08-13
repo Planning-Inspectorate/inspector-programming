@@ -52,7 +52,8 @@ export function loadConfig() {
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
 		API_MOCK_DATA,
 		API_INSPECTOR_ENTRA_GROUPS,
-		API_CALENDAR_EVENTS_DAY_RANGE
+		API_CALENDAR_EVENTS_DAY_RANGE,
+		API_CALENDAR_EVENTS_START_DATE_OFFSET
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -144,6 +145,7 @@ export function loadConfig() {
 			// in minutes
 			cacheTtl: parseInt(ENTRA_GROUP_CACHE_TTL || 15),
 			calendarEventsDayRange: API_CALENDAR_EVENTS_DAY_RANGE,
+			calendarEventsStartDateOffset: API_CALENDAR_EVENTS_START_DATE_OFFSET || 0,
 			groupIds: {
 				inspectors: ENTRA_GROUP_ID_INSPECTORS,
 				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,

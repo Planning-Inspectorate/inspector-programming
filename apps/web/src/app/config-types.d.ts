@@ -23,6 +23,7 @@ interface Config extends BaseConfig {
 		// group cache ttl in minutes
 		cacheTtl: number;
 		calendarEventsDayRange: number;
+		calendarEventsStartDateOffset: number;
 		groupIds: {
 			inspectors: string;
 			teamLeads: string;

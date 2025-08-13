@@ -52,20 +52,22 @@ export class EntraClient {
 	}
 
 	/**
-	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
+	 * Fetch all calendar events for a given Entra userID
 	 *
 	 * @param {string} userId
-	 * @param {number} calendarEventsDayRange
+	 * @param {{calendarEventsDayRange: number, calendarEventsStartDateOffset: number}} options // configuration of date range to fetch
 	 * @returns {Promise<import('./types').CalendarEvent[]>}
 	 */
-	async listAllUserCalendarEvents(userId, calendarEventsDayRange) {
-		const startDate = new Date();
+	async listAllUserCalendarEvents(userId, options) {
+		const [startDate, endDate] = [new Date(), new Date()];
+		startDate.setUTCDate(startDate.getUTCDate() - +options.calendarEventsDayRange);
+		endDate.setUTCDate(endDate.getUTCDate() + +options.calendarEventsStartDateOffset);
 		startDate.setUTCHours(0, 0, 0, 0);
-		startDate.setDate(startDate.getDate() - calendarEventsDayRange);
+		endDate.setUTCHours(23, 59, 59, 999);
 
 		const listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
-			.query({ startDateTime: startDate.toISOString(), endDateTime: new Date().toISOString() })
+			.query({ startDateTime: startDate.toISOString(), endDateTime: endDate.toISOString() })
 			.select(['id', 'subject', 'start', 'end'])
 			.top(PER_PAGE);
 
