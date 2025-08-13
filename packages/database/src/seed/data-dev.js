@@ -9,6 +9,7 @@ import { mockLocations } from './data-dev-mock-locations.js';
 import { SPECIALISMS } from './specialisms.js';
 import crypto from 'node:crypto';
 import { caseSpecialismIds, inspectorSpecialismIds } from './data-dev-guids.js';
+import { generateCaseEvents } from './data-dev-events.js';
 
 /**
  * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput}
@@ -61,6 +62,7 @@ function generateAppeals() {
 		const finalCommentsDue = addWeeks(valid, 5);
 		const paddedIndex = String(index + 1).padStart(5, '0');
 		const location = mockLocations[index % mockLocations.length];
+		const reference = `69${paddedIndex}`;
 
 		return {
 			...mockAppeal,
@@ -68,10 +70,11 @@ function generateAppeals() {
 			siteAddressPostcode: location.siteAddressPostcode,
 			siteAddressLatitude: location.siteAddressLatitude,
 			siteAddressLongitude: location.siteAddressLongitude,
-			caseReference: `69${paddedIndex}`,
+			caseReference: reference,
 			caseValidDate: valid,
 			finalCommentsDueDate: finalCommentsDue,
-			Specialisms: generateCaseSpecialisms()
+			Specialisms: generateCaseSpecialisms(),
+			Events: generateCaseEvents(reference, valid)
 		};
 	});
 }
