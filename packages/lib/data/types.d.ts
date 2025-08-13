@@ -8,6 +8,10 @@ export interface FetchCasesResponse {
 	total: number;
 }
 
+export type ProcessedAppealCase = AppealCase & {
+	lat: number | null;
+	lng: number | null;
+};
 export interface CaseViewModel {
 	caseId: string | null;
 	caseType: string | null;
@@ -21,4 +25,11 @@ export interface CaseViewModel {
 	caseAge: number;
 	linkedCases: number;
 	finalCommentsDate: Date;
+	lat: number | null;
+	lng: number | null;
+}
+
+export interface LatLong {
+	lat: number | null;
+	lng: number | null;
 }

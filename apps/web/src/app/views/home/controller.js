@@ -1,7 +1,7 @@
-import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { parse as parseUrl } from 'url';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { distanceBetween } from '@pins/inspector-programming-lib/util/distances.js';
 
 /**
  * @typedef {Object} Case
@@ -17,14 +17,19 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
  * @property {number} caseAge - The age of the case in weeks.
  * @property {number} linkedCases - The number of linked cases.
  * @property {Date} finalCommentsDate - The date of the final comments.
+ * @property {number | null} lat - The latitude of the case
+ * @property {number | null} lng - The longitude of the case
  */
+
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  */
 export function buildViewHome(service) {
 	return async (req, res) => {
-		const inspectors = await getInspectorList(service, req.session);
+		//const inspectors = await getInspectorList(service, req.session);
+		const inspectors = await service.inspectorClient.getAllInspectors();
+
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 
 		// Convert the raw query string into a nested object
@@ -41,7 +46,13 @@ export function buildViewHome(service) {
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
-		const sortedCases = sortCases(filteredCases, query.sort);
+		const sortingErrors = validateSorts(String(query.sort), selectedInspector);
+		const sortingErrorList = Object.values(sortingErrors).map((message) => ({ ...message, href: `#` }));
+
+		//if sort is invalid sort by age by default
+		const sortedCases = sortingErrorList.length
+			? filteredCases.sort((a, b) => b.caseAge - a.caseAge)
+			: await sortCases(filteredCases, service, String(query.sort), selectedInspector?.postcode ?? null);
 
 		const formData = {
 			filters,
@@ -70,7 +81,8 @@ export function buildViewHome(service) {
 			calendarData,
 			errors,
 			errorList,
-			paginationDetails
+			paginationDetails,
+			sortingErrorList
 		});
 	};
 }
@@ -116,6 +128,20 @@ export function validateFilters(filters) {
 }
 
 /**
+ * Any checks to apply before sorting will go here
+ * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @param {import('@pins/inspector-programming-database/src/client').Inspector | undefined} selectedInspector
+ * @returns {{ text: string }[]}
+ */
+export function validateSorts(sort, selectedInspector) {
+	const errors = [];
+	if (sort === 'distance') {
+		if (!selectedInspector) errors.push({ text: 'An inspector must be selected before sorting by distance.' });
+	}
+	return errors;
+}
+
+/**
  *
  * @param {Case[]} cases
  * @param {Filters} filters
@@ -138,21 +164,43 @@ export function getCaseColor(caseAge) {
 
 /**
  *
- * @param {Case[]} cases
+ * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel[]} cases
+ * @param {import('#service').WebService} service
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
- * @returns
+ * @param {string | null} inspectorPostcode
+ * @returns {Promise<import('@pins/inspector-programming-lib/data/types').CaseViewModel[]>}
  */
-export function sortCases(cases, sort) {
-	switch (sort) {
-		case 'distance':
-			//WIP
-			return cases;
-		case 'hybrid':
-			//WIP
-			return cases;
-		default:
-			return cases.sort((a, b) => b.caseAge - a.caseAge);
+export async function sortCases(cases, service, sort, inspectorPostcode) {
+	try {
+		if (['hybrid', 'distance'].includes(sort) && inspectorPostcode?.length) {
+			return sortByDistance(cases, service, inspectorPostcode);
+		}
+		//sort by age
+		return cases.sort((a, b) => b.caseAge - a.caseAge);
+	} catch (err) {
+		service.logger.error({ error: err }, '[sortCases] Error sorting cases');
+		return cases;
 	}
+}
+
+/**
+ *	Sort cases by distance - decomposed from main sortCases due to complexity
+ * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel[]} cases
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorPostcode
+ * @returns {Promise<import('@pins/inspector-programming-lib/data/types').CaseViewModel[]>}
+ */
+async function sortByDistance(cases, service, inspectorPostcode) {
+	const inspectorCoordinates = await service.osApiClient.getCaseCoordinates(inspectorPostcode);
+	if (inspectorCoordinates.lat === null || inspectorCoordinates.lng === null) return cases;
+
+	return cases.sort((a, b) => {
+		const [distA, distB] = [distanceBetween(inspectorCoordinates, a), distanceBetween(inspectorCoordinates, b)];
+		if (![distA, distB].includes(null)) return distA - distB;
+		if (distA !== null) return -1;
+		if (distB !== null) return 1;
+		return 0;
+	});
 }
 
 export function caseViewModel(c) {

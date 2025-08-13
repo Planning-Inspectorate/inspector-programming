@@ -34,6 +34,14 @@ function generateAppeals() {
 	const allocationLevels = Object.values(APPEAL_ALLOCATION_LEVEL);
 	const procedures = Object.values(APPEAL_CASE_PROCEDURE);
 	const caseTypes = [APPEAL_CASE_TYPE.D, APPEAL_CASE_TYPE.W]; // Householder and S78
+	const possiblePostcodes = [
+		'NR2 2BQ', //norwich
+		'LS1 1AZ', //leeds
+		'EH11 2PJ', //edinburgh
+		'SW19 9QW', //london
+		'TR15 2AB', //cornwall
+		'TN1 1XX' //kent
+	];
 
 	const variables = {
 		allocationLevel: allocationLevels,
@@ -60,6 +68,7 @@ function generateAppeals() {
 			...mockAppeal,
 			...variation,
 			caseReference: `69${paddedIndex}`,
+			siteAddressPostcode: possiblePostcodes[Math.floor(Math.random() * possiblePostcodes.length)],
 			caseValidDate: valid,
 			finalCommentsDueDate: finalCommentsDue
 		};
