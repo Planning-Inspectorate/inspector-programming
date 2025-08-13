@@ -11,4 +11,7 @@ export interface NamedTestDates {
 	twoDaysAgo: Date;
 	threeDaysAgo: Date;
 	fourDaysAgo: Date;
+	oneDayAhead: Date;
+	twoDaysAhead: Date;
+	threeDaysAhead: Date;
 }
