@@ -119,8 +119,7 @@ export function loadConfig() {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'
 		},
 		database: {
-			datasourceUrl: SQL_CONNECTION_STRING,
-			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
+			datasourceUrl: SQL_CONNECTION_STRING
 		},
 		gitSha: GIT_SHA,
 		// the log level to use
@@ -142,6 +141,9 @@ export function loadConfig() {
 		},
 		notify: {
 			key: GOV_NOTIFY_API_KEY
+		},
+		cases: {
+			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
 		},
 		entra: {
 			// in minutes
