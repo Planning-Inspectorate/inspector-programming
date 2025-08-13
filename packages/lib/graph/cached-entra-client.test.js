@@ -50,6 +50,7 @@ describe('cached-entra-client', () => {
 			const expectedEvents = {
 				value: [
 					{
+						id: '1',
 						subject: 'Test',
 						start: {
 							dateTime: '2025-08-20T15:00:00.000Z',
@@ -64,11 +65,11 @@ describe('cached-entra-client', () => {
 			};
 			const cacheMock = {};
 			const clientMock = {
-				getEvents: mock.fn(() => expectedEvents)
+				getUserCalendarEvents: mock.fn(() => expectedEvents)
 			};
 
 			const cacheClient = new CachedEntraClient(clientMock, cacheMock);
-			const events = await cacheClient.getEvents('userId');
+			const events = await cacheClient.getUserCalendarEvents('userId');
 			assert.deepStrictEqual(events.value, expectedEvents.value);
 		});
 	});
