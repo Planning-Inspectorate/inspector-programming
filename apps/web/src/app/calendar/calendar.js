@@ -15,7 +15,7 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 		return [];
 	}
 
-	const eventsResponse = await client.getEvents(selectedInspector.id);
+	const eventsResponse = await client.getUserCalendarEvents(selectedInspector.id);
 	const events = Array.isArray(eventsResponse.value) ? eventsResponse.value : [];
 
 	return events.map((event) => {

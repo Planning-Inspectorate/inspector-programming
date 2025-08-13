@@ -100,6 +100,7 @@ describe('EntraClient', () => {
 				return {
 					value: [
 						{
+							id: '1',
 							subject: 'Test',
 							start: {
 								dateTime: '2025-08-20T15:00:00.000Z',
@@ -115,7 +116,7 @@ describe('EntraClient', () => {
 			});
 
 			const entra = new EntraClient(client);
-			const calendarEvents = await entra.getEvents('userId');
+			const calendarEvents = await entra.getUserCalendarEvents('userId');
 			assert.strictEqual(client.get.mock.callCount(), 1);
 			assert.strictEqual(calendarEvents.value.length, 1);
 		});

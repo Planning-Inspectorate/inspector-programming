@@ -17,7 +17,7 @@ const mockLogger = {
 };
 
 const mockEntraClient = {
-	getEvents: mock.fn()
+	getUserCalendarEvents: mock.fn()
 };
 
 const mockInitEntraClient = mock.fn();
@@ -82,7 +82,7 @@ describe('calendar', () => {
 		];
 		const selectedInspector = 'inspector';
 
-		mockEntraClient.getEvents.mock.mockImplementationOnce(() => entraEvents);
+		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
 		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
 		assert.deepStrictEqual(events, expectedEvents);
 	});

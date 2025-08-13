@@ -55,7 +55,7 @@ export class EntraClient {
 	 * @param {string} userId
 	 * @returns {Promise<import('./types').CalendarEvents>}
 	 */
-	async getEvents(userId) {
+	async getUserCalendarEvents(userId) {
 		const startDate = new Date();
 		startDate.setHours(0, 0, 0, 0);
 		while (startDate.getDay() !== 1) {
@@ -70,7 +70,7 @@ export class EntraClient {
 			.api(
 				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999&$select=subject,start,end`
 			)
-			.select(['subject', 'start', 'end'])
+			.select(['id', 'subject', 'start', 'end'])
 			.header('Prefer', 'outlook.timezone="Europe/London"')
 			.get();
 	}
