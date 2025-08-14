@@ -86,16 +86,16 @@ function initialiseMap(apiKey, pins, inspector) {
 		}
 
 		function addInspectorMarker(inspectorData) {
-			if (!inspectorData || !inspectorData.address) {
+			if (!inspectorData || !inspectorData.latitude || !inspectorData.longitude) {
 				return;
 			}
 			const point = new Point({
-				x: inspectorData.address.longitude,
-				y: inspectorData.address.latitude
+				x: inspectorData.longitude,
+				y: inspectorData.latitude
 			});
 			const pictureMarkerSymbol = {
 				type: 'picture-marker',
-				url: `/assets/images/people.png`,
+				url: `/assets/images/person.png`,
 				width: '50px',
 				height: '50px'
 			};
@@ -134,10 +134,10 @@ function initialiseMap(apiKey, pins, inspector) {
 			const defaultCenter = { longitude: -1.5, latitude: 52.5 };
 			const center = { ...defaultCenter };
 
-			if (inspector && inspector.address) {
+			if (inspector && inspector.longitude && inspector.latitude) {
 				// if inspector address is available, use it as the center
-				center.longitude = inspector.address.longitude;
-				center.latitude = inspector.address.latitude;
+				center.longitude = inspector.longitude;
+				center.latitude = inspector.latitude;
 			} else if (validPins.length > 0) {
 				// if no inspector address, use the average of valid pins
 				center.longitude = validPins.reduce((acc, pin) => acc + Number(pin.siteAddressLongitude), 0) / validPins.length;

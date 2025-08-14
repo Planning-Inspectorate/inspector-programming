@@ -41,7 +41,7 @@ export async function getSortedInspectorList(initEntraClient, authSession, logge
  */
 export async function getInspectorById(initEntraClient, authSession, logger, groupId, id) {
 	const inspectorList = await fetchInspectorList(initEntraClient, authSession, logger, groupId);
-	return inspectorList.find((inspector) => inspector.id == id);
+	return inspectorList.find((inspector) => inspector.id === id);
 }
 
 /**

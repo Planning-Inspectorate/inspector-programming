@@ -27,6 +27,11 @@ export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
+		const inspectorData =
+			selectedInspector &&
+			(await service.db.inspector.findFirst({
+				where: { entraId: selectedInspector.id }
+			}));
 
 		// Convert the raw query string into a nested object
 		const query = qs.parse(parseUrl(req.url).query || '');
@@ -65,7 +70,10 @@ export function buildViewHome(service) {
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
-			inspectorPin: selectedInspector,
+			inspectorPin: {
+				...selectedInspector,
+				...inspectorData
+			},
 			calendarData,
 			errors,
 			errorList,
