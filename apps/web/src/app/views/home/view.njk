@@ -251,7 +251,8 @@
                             {% set limits = [5, 10, 15, 25] %}
                             {% for l in limits %}
                                 <a  data-limit="{{ l }}"
-                                    class="sort-pagination-link govuk-link{% if data.limit == l %} govuk-link--no-visited-state govuk-!-font-weight-bold{% endif %}">
+                                    href=''
+                                    class="sort-pagination-link {% if data.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
                                     {{ l }}
                                 </a>{% if not loop.last %} | {% endif %}
                             {% endfor %}
