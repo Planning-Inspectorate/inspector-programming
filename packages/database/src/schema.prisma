@@ -22,18 +22,26 @@ datasource db {
 /// an appeal case, using only required PINS data-model fields
 /// see https://github.com/Planning-Inspectorate/data-model/
 model AppealCase {
-  caseReference   String  @id
-  caseStatus      String?
-  caseType        String?
-  caseProcedure   String?
-  allocationLevel String?
-  allocationBand  Int?
+  caseReference                  String  @id
+  caseStatus                     String?
+  caseType                       String?
+  caseProcedure                  String?
+  originalDevelopmentDescription String?
+  allocationLevel                String?
+  allocationBand                 Int?
 
   siteAddressLine1    String?
   siteAddressLine2    String?
   siteAddressTown     String?
   siteAddressCounty   String?
   siteAddressPostcode String?
+
+  // not data model fields but populated from OS Places API
+  // 6 d.p. is approx 10cm precision!
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude
+  // values must use the WGS84 coordinate system
+  siteAddressLatitude  Decimal? @db.Decimal(9, 6)
+  siteAddressLongitude Decimal? @db.Decimal(9, 6)
 
   lpaCode   String?
   // not data-model fields but may be populated from C-BOS
@@ -45,6 +53,42 @@ model AppealCase {
 
   linkedCaseStatus  String?
   leadCaseReference String?
+
+  appellantCostsAppliedFor Boolean?
+  lpaCostsAppliedFor       Boolean?
+
+  inspectorId String? // assigned inspector
+
+  Events      AppealEvent[]
+  Specialisms AppealCaseSpecialism[]
+}
+
+model AppealCaseSpecialism {
+  id            String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  caseReference String
+  specialism    String
+
+  AppealCase AppealCase @relation(fields: [caseReference], references: [caseReference], onDelete: Cascade)
+}
+
+/// an appeal event, using only required PINS data-model fields
+/// see https://github.com/Planning-Inspectorate/data-model/blob/main/schemas/appeal-event.schema.json
+model AppealEvent {
+  id                 String    @unique
+  caseReference      String
+  eventType          String
+  eventName          String?
+  eventStatus        String
+  eventStartDateTime DateTime
+  eventEndDateTime   DateTime?
+
+  addressLine1    String?
+  addressLine2    String?
+  addressTown     String?
+  addressCounty   String?
+  addressPostcode String?
+
+  AppealCase AppealCase @relation(fields: [caseReference], references: [caseReference], onDelete: Cascade)
 }
 
 /// The poll status to track when the latest appeal cases were fetched
