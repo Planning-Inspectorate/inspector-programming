@@ -97,21 +97,21 @@ describe('calendar', () => {
 
 	it('should generate week title when start date and end date are in the same month', () => {
 		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0);
-		const expectedWeekTitle = '04-10 August, 2025';
+		const expectedWeekTitle = '04 - 10 August, 2025';
 		const weekTitle = generateWeekTitle(startDate);
 		assert.strictEqual(weekTitle, expectedWeekTitle);
 	});
 
 	it('should generate week title when start date and end date are in different months', () => {
 		const startDate = new Date(2025, 8, 29, 0, 0, 0, 0);
-		const expectedWeekTitle = '29 September-05 October, 2025';
+		const expectedWeekTitle = '29 September - 05 October, 2025';
 		const weekTitle = generateWeekTitle(startDate);
 		assert.strictEqual(weekTitle, expectedWeekTitle);
 	});
 
 	it('should generate week title when start date and end date are in different years', () => {
 		const startDate = new Date(2025, 11, 29, 0, 0, 0, 0);
-		const expectedWeekTitle = '29 December, 2025-04 January, 2026';
+		const expectedWeekTitle = '29 December, 2025 - 04 January, 2026';
 		const weekTitle = generateWeekTitle(startDate);
 		assert.strictEqual(weekTitle, expectedWeekTitle);
 	});
