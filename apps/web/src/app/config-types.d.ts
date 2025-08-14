@@ -19,9 +19,6 @@ interface Config extends BaseConfig {
 		signoutUrl: string;
 		tenantId: string;
 	};
-	database: {
-		datasourceUrl: string;
-	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;

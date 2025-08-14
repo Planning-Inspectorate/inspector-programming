@@ -59,7 +59,7 @@ describe('controller.js', () => {
 			entraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [
 				{ id: 'inspector-id', name: 'Test Inspector' }
 			]);
-			service.casesClient.getPaginatedCases.mock.mockImplementationOnce(() => ({
+			service.casesClient.paginateCases.mock.mockImplementationOnce(() => ({
 				cases: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 })),
 				total: 10
 			}));
@@ -83,7 +83,7 @@ describe('controller.js', () => {
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
 			await controller(req, res);
-			assert.strictEqual(service.casesClient.getPaginatedCases.mock.callCount(), 1);
+			assert.strictEqual(service.casesClient.paginateCases.mock.callCount(), 1);
 			assert.strictEqual(service.db.inspector.findFirst.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];

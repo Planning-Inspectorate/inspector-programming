@@ -36,6 +36,9 @@ beforeEach(() => {
 		},
 		osApi: {
 			key: 'test-key'
+		},
+		cases: {
+			casesCacheTtl: 30
 		}
 	});
 
