@@ -100,10 +100,18 @@ model AppealCasePollStatus {
 }
 
 model Inspector {
-  id               String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
-  firstName        String
-  lastName         String
-  postcode         String?
+  id        String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  firstName String
+  lastName  String
+
+  postcode  String?
+  // not data model fields but populated from OS Places API
+  // 6 d.p. is approx 10cm precision!
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude
+  // values must use the WGS84 coordinate system
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+
   grade            String?
   email            String?
   entraId          String? // to link with logged in user
