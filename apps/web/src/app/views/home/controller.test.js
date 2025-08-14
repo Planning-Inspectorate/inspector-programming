@@ -14,11 +14,14 @@ import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.
 
 describe('controller.js', () => {
 	describe('buildViewHome', () => {
+		const entraClient = {
+			listAllGroupMembers: mock.fn(() => [])
+		};
 		const mockService = () => {
 			return {
 				logger: mockLogger(),
-				entraClient: {
-					listAllGroupMembers: mock.fn(() => [])
+				entraClient() {
+					return entraClient;
 				},
 				entraGroupIds: {
 					inspectors: 'inspectors-group-id',
@@ -28,6 +31,11 @@ describe('controller.js', () => {
 				casesClient: {
 					getAllCases: mock.fn(() => []),
 					getPaginatedCases: mock.fn(() => ({ cases: [], total: 0 }))
+				},
+				db: {
+					inspector: {
+						findFirst: mock.fn()
+					}
 				}
 			};
 		};
@@ -45,6 +53,47 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.cases.length, 10);
+		});
+		test('should fetch inspector data', async () => {
+			const service = mockService();
+			entraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [
+				{ id: 'inspector-id', name: 'Test Inspector' }
+			]);
+			service.casesClient.getPaginatedCases.mock.mockImplementationOnce(() => ({
+				cases: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 })),
+				total: 10
+			}));
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-id',
+				grade: 'B2',
+				postcode: 'BS1 6PN',
+				longitude: -2.5828931,
+				latitude: 51.4508591,
+				workingAboveBand: false,
+				specialisms: []
+			};
+			service.db.inspector.findFirst.mock.mockImplementationOnce(() => inspectorData);
+			const req = {
+				url: '/',
+				query: { inspectorId: 'inspector-id' },
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(service.casesClient.getPaginatedCases.mock.callCount(), 1);
+			assert.strictEqual(service.db.inspector.findFirst.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.cases.length, 10);
+			assert.deepStrictEqual(args.inspectorPin, {
+				...inspectorData,
+				emailAddress: '',
+				firstName: '',
+				lastName: ''
+			});
 		});
 	});
 	describe('filterCases', () => {

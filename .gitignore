@@ -20,6 +20,7 @@ temp
 .turbo
 .build
 **/.static
+!apps/web/src/.static/images/person.png
 
 # Code coverage
 coverage
