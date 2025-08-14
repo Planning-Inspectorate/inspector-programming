@@ -68,7 +68,7 @@ export class EntraClient {
 
 		return this.#client
 			.api(
-				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999&$select=subject,start,end`
+				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999`
 			)
 			.select(['id', 'subject', 'start', 'end'])
 			.header('Prefer', 'outlook.timezone="Europe/London"')
