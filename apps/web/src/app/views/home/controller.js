@@ -66,9 +66,7 @@ export function buildViewHome(service) {
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
-			inspectorPin: {
-				...selectedInspector
-			},
+			inspectorPin: selectedInspector,
 			calendarData,
 			errors,
 			errorList,
@@ -138,7 +136,7 @@ export function filterCases(cases, filters) {
 export function getCaseColor(caseAge) {
 	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
-	return '_00703c'; // green (0-20 weeks)
+	return '00703c'; // green (0-20 weeks)
 }
 
 /**
@@ -165,7 +163,7 @@ export function caseViewModel(c) {
 		...c,
 		caseStatus: c.caseStatus?.replace('_', ' '),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
-		color: getCaseColor(c.caseAge),
+		caseAgeColor: getCaseColor(c.caseAge),
 		currentDate: formatDateForDisplay(new Date(), { format: 'dd/MM/yyyy' })
 	};
 }

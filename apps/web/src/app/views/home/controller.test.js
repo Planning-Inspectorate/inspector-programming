@@ -87,11 +87,11 @@ describe('controller.js', () => {
 		});
 		test('should return green for case age 20 or less', () => {
 			const color = getCaseColor(20);
-			assert.strictEqual(color, '_00703c', 'Color should be green for case age <= 20');
+			assert.strictEqual(color, '00703c', 'Color should be green for case age <= 20');
 		});
 		test('should return green for case age 0', () => {
 			const color = getCaseColor(0);
-			assert.strictEqual(color, '_00703c', 'Color should be green for case age = 0');
+			assert.strictEqual(color, '00703c', 'Color should be green for case age = 0');
 		});
 	});
 	describe('sortCases', () => {
@@ -115,7 +115,7 @@ describe('controller.js', () => {
 				'07/08/2025',
 				'Final comments date should be formatted in Europe/London timezone'
 			);
-			assert.strictEqual(viewModel.color, 'f47738', 'Color should be orange for case age 30');
+			assert.strictEqual(viewModel.caseAgeColor, 'f47738', 'Color should be orange for case age 30');
 		});
 	});
 	describe('handlePagination', () => {

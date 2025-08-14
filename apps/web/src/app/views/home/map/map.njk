@@ -1,0 +1,49 @@
+{% macro map(apiKey, cases, inspectorPin) %}
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .pins-map {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-top: calc(2.5 / 4 * 100%);
+        }
+
+        .pins-map__container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .pins-map__content {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <div class="pins-map">
+        <div class="pins-map__container">
+            <div id="map" class="pins-map__content"></div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.3.1/os-api-branding.css" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css">
+    <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %} src="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.3.1/os-api-branding.js"></script>
+    <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %} src="https://js.arcgis.com/4.30/"></script>
+    <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
+      {% include "views/home/map/map.js" %}
+
+      const apiKey = '{{ apiKey }}';
+      const inspector = {{ inspectorPin | default({}) | dump | safe }};
+      const pins = {{ cases | default([]) | dump | safe }};
+
+      initialiseMap(apiKey, pins, inspector);
+    </script>
+{% endmacro %}

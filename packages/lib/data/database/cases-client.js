@@ -38,12 +38,16 @@ export class CasesClient {
 			allocationBand: c.allocationBand || '',
 			caseLevel: c.allocationLevel || '',
 			siteAddressPostcode: c.siteAddressPostcode || '',
+			siteAddressLatitude: c.siteAddressLatitude,
+			siteAddressLongitude: c.siteAddressLongitude,
 			lpaName: c.lpaName || '',
 			lpaRegion: c.lpaRegion || '',
 			caseStatus: c.caseStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.caseValidDate || new Date()),
 			linkedCases: this.getLinkedCasesCount(c),
-			finalCommentsDate: c.finalCommentsDueDate || new Date()
+			finalCommentsDate: c.finalCommentsDueDate || new Date(),
+			specialisms: c.Specialisms,
+			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.name).join(', ') : 'None'
 		};
 	}
 
