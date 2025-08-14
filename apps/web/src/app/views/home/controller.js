@@ -40,7 +40,7 @@ export function buildViewHome(service) {
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
-		const { cases, total } = await service.casesClient.getPaginatedCases(page, limit);
+		const { cases, total } = await service.casesClient.paginateCases(page, limit);
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));

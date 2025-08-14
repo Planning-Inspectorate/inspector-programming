@@ -30,7 +30,7 @@ describe('controller.js', () => {
 				},
 				casesClient: {
 					getAllCases: mock.fn(() => []),
-					getPaginatedCases: mock.fn(() => ({ cases: [], total: 0 }))
+					paginateCases: mock.fn(() => ({ cases: [], total: 0 }))
 				},
 				db: {
 					inspector: {
@@ -41,7 +41,7 @@ describe('controller.js', () => {
 		};
 		test('should get all cases', async () => {
 			const service = mockService();
-			service.casesClient.getPaginatedCases.mock.mockImplementationOnce(() => ({
+			service.casesClient.paginateCases.mock.mockImplementationOnce(() => ({
 				cases: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 })),
 				total: 10
 			}));
@@ -49,7 +49,7 @@ describe('controller.js', () => {
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
 			await controller(req, res);
-			assert.strictEqual(service.casesClient.getPaginatedCases.mock.callCount(), 1);
+			assert.strictEqual(service.casesClient.paginateCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.cases.length, 10);
