@@ -354,7 +354,7 @@
 
         {% set outlookView %}
             {% if calendarError %}
-                <p class="govuk-error-message"> {{ calendarError }} <p>
+                <p class="govuk-error-message" id="calendarError"> {{ calendarError }} <p>
             {% elif inspectorPin.id %}
                 {% include 'views/home/calendar.njk' %}
             {% endif %}
