@@ -563,15 +563,19 @@
 
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
-                document.dispatchEvent('caseStateChange', {
-                    caseId: checkbox.value,
-                    selected: checkbox.checked
-                });
+              console.debug('case checkbox value changed:', checkbox.value, checkbox.checked);
+              document.dispatchEvent(new CustomEvent('caseStateChange', {
+                detail: {
+                  caseId: checkbox.value,
+                  selected: checkbox.checked
+                }
+              }));
             });
         });
 
         document.addEventListener('caseStateChange', function (event) {
             const { caseId, selected } = event.detail;
+            console.debug('caseStateChange, syncing checkbox state', caseId, selected);
 
             document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
         });
