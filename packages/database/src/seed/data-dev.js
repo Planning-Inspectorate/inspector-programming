@@ -123,7 +123,9 @@ const inspectors = [
 		email: 'inspector-programming-test-1@planninginspectorate.gov.uk',
 		entraId: 'baf4bc6f-fe93-406c-a1ff-93b562739f11',
 		grade: 'B1',
-		postcode: 'BS1 6PN',
+		postcode: 'NE1 7RU',
+		longitude: -1.6157238,
+		latitude: 54.980328,
 		workingAboveBand: false,
 		Specialisms: {
 			connectOrCreate: [
@@ -155,7 +157,9 @@ const inspectors = [
 		email: 'inspector-programming-test-2@planninginspectorate.gov.uk',
 		entraId: 'd53dea42-369b-44aa-b3ca-a8537018b422',
 		grade: 'B2',
-		postcode: 'BS1 6PN',
+		postcode: 'SW1A 0AA',
+		longitude: -0.1246377,
+		latitude: 51.4998415,
 		workingAboveBand: true,
 		Specialisms: {
 			connectOrCreate: [
@@ -187,7 +191,9 @@ const inspectors = [
 		email: 'inspector-programming-test-3@planninginspectorate.gov.uk',
 		entraId: '7a0c62e2-182a-47a8-987a-26d0faa02876',
 		grade: 'B1',
-		postcode: 'BS1 6PN',
+		postcode: 'WA15 0RE',
+		longitude: -2.2962547,
+		latitude: 53.3497019,
 		workingAboveBand: true,
 		Specialisms: {
 			connectOrCreate: [
@@ -219,7 +225,9 @@ const inspectors = [
 		email: 'inspector-programming-test-4@planninginspectorate.gov.uk',
 		entraId: 'b62bce27-eb35-40e5-9164-1ad47786abcb',
 		grade: 'B3',
-		postcode: 'BS1 6PN',
+		postcode: 'PO1 5LL',
+		longitude: -1.0723581,
+		latitude: 50.8038674,
 		workingAboveBand: false,
 		Specialisms: {
 			connectOrCreate: [
@@ -249,9 +257,11 @@ const inspectors = [
 		firstName: 'User Five',
 		lastName: 'Inspector (Test)',
 		email: 'inspector-programming-test-5@planninginspectorate.gov.uk',
-		entraId: '2b5991be-cb19-440e-9012-12daa31e1252',
+		entraId: 'c26f2350-76f5-4454-993e-4d5fb793b8b2',
 		grade: 'B2',
 		postcode: 'BS1 6PN',
+		longitude: -2.5828931,
+		latitude: 51.4508591,
 		workingAboveBand: false,
 		Specialisms: {
 			connectOrCreate: [
