@@ -25,6 +25,7 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
+
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 
 		// Convert the raw query string into a nested object

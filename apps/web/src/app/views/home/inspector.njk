@@ -1,0 +1,51 @@
+<div class="pins-container-wide govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+        <h2 class="govuk-heading-m">{{ inspectorPin.firstName + " " + inspectorPin.lastName }}</h2>
+        <h2 class="govuk-heading-m">Contact details</h2>
+        {{ govukSummaryList({
+            rows: [
+                { key: { text: "Address" }, value: { text: inspectorPin.address.addressLine1 + ", " + inspectorPin.address.postcode } },
+                { key: { text: "Work phone" }, value: { text: inspectorPin.inspectorPhone } },
+                { key: { text: "Mobile phone" }, value: { text: inspectorPin.inspectorPhone  } }
+            ]
+        }) }}
+
+        <h2 class="govuk-heading-m">Work details</h2>
+        {{ govukSummaryList({
+            rows: [
+                { key: { text: "Resource group" }, value: { text: "" } },
+                { key: { text: "Grade" }, value: { text: inspectorPin.grade } },
+                { key: { text: "FTE" }, value: { text: inspectorPin.fte } },
+                { key: { text: "Charting officer" }, value: { text: inspectorPin.chartingOfficerId } },
+                { key: { text: "Charting officer phone" }, value: { text: inspectorPin.chartingOfficerPhone } },
+                { key: { text: "Inspector manager" }, value: { text: inspectorPin.inspectorManager } }
+            ]
+        }) }}
+    </div>
+    {% if inspectorPin.specialisms and inspectorPin.specialisms.length > 0 %}
+        {% set tableRows = [] %}
+
+        {% for row in inspectorPin.specialisms %}
+            {% set tableRows = tableRows.concat([[
+                { text: row.name },
+                { text: row.proficiency },
+                { text: row.validFrom }
+            ]]) %}
+        {% endfor %}
+
+        <div class="govuk-grid-column-one-half govuk-!-margin-top-8">
+        {{ govukTable({
+            caption: "Specialisms",
+            captionClasses: "govuk-table__caption--m",
+            firstCellIsHeader: true,
+            head: [
+                { text: "Name", classes: "govuk-!-width-one-half" },
+                { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
+                { text: "Valid from", classes: "govuk-!-width-one-quarter" }
+            ],
+            rows: tableRows,
+            classes: 'custom-table-header'
+        }) }}
+    </div>
+    {% endif %}
+</div>
