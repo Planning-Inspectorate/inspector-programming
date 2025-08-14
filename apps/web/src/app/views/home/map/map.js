@@ -1,6 +1,10 @@
-const serviceUrl = 'https://api.os.uk/maps/vector/v1/vts';
 // initialiseMap is used in map.njk
 /* eslint-disable no-unused-vars */
+/* global document */
+
+const serviceUrl = 'https://api.os.uk/maps/vector/v1/vts';
+const SELECT_CASE_ACTION = 'Select Case';
+const UNSELECT_CASE_ACTION = 'Unselect Case';
 
 /**
  * Initialise the OS map
@@ -15,8 +19,9 @@ function initialiseMap(apiKey, pins, inspector) {
 		'esri/Graphic',
 		'esri/layers/VectorTileLayer',
 		'esri/geometry/Point',
-		'esri/config'
-	], function (Map, MapView, Graphic, VectorTileLayer, Point, esriConfig) {
+		'esri/config',
+		'esri/core/reactiveUtils'
+	], function (Map, MapView, Graphic, VectorTileLayer, Point, esriConfig, reactiveUtils) {
 		esriConfig.request.interceptors.push({
 			urls: serviceUrl,
 			before: function (params) {
@@ -66,6 +71,13 @@ function initialiseMap(apiKey, pins, inspector) {
 								{ fieldName: 'caseStatus', label: 'Status' },
 								{ fieldName: 'specialismList', label: 'Specialisms' }
 							]
+						}
+					],
+					actions: [
+						{
+							id: `toggle-select-case-${caseData.caseId}`,
+							icon: 'check-circle',
+							title: SELECT_CASE_ACTION
 						}
 					]
 				}
@@ -165,5 +177,43 @@ function initialiseMap(apiKey, pins, inspector) {
 		for (const graphic of graphics) {
 			view.graphics.add(graphic);
 		}
+
+		reactiveUtils.on(
+			() => view.popup,
+			'trigger-action',
+			(event) => {
+				if (event.action.title === SELECT_CASE_ACTION || event.action.title === UNSELECT_CASE_ACTION) {
+					const selectedCase = event.action.id.replace('toggle-select-case-', '');
+					console.log(event.action.title, selectedCase);
+					document.dispatchEvent(
+						new CustomEvent('caseStateChange', {
+							detail: {
+								caseId: selectedCase,
+								selected: !pins.find(({ caseId }) => caseId === selectedCase).selected
+							}
+						})
+					);
+				}
+			}
+		);
+
+		// keep the list of 'pins' in sync with any selection changes
+		// do it with a listener so it also works if cases are selected on the table
+		document.addEventListener('caseStateChange', function (event) {
+			const graphic = view.graphics.find((graphic) => graphic.attributes?.caseId === event.detail.caseId);
+
+			if (graphic) {
+				const caseData = pins.find(({ caseId }) => caseId === event.detail.caseId);
+				caseData.selected = event.detail.selected;
+				console.debug('caseStateChange, syncing map state', caseData.caseId, caseData.selected);
+
+				graphic.popupTemplate.actions.items[0].title = event.detail.selected
+					? UNSELECT_CASE_ACTION
+					: SELECT_CASE_ACTION;
+				graphic.popupTemplate.actions.items[0].icon = event.detail.selected ? 'check-circle-f' : 'check-circle';
+				graphic.symbol.outline.color.setColor(event.detail.selected ? '#000000' : '#ffffff');
+				graphic.symbol = graphic.symbol.clone(); // force render
+			}
+		});
 	});
 }
