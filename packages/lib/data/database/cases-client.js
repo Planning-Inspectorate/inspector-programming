@@ -45,7 +45,9 @@ export class CasesClient {
 			caseStatus: c.caseStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.caseValidDate || new Date()),
 			linkedCases: this.getLinkedCasesCount(c),
-			finalCommentsDate: c.finalCommentsDueDate || new Date()
+			finalCommentsDate: c.finalCommentsDueDate || new Date(),
+			specialisms: c.Specialisms,
+			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.name).join(', ') : 'None'
 		};
 	}
 

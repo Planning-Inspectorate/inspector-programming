@@ -65,9 +65,7 @@ export function buildViewHome(service) {
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
-			inspectorPin: {
-				...selectedInspector
-			},
+			inspectorPin: selectedInspector,
 			calendarData,
 			errors,
 			errorList,
@@ -164,7 +162,7 @@ export function caseViewModel(c) {
 		...c,
 		caseStatus: c.caseStatus?.replace('_', ' '),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
-		color: getCaseColor(c.caseAge),
+		caseAgeColor: getCaseColor(c.caseAge),
 		currentDate: formatDateForDisplay(new Date(), { format: 'dd/MM/yyyy' })
 	};
 }
