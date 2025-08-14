@@ -78,24 +78,19 @@ export class CasesClient {
 	/**
 	 * Fetch a paginated list of appeal cases from the database.
 	 *
+	 * @param {import('../types').CaseViewModel[]} allCases - All cases pre-pagination
 	 * @param {number} page - The current page number (1-based).
 	 * @param {number} pageSize - The number of cases per page.
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
 	 */
-	async getPaginatedCases(page = 1, pageSize = 10) {
+	async paginateCases(allCases, page = 1, pageSize = 10) {
 		const skip = (page - 1) * pageSize;
 
-		const [cases, total] = await Promise.all([
-			this.#client.appealCase.findMany({
-				skip,
-				take: pageSize
-			}),
-			this.#client.appealCase.count()
-		]);
+		const cases = allCases.slice(skip, skip + pageSize);
 
 		return {
 			cases: cases.map((c) => this.caseToViewModel(c)),
-			total
+			total: allCases.length || 0
 		};
 	}
 }

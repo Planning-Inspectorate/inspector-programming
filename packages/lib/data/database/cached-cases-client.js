@@ -52,13 +52,14 @@ export class CachedCasesClient {
 	}
 
 	/**
-	 * Fetch a paginated list of appeal cases from the database. ---  TEMPORARY
+	 * Fetch a paginated list of appeal cases by applying pagination to the cached cases
 	 *
 	 * @param {number} page - The current page number (1-based).
 	 * @param {number} pageSize - The number of cases per page.
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
 	 */
-	async getPaginatedCases(page = 1, pageSize = 10) {
-		return this.#client.getPaginatedCases(page, pageSize);
+	async paginateCases(page = 1, pageSize = 10) {
+		const allCases = await this.getAllCases();
+		return this.#client.paginateCases(allCases, page, pageSize);
 	}
 }
