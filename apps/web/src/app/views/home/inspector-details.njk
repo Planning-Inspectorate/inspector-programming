@@ -1,0 +1,41 @@
+<div class="pins-container-wide govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+        <h2 class="govuk-heading-m">{{ inspectorPin.firstName + " " + inspectorPin.lastName }}</h2>
+        <h2 class="govuk-heading-m">Inspector Details</h2>
+        {{ govukSummaryList({
+            rows: [
+                { key: { text: "Postcode" }, value: { text: inspectorPin.postcode } },
+                { key: { text: "Grade" }, value: { text: inspectorPin.grade } },
+                { key: { text: "Email address" }, value: { text: inspectorPin.email  } },
+                { key: { text: "Proclusions" }, value: { text: "__"  } }
+            ]
+        }) }}
+    </div>
+    <div class="govuk-grid-column-one-half govuk-grid-column-one-half govuk-!-margin-top-8">
+        <section>
+                {% set tableRows = [] %}
+
+                {% for row in inspectorPin.Specialisms %}
+                    {% set tableRows = tableRows.concat([[
+                        { text: row.name },
+                        { text: row.proficiency },
+                        { text: row.validFrom }
+                    ]]) %}
+                {% endfor %}
+
+                {{ govukTable({
+                    caption: "Specialisms",
+                    captionClasses: "govuk-table__caption--m",
+                    firstCellIsHeader: true,
+                    head: [
+                        { text: "Name", classes: "govuk-!-width-one-half" },
+                        { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
+                        { text: "Valid from", classes: "govuk-!-width-one-quarter" }
+                    ],
+                    rows: tableRows,
+                    classes: 'custom-table-header'
+                }) }}
+        </section>
+
+    </div>
+</div>

@@ -40,8 +40,19 @@ export function buildViewHome(service) {
 		const inspectorData =
 			selectedInspector &&
 			(await service.db.inspector.findFirst({
-				where: { entraId: selectedInspector.id }
+				where: { entraId: selectedInspector.id },
+				include: {
+					Specialisms: true
+				}
 			}));
+
+		//format validFrom date on inspector specialisms using formatDateForDisplay
+		if (inspectorData && inspectorData.Specialisms) {
+			inspectorData.Specialisms = inspectorData.Specialisms.map((s) => ({
+				...s,
+				validFrom: formatDateForDisplay(s.validFrom, { format: 'dd/MM/yyyy' })
+			}));
+		}
 
 		// Convert the raw query string into a nested object
 		const query = qs.parse(parseUrl(req.url).query || '');
@@ -91,7 +102,7 @@ export function buildViewHome(service) {
 			}
 		} else {
 			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
-			if (req.query.currentTab == 'calendar') {
+			if (['calendar', 'inspector'].includes(req.query.currentTab)) {
 				inspectorError = calendarError;
 				errorSummary.push({
 					text: calendarError,
