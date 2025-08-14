@@ -115,7 +115,7 @@ describe('controller.js', () => {
 				'07/08/2025',
 				'Final comments date should be formatted in Europe/London timezone'
 			);
-			assert.strictEqual(viewModel.color, 'f47738', 'Color should be orange for case age 30');
+			assert.strictEqual(viewModel.caseAgeColor, 'f47738', 'Color should be orange for case age 30');
 		});
 	});
 	describe('handlePagination', () => {
