@@ -24,7 +24,7 @@ export class EntraClient {
 	}
 
 	/**
-	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 500 per page
+	 * Fetch all group members - direct and indirect - of an Entra group, up to a maximum of 5000
 	 *
 	 * @param {string} groupId
 	 * @returns {Promise<import('./types').GroupMember[]>}
@@ -55,26 +55,26 @@ export class EntraClient {
 	 * Fetch all calendar events for a given Entra userID
 	 *
 	 * @param {string} userId
-	 * @param {{calendarEventsDayRange: number, calendarEventsStartDateOffset: number}} options // configuration of date range to fetch
+	 * @param {{calendarEventsDayRange: number, calendarEventsFromDateOffset: number}} options // configuration of date range to fetch
 	 * @returns {Promise<import('./types').CalendarEvent[]>}
 	 */
 	async listAllUserCalendarEvents(userId, options) {
-		const [startDate, endDate] = [new Date(), new Date()];
-		startDate.setUTCDate(startDate.getUTCDate() - +options.calendarEventsDayRange);
-		endDate.setUTCDate(endDate.getUTCDate() + +options.calendarEventsStartDateOffset || 0);
-		startDate.setUTCHours(0, 0, 0, 0);
-		endDate.setUTCHours(23, 59, 59, 999);
+		const [fromDate, toDate] = [new Date(), new Date()];
+		toDate.setUTCDate(toDate.getUTCDate() - +options.calendarEventsDayRange);
+		fromDate.setUTCDate(fromDate.getUTCDate() + +options.calendarEventsFromDateOffset || 0);
+		toDate.setUTCHours(0, 0, 0, 0);
+		fromDate.setUTCHours(23, 59, 59, 999);
 
 		const listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
-			.query({ startDateTime: startDate.toISOString(), endDateTime: endDate.toISOString() })
+			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
 			.select(['id', 'subject', 'start', 'end'])
 			.top(PER_PAGE);
 
 		const events = [];
 		for (let i = 0; i < MAX_PAGES; i++) {
 			const res = await listEvents.get();
-			if (res.value?.length) events.push(...res.value.filter((v) => v[ODATA.TYPE] === ODATA.EVENT_TYPE));
+			if (res.value?.length) events.push(...res.value);
 
 			const nextLink = res[ODATA.NEXT_LINK];
 			if (!nextLink) {
