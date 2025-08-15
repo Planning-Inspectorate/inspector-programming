@@ -127,6 +127,7 @@ export function buildViewHome(service) {
 			specialisms,
 			specialismTypes,
 			caseTypes,
+			inspectorError,
 			errorSummary
 		});
 	};
