@@ -36,6 +36,39 @@ export class CachedCasesClient {
 	}
 
 	/**
+	 * Retrieve appeals cases while supporting sorting, filtering (TODO) and pagination functionality
+	 * Fetches all cases from cache if there, then applies sort and filtering (TODO) before paginating the resultant cases
+	 * Ideal entry point for fetching cases from the frontend
+	 *
+	 * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+	 * @param {number} page
+	 * @param {number} pageSize
+	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
+	 */
+	async getCases(sort, page, pageSize) {
+		const allCases = await this.getAllCases();
+
+		//sort
+		let sortedCases;
+		switch (sort) {
+			case 'distance':
+				//WIP
+				sortedCases = allCases;
+				break;
+			case 'hybrid':
+				//WIP
+				sortedCases = allCases;
+				break;
+			default:
+				sortedCases = allCases.sort((a, b) => b.caseAge - a.caseAge);
+				break;
+		}
+
+		//paginate
+		return this.#client.paginateCases(sortedCases, page, pageSize);
+	}
+
+	/**
 	 * Fetch all appeals cases currently held in the database
 	 *
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
@@ -49,17 +82,5 @@ export class CachedCasesClient {
 		cases = await this.#client.getAllCases();
 		this.#cache.set(key, cases);
 		return cases;
-	}
-
-	/**
-	 * Fetch a paginated list of appeal cases by applying pagination to the cached cases
-	 *
-	 * @param {number} page - The current page number (1-based).
-	 * @param {number} pageSize - The number of cases per page.
-	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
-	 */
-	async paginateCases(page = 1, pageSize = 10) {
-		const allCases = await this.getAllCases();
-		return this.#client.paginateCases(allCases, page, pageSize);
 	}
 }
