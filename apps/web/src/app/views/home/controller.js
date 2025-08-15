@@ -82,18 +82,22 @@ export function buildViewHome(service) {
 				service.logger.error(error, 'Failed to fetch calendar events');
 				calendarError =
 					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
-				errorSummary.push({
-					text: calendarError,
-					href: '#calendarError'
-				});
+				if (req.query.currentTab == 'calendar') {
+					errorSummary.push({
+						text: calendarError,
+						href: '#calendarError'
+					});
+				}
 			}
 		} else {
 			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
-			inspectorError = calendarError;
-			errorSummary.push({
-				text: calendarError,
-				href: '#inspectors'
-			});
+			if (req.query.currentTab == 'calendar') {
+				inspectorError = calendarError;
+				errorSummary.push({
+					text: calendarError,
+					href: '#inspectors'
+				});
+			}
 		}
 
 		const currentStartDate = req.query.calendarStartDate
@@ -128,6 +132,7 @@ export function buildViewHome(service) {
 			specialismTypes,
 			caseTypes,
 			inspectorError,
+			calendarError,
 			errorSummary
 		});
 	};
