@@ -12,6 +12,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
 
 {% from "views/home/map/map.njk" import map %}
 
@@ -23,7 +24,7 @@
                 <h2 class="govuk-heading-m bold-title">Select inspector</h2>
             </div>
         </div>
-        <form method="post" novalidate>
+        <form method="get" novalidate id="inspector-form">
             <div class="govuk-form-group flex-gap">
                 {% set inspectorList = [{
                     text: '',
@@ -43,6 +44,11 @@
                     items: inspectorList,
                     classes: "govuk-!-margin-bottom-6",
                     errorMessage: { text: inspectorError } if inspectorError else null
+                }) }}
+                {{ govukInput({
+                    id: "currentTab",
+                    name: "currentTab",
+                    type: "hidden"
                 }) }}
                 {{ govukButton({
                     text: "Select",
@@ -355,7 +361,12 @@
 
         {% set outlookView %}
             {% if calendarError %}
-                <p class="govuk-error-message" id="calendarError"> {{ calendarError }} <p>
+                {{ govukErrorMessage({
+                    id: "calendarError",
+                    text: calendarError,
+                    visuallyHiddenText: "Error"
+                }) }}
+                
             {% elif inspectorPin.id %}
                 {% include 'views/home/calendar.njk' %}
             {% endif %}
@@ -456,6 +467,30 @@
             })
         });
 
+        const inspectorForm = document.querySelector('#inspector-form');
+
+        inspectorForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const outlookTabSelected = document.querySelector('#tab_outlookView').getAttribute('aria-selected');
+            let currentTab = document.getElementById('currentTab');
+
+            if (outlookTabSelected == 'true') {
+                currentTab.value = 'calendar';
+            } else {
+                currentTab.value = '';
+            }
+
+            HTMLFormElement.prototype.submit.call(inspectorForm);
+        });
+
+        document.querySelector('#tab_outlookView').addEventListener('click', (e) => {
+            e.preventDefault();
+            const inspectorForm = document.getElementById('inspector-form');
+            let action = document.getElementById('currentTab');
+            action.value = 'calendar';
+            inspectorForm.submit();
+        });
     });
 </script>
 {% endblock %}
