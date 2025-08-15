@@ -17,9 +17,9 @@ describe('EntraClient', () => {
 			top() {
 				return this;
 			},
-				header() {
-					return this;
-				},
+			header() {
+				return this;
+			},
 			skipToken: mock.fn(() => this),
 			get: mock.fn(() => ({ value: [] }))
 		};
