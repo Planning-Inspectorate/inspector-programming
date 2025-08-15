@@ -481,7 +481,7 @@
                 currentTab.value = '';
             }
 
-            HTMLFormElement.prototype.submit.call(inspectorForm);
+            inspectorForm.submit()
         });
 
         document.querySelector('#tab_outlookView').addEventListener('click', (e) => {
