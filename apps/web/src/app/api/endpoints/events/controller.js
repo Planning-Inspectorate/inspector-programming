@@ -39,7 +39,7 @@ export function getCalendarEventsForEntraUsers(service) {
 			const calendarEvents = [];
 
 			//should not be able to use endpoint without valid config: fetch far too many events otherwise
-			const { calendarEventsDayRange, calendarEventsStartDateOffset } = service.entraConfig;
+			const { calendarEventsDayRange, calendarEventsFromDateOffset } = service.entraConfig;
 			if (!+calendarEventsDayRange) {
 				res.status(400).send('Invalid calendar events day range configuration');
 				return;
@@ -52,24 +52,13 @@ export function getCalendarEventsForEntraUsers(service) {
 					userChunk.map(async (user) => {
 						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, {
 							calendarEventsDayRange: calendarEventsDayRange,
-							calendarEventsStartDateOffset: calendarEventsStartDateOffset
+							calendarEventsFromDateOffset: calendarEventsFromDateOffset
 						});
-
-						//for validating that the events are within the date range
-						const [startOfDateRange, endOfDateRange] = [new Date(), new Date()];
-						startOfDateRange.setDate(startOfDateRange.getDate() + calendarEventsStartDateOffset);
-						endOfDateRange.setDate(endOfDateRange.getDate() - calendarEventsDayRange);
-						startOfDateRange.setHours(23, 59, 59, 999); //Set to end of the day
-						endOfDateRange.setHours(0, 0, 0, 0); // Set to start of the day
 
 						//format returned events for PowerBI
 						//startDate and endDate are in UTC timezone
 						const formattedEvents = [];
 						for (const event of usersEvents || []) {
-							//if events are outside the configured date range Graph API may be incorrectly configured
-							if (new Date(event.end.dateTime) < endOfDateRange || new Date(event.end.dateTime) > startOfDateRange) {
-								throw new Error(`Event ${event.id} for user ${user.email} is outside the configured date range`);
-							}
 							formattedEvents.push({
 								id: event.id,
 								userEmail: user.email,

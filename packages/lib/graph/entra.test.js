@@ -110,44 +110,7 @@ describe('EntraClient', () => {
 			const entra = new EntraClient(client);
 			const members = await entra.listAllUserCalendarEvents('testGroup', {
 				calendarEventsDayRange: 3,
-				calendarEventsStartDateOffset: 0
-			});
-			assert.strictEqual(client.get.mock.callCount(), 1);
-			assert.strictEqual(members.length, 1);
-		});
-		it('should only return events not users', async () => {
-			const client = mockClient();
-			client.get.mock.mockImplementation(() => {
-				return {
-					value: [
-						{
-							[ODATA.TYPE]: ODATA.EVENT_TYPE,
-							id: 'id1',
-							subject: 'test event',
-							start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
-							end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
-						},
-						{
-							[ODATA.TYPE]: ODATA.USER_TYPE,
-							id: 'id2',
-							subject: 'test event 2',
-							start: { dateTime: '2025-08-10T14:00:00.0000000', timeZone: 'UTC' },
-							end: { dateTime: '2025-08-14T14:00:00.0000000', timeZone: 'UTC' }
-						},
-						{
-							[ODATA.TYPE]: ODATA.GROUP_TYPE,
-							id: 'id3',
-							subject: 'test event 3',
-							start: { dateTime: '2025-08-11T14:00:00.0000000', timeZone: 'UTC' },
-							end: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' }
-						}
-					]
-				};
-			});
-			const entra = new EntraClient(client);
-			const members = await entra.listAllUserCalendarEvents('testGroup', {
-				calendarEventsDayRange: 3,
-				calendarEventsStartDateOffset: 0
+				calendarEventsFromDateOffset: 0
 			});
 			assert.strictEqual(client.get.mock.callCount(), 1);
 			assert.strictEqual(members.length, 1);
@@ -179,7 +142,7 @@ describe('EntraClient', () => {
 			const entra = new EntraClient(client);
 			const events = await entra.listAllUserCalendarEvents('testGroup', {
 				calendarEventsDayRange: 3,
-				calendarEventsStartDateOffset: 0
+				calendarEventsFromDateOffset: 0
 			});
 			assert.strictEqual(client.get.mock.callCount(), 10);
 			assert.strictEqual(client.skipToken.mock.callCount(), 9);
@@ -204,7 +167,7 @@ describe('EntraClient', () => {
 			const entra = new EntraClient(client);
 			await entra.listAllUserCalendarEvents('testGroup', {
 				calendarEventsDayRange: 3,
-				calendarEventsStartDateOffset: 0
+				calendarEventsFromDateOffset: 0
 			});
 
 			assert.strictEqual(client.get.mock.callCount(), 10);

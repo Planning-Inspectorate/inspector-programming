@@ -71,7 +71,7 @@ export class CachedEntraClient {
 	 * Fetch all calendar events for an Entra user ID, up to a maximum of 5000
 	 *
 	 * @param {string} userId
-	 * @param {{calendarEventsDayRange: number, calendarEventsStartDateOffset: number}} options
+	 * @param {{calendarEventsDayRange: number, calendarEventsFromDateOffset: number}} options
 	 * @returns {Promise<import('./types.js').CalendarEvent[]>}
 	 */
 	async listAllUserCalendarEvents(userId, options) {

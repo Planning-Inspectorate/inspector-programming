@@ -53,7 +53,7 @@ export function loadConfig() {
 		API_MOCK_DATA,
 		API_INSPECTOR_ENTRA_GROUPS,
 		API_CALENDAR_EVENTS_DAY_RANGE,
-		API_CALENDAR_EVENTS_START_DATE_OFFSET
+		API_CALENDAR_EVENTS_FROM_DATE_OFFSET
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -145,7 +145,7 @@ export function loadConfig() {
 			// in minutes
 			cacheTtl: parseInt(ENTRA_GROUP_CACHE_TTL || 15),
 			calendarEventsDayRange: API_CALENDAR_EVENTS_DAY_RANGE,
-			calendarEventsStartDateOffset: API_CALENDAR_EVENTS_START_DATE_OFFSET || 0,
+			calendarEventsFromDateOffset: API_CALENDAR_EVENTS_FROM_DATE_OFFSET || 0,
 			groupIds: {
 				inspectors: ENTRA_GROUP_ID_INSPECTORS,
 				teamLeads: ENTRA_GROUP_ID_TEAM_LEADS,
