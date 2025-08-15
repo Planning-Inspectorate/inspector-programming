@@ -4,7 +4,7 @@ import {
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_TYPE
 } from '@planning-inspectorate/data-model';
-import { addWeeks } from 'date-fns';
+import { addDays, addWeeks } from 'date-fns';
 import { mockLocations } from './data-dev-mock-locations.js';
 import { SPECIALISMS } from './specialisms.js';
 import crypto from 'node:crypto';
@@ -27,6 +27,7 @@ const mockAppeal = {
 	siteAddressPostcode: 'EX1 2PL',
 	lpaCode: 'Q9999',
 	lpaName: 'Example Local Planning Authority',
+	caseCreatedDate: new Date('2025-07-30T12:15:00Z'),
 	caseValidDate: new Date('2025-07-31T23:00:00Z'),
 	finalCommentsDueDate: new Date('2025-08-06T23:00:00Z')
 };
@@ -59,6 +60,7 @@ function generateAppeals() {
 	return variations.map((variation, index) => {
 		// not concerned with time zone issues, just rough dates is OK
 		const valid = addWeeks(now, -Math.floor(index / 2));
+		const created = addDays(valid, -crypto.randomInt(5));
 		const finalCommentsDue = addWeeks(valid, 5);
 		const paddedIndex = String(index + 1).padStart(5, '0');
 		const location = mockLocations[index % mockLocations.length];
@@ -71,6 +73,7 @@ function generateAppeals() {
 			siteAddressLatitude: location.siteAddressLatitude,
 			siteAddressLongitude: location.siteAddressLongitude,
 			caseReference: reference,
+			caseCreatedDate: created,
 			caseValidDate: valid,
 			finalCommentsDueDate: finalCommentsDue,
 			Specialisms: generateCaseSpecialisms(),
@@ -257,7 +260,7 @@ const inspectors = [
 		firstName: 'User Five',
 		lastName: 'Inspector (Test)',
 		email: 'inspector-programming-test-5@planninginspectorate.gov.uk',
-		entraId: 'c26f2350-76f5-4454-993e-4d5fb793b8b2',
+		entraId: '2b5991be-cb19-440e-9012-12daa31e1252',
 		grade: 'B2',
 		postcode: 'BS1 6PN',
 		longitude: -2.5828931,

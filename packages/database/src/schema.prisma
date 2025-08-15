@@ -48,6 +48,7 @@ model AppealCase {
   lpaName   String?
   lpaRegion String?
 
+  caseCreatedDate      DateTime?
   caseValidDate        DateTime?
   finalCommentsDueDate DateTime?
 
