@@ -61,14 +61,12 @@ export function buildViewHome(service) {
 		const page = req.query.page ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
-		const { cases, total } = await service.casesClient.paginateCases(page, limit);
+		const { cases, total } = await service.casesClient.getCases(query.sort, page, limit);
 
 		const errors = validateFilters(filters);
 		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
-
-		const sortedCases = sortCases(filteredCases, query.sort);
 
 		const formData = {
 			filters,
@@ -123,7 +121,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Unassigned case list',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: sortedCases.map(caseViewModel),
+			cases: filteredCases.map(caseViewModel),
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
