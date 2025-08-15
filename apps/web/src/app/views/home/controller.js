@@ -26,6 +26,7 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
+
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 
 		// Convert the raw query string into a nested object
@@ -53,6 +54,7 @@ export function buildViewHome(service) {
 		};
 		const paginationDetails = handlePagination(req, total, formData);
 		const calendarData = {};
+		const inspectorError = !selectedInspector && req.query.action;
 
 		calendarData.error =
 			"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
@@ -66,6 +68,7 @@ export function buildViewHome(service) {
 			data: formData,
 			apiKey: service.osMapsApiKey,
 			inspectorPin: selectedInspector,
+			inspectorError,
 			calendarData,
 			errors,
 			errorList,
