@@ -34,18 +34,18 @@
         {% endfor %}
 
         <div class="govuk-grid-column-one-half govuk-!-margin-top-8">
-        {{ govukTable({
-            caption: "Specialisms",
-            captionClasses: "govuk-table__caption--m",
-            firstCellIsHeader: true,
-            head: [
-                { text: "Name", classes: "govuk-!-width-one-half" },
-                { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
-                { text: "Valid from", classes: "govuk-!-width-one-quarter" }
-            ],
-            rows: tableRows,
-            classes: 'custom-table-header'
-        }) }}
-    </div>
+            {{ govukTable({
+                caption: "Specialisms",
+                captionClasses: "govuk-table__caption--m",
+                firstCellIsHeader: true,
+                head: [
+                    { text: "Name", classes: "govuk-!-width-one-half" },
+                    { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
+                    { text: "Valid from", classes: "govuk-!-width-one-quarter" }
+                ],
+                rows: tableRows,
+                classes: 'custom-table-header'
+            }) }}
+        </div>
     {% endif %}
 </div>

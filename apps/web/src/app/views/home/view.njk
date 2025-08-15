@@ -12,19 +12,30 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
-
+{% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
 {% from "views/home/map/map.njk" import map %}
 
 {% block pageContent %}
 <div class="filter-container">
     <div class="app-filter">
+        {%  if inspectorError %}
+            {{ govukErrorSummary({
+                titleText: "There is a problem",
+                errorList: [
+                    {
+                        text: 'Please select an inspector to view their cases.',
+                        href: '#inspectorId'
+                    }
+                ]
+            }) }}
+        {% endif %}
         <div class="app-filter__header">
             <div class="app-filter__header-title">
                 <h2 class="govuk-heading-m bold-title">Select inspector</h2>
             </div>
         </div>
-        <form method="post" novalidate>
-            <div class="govuk-form-group flex-gap">
+        <form method="get"  novalidate id="inspector-form">
+            <div class="govuk-form-group flex-gap {% if inspectorError %}govuk-!-margin-bottom-8{% endif %}" >
                 {% set inspectorList = [{
                     text: '',
                     value: null,
@@ -40,15 +51,25 @@
                 {{ govukSelect({
                     id: "inspectors",
                     name: "inspectorId",
-                    items: inspectorList
+                    items: inspectorList,
+                    errorMessage: { text: "No inspector selected" } if inspectorError else null
                 }) }}
-                {{ govukButton({
-                    text: "Select",
-                    classes: "govuk-button--secondary",
-                    value: "select",
+
+                {{ govukInput({
+                    id: "action",
                     name: "action",
-                    type: "submit"
+                    value: "select",
+                    type: "hidden"
                 }) }}
+
+                <div class="{% if inspectorError %} govuk-!-margin-top-7 {% endif %}">
+                    {{ govukButton({
+                        text: "Select",
+                        classes: "govuk-button--secondary",
+                        value: "select",
+                        type: "submit"
+                    }) }}
+                </div>
             </div>
         </form>
         <div class="app-filter__content">
@@ -299,9 +320,12 @@
 
         {% set inspectorDetails %}
             {% if inspectorPin.id %}
-                {% include 'views/home/inspector.njk' %}
+                {% include 'views/home/inspector-details.njk' %}
             {% else %}
-                <p class="govuk-body"> No Inspector Selected. Please select an Inspector from the drop down to see this information. <p>
+                {{ govukErrorMessage({
+                    text: "No Inspector Selected. Please select an Inspector from the drop down to see this information.",
+                    visuallyHiddenText: "Error"
+                }) }}
             {% endif %}
         {% endset %}
 
@@ -567,6 +591,12 @@
             })
         });
 
+      document.querySelector('#tab_inspector').addEventListener('click', (e) => {
+        e.preventDefault();
+        const inspectorForm = document.getElementById('inspector-form');
+        if (!inspectorForm) return;
+        inspectorForm.submit();
+      });
     });
 </script>
 {% endblock %}
