@@ -11,6 +11,10 @@ apps_config = {
   private_endpoint_enabled = true
 
   api = {
+    events = {
+      days_past   = 30
+      days_future = 7
+    }
     mock_data = false
   }
 

@@ -44,12 +44,14 @@ module "app_web" {
     NODE_ENV                                   = var.apps_config.node_environment
     ENVIRONMENT                                = var.environment
 
-    API_MOCK_DATA                 = var.apps_config.api.mock_data
-    APP_HOSTNAME                  = var.web_domains.web
-    AUTH_GROUP_APPLICATION_ACCESS = var.apps_config.auth.group_application_access
-    AZURE_CLIENT_ID               = var.apps_config.auth.client_id
-    AZURE_CLIENT_SECRET           = local.key_vault_refs["scheduling-client-secret"]
-    AZURE_TENANT_ID               = data.azurerm_client_config.current.tenant_id
+    API_MOCK_DATA                        = var.apps_config.api.mock_data
+    API_CALENDAR_EVENTS_DAY_RANGE        = var.apps_config.api.events.days_past
+    API_CALENDAR_EVENTS_FROM_DATE_OFFSET = var.apps_config.api.events.days_future
+    APP_HOSTNAME                         = var.web_domains.web
+    AUTH_GROUP_APPLICATION_ACCESS        = var.apps_config.auth.group_application_access
+    AZURE_CLIENT_ID                      = var.apps_config.auth.client_id
+    AZURE_CLIENT_SECRET                  = local.key_vault_refs["scheduling-client-secret"]
+    AZURE_TENANT_ID                      = data.azurerm_client_config.current.tenant_id
 
     # cbos
     CBOS_API_URL = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"

@@ -19,6 +19,10 @@ variable "apps_config" {
     private_endpoint_enabled = bool
 
     api = object({
+      events = object({
+        days_past   = number
+        days_future = number
+      })
       mock_data = bool
     })
 
