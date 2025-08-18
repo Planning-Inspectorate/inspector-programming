@@ -3,6 +3,7 @@ import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cach
 import { buildInitCasesClient } from '@pins/inspector-programming-lib/data/database/cached-cases-client.js';
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from './api/api-service.js';
+import { InspectorClient } from '@pins/inspector-programming-lib/data/database/inspector-client.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 
 /**
@@ -29,6 +30,8 @@ export class WebService extends BaseService {
 
 		const casesCache = new MapCache(config.cases.casesCacheTtl);
 		this.casesClient = buildInitCasesClient(this.dbClient, casesCache);
+
+		this.inspectorClient = new InspectorClient(this.dbClient);
 	}
 
 	/**

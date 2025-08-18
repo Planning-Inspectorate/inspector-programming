@@ -13,32 +13,35 @@ import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
 describe('controller.js', () => {
-	describe('buildViewHome', () => {
-		const entraClient = {
-			listAllGroupMembers: mock.fn(() => [])
-		};
-		const mockService = () => {
-			return {
-				logger: mockLogger(),
-				entraClient() {
-					return entraClient;
-				},
-				entraGroupIds: {
-					inspectors: 'inspectors-group-id',
-					teamLeads: 'team-leads-group-id',
-					nationalTeam: 'national-team-group-id'
-				},
-				casesClient: {
-					getAllCases: mock.fn(() => []),
-					getCases: mock.fn(() => ({ cases: [], total: 0 }))
-				},
-				db: {
-					inspector: {
-						findFirst: mock.fn()
-					}
+	const entraClient = {
+		listAllGroupMembers: mock.fn(() => [])
+	};
+	const mockService = () => {
+		return {
+			logger: mockLogger(),
+			entraClient() {
+				return entraClient;
+			},
+			entraGroupIds: {
+				inspectors: 'inspectors-group-id',
+				teamLeads: 'team-leads-group-id',
+				nationalTeam: 'national-team-group-id'
+			},
+			casesClient: {
+				getAllCases: mock.fn(() => []),
+				getCases: mock.fn(() => ({ cases: [], total: 0 }))
+			},
+			inspectorClient: {
+				getAllInspectors: mock.fn(() => [])
+			},
+			db: {
+				inspector: {
+					findFirst: mock.fn()
 				}
-			};
+			}
 		};
+	};
+	describe('buildViewHome', () => {
 		test('should get all cases', async () => {
 			const service = mockService();
 			service.casesClient.getCases.mock.mockImplementationOnce(() => ({

@@ -1,4 +1,3 @@
-import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { caseTypes, specialisms, specialismTypes } from '../../specialism/specialism.js';
 import {
@@ -41,7 +40,9 @@ const lastRequestDetails = {
 
 export function buildViewHome(service) {
 	return async (req, res) => {
-		const inspectors = await getInspectorList(service, req.session);
+		//const inspectors = await getInspectorList(service, req.session);
+		const inspectors = await service.inspectorClient.getAllInspectors();
+
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const inspectorData =
 			selectedInspector &&
