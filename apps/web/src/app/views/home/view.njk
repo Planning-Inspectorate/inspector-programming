@@ -38,13 +38,14 @@
                         selected: i.id == data.inspectorId
                     }), inspectorList) %}
                 {% endfor %}
-                {{ govukSelect({
-                    id: "inspectors",
-                    name: "inspectorId",
-                    items: inspectorList,
-                    classes: "govuk-!-margin-bottom-6",
-                    errorMessage: { text: inspectorError } if inspectorError else null
-                }) }}
+                <div class="govuk-!-margin-bottom-6">
+                    {{ govukSelect({
+                        id: "inspectors",
+                        name: "inspectorId",
+                        items: inspectorList,
+                        errorMessage: { text: inspectorError } if inspectorError else null
+                    }) }}
+                </div>
                 {{ govukInput({
                     id: "currentTab",
                     name: "currentTab",
@@ -481,6 +482,13 @@
                 currentTab.value = '';
             }
 
+            const autocompleteInputText = document.querySelector('#inspectors');
+            const autocompleteInputValue = document.querySelector('#inspectors-select');
+
+            if (autocompleteInputText.value == '') {
+                autocompleteInputValue.value = null;
+            }
+
             inspectorForm.submit()
         });
 
@@ -491,6 +499,15 @@
             action.value = 'calendar';
             inspectorForm.submit();
         });
+
+        if (typeof accessibleAutocomplete !== 'undefined') {
+        accessibleAutocomplete.enhanceSelectElement({
+            selectElement: document.querySelector('#inspectors'),
+            autoselect: false,
+            confirmOnBlur: false,
+            showAllValues: true
+        });
+    }
     });
 </script>
 {% endblock %}
