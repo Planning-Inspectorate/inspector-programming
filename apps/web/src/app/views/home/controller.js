@@ -33,6 +33,12 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  */
+
+//stores info about previous page loads to determine if pagination needs resetting
+const lastRequestDetails = {
+	sort: ''
+};
+
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
@@ -47,7 +53,7 @@ export function buildViewHome(service) {
 		const query = qs.parse(parseUrl(req.url).query || '');
 		const { filters } = query;
 
-		const page = req.query.page ? parseInt(req.query.page) : 1;
+		const page = req.query.page && query.sort === lastRequestDetails.sort ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
 		const { cases, total } = await service.casesClient.getCases(query.sort, page, limit);
@@ -105,6 +111,9 @@ export function buildViewHome(service) {
 		const timeList = generateTimeList(8, 18);
 		const calendarGrid = generateCalendar(currentStartDate, calendarEvents);
 		const weekTitle = generateWeekTitle(currentStartDate);
+
+		//update lastRequestDetails to current request after doing everything with them
+		lastRequestDetails.sort = String(query.sort);
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',
