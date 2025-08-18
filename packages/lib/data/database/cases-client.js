@@ -94,4 +94,25 @@ export class CasesClient {
 			total: allCases.length || 0
 		};
 	}
+
+	/**
+	 * Sorts a list of cases using the default age algorithm
+	 * First sorts oldest caseAge first, then if those match sorts oldest caseReceivedDate first, then if those match sorts using lpaName alphabetically
+	 *
+	 * @param {import('../types').CaseViewModel[]} cases
+	 * @return {import('../types').CaseViewModel[]}
+	 */
+	sortCasesByAge(cases) {
+		return cases.sort((a, b) => {
+			const ageComparison = b.caseAge - a.caseAge;
+			if (ageComparison !== 0) return ageComparison;
+			const dateReceivedComparison =
+				b.caseReceivedDate && a.caseReceivedDate
+					? (new Date(a.caseReceivedDate)?.getTime() || 0) - (new Date(b.caseReceivedDate)?.getTime() || 0)
+					: 0;
+			return dateReceivedComparison !== 0
+				? dateReceivedComparison
+				: (a.lpaName || '').localeCompare(b.lpaName || '', undefined, { sensitivity: 'base' });
+		});
+	}
 }

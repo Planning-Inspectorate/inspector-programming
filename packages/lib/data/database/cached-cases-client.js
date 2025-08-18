@@ -60,17 +60,7 @@ export class CachedCasesClient {
 				sortedCases = allCases;
 				break;
 			default:
-				sortedCases = allCases.sort((a, b) => {
-					const ageComparison = b.caseAge - a.caseAge;
-					if (ageComparison !== 0) return ageComparison;
-					const dateReceivedComparison =
-						b.caseReceivedDate && a.caseReceivedDate
-							? (new Date(a.caseReceivedDate)?.getTime() || 0) - (new Date(b.caseReceivedDate)?.getTime() || 0)
-							: 0;
-					return dateReceivedComparison !== 0
-						? dateReceivedComparison
-						: (a.lpaName || '').localeCompare(b.lpaName || '', undefined, { sensitivity: 'base' });
-				});
+				sortedCases = this.#client.sortCasesByAge(allCases);
 				break;
 		}
 
