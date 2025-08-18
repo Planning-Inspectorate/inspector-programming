@@ -113,10 +113,9 @@ model Inspector {
   latitude  Decimal? @db.Decimal(9, 6)
   longitude Decimal? @db.Decimal(9, 6)
 
-  grade            String?
-  email            String?
-  entraId          String? // to link with logged in user
-  workingAboveBand Boolean?
+  grade   String?
+  email   String?
+  entraId String? // to link with logged in user
 
   Specialisms InspectorSpecialism[]
 }
