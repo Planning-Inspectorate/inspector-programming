@@ -89,7 +89,7 @@ export class CasesClient {
 		const cases = allCases.slice(skip, skip + pageSize);
 
 		return {
-			cases: cases.map((c) => this.caseToViewModel(c)),
+			cases: cases,
 			total: allCases.length || 0
 		};
 	}
