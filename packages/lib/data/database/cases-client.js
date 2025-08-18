@@ -17,6 +17,7 @@ export class CasesClient {
 
 	/**
 	 * Fetch all appeals cases currently held in the database
+	 * Immediately converts to CaseViewModel type
 	 *
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
