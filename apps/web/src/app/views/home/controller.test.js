@@ -71,7 +71,6 @@ describe('controller.js', () => {
 				postcode: 'BS1 6PN',
 				longitude: -2.5828931,
 				latitude: 51.4508591,
-				workingAboveBand: false,
 				specialisms: []
 			};
 			service.db.inspector.findFirst.mock.mockImplementationOnce(() => inspectorData);

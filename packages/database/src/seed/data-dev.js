@@ -129,7 +129,6 @@ const inspectors = [
 		postcode: 'NE1 7RU',
 		longitude: -1.6157238,
 		latitude: 54.980328,
-		workingAboveBand: false,
 		Specialisms: {
 			connectOrCreate: [
 				{
@@ -163,7 +162,6 @@ const inspectors = [
 		postcode: 'SW1A 0AA',
 		longitude: -0.1246377,
 		latitude: 51.4998415,
-		workingAboveBand: true,
 		Specialisms: {
 			connectOrCreate: [
 				{
@@ -197,7 +195,6 @@ const inspectors = [
 		postcode: 'WA15 0RE',
 		longitude: -2.2962547,
 		latitude: 53.3497019,
-		workingAboveBand: true,
 		Specialisms: {
 			connectOrCreate: [
 				{
@@ -231,7 +228,6 @@ const inspectors = [
 		postcode: 'PO1 5LL',
 		longitude: -1.0723581,
 		latitude: 50.8038674,
-		workingAboveBand: false,
 		Specialisms: {
 			connectOrCreate: [
 				{
@@ -265,7 +261,6 @@ const inspectors = [
 		postcode: 'BS1 6PN',
 		longitude: -2.5828931,
 		latitude: 51.4508591,
-		workingAboveBand: false,
 		Specialisms: {
 			connectOrCreate: [
 				{
