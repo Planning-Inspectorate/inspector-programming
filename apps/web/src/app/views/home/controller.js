@@ -53,6 +53,11 @@ export function buildViewHome(service) {
 		const query = qs.parse(parseUrl(req.url).query || '');
 		const { filters } = query;
 
+		const sortingErrors = validateSorts(String(query.sort), selectedInspector);
+		const sortingErrorList = Object.values(sortingErrors).map((message) => ({ ...message, href: `#` }));
+		//if errors in sorting then use basic age sort under the hood
+		if (sortingErrorList.length) query.sort = 'age';
+
 		const page = req.query.page && query.sort === lastRequestDetails.sort ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
@@ -140,7 +145,8 @@ export function buildViewHome(service) {
 			caseTypes,
 			inspectorError,
 			calendarError,
-			errorSummary
+			errorSummary,
+			sortingErrorList
 		});
 	};
 }
@@ -181,6 +187,20 @@ export function validateFilters(filters) {
 			filters.minimumAge = '';
 			filters.maximumAge = '';
 		}
+	}
+	return errors;
+}
+
+/**
+ * Any checks to apply before sorting will go here
+ * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @param {import('@pins/inspector-programming-database/src/client').Inspector | undefined} selectedInspector
+ * @returns {{ text: string }[]}
+ */
+export function validateSorts(sort, selectedInspector) {
+	const errors = [];
+	if (sort === 'distance') {
+		if (!selectedInspector) errors.push({ text: 'An inspector must be selected before sorting by distance.' });
 	}
 	return errors;
 }
