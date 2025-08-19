@@ -34,6 +34,15 @@ apps_config = {
     api_app_rg   = "pins-rg-appeals-bo-prod"
   }
 
+  gov_notify = {
+    template_ids = {
+      assigned_case                        = ""
+      assigned_case_programme_officer      = ""
+      self_assigned_case                   = ""
+      self_assigned_case_programme_officer = ""
+    }
+  }
+
   logging = {
     level = "warn"
   }

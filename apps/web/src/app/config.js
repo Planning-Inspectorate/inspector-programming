@@ -47,6 +47,12 @@ export function loadConfig() {
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
 		ENTRA_GROUP_ID_TEAM_LEADS,
 		GIT_SHA,
+		GOV_NOTIFY_API_KEY,
+		GOV_NOTIFY_DISABLED,
+		GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE,
+		GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER,
+		GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE,
+		GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE_PROGRAMME_OFFICER,
 		LOG_LEVEL,
 		NODE_ENV,
 		OS_API_KEY,
@@ -141,6 +147,16 @@ export function loadConfig() {
 		// the log level to use
 		logLevel: LOG_LEVEL || 'info',
 		NODE_ENV: NODE_ENV || 'development',
+		notify: {
+			apiKey: GOV_NOTIFY_API_KEY,
+			disabled: GOV_NOTIFY_DISABLED === 'true',
+			templateIds: {
+				assignedCase: GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE,
+				assignedCaseProgrammeOfficer: GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER,
+				selfAssignedCase: GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE,
+				selfAssignedCaseProgrammeOfficer: GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE_PROGRAMME_OFFICER
+			}
+		},
 		osApi: {
 			key: OS_API_KEY
 		},

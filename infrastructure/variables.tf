@@ -42,6 +42,15 @@ variable "apps_config" {
       api_app_rg   = string
     })
 
+    gov_notify = object({
+      template_ids = object({
+        assigned_case                        = string
+        assigned_case_programme_officer      = string
+        self_assigned_case                   = string
+        self_assigned_case_programme_officer = string
+      })
+    })
+
     logging = object({
       level = string
     })

@@ -38,6 +38,15 @@ apps_config = {
     api_app_rg   = "pins-rg-appeals-bo-dev"
   }
 
+  gov_notify = {
+    template_ids = {
+      assigned_case                        = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+      assigned_case_programme_officer      = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+      self_assigned_case                   = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+      self_assigned_case_programme_officer = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+    }
+  }
+
   logging = {
     level = "info"
   }
