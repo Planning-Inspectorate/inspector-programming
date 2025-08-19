@@ -19,9 +19,10 @@ function initialiseMap(apiKey, pins, inspector) {
 		'esri/Graphic',
 		'esri/layers/VectorTileLayer',
 		'esri/geometry/Point',
+		'esri/geometry/Circle',
 		'esri/config',
 		'esri/core/reactiveUtils'
-	], function (Map, MapView, Graphic, VectorTileLayer, Point, esriConfig, reactiveUtils) {
+	], function (Map, MapView, Graphic, VectorTileLayer, Point, Circle, esriConfig, reactiveUtils) {
 		esriConfig.request.interceptors.push({
 			urls: serviceUrl,
 			before: function (params) {
@@ -89,16 +90,27 @@ function initialiseMap(apiKey, pins, inspector) {
 			if (!inspectorData || !inspectorData.latitude || !inspectorData.longitude) {
 				return;
 			}
-			const point = new Point({
-				x: inspectorData.longitude,
-				y: inspectorData.latitude
+			const exclusionRadius = new Circle({
+				center: new Point({
+					x: inspectorData.longitude,
+					y: inspectorData.latitude
+				}),
+				geodesic: true,
+				radius: 5,
+				radiusUnit: 'kilometers'
 			});
-			const pictureMarkerSymbol = {
-				type: 'picture-marker',
-				url: `/assets/images/person.png`,
-				width: '50px',
-				height: '50px'
-			};
+			const circleGraphic = new Graphic({
+				geometry: exclusionRadius,
+				symbol: {
+					type: 'simple-fill',
+					style: 'none',
+					outline: {
+						width: 2,
+						color: 'red'
+					}
+				}
+			});
+			graphics.push(circleGraphic);
 
 			const inspectorTooltip = {
 				title: `Inspector: ${inspectorData.firstName} ${inspectorData.lastName}`,
@@ -111,8 +123,16 @@ function initialiseMap(apiKey, pins, inspector) {
 			};
 
 			const pointGraphic = new Graphic({
-				geometry: point,
-				symbol: pictureMarkerSymbol,
+				geometry: new Point({
+					x: inspectorData.longitude,
+					y: inspectorData.latitude
+				}),
+				symbol: {
+					type: 'picture-marker',
+					url: `/assets/images/person.png`,
+					width: '50px',
+					height: '50px'
+				},
 				popupTemplate: inspectorTooltip
 			});
 			graphics.push(pointGraphic);
