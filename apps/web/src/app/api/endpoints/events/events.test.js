@@ -34,6 +34,9 @@ beforeEach(() => {
 				inspectorGroups: 'groupA,groupB'
 			}
 		},
+		notify: {
+			disabled: true
+		},
 		osApi: {
 			key: 'test-key'
 		},
