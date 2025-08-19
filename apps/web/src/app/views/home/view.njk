@@ -38,14 +38,12 @@
                         selected: i.id == data.inspectorId
                     }), inspectorList) %}
                 {% endfor %}
-                <div class="govuk-!-margin-bottom-6">
-                    {{ govukSelect({
-                        id: "inspectors",
-                        name: "inspectorId",
-                        items: inspectorList,
-                        errorMessage: { text: inspectorError } if inspectorError else null
-                    }) }}
-                </div>
+                {{ govukSelect({
+                    id: "inspectors",
+                    name: "inspectorId",
+                    items: inspectorList,
+                    errorMessage: { text: inspectorError } if inspectorError else null
+                }) }}
                 {{ govukInput({
                     id: "currentTab",
                     name: "currentTab",
@@ -53,7 +51,7 @@
                 }) }}
                 {{ govukButton({
                     text: "Select",
-                    classes: "govuk-button--secondary",
+                    classes: "govuk-button--secondary margin-top-error" if inspectorError else "govuk-button--secondary",
                     value: "select",
                     name: "action",
                     type: "submit"
