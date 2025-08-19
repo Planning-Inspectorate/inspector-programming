@@ -19,6 +19,9 @@ interface Config extends BaseConfig {
 		signoutUrl: string;
 		tenantId: string;
 	};
+	cases: {
+		casesCacheTtl: number;
+	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;
@@ -34,8 +37,5 @@ interface Config extends BaseConfig {
 	inspectors: [{ emailAddress: string; id: string }];
 	osApi: {
 		key: string;
-	};
-	cases: {
-		casesCacheTtl: number;
 	};
 }
