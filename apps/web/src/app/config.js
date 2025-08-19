@@ -30,6 +30,10 @@ export function loadConfig() {
 
 	// get values from the environment
 	const {
+		API_CALENDAR_EVENTS_DAY_RANGE,
+		API_CALENDAR_EVENTS_FROM_DATE_OFFSET,
+		API_INSPECTOR_ENTRA_GROUPS,
+		API_MOCK_DATA,
 		APP_HOSTNAME,
 		AUTH_DISABLED,
 		AUTH_GROUP_APPLICATION_ACCESS,
@@ -37,24 +41,19 @@ export function loadConfig() {
 		AZURE_CLIENT_SECRET,
 		AZURE_TENANT_ID,
 		CACHE_CONTROL_MAX_AGE,
-		GIT_SHA,
-		LOG_LEVEL,
-		PORT,
-		NODE_ENV,
-		REDIS_CONNECTION_STRING,
-		SESSION_SECRET,
-		SQL_CONNECTION_STRING,
-		GOV_NOTIFY_API_KEY,
-		OS_API_KEY,
+		CASES_CACHE_TTL,
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
-		ENTRA_GROUP_ID_TEAM_LEADS,
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
-		API_MOCK_DATA,
-		API_INSPECTOR_ENTRA_GROUPS,
-		API_CALENDAR_EVENTS_DAY_RANGE,
-		API_CALENDAR_EVENTS_FROM_DATE_OFFSET,
-		CASES_CACHE_TTL
+		ENTRA_GROUP_ID_TEAM_LEADS,
+		GIT_SHA,
+		LOG_LEVEL,
+		NODE_ENV,
+		OS_API_KEY,
+		PORT,
+		REDIS_CONNECTION_STRING,
+		SESSION_SECRET,
+		SQL_CONNECTION_STRING
 	} = process.env;
 
 	const buildConfig = loadBuildConfig();
@@ -118,32 +117,11 @@ export function loadConfig() {
 		cacheControl: {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'
 		},
-		database: {
-			datasourceUrl: SQL_CONNECTION_STRING
-		},
-		gitSha: GIT_SHA,
-		// the log level to use
-		logLevel: LOG_LEVEL || 'info',
-		NODE_ENV: NODE_ENV || 'development',
-		// the HTTP port to listen on
-		httpPort: httpPort,
-		// the src directory
-		srcDir: buildConfig.srcDir,
-		session: {
-			redisPrefix: 'manage:',
-			redis: REDIS_CONNECTION_STRING,
-			secret: SESSION_SECRET
-		},
-		// the static directory to serve assets from (images, css, etc..)
-		staticDir: buildConfig.staticDir,
-		osApi: {
-			key: OS_API_KEY
-		},
-		notify: {
-			key: GOV_NOTIFY_API_KEY
-		},
 		cases: {
 			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
+		},
+		database: {
+			datasourceUrl: SQL_CONNECTION_STRING
 		},
 		entra: {
 			// in minutes
@@ -156,7 +134,25 @@ export function loadConfig() {
 				nationalTeam: ENTRA_GROUP_ID_NATIONAL_TEAM,
 				inspectorGroups: API_INSPECTOR_ENTRA_GROUPS
 			}
-		}
+		},
+		gitSha: GIT_SHA,
+		// the HTTP port to listen on
+		httpPort: httpPort,
+		// the log level to use
+		logLevel: LOG_LEVEL || 'info',
+		NODE_ENV: NODE_ENV || 'development',
+		osApi: {
+			key: OS_API_KEY
+		},
+		session: {
+			redisPrefix: 'manage:',
+			redis: REDIS_CONNECTION_STRING,
+			secret: SESSION_SECRET
+		},
+		// the src directory
+		srcDir: buildConfig.srcDir,
+		// the static directory to serve assets from (images, css, etc..)
+		staticDir: buildConfig.staticDir
 	};
 
 	return config;
