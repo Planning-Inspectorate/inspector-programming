@@ -1,4 +1,5 @@
 import { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
+import { NotifyConfig } from '@pins/inspector-programming-lib/emails/types';
 
 interface Config extends BaseConfig {
 	api: {
@@ -35,6 +36,7 @@ interface Config extends BaseConfig {
 		};
 	};
 	inspectors: [{ emailAddress: string; id: string }];
+	notify: NotifyConfig;
 	osApi: {
 		key: string;
 	};

@@ -62,6 +62,13 @@ module "app_web" {
     ENTRA_GROUP_ID_TEAM_LEADS    = var.apps_config.auth.groups.team_leads
     ENTRA_GROUP_ID_NATIONAL_TEAM = var.apps_config.auth.groups.national_team
 
+    # Gov Notify
+    GOV_NOTIFY_API_KEY                                       = local.key_vault_refs["scheduling-gov-notify-api-key"]
+    GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE                        = var.apps_config.gov_notify.template_ids.assigned_case
+    GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER      = var.apps_config.gov_notify.template_ids.assigned_case_programme_officer
+    GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE                   = var.apps_config.gov_notify.template_ids.self_assigned_case
+    GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE_PROGRAMME_OFFICER = var.apps_config.gov_notify.template_ids.self_assigned_case_programme_officer
+
     # logging
     LOG_LEVEL = var.apps_config.logging.level
 
