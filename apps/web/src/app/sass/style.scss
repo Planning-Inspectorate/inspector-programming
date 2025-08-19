@@ -273,7 +273,8 @@ $font-family: arial, helvetica, sans-serif;
 	display: flex;
 	gap: 5px;
 	margin-bottom: 0;
-	align-items: flex-end;
+	align-items: flex-start;
+	min-width: 258px;
 }
 
 .case-border {
@@ -285,4 +286,8 @@ $font-family: arial, helvetica, sans-serif;
 	border-width: 5px;
 	border-style: solid;
 	border-color: var(--border-color, #00703c);
+}
+
+.margin-top-error {
+	margin-top: 215px;
 }
