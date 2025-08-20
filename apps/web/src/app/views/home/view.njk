@@ -316,10 +316,10 @@
         {% endset %}
 
         {% set outlookView %}
-            {% if calendarError %}
+            {% if calendar.error %}
                 {{ govukErrorMessage({
                     id: "calendarError",
-                    text: calendarError,
+                    text: calendar.error,
                     visuallyHiddenText: "Error"
                 }) }}
                 

@@ -1,19 +1,16 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
-import { caseTypes, specialisms, specialismTypes } from '../../specialism/specialism.js';
+import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
 import {
-	generateCalendar,
-	generateDatesList,
-	generateTimeList,
-	generateWeekTitle,
-	getWeekStartDate,
 	getNextWeekStartDate,
 	getPreviousWeekStartDate,
-	getSimplifiedEvents
+	getSimplifiedEvents,
+	getWeekStartDate
 } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { calendarViewModel } from './view-model.js';
 
 /**
  * @typedef {Object} Case
@@ -79,11 +76,26 @@ export function buildViewHome(service) {
 			inspectorId: req.query.inspectorId
 		};
 		const paginationDetails = handlePagination(req, total, formData);
+
+		/** @type {import('./types.js').HomeViewModel} */
+		const viewModel = {
+			pageHeading: 'Unassigned case list',
+			containerClasses: 'pins-container-wide',
+			title: 'Unassigned case list',
+			errorSummary: [],
+			filters: {
+				allocationLevels,
+				caseTypes,
+				specialisms,
+				pagination: paginationDetails,
+				query: {}
+			}
+		};
+
 		/**
 		 * @type {import("../../calendar/types.js").Event[]}
 		 */
 		let calendarEvents = [];
-		let errorSummary = [];
 		let calendarError;
 		let inspectorError;
 
@@ -95,7 +107,7 @@ export function buildViewHome(service) {
 				calendarError =
 					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
 				if (req.query.currentTab == 'calendar') {
-					errorSummary.push({
+					viewModel.errorSummary.push({
 						text: calendarError,
 						href: '#calendarError'
 					});
@@ -105,28 +117,20 @@ export function buildViewHome(service) {
 			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
 			if (['calendar', 'inspector'].includes(req.query.currentTab)) {
 				inspectorError = calendarError;
-				errorSummary.push({
+				viewModel.errorSummary.push({
 					text: calendarError,
 					href: '#inspectors'
 				});
 			}
 		}
 
-		const currentStartDate = req.query.calendarStartDate
-			? new Date(req.query.calendarStartDate.toString())
-			: getWeekStartDate(new Date());
-		const dateList = generateDatesList(currentStartDate);
-		const timeList = generateTimeList(8, 18);
-		const calendarGrid = generateCalendar(currentStartDate, calendarEvents);
-		const weekTitle = generateWeekTitle(currentStartDate);
+		viewModel.calendar = calendarViewModel(req.query.calendarStartDate, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: query.sort }, 'persistence');
 
 		return res.render('views/home/view.njk', {
-			pageHeading: 'Unassigned case list',
-			containerClasses: 'pins-container-wide',
-			title: 'Unassigned case list',
+			...viewModel,
 			cases: filteredCases.map(caseViewModel),
 			inspectors,
 			data: formData,
@@ -135,20 +139,13 @@ export function buildViewHome(service) {
 				...selectedInspector,
 				...inspectorData
 			},
-			timeList,
-			dateList,
-			calendarGrid,
-			weekTitle,
-			currentStartDate,
 			errors,
 			errorList,
 			paginationDetails,
 			specialisms,
-			specialismTypes,
+			specialismTypes: allocationLevels,
 			caseTypes,
-			inspectorError,
-			calendarError,
-			errorSummary
+			inspectorError
 		});
 	};
 }
@@ -272,8 +269,8 @@ export function buildPostHome(service) {
 /**
  * @param {import('express').Request} req
  * @param {number} total
- * @param {Object} formData
- * @returns {Object}
+ * @param {{page: number, limit: number}} formData
+ * @returns {import('#util/types.js').Pagination}
  */
 export function handlePagination(req, total, formData) {
 	const page = formData.page;
