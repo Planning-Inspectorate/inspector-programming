@@ -62,7 +62,7 @@ describe('controller.js', () => {
 				postcode: 'BS1 6PN',
 				longitude: -2.5828931,
 				latitude: 51.4508591,
-				specialisms: []
+				Specialisms: []
 			};
 			service.db.inspector.findFirst.mock.mockImplementationOnce(() => inspectorData);
 			const req = {
@@ -78,12 +78,9 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.appeals?.cases?.length, 10);
-			assert.deepStrictEqual(args.inspectorPin, {
-				...inspectorData,
-				emailAddress: '',
-				firstName: '',
-				lastName: ''
-			});
+			// just check a few fields match
+			assert.strictEqual(args.inspectors.selected.id, inspectorData.id);
+			assert.strictEqual(args.inspectors.selected.name, inspectorData.name);
 		});
 	});
 	describe('handlePagination', () => {

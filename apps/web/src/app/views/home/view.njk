@@ -31,7 +31,7 @@
                     value: null,
                     selected: null
                 }] %}
-                {% for i in inspectors %}
+                {% for i in inspectors.list %}
                     {% set inspectorList = (inspectorList.push({
                         text: i.lastName + ', ' + i.firstName,
                         value: i.id,
@@ -42,7 +42,7 @@
                     id: "inspectors",
                     name: "inspectorId",
                     items: inspectorList,
-                    errorMessage: { text: inspectorError } if inspectorError else null
+                    errorMessage: { text: inspectors.error } if inspectors.error else null
                 }) }}
                 {{ govukInput({
                     id: "currentTab",
@@ -51,7 +51,7 @@
                 }) }}
                 {{ govukButton({
                     text: "Select",
-                    classes: "govuk-button--secondary margin-top-error" if inspectorError else "govuk-button--secondary",
+                    classes: "govuk-button--secondary margin-top-error" if inspectors.error else "govuk-button--secondary",
                     value: "select",
                     name: "action",
                     type: "submit"
@@ -300,12 +300,12 @@
 
         {% set mapView %}
             <div class="home-map">
-                {{ map(apiKey, appeals.cases, inspectorPin) }}
+                {{ map(apiKey, appeals.cases, inspectors.selected) }}
             </div>
         {% endset %}
 
         {% set inspectorDetails %}
-            {% if inspectorPin.id %}
+            {% if inspectors.selected %}
                 {% include 'views/home/inspector-details.njk' %}
             {% else %}
                 {{ govukErrorMessage({
@@ -322,8 +322,7 @@
                     text: calendar.error,
                     visuallyHiddenText: "Error"
                 }) }}
-                
-            {% elif inspectorPin.id %}
+            {% elif inspectors.selected %}
                 {% include 'views/home/calendar.njk' %}
             {% endif %}
         {% endset %}

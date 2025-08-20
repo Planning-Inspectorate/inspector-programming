@@ -55,3 +55,41 @@ export function getCaseColor(caseAge) {
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
 	return '00703c'; // green (0-20 weeks)
 }
+
+/**
+ * @param {import('../../inspector/types.js').Inspector[]} inspectors
+ * @param {import('../../inspector/types.js').Inspector} [selectedInspector]
+ * @param {boolean} [showError]
+ * @returns {import('./types.js').InspectorsViewModel}
+ */
+export function inspectorsViewModel(inspectors, selectedInspector, showError) {
+	let error;
+	if (!selectedInspector && showError) {
+		error = 'Select an inspector';
+	}
+
+	return {
+		list: inspectors,
+		selected: toInspectorViewModel(selectedInspector),
+		error
+	};
+}
+
+/**
+ * @param {import('../../inspector/types.js').Inspector} [inspector]
+ * @returns {import('../../inspector/types.js').Inspector|undefined}
+ */
+export function toInspectorViewModel(inspector) {
+	if (!inspector) {
+		return inspector;
+	}
+	const specialisms = inspector.Specialisms || [];
+	return {
+		...inspector,
+		specialisms: specialisms.map((s) => ({
+			...s,
+			validFrom: formatDateForDisplay(s.validFrom, { format: 'dd/MM/yyyy' })
+		})),
+		specialismsList: specialisms.map((specialism) => specialism.name).join(', ')
+	};
+}

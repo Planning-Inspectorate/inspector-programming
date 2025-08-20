@@ -1,12 +1,12 @@
 <div class="pins-container-wide govuk-grid-row">
     <div class="govuk-grid-column-one-half">
-        <h2 class="govuk-heading-m">{{ inspectorPin.firstName + " " + inspectorPin.lastName }}</h2>
+        <h2 class="govuk-heading-m">{{ inspectors.selected.firstName + " " + inspectors.selected.lastName }}</h2>
         <h2 class="govuk-heading-m">Inspector Details</h2>
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Postcode" }, value: { text: inspectorPin.postcode } },
-                { key: { text: "Grade" }, value: { text: inspectorPin.grade } },
-                { key: { text: "Email address" }, value: { text: inspectorPin.email  } },
+                { key: { text: "Postcode" }, value: { text: inspectors.selected.postcode } },
+                { key: { text: "Grade" }, value: { text: inspectors.selected.grade } },
+                { key: { text: "Email address" }, value: { text: inspectors.selected.email  } },
                 { key: { text: "Proclusions" }, value: { text: "__"  } }
             ]
         }) }}
@@ -15,7 +15,7 @@
         <section>
                 {% set tableRows = [] %}
 
-                {% for row in inspectorPin.Specialisms %}
+                {% for row in inspectors.selected.specialisms %}
                     {% set tableRows = tableRows.concat([[
                         { text: row.name },
                         { text: row.proficiency },

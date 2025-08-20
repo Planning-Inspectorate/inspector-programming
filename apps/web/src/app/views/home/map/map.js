@@ -105,7 +105,7 @@ function initialiseMap(apiKey, pins, inspector) {
 				content: `
                         <strong>Postcode:</strong> ${inspectorData.postcode}<br>
                         <strong>Grade:</strong> ${inspectorData.grade}<br>
-                        <strong>Specialisms:</strong> ${inspectorData.caseSpecialisms}<br>
+                        <strong>Specialisms:</strong> ${inspectorData.specialismsList}<br>
                     `
 			};
 

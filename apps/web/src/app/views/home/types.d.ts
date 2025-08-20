@@ -1,6 +1,6 @@
 import { CalendarEntry } from '../../calendar/types';
 import { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
-import { Inspector } from '../../inspector/types';
+import { InspectorViewModel } from '../../inspector/types';
 import { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from '#util/types';
 
 export interface HomeViewModel extends PageViewModel {
@@ -59,8 +59,8 @@ export interface FilterQuery {
 }
 
 export interface InspectorsViewModel {
-	list: Inspector[];
-	selected?: Inspector;
+	list: InspectorViewModel[];
+	selected?: InspectorViewModel;
 
 	error?: string;
 }
