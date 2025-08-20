@@ -26,6 +26,11 @@ interface Config extends BaseConfig {
 	inspectors: {
 		inspectorsCacheTtl: number;
 	};
+	cbos: {
+		apiUrl: string;
+		timeoutMs: number;
+		appealTypesCachettl: number;
+	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;

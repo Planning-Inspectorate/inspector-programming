@@ -4,7 +4,7 @@ import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controll
 import { createErrorRoutes } from './views/static/error/index.js';
 import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middleware/cache.js';
 import { createRoutes as createApiRoutes } from './api/index.js';
-import { buildPostHome, buildViewHome } from './views/home/controller.js';
+import { buildPostCases, buildPostHome, buildViewHome } from './views/home/controller.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildViewCase } from './views/case/controller.js';
 import { buildViewInspector } from './views/inspector/controller.js';
@@ -50,10 +50,12 @@ export function buildRouter(service) {
 	const viewHome = buildViewHome(service);
 	const postHome = buildPostHome(service);
 	const viewCase = buildViewCase(service);
+	const postCases = buildPostCases(service);
 	const viewInspector = buildViewInspector(); // TODO - pass service as param (currently unused)
 
+	// selectedCases, inspectorId (req.body)
 	router.get('/', asyncHandler(viewHome));
-	router.post('/notify', (req, res) => res.redirect('/'));
+	router.post('/cases', asyncHandler(postCases));
 	router.post('/', asyncHandler(postHome));
 	router.get('/case/:caseId', asyncHandler(viewCase));
 	router.get('/inspector/:inspectorId', asyncHandler(viewInspector));
