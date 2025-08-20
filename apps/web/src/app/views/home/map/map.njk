@@ -1,4 +1,4 @@
-{% macro map(apiKey, cases, inspectorPin) %}
+{% macro map(apiKey, cases, selectedInspector) %}
     <style>
         #map {
             position: absolute;
@@ -41,7 +41,7 @@
       {% include "views/home/map/map.js" %}
 
       const apiKey = '{{ apiKey }}';
-      const inspector = {{ inspectorPin | default({}) | dump | safe }};
+      const inspector = {{ selectedInspector | default({}) | dump | safe }};
       const pins = {{ cases | default([]) | dump | safe }};
 
       initialiseMap(apiKey, pins, inspector);

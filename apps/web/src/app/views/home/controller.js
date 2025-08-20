@@ -1,4 +1,4 @@
-import { getInspectorList } from '../../inspector/inspector.js';
+import { getInspectorDetails, getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
 import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
 import {
@@ -9,8 +9,7 @@ import {
 } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-import { appealsViewModel, calendarViewModel } from './view-model.js';
+import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view-model.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -20,22 +19,7 @@ export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
-		const inspectorData =
-			selectedInspector &&
-			(await service.db.inspector.findFirst({
-				where: { entraId: selectedInspector.id },
-				include: {
-					Specialisms: true
-				}
-			}));
-
-		//format validFrom date on inspector specialisms using formatDateForDisplay
-		if (inspectorData && inspectorData.Specialisms) {
-			inspectorData.Specialisms = inspectorData.Specialisms.map((s) => ({
-				...s,
-				validFrom: formatDateForDisplay(s.validFrom, { format: 'dd/MM/yyyy' })
-			}));
-		}
+		const selectedInspectorDetails = await getInspectorDetails(service.db, selectedInspector?.id);
 
 		// Convert the raw query string into a nested object
 		const query = qs.parse(parseUrl(req.url).query || '');
@@ -62,6 +46,9 @@ export function buildViewHome(service) {
 		};
 		const paginationDetails = handlePagination(req, total, formData);
 
+		const isCalendarTab = req.query.currentTab === 'calendar';
+		const isInspectorTab = req.query.currentTab === 'inspector';
+
 		/** @type {import('./types.js').HomeViewModel} */
 		const viewModel = {
 			pageHeading: 'Unassigned case list',
@@ -75,7 +62,8 @@ export function buildViewHome(service) {
 				pagination: paginationDetails,
 				query: {}
 			},
-			appeals: appealsViewModel(filteredCases)
+			appeals: appealsViewModel(filteredCases),
+			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab)
 		};
 
 		/**
@@ -83,7 +71,6 @@ export function buildViewHome(service) {
 		 */
 		let calendarEvents = [];
 		let calendarError;
-		let inspectorError;
 
 		if (selectedInspector) {
 			try {
@@ -92,7 +79,7 @@ export function buildViewHome(service) {
 				service.logger.error(error, 'Failed to fetch calendar events');
 				calendarError =
 					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
-				if (req.query.currentTab == 'calendar') {
+				if (isCalendarTab) {
 					viewModel.errorSummary.push({
 						text: calendarError,
 						href: '#calendarError'
@@ -101,8 +88,7 @@ export function buildViewHome(service) {
 			}
 		} else {
 			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
-			if (['calendar', 'inspector'].includes(req.query.currentTab)) {
-				inspectorError = calendarError;
+			if (isCalendarTab || isInspectorTab) {
 				viewModel.errorSummary.push({
 					text: calendarError,
 					href: '#inspectors'
@@ -117,20 +103,14 @@ export function buildViewHome(service) {
 
 		return res.render('views/home/view.njk', {
 			...viewModel,
-			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
-			inspectorPin: {
-				...selectedInspector,
-				...inspectorData
-			},
 			errors,
 			errorList,
 			paginationDetails,
 			specialisms,
 			specialismTypes: allocationLevels,
-			caseTypes,
-			inspectorError
+			caseTypes
 		});
 	};
 }
