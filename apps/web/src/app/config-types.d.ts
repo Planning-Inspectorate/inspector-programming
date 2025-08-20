@@ -23,6 +23,11 @@ interface Config extends BaseConfig {
 	cases: {
 		casesCacheTtl: number;
 	};
+	cbos: {
+		apiUrl: string;
+		timeoutMs: number;
+		appealTypesCachettl: number;
+	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;
