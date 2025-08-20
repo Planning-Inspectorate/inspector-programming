@@ -2,7 +2,7 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set caseRows = [] %}
-    {% for c in cases %}
+    {% for c in appeals.cases %}
         {% set caseRows = (caseRows.push([
             { html: govukCheckboxes({
                 name: "selectedCases",
