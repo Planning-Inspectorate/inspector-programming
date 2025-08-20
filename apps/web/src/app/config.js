@@ -43,6 +43,9 @@ export function loadConfig() {
 		CACHE_CONTROL_MAX_AGE,
 		CASES_CACHE_TTL,
 		INSPECTORS_CACHE_TTL,
+		CBOS_API_TIMEOUT,
+		CBOS_API_URL,
+		CBOS_APPEAL_TYPE_CACHE_TTL,
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
@@ -129,6 +132,11 @@ export function loadConfig() {
 		},
 		inspectors: {
 			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15)
+		},
+		cbos: {
+			apiUrl: CBOS_API_URL,
+			timeoutMs: parseInt(CBOS_API_TIMEOUT || 10000),
+			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL || 1440
 		},
 		database: {
 			datasourceUrl: SQL_CONNECTION_STRING

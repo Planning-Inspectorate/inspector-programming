@@ -279,4 +279,35 @@ export class CbosApiClient {
 		const found = appealTypes.find((item) => item.type === appealType);
 		return found ? found.key : 'Unknown Appeal Type';
 	}
+
+	/**
+	 *
+	 * @param {string} appealId
+	 * @param {object} appealData
+	 */
+	async patchAppeal(appealId, appealData) {
+		const url = `${this.config.apiUrl}/appeals/${appealId}`;
+		const defaultHeaders = {
+			'Content-Type': 'application/json',
+			azureAdUserId: this.config.apiHeader
+		};
+
+		try {
+			const response = await fetch(url, {
+				method: 'PATCH',
+				headers: defaultHeaders,
+				body: JSON.stringify(appealData)
+			});
+
+			if (response.ok) {
+				this.logger.info(`Successfully updated appealID ${appealId}`);
+			} else {
+				this.logger.error(`Failed to update appealID ${appealId} at ${url}. Status: ${response.status}`);
+				throw new Error(`Failed to update appealID ${appealId} at ${url}. Status: ${response.status}`);
+			}
+		} catch (error) {
+			this.logger.error(`Failed to update appealID ${appealId} at ${url}:`, error.message);
+			throw error;
+		}
+	}
 }
