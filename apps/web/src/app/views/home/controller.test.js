@@ -1,13 +1,5 @@
 import { describe, mock, test } from 'node:test';
-import {
-	buildViewHome,
-	caseViewModel,
-	getCaseColor,
-	sortCases,
-	handlePagination,
-	buildQueryString,
-	createPaginationItems
-} from './controller.js';
+import { buildViewHome, handlePagination, buildQueryString, createPaginationItems } from './controller.js';
 import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
@@ -51,7 +43,7 @@ describe('controller.js', () => {
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
-			assert.strictEqual(args.cases.length, 10);
+			assert.strictEqual(args.appeals?.cases?.length, 10);
 		});
 		test('should fetch inspector data', async () => {
 			const service = mockService();
@@ -85,55 +77,13 @@ describe('controller.js', () => {
 			assert.strictEqual(service.db.inspector.findFirst.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
-			assert.strictEqual(args.cases.length, 10);
+			assert.strictEqual(args.appeals?.cases?.length, 10);
 			assert.deepStrictEqual(args.inspectorPin, {
 				...inspectorData,
 				emailAddress: '',
 				firstName: '',
 				lastName: ''
 			});
-		});
-	});
-	describe('getCaseColor', () => {
-		test('should return red for case age greater than 40', () => {
-			const color = getCaseColor(41);
-			assert.strictEqual(color, 'd4351c', 'Color should be red for case age > 40');
-		});
-		test('should return orange for case age between 21 and 40', () => {
-			const color = getCaseColor(30);
-			assert.strictEqual(color, 'f47738', 'Color should be orange for case age between 21 and 40');
-		});
-		test('should return green for case age 20 or less', () => {
-			const color = getCaseColor(20);
-			assert.strictEqual(color, '00703c', 'Color should be green for case age <= 20');
-		});
-		test('should return green for case age 0', () => {
-			const color = getCaseColor(0);
-			assert.strictEqual(color, '00703c', 'Color should be green for case age = 0');
-		});
-	});
-	describe('sortCases', () => {
-		test('should sort cases by age in descending order', () => {
-			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
-			const sortedCases = sortCases(cases, 'age');
-			assert.strictEqual(sortedCases.length, 3, 'Should return the same number of cases');
-			assert.deepStrictEqual(sortedCases, [{ caseAge: 30 }, { caseAge: 20 }, { caseAge: 10 }]);
-		});
-	});
-	describe('caseViewModel', () => {
-		test('should return a view model with formatted finalCommentsDate and color', () => {
-			const caseData = {
-				id: 1,
-				caseAge: 30,
-				finalCommentsDate: new Date('2025-08-06T23:00:00Z') // 7th August 2025 in Europe/London timezone
-			};
-			const viewModel = caseViewModel(caseData);
-			assert.strictEqual(
-				viewModel.finalCommentsDate,
-				'07/08/2025',
-				'Final comments date should be formatted in Europe/London timezone'
-			);
-			assert.strictEqual(viewModel.caseAgeColor, 'f47738', 'Color should be orange for case age 30');
 		});
 	});
 	describe('handlePagination', () => {
