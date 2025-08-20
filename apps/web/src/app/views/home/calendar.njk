@@ -2,14 +2,14 @@
     <div class="calendar-header">
         <form method="post">
             <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
-            <input type="hidden" name="currentStartDate" value="{{ currentStartDate }}">
+            <input type="hidden" name="currentStartDate" value="{{ calendar.currentStartDate }}">
             <button type="submit">Today</button>
             <div class="nav-buttons">
                 <button type="submit" name="calendarAction" value="prevWeek">&lt;</button>
                 <button type="submit" name="calendarAction" value="nextWeek">&gt;</button>
             </div>
         </form>
-        <h2>{{weekTitle}}</h2>
+        <h2>{{ calendar.weekTitle }}</h2>
         <label for="weekPicker" class="arrow-button">↓</label>
         <input type="text" id="weekPicker" placeholder="Select date" readonly>
     </div>
@@ -17,16 +17,16 @@
         <thead>
             <tr>
                 <th class="time-column"></th>
-                {% for date in dateList %}
-                <th>{{date}}</th>
+                {% for date in calendar.dates %}
+                    <th>{{date}}</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody id="calendar-body">
-            {% for i in range(0, calendarGrid.length) %}
+            {% for i in range(0, calendar.grid.length) %}
                 <tr>
-                        <td class="time-column">{% if i % 2 == 0 %} {{timeList[i/2]}} {% endif %}</td>
-                        {% for entry in calendarGrid[i] %}
+                        <td class="time-column">{% if i % 2 == 0 %} {{calendar.times[i/2]}} {% endif %}</td>
+                        {% for entry in calendar.grid[i] %}
                             {% if entry.isEvent %}
                                 <td class="event">{{entry.text}}</td>
                             {% elif entry.isToday %}
