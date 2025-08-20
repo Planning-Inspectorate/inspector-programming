@@ -10,23 +10,8 @@ import {
 import { parse as parseUrl } from 'url';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-import { calendarViewModel } from './view-model.js';
+import { appealsViewModel, calendarViewModel } from './view-model.js';
 
-/**
- * @typedef {Object} Case
- * @property {string} caseId - The unique identifier for the case.
- * @property {string} caseType - The type of the case (e.g., 'W').
- * @property {string} caseProcedure - The procedure for the case (e.g., 'Written').
- * @property {string} allocationBand - The allocation band for the case.
- * @property {string} caseLevel - The level of the case.
- * @property {string} siteAddressPostcode - The postcode of the site address.
- * @property {string} lpaName - The name of the Local Planning Authority (LPA).
- * @property {string} lpaRegion - The region of the Local Planning Authority (LPA).
- * @property {string} caseStatus - The status of the case
- * @property {number} caseAge - The age of the case in weeks.
- * @property {number} linkedCases - The number of linked cases.
- * @property {Date} finalCommentsDate - The date of the final comments.
- */
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
@@ -89,7 +74,8 @@ export function buildViewHome(service) {
 				specialisms,
 				pagination: paginationDetails,
 				query: {}
-			}
+			},
+			appeals: appealsViewModel(filteredCases)
 		};
 
 		/**
@@ -131,7 +117,6 @@ export function buildViewHome(service) {
 
 		return res.render('views/home/view.njk', {
 			...viewModel,
-			cases: filteredCases.map(caseViewModel),
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
@@ -204,18 +189,11 @@ export function filterCases(cases, filters) {
 		return true;
 	});
 }
-
-export function getCaseColor(caseAge) {
-	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
-	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
-	return '00703c'; // green (0-20 weeks)
-}
-
 /**
  *
- * @param {Case[]} cases
+ * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} cases
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
- * @returns
+ * @returns {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]}
  */
 export function sortCases(cases, sort) {
 	switch (sort) {
@@ -230,15 +208,6 @@ export function sortCases(cases, sort) {
 	}
 }
 
-export function caseViewModel(c) {
-	return {
-		...c,
-		caseStatus: c.caseStatus?.replace('_', ' '),
-		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
-		caseAgeColor: getCaseColor(c.caseAge),
-		currentDate: formatDateForDisplay(new Date(), { format: 'dd/MM/yyyy' })
-	};
-}
 export function buildPostHome(service) {
 	return async (req, res) => {
 		service.logger.info('post home');
