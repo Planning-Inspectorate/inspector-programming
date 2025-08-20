@@ -1,11 +1,11 @@
 import { test, beforeEach, describe, mock } from 'node:test';
 import assert from 'node:assert';
 import express from 'express';
-import request from 'supertest';
 import { createRoutes } from './controller.js';
-import { WebService } from '#service';
+import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
+import { TestServer } from '@pins/inspector-programming-lib/testing/test-server.js';
 
-/** @type {WebService}} */
+/** @type {import('#service').WebService} */
 let mockService;
 /** @type {import('express').Express} */
 let app;
@@ -14,36 +14,20 @@ let dates;
 
 beforeEach(() => {
 	//set up service
-	mockService = new WebService({
-		logLevel: 'info',
-		auth: {
-			disabled: true
-		},
-		database: {
-			datasourceUrl: 'lalala'
-		},
-		session: {
-			redisPrefix: 'manage:',
-			redis: undefined,
-			secret: 'testSecret'
-		},
-		entra: {
-			calendarEventsDayRange: 20,
-			calendarEventsFromDateOffset: 0,
-			groupIds: {
-				inspectorGroups: 'groupA,groupB'
+	mockService = {
+		logger: mockLogger(),
+		apiService: {
+			entraClient: {
+				listAllGroupMembers: mock.fn(),
+				listAllUserCalendarEvents: mock.fn()
 			}
 		},
-		notify: {
-			disabled: true
-		},
-		osApi: {
-			key: 'test-key'
-		},
-		cases: {
-			casesCacheTtl: 30
+		entraConfig: {
+			groupIds: {
+				inspectorGroups: 'groupA,groupB,groupC'
+			}
 		}
-	});
+	};
 
 	dates = {
 		oneDayAgo: new Date(),
@@ -67,17 +51,29 @@ beforeEach(() => {
 	app.use('/', createRoutes(mockService));
 });
 
+/**
+ * @param {import('node:test').TestContext} ctx
+ * @returns {Promise<TestServer>}
+ */
+const newServer = async (ctx) => {
+	const server = new TestServer(app);
+	await server.start();
+	ctx.after(async () => await server.stop());
+	return server;
+};
+
 describe('events', () => {
 	describe('GET /events', () => {
-		test('returns 404 if no users found in Entra groups', async () => {
+		test('returns 404 if no users found in Entra groups', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
-			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async () => []);
+			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', () => []);
 
-			const res = await request(app).get('/');
-			assert.strictEqual(res.statusCode, 404);
-			assert.strictEqual(res.text, 'No users found in Entra groups');
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 404);
+			assert.strictEqual(await res.text(), 'No users found in Entra groups');
 		});
-		test('returns 400 if calendarEventsDayRange config is malformed', async () => {
+		test('returns 400 if calendarEventsDayRange config is malformed', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
 			mockService.entraConfig.calendarEventsDayRange = 'invalidRange';
 			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
@@ -105,11 +101,12 @@ describe('events', () => {
 				}
 			});
 
-			const res = await request(app).get('/');
-			assert.strictEqual(res.statusCode, 400);
-			assert.strictEqual(res.text, 'Invalid calendar events day range configuration');
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(await res.text(), 'Invalid calendar events day range configuration');
 		});
-		test('returns a list of events that occur in each users calendar in the given groups', async () => {
+		test('returns a list of events that occur in each users calendar in the given groups', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
 			mockService.entraConfig.calendarEventsDayRange = 3;
 			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
@@ -166,9 +163,10 @@ describe('events', () => {
 				}
 			});
 
-			const res = await request(app).get('/');
-			assert.strictEqual(res.statusCode, 200);
-			assert.deepStrictEqual(res.body, [
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(await res.json(), [
 				{
 					id: 'id1',
 					userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
@@ -193,7 +191,7 @@ describe('events', () => {
 			]);
 		});
 	});
-	test('returns events in the future if calendarEventsFromDateOffset is set', async () => {
+	test('returns events in the future if calendarEventsFromDateOffset is set', async (ctx) => {
 		mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
 		mockService.entraConfig.calendarEventsDayRange = 3;
 		mockService.entraConfig.calendarEventsFromDateOffset = 3;
@@ -253,9 +251,10 @@ describe('events', () => {
 			}
 		});
 
-		const res = await request(app).get('/');
-		assert.strictEqual(res.statusCode, 200);
-		assert.deepStrictEqual(res.body, [
+		const server = await newServer(ctx);
+		const res = await server.get('/');
+		assert.strictEqual(res.status, 200);
+		assert.deepStrictEqual(await res.json(), [
 			{
 				id: 'id1',
 				userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
