@@ -63,7 +63,10 @@ export function buildViewHome(service) {
 				query: {}
 			},
 			appeals: appealsViewModel(filteredCases),
-			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab)
+			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab),
+			map: {
+				apiKey: service.osMapsApiKey
+			}
 		};
 
 		/**
@@ -104,7 +107,6 @@ export function buildViewHome(service) {
 		return res.render('views/home/view.njk', {
 			...viewModel,
 			data: formData,
-			apiKey: service.osMapsApiKey,
 			errors,
 			errorList,
 			paginationDetails,
