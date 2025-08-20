@@ -1,9 +1,9 @@
 import { test, beforeEach, describe, mock } from 'node:test';
 import assert from 'node:assert';
 import express from 'express';
-import request from 'supertest';
 import { createRoutes } from './controller.js';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
+import { TestServer } from '@pins/inspector-programming-lib/testing/test-server.js';
 
 /** @type {import('#service').WebService} */
 let mockService;
@@ -30,25 +30,38 @@ beforeEach(() => {
 	app.use('/', createRoutes(mockService));
 });
 
+/**
+ * @param {import('node:test').TestContext} ctx
+ * @returns {Promise<TestServer>}
+ */
+const newServer = async (ctx) => {
+	const server = new TestServer(app);
+	await server.start();
+	ctx.after(async () => await server.stop());
+	return server;
+};
+
 describe('users', () => {
 	describe('GET /users', () => {
-		test('returns 404 if no groupIds are configured', async () => {
+		test('returns 404 if no groupIds are configured', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = '';
 
-			const res = await request(app).get('/');
-			assert.strictEqual(res.statusCode, 404);
-			assert.strictEqual(res.text, 'No Entra groups configured');
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 404);
+			assert.strictEqual(await res.text(), 'No Entra groups configured');
 		});
 
-		test('returns 400 if inspectorGroups is malformed', async () => {
+		test('returns 400 if inspectorGroups is malformed', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB,';
 
-			const res = await request(app).get('/');
-			assert.strictEqual(res.statusCode, 400);
-			assert.strictEqual(res.text, 'Invalid Entra group configuration');
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(await res.text(), 'Invalid Entra group configuration');
 		});
 
-		test('returns users from all groups', async () => {
+		test('returns users from all groups', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB,groupC';
 
 			//mock the Entra client to return expected results for each group
@@ -88,11 +101,12 @@ describe('users', () => {
 						throw new Error(`Unexpected groupId: ${groupId}`);
 				}
 			});
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			// .set('Authorization', 'Bearer fake-token')
 
-			const res = await request(app).get('/').set('Authorization', 'Bearer fake-token');
-
-			assert.strictEqual(res.statusCode, 200);
-			assert.deepStrictEqual(res.body, [
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(await res.json(), [
 				{
 					id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
 					displayName: 'test 1',
@@ -114,7 +128,7 @@ describe('users', () => {
 			]);
 		});
 
-		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async () => {
+		test('returns 500 if results cannot be retrieved for all groups (e.g. invalid groupId)', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,another-wrong-group-id';
 
 			mockService.apiService.entraClient.listAllGroupMembers.mock.mockImplementation(async (groupId) => {
@@ -129,9 +143,10 @@ describe('users', () => {
 				return new Error();
 			});
 
-			const res = await request(app).get('/');
-			assert.strictEqual(res.statusCode, 500);
-			assert.strictEqual(res.text, 'A server error occurred');
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 500);
+			assert.strictEqual(await res.text(), 'A server error occurred');
 		});
 	});
 });
