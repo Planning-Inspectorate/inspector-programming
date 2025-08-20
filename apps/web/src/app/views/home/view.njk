@@ -14,7 +14,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
 
-{% from "views/home/map/map.njk" import map %}
+{% from "views/home/map/map.njk" import osMap %}
 
 {% block pageContent %}
 <div class="filter-container">
@@ -300,7 +300,7 @@
 
         {% set mapView %}
             <div class="home-map">
-                {{ map(apiKey, appeals.cases, inspectors.selected) }}
+                {{ osMap(map.apiKey, appeals.cases, inspectors.selected) }}
             </div>
         {% endset %}
 
