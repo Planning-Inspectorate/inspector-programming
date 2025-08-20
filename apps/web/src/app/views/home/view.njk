@@ -306,55 +306,12 @@
 
         {% set inspectorDetails %}
             {% if inspectorPin.id %}
-                <div class="pins-container-wide govuk-grid-row">
-                    <div class="govuk-grid-column-one-half">
-                        <h2 class="govuk-heading-m">{{ inspectorPin.firstName + " " + inspectorPin.lastName }}</h2>
-                        <h2 class="govuk-heading-m">Contact details</h2>
-                            {{ govukSummaryList({
-                                rows: [
-                                    { key: { text: "Address" }, value: { text: inspectorPin.address.addressLine1 + ", " + inspectorPin.address.postcode } },
-                                    { key: { text: "Work phone" }, value: { text: inspectorPin.inspectorPhone } },
-                                    { key: { text: "Mobile phone" }, value: { text: inspectorPin.inspectorPhone  } }
-                                ]
-                            }) }}
-
-                            <h2 class="govuk-heading-m">Work details</h2>
-                            {{ govukSummaryList({
-                                rows: [
-                                    { key: { text: "Resource group" }, value: { text: "" } },
-                                    { key: { text: "Grade" }, value: { text: inspectorPin.grade } },
-                                    { key: { text: "FTE" }, value: { text: inspectorPin.fte } },
-                                    { key: { text: "Charting officer" }, value: { text: inspectorPin.chartingOfficerId } },
-                                    { key: { text: "Charting officer phone" }, value: { text: inspectorPin.chartingOfficerPhone } },
-                                    { key: { text: "Inspector manager" }, value: { text: inspectorPin.inspectorManager } }
-                                ]
-                            }) }}    
-                    </div>
-                    <div class="govuk-grid-column-one-half govuk-!-margin-top-8">
-                        {{ govukTable({
-                            caption: "Specialisms",
-                            captionClasses: "govuk-table__caption--m",
-                            firstCellIsHeader: true,
-                            head: [
-                                { text: "Name", classes: "govuk-!-width-one-half" },
-                                { text: "Proficiency", classes: "govuk-!-width-one-quarter" },
-                                { text: "Valid from", classes: "govuk-!-width-one-quarter" }
-                            ],
-                            rows: [
-                                [ { text: "Advertisements" }, { text: "Trained" }, { text: "11/03/24" } ],
-                                [ { text: "Appeal against conditions" }, { text: "Trained" }, { text: "17/11/23" } ],
-                                [ { text: "General allocation" }, { text: "Trained" }, { text: "12/12/21" } ],
-                                [ { text: "Appearance design" }, { text: "Trained" }, { text: "02/06/23" } ],
-                                [ { text: "Green belt" }, { text: "Trained" }, { text: "29/11/24" } ],
-                                [ { text: "Hearings trained" }, { text: "Trained" }, { text: "01/01/19" } ],
-                                [ { text: "Special protection area" }, { text: "Trained" }, { text: "25/08/19" } ]
-                                ],
-                            classes: 'custom-table-header'
-                            }) }}
-                    </div>
-                </div>
+                {% include 'views/home/inspector-details.njk' %}
             {% else %}
-                <p class="govuk-body"> No Inspector Selected. Please select an Inspector from the drop down to see this information. <p>
+                {{ govukErrorMessage({
+                    text: inspectorError,
+                    visuallyHiddenText: "Error"
+                }) }}
             {% endif %}
         {% endset %}
 
@@ -472,11 +429,15 @@
             e.preventDefault();
 
             const outlookTabSelected = document.querySelector('#tab_outlookView').getAttribute('aria-selected');
+            const inspectorTabSelected = document.querySelector('#tab_inspector').getAttribute('aria-selected');
             let currentTab = document.getElementById('currentTab');
 
             if (outlookTabSelected == 'true') {
                 currentTab.value = 'calendar';
-            } else {
+            } else if (inspectorTabSelected == 'true') {
+              currentTab.value = 'inspector';
+            }
+            else {
                 currentTab.value = '';
             }
 
@@ -490,13 +451,21 @@
             inspectorForm.submit()
         });
 
-        document.querySelector('#tab_outlookView').addEventListener('click', (e) => {
-            e.preventDefault();
-            const inspectorForm = document.getElementById('inspector-form');
-            let action = document.getElementById('currentTab');
-            action.value = 'calendar';
-            inspectorForm.submit();
-        });
+      // Add event listener to each tab to submit select inspector form
+      function submitFormForTab (tabId, value) {
+				const tab = document.querySelector(tabId);
+				if (!tab) return;
+				tab.addEventListener('click', (e) => {
+					e.preventDefault();
+					const currentTab = document.getElementById('currentTab');
+					currentTab.value = value;
+					inspectorForm.submit();
+				});
+			}
+
+			// Initialize tabs
+			submitFormForTab ('#tab_outlookView', 'calendar');
+			submitFormForTab ('#tab_inspector', 'inspector');
 
         if (typeof accessibleAutocomplete !== 'undefined') {
         accessibleAutocomplete.enhanceSelectElement({
