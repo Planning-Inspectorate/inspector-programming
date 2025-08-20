@@ -6,12 +6,14 @@ import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 let client;
 let warnCalls = [];
 let errorCalls = [];
+let infoCalls = [];
 const mockOsApiClient = {
 	addressesForPostcode: mock.fn()
 };
 const mockLogger = {
 	warn: (...args) => warnCalls.push(args),
-	error: (...args) => errorCalls.push(args)
+	error: (...args) => errorCalls.push(args),
+	info: (...args) => infoCalls.push(args)
 };
 
 const cbosConfig = {
@@ -516,4 +518,39 @@ test('getUnassignedCases should not return cases with invalid appeal statuses', 
 	const appealsData = await client.getUnassignedCases();
 	assert.strictEqual(appealsData.caseReferences.length, 0);
 	assert.strictEqual(appealsData.cases.length, 0);
+});
+
+test('patchAppeal updates appeal on ok', async () => {
+	global.fetch = async () => ({
+		ok: true
+	});
+	const appealId = '1';
+	await assert.doesNotReject(() => client.patchAppeal(appealId, {}));
+	assert.strictEqual(infoCalls[0].length, 1);
+	assert.strictEqual(infoCalls[0][0], `Successfully updated appealID ${appealId}`);
+});
+
+test('patchAppeal handles non 200 return', async () => {
+	global.fetch = async () => ({
+		ok: false,
+		status: 500
+	});
+	const appealId = '1';
+	const url = `${cbosConfig.apiUrl}/appeals/${appealId}`;
+	await assert.rejects(() => client.patchAppeal(appealId, {}));
+	assert.strictEqual(errorCalls[0].length, 1);
+	assert.strictEqual(errorCalls[0][0], `Failed to update appealID ${appealId} at ${url}. Status: 500`);
+});
+
+test('patchAppeal handles error when sending request', async () => {
+	global.fetch = async () => {
+		throw new Error('Mock Error');
+	};
+
+	const appealId = '1';
+	const url = `${cbosConfig.apiUrl}/appeals/${appealId}`;
+	await assert.rejects(() => client.patchAppeal(appealId, {}));
+	assert.strictEqual(errorCalls[0].length, 2);
+	assert.strictEqual(errorCalls[0][0], `Failed to update appealID ${appealId} at ${url}:`);
+	assert.strictEqual(errorCalls[0][1], 'Mock Error');
 });

@@ -1,6 +1,57 @@
-import { describe, mock, test } from 'node:test';
+import { beforeEach, describe, test, mock } from 'node:test';
+import { assignCasesToInspector, getCaseDetails } from './case.js';
 import assert from 'assert';
-import { getCaseDetails } from './case.js';
+
+const mockSession = {};
+const mockLogger = {
+	warn: mock.fn(),
+	error: mock.fn()
+};
+const mockCbosApiClient = {
+	patchAppeal: mock.fn()
+};
+const mockGetCbosApiClientForSession = mock.fn();
+mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
+
+const mockService = {
+	logger: mockLogger,
+	getCbosApiClientForSession: mockGetCbosApiClientForSession
+};
+
+beforeEach(() => {
+	mockGetCbosApiClientForSession.mock.resetCalls();
+	mockService.logger.error.mock.resetCalls();
+	mockService.logger.warn.mock.resetCalls();
+});
+
+describe('assignCasesToInspector', () => {
+	test('should return without calling cbos when inspector id is null', async () => {
+		await assignCasesToInspector(mockSession, mockService, null, []);
+		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
+		assert.strictEqual(mockService.logger.warn.mock.callCount(), 1);
+	});
+
+	test('should return without calling cbos when inspector id is blank', async () => {
+		await assignCasesToInspector(mockSession, mockService, '', []);
+		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
+		assert.strictEqual(mockService.logger.warn.mock.callCount(), 1);
+	});
+
+	test('should update cases when valid inspector id and case id list is given', async () => {
+		await assignCasesToInspector(mockSession, mockService, 'inspector id', ['1', '2', '3']);
+		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
+		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 3);
+	});
+
+	test('should log when a case fails to be updated', async () => {
+		mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
+			throw new Error();
+		});
+		await assignCasesToInspector(mockSession, mockService, 'inspector id', ['1']);
+		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
+		assert.strictEqual(mockService.logger.error.mock.callCount(), 1);
+	});
+});
 
 describe('getCaseDetails', () => {
 	test('returns case details when caseId is valid', async () => {
