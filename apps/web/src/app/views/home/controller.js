@@ -34,7 +34,6 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  */
-
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);

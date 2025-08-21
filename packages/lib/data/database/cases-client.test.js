@@ -268,6 +268,7 @@ describe('CasesClient', () => {
 		});
 	});
 	describe('sortCasesByAge', () => {
+		const mockDbClient = {};
 		const mockCases = [
 			{
 				caseId: 'ref1',
@@ -366,8 +367,6 @@ describe('CasesClient', () => {
 			}
 		];
 		it('should fetch three cases sorted by age', async () => {
-			const mockDbClient = {};
-
 			const casesClient = new CasesClient(mockDbClient);
 			const cases = await casesClient.sortCasesByAge(mockCases);
 			assert.deepStrictEqual(
@@ -376,14 +375,12 @@ describe('CasesClient', () => {
 			);
 		});
 		it('cases having the same age should sort by caseReceivedDate instead', async () => {
-			const mockDbClient = {};
-
-			mockCases.forEach((c) => {
-				c.caseAge = 5;
+			const testCases = mockCases.map((c) => {
+				return { ...c, caseAge: 5 };
 			});
 
 			const casesClient = new CasesClient(mockDbClient);
-			const cases = await casesClient.sortCasesByAge(mockCases);
+			const cases = await casesClient.sortCasesByAge(testCases);
 
 			assert.deepStrictEqual(
 				cases.map((c) => c.caseId),
@@ -391,19 +388,71 @@ describe('CasesClient', () => {
 			);
 		});
 		it('cases having the same age and caseReceivedDate should sort by LPA name in alphabetical order', async () => {
-			const mockDbClient = {};
-
-			mockCases.forEach((c) => {
-				c.caseAge = 5;
-				c.caseReceivedDate = new Date('2024-10-09T10:26:11.963Z');
+			const testCases = mockCases.map((c) => {
+				return { ...c, caseAge: 5, caseReceivedDate: new Date('2024-10-09T10:26:11.963Z') };
 			});
 
 			const casesClient = new CasesClient(mockDbClient);
-			const cases = await casesClient.sortCasesByAge(mockCases);
+			const cases = await casesClient.sortCasesByAge(testCases);
 
 			assert.deepStrictEqual(
 				cases.map((c) => c.caseId),
 				['ref3', 'ref4', 'ref2', 'ref1', 'ref5']
+			);
+		});
+		it('cases with null ages should be placed at the bottom', async () => {
+			const testCases = mockCases;
+			const nullCase = testCases.find((c) => c.caseId === 'ref3');
+			nullCase.caseAge = null;
+
+			const casesClient = new CasesClient(mockDbClient);
+			const cases = await casesClient.sortCasesByAge(testCases);
+
+			assert.deepStrictEqual(
+				cases.map((c) => c.caseId),
+				['ref4', 'ref2', 'ref1', 'ref5', 'ref3']
+			);
+		});
+		it('multiple cases with null ages should use caseReceivedDate sort criteria', async () => {
+			const testCases = mockCases.map((c) => (['ref3', 'ref4'].includes(c.caseId) ? { ...c, caseAge: null } : c));
+
+			const casesClient = new CasesClient(mockDbClient);
+			const cases = await casesClient.sortCasesByAge(testCases);
+
+			assert.deepStrictEqual(
+				cases.map((c) => c.caseId),
+				['ref2', 'ref1', 'ref5', 'ref3', 'ref4']
+			);
+		});
+		it('when using caseReceivedDate sort criteria, null results should be placed at the bottom', async () => {
+			const testCases = mockCases.map((c) => {
+				return { ...c, caseAge: 5, caseReceivedDate: c.caseId === 'ref3' ? null : c.caseReceivedDate };
+			});
+
+			const casesClient = new CasesClient(mockDbClient);
+			const cases = await casesClient.sortCasesByAge(testCases);
+
+			assert.deepStrictEqual(
+				cases.map((c) => c.caseId),
+				['ref2', 'ref1', 'ref4', 'ref5', 'ref3']
+			);
+		});
+		it('when using lpaName sort criteria, null results should be placed at the bottom', async () => {
+			const testCases = mockCases.map((c) => {
+				return {
+					...c,
+					caseAge: 5,
+					caseReceivedDate: new Date('2024-10-09T10:26:11.963Z'),
+					lpaName: c.caseId === 'ref3' ? null : c.lpaName
+				};
+			});
+
+			const casesClient = new CasesClient(mockDbClient);
+			const cases = await casesClient.sortCasesByAge(testCases);
+
+			assert.deepStrictEqual(
+				cases.map((c) => c.caseId),
+				['ref4', 'ref2', 'ref1', 'ref5', 'ref3']
 			);
 		});
 	});

@@ -45,7 +45,7 @@ describe('controller.js', () => {
 				cases: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 })),
 				total: 10
 			}));
-			const req = { url: '/', query: {} };
+			const req = { url: '/', query: {}, session: {} };
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
 			await controller(req, res);
