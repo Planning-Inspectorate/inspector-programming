@@ -1,12 +1,5 @@
 import { describe, mock, test } from 'node:test';
-import {
-	buildViewHome,
-	filterCases,
-	sortCases,
-	handlePagination,
-	buildQueryString,
-	createPaginationItems
-} from './controller.js';
+import { buildViewHome, filterCases, handlePagination, buildQueryString, createPaginationItems } from './controller.js';
 import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
@@ -115,14 +108,6 @@ describe('controller.js', () => {
 			const filteredCases = filterCases(cases, filters);
 			assert.strictEqual(filteredCases.length, 1, 'Should return cases with age between 15 and 25');
 			assert.deepStrictEqual(filteredCases, [{ caseAge: 20 }]);
-		});
-	});
-	describe('sortCases', () => {
-		test('should sort cases by age in descending order', () => {
-			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
-			const sortedCases = sortCases(cases, 'age');
-			assert.strictEqual(sortedCases.length, 3, 'Should return the same number of cases');
-			assert.deepStrictEqual(sortedCases, [{ caseAge: 30 }, { caseAge: 20 }, { caseAge: 10 }]);
 		});
 	});
 	describe('handlePagination', () => {

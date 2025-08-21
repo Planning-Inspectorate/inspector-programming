@@ -171,24 +171,6 @@ export function filterCases(cases, filters) {
 		return true;
 	});
 }
-/**
- *
- * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} cases
- * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
- * @returns {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]}
- */
-export function sortCases(cases, sort) {
-	switch (sort) {
-		case 'distance':
-			//WIP
-			return cases;
-		case 'hybrid':
-			//WIP
-			return cases;
-		default:
-			return cases.sort((a, b) => b.caseAge - a.caseAge);
-	}
-}
 
 export function buildPostHome(service) {
 	return async (req, res) => {
