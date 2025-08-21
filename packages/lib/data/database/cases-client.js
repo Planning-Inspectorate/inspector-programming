@@ -94,41 +94,4 @@ export class CasesClient {
 			total: allCases.length || 0
 		};
 	}
-
-	/**
-	 * Sorts a list of cases using the default age algorithm
-	 * First sorts oldest caseAge first, then if those match sorts oldest caseReceivedDate first, then if those match sorts using lpaName alphabetically
-	 *
-	 * @param {import('../types').CaseViewModel[]} cases
-	 * @return {import('../types').CaseViewModel[]}
-	 */
-	sortCasesByAge(cases) {
-		return cases.sort((a, b) => {
-			const ageComparison = b.caseAge - a.caseAge;
-			if (ageComparison !== 0) return ageComparison;
-			const dateReceivedComparison = () => {
-				const aDate = a.caseReceivedDate ? new Date(a.caseReceivedDate).getTime() : null;
-				const bDate = b.caseReceivedDate ? new Date(b.caseReceivedDate).getTime() : null;
-
-				//handle null dates
-				if (aDate === null && bDate === null) return 0;
-				if (aDate === null) return 1;
-				if (bDate === null) return -1;
-
-				// otherwise compare normally
-				return aDate - bDate;
-			};
-			return dateReceivedComparison() !== 0
-				? dateReceivedComparison()
-				: (() => {
-						//handle null lpaNames
-						if ((a.lpaName || null) === null && (b.lpaName || null) === null) return 0;
-						if ((a.lpaName || null) === null) return 1;
-						if ((b.lpaName || null) === null) return -1;
-
-						//otherwise compare normally
-						return (a.lpaName || '').localeCompare(b.lpaName || '', undefined, { sensitivity: 'base' });
-					})();
-		});
-	}
 }

@@ -1,4 +1,5 @@
 import { CasesClient } from './cases-client.js';
+import { sortCasesByAge } from '../../util/sorting.js';
 
 const CACHE_PREFIX = 'cases_';
 
@@ -60,7 +61,7 @@ export class CachedCasesClient {
 				sortedCases = allCases;
 				break;
 			default:
-				sortedCases = this.#client.sortCasesByAge(allCases);
+				sortedCases = allCases.sort(sortCasesByAge);
 				break;
 		}
 
