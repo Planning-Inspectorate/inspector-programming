@@ -1,7 +1,7 @@
 {% extends "views/layouts/main.njk" %}
 
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "views/layouts/components/map.njk" import map %}
+{% from "views/home/map/map.njk" import osMap %}
 
 {% block pageContent %}
 <nav class="govuk-header__navigation pins-header-navigation" aria-label="Menu">
@@ -14,61 +14,45 @@
 <div class="pins-container-wide govuk-grid-row">
     <div class="govuk-grid-column-one-third">
     <h2 class="govuk-heading-m">Case</h2>
-        {{ govukSummaryList({
-            rows: [
-                { key: { text: "Case number" }, value: { text: caseData.caseId } },
-                { key: { text: "Site address" }, value: { text: caseData.siteAddressPostcode } },
-                { key: { text: "Job details" }, value: { text: caseData.jobDetails } },
-                { key: { text: "Procedure" }, value: { text: caseData.caseProcedure } },
-                { key: { text: "Jurisdiction" }, value: { text: caseData.jurisdiction } },
-                { key: { text: "Case status" }, value: { text: caseData.caseStatus } }
-            ]
-        }) }}
 
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Band" }, value: { text: inspectors[0].grade } },
-                { key: { text: "Case level" }, value: { text: caseData.caseLevel } },
-                { key: { text: "Special circumstances" }, value: { text:caseData.specialCircumstances } },
-                { key: { text: "Costs applied for" }, value: { text: caseData.appellantCostsAppliedFor } }
+                { key: { text: "Case reference" }, value: { text: caseData.caseId } },
+                { key: { text: "Site address" }, value: { text: caseData.siteAddress  } },
+                { key: { text: "Case Description" }, value: { text: caseData.originalDevelopmentDescription } },
+                { key: { text: "Procedure" }, value: { text: caseData.caseProcedure  } },
+                { key: { text: "Case status" }, value: { text: caseData.caseStatus  } },
+                { key: { text: "Band" }, value: { text: caseData. allocationBand  } },
+                { key: { text: "Case level" }, value: { text: caseData.caseLevel  } },
+                { key: { text: "Special circumstances" }, value: { text: caseData.specialCircumstance  } },
+                { key: { text: "Specialisms" }, value: { text: caseData.caseSpecialisms } },
+                { key: { text: "Costs applied for" }, value: { text: caseData.appellantCostsAppliedFor  } },
+                { key: { text: "Linked cases" }, value: { text:caseData.linkedCases  } }
             ]
         }) }}
 
-        <h2 class="govuk-heading-m">Contact details</h2>
-        {{ govukSummaryList({
-            rows: [
-                { key: { "text": "Local planning authority (LPA)" }, "value": { "text": caseData.lpaName } },
-                { key: { "text": "Agent" }, "value": { "text": caseData.agentId } },
-                { key: { "text": "Appellant" }, "value": { "text":caseData.appellantId } },
-                { key: { "text": "Case officer" }, "value": { "text": caseData.caseOfficerId } },
-                { key: { text: "Agent phone" }, value: { text:caseData.agentPhone } },
-                { key: { text: "Appellant phone" }, value: { text: caseData.appellantPhone } },
-                { key: { text: "Case officer phone" }, value: { text: caseData.caseOfficerPhone } }
-            ]
-        }) }}
     </div>
 
     <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-m">Key dates</h2>
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Appeal start date" }, value: { text: caseData.caseStartedDate } }
+                { key: { text: "Appeal start date" }, value: { text: caseData.appealStartDate } }
             ]
         }) }}
 
         <h2 class="govuk-heading-m">Event Arrangements</h2>
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Event type" }, value: { text: caseData.appealEventType } },
-                { key: { text: "Event date" }, value: { text: caseData.appealEventDate } },
-                { key: { text: "Programming notes" }, value: { text: caseData.programmingNotes } },
-                { key: { text: "Event status" }, value: { text: caseData.caseStatus } },
-                { key: { text: "Duration" }, value: { text: caseData.appellantProcedurePreferenceDuration } },
-                { key: { text: "Venue" }, value: { text: caseData.venue } }
+                { key: { text: "Event type" }, value: { text: caseData.eventType } },
+                { key: { text: "Programming notes" }, value: { text: "__" } },
+                { key: { text: "Duration notes" }, value: { text: "__" } }
             ]
         }) }}
+
         <div class="map-container">
-            {{ map(apiKey, pins, inspectorPin) }}
+            {{ osMap(map.apiKey, [caseData], inspectorPin) }}
+
         </div>
     </div>
 </div>
