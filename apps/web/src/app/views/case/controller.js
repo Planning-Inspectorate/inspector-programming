@@ -1,5 +1,5 @@
-import { caseViewModel } from '../home/controller.js';
 import { getInspectorList } from '../../inspector/inspector.js';
+import { toCaseViewModel } from '../home/view-model.js';
 
 /**
  * @param {import('#service').App2Service} service
@@ -19,7 +19,7 @@ export function buildViewCase(service) {
 			inspectorId,
 			apiKey: mapsKey,
 			inspectorLatLong,
-			pins: [caseViewModel(caseData)],
+			pins: [toCaseViewModel(caseData)],
 			containerClasses: 'pins-container-wide',
 			title: 'Case details',
 			inspectorPin: {

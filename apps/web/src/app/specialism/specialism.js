@@ -122,10 +122,13 @@ export const appealTypes = [
 	}
 ];
 
+/** @type {import('#util/types.js').RadioOption[]} */
 export const caseTypes = Object.values(appealTypes).map((v) => ({ value: v.key, text: v.type }));
 
-export const specialismTypes = Object.values(APPEAL_CASE_TYPE).map((v) => ({ value: v, text: v }));
+/** @type {import('#util/types.js').RadioOption[]} */
+export const allocationLevels = Object.values(APPEAL_CASE_TYPE).map((v) => ({ value: v, text: v }));
 
+/** @type {import('#util/types.js').RadioOption[]} */
 export const specialisms = [
 	{
 		value: 'General allocation',

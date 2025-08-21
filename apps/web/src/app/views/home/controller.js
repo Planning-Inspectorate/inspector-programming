@@ -1,35 +1,16 @@
-import { getInspectorList } from '../../inspector/inspector.js';
+import { getInspectorDetails, getInspectorList } from '../../inspector/inspector.js';
 import qs from 'qs';
-import { caseTypes, specialisms, specialismTypes } from '../../specialism/specialism.js';
+import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
 import {
-	generateCalendar,
-	generateDatesList,
-	generateTimeList,
-	generateWeekTitle,
-	getWeekStartDate,
 	getNextWeekStartDate,
 	getPreviousWeekStartDate,
-	getSimplifiedEvents
+	getSimplifiedEvents,
+	getWeekStartDate
 } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view-model.js';
 
-/**
- * @typedef {Object} Case
- * @property {string} caseId - The unique identifier for the case.
- * @property {string} caseType - The type of the case (e.g., 'W').
- * @property {string} caseProcedure - The procedure for the case (e.g., 'Written').
- * @property {string} allocationBand - The allocation band for the case.
- * @property {string} caseLevel - The level of the case.
- * @property {string} siteAddressPostcode - The postcode of the site address.
- * @property {string} lpaName - The name of the Local Planning Authority (LPA).
- * @property {string} lpaRegion - The region of the Local Planning Authority (LPA).
- * @property {string} caseStatus - The status of the case
- * @property {number} caseAge - The age of the case in weeks.
- * @property {number} linkedCases - The number of linked cases.
- * @property {Date} finalCommentsDate - The date of the final comments.
- */
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
@@ -38,22 +19,7 @@ export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
-		const inspectorData =
-			selectedInspector &&
-			(await service.db.inspector.findFirst({
-				where: { entraId: selectedInspector.id },
-				include: {
-					Specialisms: true
-				}
-			}));
-
-		//format validFrom date on inspector specialisms using formatDateForDisplay
-		if (inspectorData && inspectorData.Specialisms) {
-			inspectorData.Specialisms = inspectorData.Specialisms.map((s) => ({
-				...s,
-				validFrom: formatDateForDisplay(s.validFrom, { format: 'dd/MM/yyyy' })
-			}));
-		}
+		const selectedInspectorDetails = await getInspectorDetails(service.db, selectedInspector?.id);
 
 		// Convert the raw query string into a nested object
 		const query = qs.parse(parseUrl(req.url).query || '');
@@ -79,13 +45,35 @@ export function buildViewHome(service) {
 			inspectorId: req.query.inspectorId
 		};
 		const paginationDetails = handlePagination(req, total, formData);
+
+		const isCalendarTab = req.query.currentTab === 'calendar';
+		const isInspectorTab = req.query.currentTab === 'inspector';
+
+		/** @type {import('./types.js').HomeViewModel} */
+		const viewModel = {
+			pageHeading: 'Unassigned case list',
+			containerClasses: 'pins-container-wide',
+			title: 'Unassigned case list',
+			errorSummary: [],
+			filters: {
+				allocationLevels,
+				caseTypes,
+				specialisms,
+				pagination: paginationDetails,
+				query: {}
+			},
+			appeals: appealsViewModel(filteredCases),
+			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab),
+			map: {
+				apiKey: service.osMapsApiKey
+			}
+		};
+
 		/**
 		 * @type {import("../../calendar/types.js").Event[]}
 		 */
 		let calendarEvents = [];
-		let errorSummary = [];
 		let calendarError;
-		let inspectorError;
 
 		if (selectedInspector) {
 			try {
@@ -94,8 +82,8 @@ export function buildViewHome(service) {
 				service.logger.error(error, 'Failed to fetch calendar events');
 				calendarError =
 					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
-				if (req.query.currentTab == 'calendar') {
-					errorSummary.push({
+				if (isCalendarTab) {
+					viewModel.errorSummary.push({
 						text: calendarError,
 						href: '#calendarError'
 					});
@@ -103,52 +91,28 @@ export function buildViewHome(service) {
 			}
 		} else {
 			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
-			if (['calendar', 'inspector'].includes(req.query.currentTab)) {
-				inspectorError = calendarError;
-				errorSummary.push({
+			if (isCalendarTab || isInspectorTab) {
+				viewModel.errorSummary.push({
 					text: calendarError,
 					href: '#inspectors'
 				});
 			}
 		}
 
-		const currentStartDate = req.query.calendarStartDate
-			? new Date(req.query.calendarStartDate.toString())
-			: getWeekStartDate(new Date());
-		const dateList = generateDatesList(currentStartDate);
-		const timeList = generateTimeList(8, 18);
-		const calendarGrid = generateCalendar(currentStartDate, calendarEvents);
-		const weekTitle = generateWeekTitle(currentStartDate);
+		viewModel.calendar = calendarViewModel(req.query.calendarStartDate, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: query.sort }, 'persistence');
 
 		return res.render('views/home/view.njk', {
-			pageHeading: 'Unassigned case list',
-			containerClasses: 'pins-container-wide',
-			title: 'Unassigned case list',
-			cases: filteredCases.map(caseViewModel),
-			inspectors,
+			...viewModel,
 			data: formData,
-			apiKey: service.osMapsApiKey,
-			inspectorPin: {
-				...selectedInspector,
-				...inspectorData
-			},
-			timeList,
-			dateList,
-			calendarGrid,
-			weekTitle,
-			currentStartDate,
 			errors,
 			errorList,
 			paginationDetails,
 			specialisms,
-			specialismTypes,
-			caseTypes,
-			inspectorError,
-			calendarError,
-			errorSummary
+			specialismTypes: allocationLevels,
+			caseTypes
 		});
 	};
 }
@@ -208,40 +172,6 @@ export function filterCases(cases, filters) {
 	});
 }
 
-export function getCaseColor(caseAge) {
-	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
-	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
-	return '00703c'; // green (0-20 weeks)
-}
-
-/**
- *
- * @param {Case[]} cases
- * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
- * @returns
- */
-export function sortCases(cases, sort) {
-	switch (sort) {
-		case 'distance':
-			//WIP
-			return cases;
-		case 'hybrid':
-			//WIP
-			return cases;
-		default:
-			return cases.sort((a, b) => b.caseAge - a.caseAge);
-	}
-}
-
-export function caseViewModel(c) {
-	return {
-		...c,
-		caseStatus: c.caseStatus?.replace('_', ' '),
-		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
-		caseAgeColor: getCaseColor(c.caseAge),
-		currentDate: formatDateForDisplay(new Date(), { format: 'dd/MM/yyyy' })
-	};
-}
 export function buildPostHome(service) {
 	return async (req, res) => {
 		service.logger.info('post home');
@@ -272,8 +202,8 @@ export function buildPostHome(service) {
 /**
  * @param {import('express').Request} req
  * @param {number} total
- * @param {Object} formData
- * @returns {Object}
+ * @param {{page: number, limit: number}} formData
+ * @returns {import('#util/types.js').Pagination}
  */
 export function handlePagination(req, total, formData) {
 	const page = formData.page;

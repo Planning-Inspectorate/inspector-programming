@@ -14,7 +14,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
 
-{% from "views/home/map/map.njk" import map %}
+{% from "views/home/map/map.njk" import osMap %}
 
 {% block pageContent %}
 <div class="filter-container">
@@ -31,7 +31,7 @@
                     value: null,
                     selected: null
                 }] %}
-                {% for i in inspectors %}
+                {% for i in inspectors.list %}
                     {% set inspectorList = (inspectorList.push({
                         text: i.lastName + ', ' + i.firstName,
                         value: i.id,
@@ -42,7 +42,7 @@
                     id: "inspectors",
                     name: "inspectorId",
                     items: inspectorList,
-                    errorMessage: { text: inspectorError } if inspectorError else null
+                    errorMessage: { text: inspectors.error } if inspectors.error else null
                 }) }}
                 {{ govukInput({
                     id: "currentTab",
@@ -51,7 +51,7 @@
                 }) }}
                 {{ govukButton({
                     text: "Select",
-                    classes: "govuk-button--secondary margin-top-error" if inspectorError else "govuk-button--secondary",
+                    classes: "govuk-button--secondary margin-top-error" if inspectors.error else "govuk-button--secondary",
                     value: "select",
                     name: "action",
                     type: "submit"
@@ -288,7 +288,7 @@
             {% include 'views/home/cases-table.njk' %}
             </form>
 
-            {% if cases.length > 0 %}
+            {% if appeals.cases.length > 0 %}
                 <div class="govuk-form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0; padding: 0;">
                     <div style="margin: 0; padding: 0;">
                         {{ govukPagination(paginationDetails) }}
@@ -300,12 +300,12 @@
 
         {% set mapView %}
             <div class="home-map">
-                {{ map(apiKey, cases, inspectorPin) }}
+                {{ osMap(map.apiKey, appeals.cases, inspectors.selected) }}
             </div>
         {% endset %}
 
         {% set inspectorDetails %}
-            {% if inspectorPin.id %}
+            {% if inspectors.selected %}
                 {% include 'views/home/inspector-details.njk' %}
             {% else %}
                 {{ govukErrorMessage({
@@ -316,14 +316,13 @@
         {% endset %}
 
         {% set outlookView %}
-            {% if calendarError %}
+            {% if calendar.error %}
                 {{ govukErrorMessage({
                     id: "calendarError",
-                    text: calendarError,
+                    text: calendar.error,
                     visuallyHiddenText: "Error"
                 }) }}
-                
-            {% elif inspectorPin.id %}
+            {% elif inspectors.selected %}
                 {% include 'views/home/calendar.njk' %}
             {% endif %}
         {% endset %}
