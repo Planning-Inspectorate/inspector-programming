@@ -106,13 +106,29 @@ export class CasesClient {
 		return cases.sort((a, b) => {
 			const ageComparison = b.caseAge - a.caseAge;
 			if (ageComparison !== 0) return ageComparison;
-			const dateReceivedComparison =
-				b.caseReceivedDate && a.caseReceivedDate
-					? (new Date(a.caseReceivedDate)?.getTime() || 0) - (new Date(b.caseReceivedDate)?.getTime() || 0)
-					: 0;
-			return dateReceivedComparison !== 0
-				? dateReceivedComparison
-				: (a.lpaName || '').localeCompare(b.lpaName || '', undefined, { sensitivity: 'base' });
+			const dateReceivedComparison = () => {
+				const aDate = a.caseReceivedDate ? new Date(a.caseReceivedDate).getTime() : null;
+				const bDate = b.caseReceivedDate ? new Date(b.caseReceivedDate).getTime() : null;
+
+				//handle null dates
+				if (aDate === null && bDate === null) return 0;
+				if (aDate === null) return 1;
+				if (bDate === null) return -1;
+
+				// otherwise compare normally
+				return aDate - bDate;
+			};
+			return dateReceivedComparison() !== 0
+				? dateReceivedComparison()
+				: (() => {
+						//handle null lpaNames
+						if ((a.lpaName || null) === null && (b.lpaName || null) === null) return 0;
+						if ((a.lpaName || null) === null) return 1;
+						if ((b.lpaName || null) === null) return -1;
+
+						//otherwise compare normally
+						return (a.lpaName || '').localeCompare(b.lpaName || '', undefined, { sensitivity: 'base' });
+					})();
 		});
 	}
 }

@@ -57,7 +57,6 @@ export const destroyAccount = (session) => {
  */
 export const setAccount = (session, authenticationResult) => {
 	const { account, accessToken, idToken, expiresOn } = authenticationResult;
-	//
 	if (!account) {
 		return;
 	}
