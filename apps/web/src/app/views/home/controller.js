@@ -12,24 +12,9 @@ import {
 	getSimplifiedEvents
 } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
+import { normalizeFilters, validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-
-/**
- * @typedef {Object} Case
- * @property {string} caseId - The unique identifier for the case.
- * @property {string} caseType - The type of the case (e.g., 'W').
- * @property {string} caseProcedure - The procedure for the case (e.g., 'Written').
- * @property {string} allocationBand - The allocation band for the case.
- * @property {string} caseLevel - The level of the case.
- * @property {string} siteAddressPostcode - The postcode of the site address.
- * @property {string} lpaName - The name of the Local Planning Authority (LPA).
- * @property {string} lpaRegion - The region of the Local Planning Authority (LPA).
- * @property {string} caseStatus - The status of the case
- * @property {number} caseAge - The age of the case in weeks.
- * @property {number} linkedCases - The number of linked cases.
- * @property {Date} finalCommentsDate - The date of the final comments.
- */
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
@@ -58,19 +43,24 @@ export function buildViewHome(service) {
 
 		// Convert the raw query string into a nested object
 		const query = qs.parse(parseUrl(req.url).query || '');
-		const { filters } = query;
 
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
 
 		const page = req.query.page && (query.sort || 'age') === lastSort ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
 
-		const { cases, total } = await service.casesClient.getCases(query.sort, page, limit);
+		//parse filters query param as expected Filters type
+		let filters = normalizeFilters(query.filters);
+		//validate filters and return any errors to client
+		const filterErrors = validateFilters(filters);
+		const filterErrorList = Object.values(filterErrors).map((message) => ({ ...message, href: `#` }));
+		//if filters are invalid then apply none
+		if (filterErrorList.length) filters = {};
 
-		const errors = validateFilters(filters);
-		const errorList = Object.values(errors).map((message) => ({ ...message, href: `#` }));
+		const { cases, total } = await service.casesClient.getCases(filters, String(query.sort), page, limit);
 
-		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
+		//const filteredCases = filterErrorList.length ? cases : filterCases(cases, query.filters);
+		const filteredCases = cases;
 
 		const formData = {
 			filters,
@@ -141,8 +131,8 @@ export function buildViewHome(service) {
 			calendarGrid,
 			weekTitle,
 			currentStartDate,
-			errors,
-			errorList,
+			filterErrors,
+			filterErrorList,
 			paginationDetails,
 			specialisms,
 			specialismTypes,
@@ -154,61 +144,6 @@ export function buildViewHome(service) {
 	};
 }
 
-/**
- * @typedef {Object} Filters
- * //any string value can be used as an age filter, we just validate it later
- * @property {string} [minimumAge]
- * @property {string} [maximumAge]
- */
-
-/**
- * @typedef {Partial<Object<keyof Filters, { text: string }>>} ValidationErrors
- */
-
-/**
- *
- * @param {Filters} filters
- * @returns {ValidationErrors}
- */
-export function validateFilters(filters) {
-	/** @type {ValidationErrors} */
-	const errors = {};
-	if (!filters) return errors;
-
-	/** @type {(keyof Filters)[]} */
-	const keysToValidate = ['minimumAge', 'maximumAge'];
-	for (const key of keysToValidate) {
-		const value = filters[key];
-		if (value && (isNaN(+value) || +value < 0 || +value > 500)) {
-			errors[key] = { text: 'Please enter a number between 0 and 500' };
-			filters[key] = '';
-		}
-	}
-	if (filters.maximumAge && filters.minimumAge && !isNaN(+filters.minimumAge) && !isNaN(+filters.maximumAge)) {
-		if (+filters.minimumAge > +filters.maximumAge) {
-			errors.minimumAge = { text: 'The minimum value must be less than or equal to the maximum value.' };
-			filters.minimumAge = '';
-			filters.maximumAge = '';
-		}
-	}
-	return errors;
-}
-
-/**
- *
- * @param {Case[]} cases
- * @param {Filters} filters
- * @returns
- */
-export function filterCases(cases, filters) {
-	if (!filters) return cases;
-	return cases.filter((c) => {
-		//always apply case age filters, using defaults if no filter provided
-		if (!(c.caseAge >= (+filters.minimumAge || 0) && c.caseAge <= (+filters.maximumAge || 999))) return false;
-		return true;
-	});
-}
-
 export function getCaseColor(caseAge) {
 	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
@@ -217,7 +152,7 @@ export function getCaseColor(caseAge) {
 
 /**
  *
- * @param {Case[]} cases
+ * @param {import('@pins/inspector-programming-lib/data/types.js').Case[]} cases
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
  * @returns
  */
