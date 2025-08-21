@@ -4,10 +4,11 @@ import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controll
 import { createErrorRoutes } from './views/static/error/index.js';
 import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middleware/cache.js';
 import { createRoutes as createApiRoutes } from './api/index.js';
-import { buildPostCases, buildPostHome, buildViewHome } from './views/home/controller.js';
+import { buildPostHome, buildViewHome } from './views/home/controller.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildViewCase } from './views/case/controller.js';
 import { buildViewInspector } from './views/inspector/controller.js';
+import { buildPostCases } from './views/cases/controller.js';
 
 /**
  * @param {import('#service').WebService} service
