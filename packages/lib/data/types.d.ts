@@ -29,3 +29,23 @@ export interface CaseViewModel {
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
 }
+
+export interface Filters {
+	minimumAge?: string;
+	maximumAge?: string;
+}
+
+export interface Case {
+	caseId: string;
+	caseType: string;
+	caseProcedure: string;
+	allocationBand: string;
+	caseLevel: string;
+	siteAddressPostcode: string;
+	lpaName: string;
+	lpaRegion: string;
+	caseStatus: string;
+	caseAge: number;
+	linkedCases: number;
+	finalCommentsDate: Date;
+}
