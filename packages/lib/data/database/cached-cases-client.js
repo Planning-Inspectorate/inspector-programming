@@ -107,4 +107,14 @@ export class CachedCasesClient {
 		if (requestedPage > totalPages) return totalPages;
 		return +requestedPage;
 	}
+
+	/**
+	 * @param c
+	 * @returns {CaseViewModel}
+	 */
+	caseToViewModel(c) {
+		return {
+			...this.#client.caseToViewModel(c)
+		};
+	}
 }
