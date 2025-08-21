@@ -118,6 +118,9 @@ export function buildViewHome(service) {
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');
 
+		// const caseListError = readSessionData(req, 'caseListData', 'errorMessage', null, 'persistence');
+		// clearSessionData(req, 'caseListData', ['errorMessage'], 'persistence');
+
 		return res.render('views/home/view.njk', viewModel);
 	};
 }

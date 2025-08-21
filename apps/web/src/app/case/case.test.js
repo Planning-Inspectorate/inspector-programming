@@ -29,27 +29,31 @@ describe('assignCasesToInspector', () => {
 		await assignCasesToInspector(mockSession, mockService, null, []);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
 		assert.strictEqual(mockService.logger.warn.mock.callCount(), 1);
+		assert.deepStrictEqual(failedCases, []);
 	});
 
 	test('should return without calling cbos when inspector id is blank', async () => {
-		await assignCasesToInspector(mockSession, mockService, '', []);
+		const failedCases = await assignCasesToInspector(mockSession, mockService, '', []);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
 		assert.strictEqual(mockService.logger.warn.mock.callCount(), 1);
+		assert.deepStrictEqual(failedCases, []);
 	});
 
 	test('should update cases when valid inspector id and case id list is given', async () => {
-		await assignCasesToInspector(mockSession, mockService, 'inspector id', ['1', '2', '3']);
+		const failedCases = await assignCasesToInspector(mockSession, mockService, 'inspector id', ['1', '2', '3']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 3);
+		assert.deepStrictEqual(failedCases, []);
 	});
 
 	test('should log when a case fails to be updated', async () => {
 		mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
 			throw new Error();
 		});
-		await assignCasesToInspector(mockSession, mockService, 'inspector id', ['1']);
+		const failedCases = await assignCasesToInspector(mockSession, mockService, 'inspector id', ['1']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockService.logger.error.mock.callCount(), 1);
+		assert.deepStrictEqual(failedCases, ['1']);
 	});
 });
 

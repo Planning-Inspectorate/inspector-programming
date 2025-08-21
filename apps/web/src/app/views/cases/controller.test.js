@@ -1,6 +1,6 @@
 import { beforeEach, describe, mock, test } from 'node:test';
 import assert from 'assert';
-import { buildPostCases } from './controller';
+import { buildPostCases } from './controller.js';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 
 describe('controller.js', () => {
