@@ -62,14 +62,14 @@ function initialiseMap(apiKey, pins, inspector) {
 						{
 							type: 'fields',
 							fieldInfos: [
-								{ fieldName: 'caseType', label: 'Type' },
-								{ fieldName: 'caseLevel', label: 'Allocation Level' },
+								{ fieldName: 'caseAge', label: 'Case age' },
+								{ fieldName: 'lpaName', label: 'LPA name' },
+								{ fieldName: 'caseStatus', label: 'Case status' },
+								{ fieldName: 'siteAddressPostcode', label: 'Site postcode' },
+								{ fieldName: 'specialismList', label: 'Case specialism' },
+								{ fieldName: 'caseType', label: 'Appeal type' },
 								{ fieldName: 'caseProcedure', label: 'Procedure' },
-								{ fieldName: 'siteAddressPostcode', label: 'Postcode' },
-								{ fieldName: 'lpaName', label: 'LPA' },
-								{ fieldName: 'caseAge', label: 'Case Age' },
-								{ fieldName: 'caseStatus', label: 'Status' },
-								{ fieldName: 'specialismList', label: 'Specialisms' }
+								{ fieldName: 'caseLevel', label: 'Allocation level' }
 							]
 						}
 					],
