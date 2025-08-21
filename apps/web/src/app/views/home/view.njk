@@ -451,31 +451,35 @@
             inspectorForm.submit()
         });
 
-      // Add event listener to each tab to submit select inspector form
-      function submitFormForTab (tabId, value) {
-				const tab = document.querySelector(tabId);
-				if (!tab) return;
-				tab.addEventListener('click', (e) => {
-					e.preventDefault();
-					const currentTab = document.getElementById('currentTab');
-					currentTab.value = value;
-					inspectorForm.submit();
-				});
-			}
-
-			// Initialize tabs
-			submitFormForTab ('#tab_outlookView', 'calendar');
-			submitFormForTab ('#tab_inspector', 'inspector');
-
-        if (typeof accessibleAutocomplete !== 'undefined') {
-        accessibleAutocomplete.enhanceSelectElement({
-            selectElement: document.querySelector('#inspectors'),
-            autoselect: false,
-            confirmOnBlur: false,
-            showAllValues: true,
-            displayMenu: 'overlay'
+        window.addEventListener('load', () => {
+            window.scrollTo(0, 0);
         });
-    }
+
+        // Add event listener to each tab to submit select inspector form
+        function submitFormForTab (tabId, value) {
+                    const tab = document.querySelector(tabId);
+                    if (!tab) return;
+                    tab.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const currentTab = document.getElementById('currentTab');
+                        currentTab.value = value;
+                        inspectorForm.submit();
+                    });
+                }
+
+                // Initialize tabs
+                submitFormForTab ('#tab_outlookView', 'calendar');
+                submitFormForTab ('#tab_inspector', 'inspector');
+
+            if (typeof accessibleAutocomplete !== 'undefined') {
+            accessibleAutocomplete.enhanceSelectElement({
+                selectElement: document.querySelector('#inspectors'),
+                autoselect: false,
+                confirmOnBlur: false,
+                showAllValues: true,
+                displayMenu: 'overlay'
+            });
+        }
     });
 </script>
 {% endblock %}
