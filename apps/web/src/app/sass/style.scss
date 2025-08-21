@@ -291,3 +291,17 @@ $font-family: arial, helvetica, sans-serif;
 .margin-top-error {
 	margin-top: 215px;
 }
+
+/* popup content */
+.esri-feature-fields {
+	.esri-widget__table {
+		line-height: 1em;
+	}
+	.esri-feature-fields__field-header {
+		font-weight: bold;
+		width: auto;
+	}
+	.esri-widget__table tr td {
+		width: auto;
+	}
+}
