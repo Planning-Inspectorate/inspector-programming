@@ -5,6 +5,9 @@ import { CasesClient } from './cases-client.js';
 describe('CasesClient', () => {
 	describe('getAllCases', () => {
 		it('returns mapped cases from the db', async () => {
+			const fortyFiveWeeksAgo = new Date();
+			fortyFiveWeeksAgo.setDate(fortyFiveWeeksAgo.getDate() - 45 * 7);
+
 			const mockCases = [
 				{
 					caseReference: 'testref',
@@ -24,7 +27,7 @@ describe('CasesClient', () => {
 					lpaCode: 'Q9999',
 					lpaName: 'Example Local Planning Authority',
 					lpaRegion: null,
-					caseValidDate: new Date('2024-09-05T10:26:11.963Z'),
+					caseValidDate: fortyFiveWeeksAgo,
 					finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
 					linkedCaseStatus: null,
 					leadCaseReference: null,
@@ -50,7 +53,7 @@ describe('CasesClient', () => {
 					lpaCode: 'Q9999',
 					lpaName: 'Other Local Planning Authority',
 					lpaRegion: null,
-					caseValidDate: new Date('2024-09-05T10:26:11.963Z'),
+					caseValidDate: fortyFiveWeeksAgo,
 					finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
 					linkedCaseStatus: null,
 					leadCaseReference: null,
@@ -71,7 +74,7 @@ describe('CasesClient', () => {
 			assert.deepEqual(cases, [
 				{
 					allocationBand: 1,
-					caseAge: 49,
+					caseAge: 45,
 					caseId: 'testref',
 					caseLevel: 'H',
 					caseProcedure: 'inquiry',
@@ -90,7 +93,7 @@ describe('CasesClient', () => {
 				},
 				{
 					allocationBand: 1,
-					caseAge: 49,
+					caseAge: 45,
 					caseId: 'ref2',
 					caseLevel: 'A',
 					caseProcedure: 'written',
