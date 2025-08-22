@@ -451,10 +451,6 @@
             inspectorForm.submit()
         });
 
-        window.addEventListener('load', () => {
-            window.scrollTo(0, 0);
-        });
-
         // Add event listener to each tab to submit select inspector form
         function submitFormForTab (tabId, value) {
                     const tab = document.querySelector(tabId);
@@ -482,4 +478,12 @@
         }
     });
 </script>
+
+{% if errorSummary and errorSummary.length != 0 %}
+    <script>
+        window.addEventListener('load', () => {
+            window.scrollTo(0, 0);
+        });
+    </script>
+{% endif %}
 {% endblock %}
