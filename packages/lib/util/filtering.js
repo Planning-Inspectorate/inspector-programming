@@ -1,5 +1,5 @@
 /**
- * Normalize query params into Filters object
+ * Normalize query params into Filters object for type safety
  * @param {string | import('qs').ParsedQs | (string | import('qs').ParsedQs)[] | undefined} filters
  * @returns {import('../data/types.js').Filters}
  */
@@ -15,17 +15,19 @@ export function normalizeFilters(filters) {
 }
 
 /**
+ * Apply filter object to cases array
  *
  * @param {import('../data/types.js').CaseViewModel[]} cases
  * @param {import('@pins/inspector-programming-lib/data/types.js').Filters} filters
  * @returns
  */
 export function filterCases(cases, filters) {
-	if (!(typeof filters === 'object' && filters !== null && !Array.isArray(filters))) return cases;
+	//sanitise filters object
+	const cleanFilters = !(typeof filters === 'object' && filters !== null && !Array.isArray(filters)) ? {} : filters;
 
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
-		if (!(c.caseAge >= +(filters.minimumAge || 0) && c.caseAge <= +(filters.maximumAge || 999))) return false;
+		if (!(c.caseAge >= +(cleanFilters.minimumAge || 0) && c.caseAge <= +(cleanFilters.maximumAge || 999))) return false;
 		return true;
 	});
 }
@@ -35,6 +37,7 @@ export function filterCases(cases, filters) {
  */
 
 /**
+ *	Validates filter object and returns any errors back to display to client under their respective filter field
  *
  * @param {import('@pins/inspector-programming-lib/data/types.js').Filters} filters
  * @returns {ValidationErrors}
