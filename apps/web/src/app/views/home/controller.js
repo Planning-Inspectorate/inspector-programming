@@ -15,7 +15,7 @@ import { parse as parseUrl } from 'url';
 import { normalizeFilters, validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-import { clearSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { clearSessionData } from '@pins/inspector-programming-lib/util/session.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -110,7 +110,7 @@ export function buildViewHome(service) {
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: query.sort }, 'persistence');
 		const caseListError = readSessionData(req, 'caseListData', 'errorMessage', null, 'persistence');
-		clearSessionData(req, 'caseListData', ['errorMessage'], 'persistence');
+		clearSessionData(req, 'caseListData', ['selectedCases'], 'persistence');
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',
@@ -137,7 +137,6 @@ export function buildViewHome(service) {
 			caseTypes,
 			inspectorError,
 			calendarError,
-			caseListError,
 			errorSummary
 		});
 	};

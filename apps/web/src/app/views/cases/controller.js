@@ -18,12 +18,23 @@ export function buildPostCases(service) {
 		let updateCasesResult = {};
 		if (failedCases.length > 0) {
 			updateCasesResult = {
-				errorMessage: 'Unable to update case, please try again. If it does not work, please contact the support team.'
+				selectedCases: failedCases
 			};
+
 			addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
-		} else {
-			clearSessionData(req, 'caseListData', ['errorMessage'], 'persistence');
+
+			const viewData =
+				failedCases.length == selectedCases.length
+					? {
+							bodyCopy: 'Try again later. The following cases were not assigned.',
+							failedCases: failedCases
+						}
+					: {};
+
+			return res.render('views/errors/500.njk', viewData);
 		}
+
+		clearSessionData(req, 'caseListData', ['selectedCases'], 'persistence');
 
 		const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
 
