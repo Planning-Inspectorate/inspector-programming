@@ -119,7 +119,7 @@ export function buildViewHome(service) {
 		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');
 
 		// const caseListError = readSessionData(req, 'caseListData', 'errorMessage', null, 'persistence');
-		// clearSessionData(req, 'caseListData', ['errorMessage'], 'persistence');
+		// clearSessionData(req, 'caseListData', ['selectedCases'], 'persistence');
 
 		return res.render('views/home/view.njk', viewModel);
 	};

@@ -4,6 +4,26 @@
 
 {% block pageContent %}
 	<p class="govuk-body">{{ bodyCopy if bodyCopy else 'Try again later.' }}</p>
+	{% if failedCases %}
+		{% if failedCases.length > 5 %}
+			{% set column1Count = 5 %}
+		{% else %}
+			{% set column1Count = failedCases.length %}
+		{% endif %}
+
+		<div class="case-id-columns">
+			<div>
+				{% for i in range(column1Count)%}
+					<p class="govuk-body">{{failedCases[i]}}</p>
+				{% endfor %}
+			</div>
+			<div>
+				{% for i in range (5, failedCases.length) %}
+					<p class="govuk-body">{{failedCases[i]}}</p>
+				{% endfor %}
+			</div>
+		</div>
+	{% endif %}
 	{%- for additionalCta in additionalCtas -%}
 		<p class="govuk-body">
 			<a href="{{ additionalCta.href }}" class="govuk-link">{{ additionalCta.text }}</a>
@@ -11,7 +31,7 @@
 	{%- endfor -%}
 	{%- if not hideDefaultCta -%}
 		<p class="govuk-body">
-			<a href="https://has-appeal.herokuapp.com/help/contact" class="govuk-link">Contact the Planning Inspectorate Customer Support</a> if the problem persists.
+			<a href="https://has-appeal.herokuapp.com/help/contact" class="govuk-link">Contact the Planning Inspectorate Customer Support</a> if you continue to experience problems with the service.
 		</p>
 	{%- endif -%}
 
