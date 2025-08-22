@@ -30,6 +30,18 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
  * @property {number} linkedCases - The number of linked cases.
  * @property {Date} finalCommentsDate - The date of the final comments.
  */
+
+//LINK TO FILTERS TYPE AFTER THAT GETS MERGED IN
+//		 * @property {import('@pins/inspector-programming-lib/data/types.js').Filters} filters
+/**
+ * @typedef {Object} PageData
+ * @property {Object} filters
+ * @property {number} limit
+ * @property {number} page
+ * @property {string} sort
+ * @property {string} inspectorId
+ */
+
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
@@ -72,14 +84,15 @@ export function buildViewHome(service) {
 
 		const filteredCases = errorList.length ? cases : filterCases(cases, filters);
 
-		const formData = {
+		/** @type { FormData } */
+		const pageData = {
 			filters,
 			limit,
 			page,
-			sort: req.query.sort || 'age',
-			inspectorId: req.query.inspectorId
+			sort: String(req.query.sort) || 'age',
+			inspectorId: String(req.query.inspectorId)
 		};
-		const paginationDetails = handlePagination(req, total, formData);
+		const paginationDetails = handlePagination(req, total, pageData);
 		/**
 		 * @type {import("../../calendar/types.js").Event[]}
 		 */
@@ -130,7 +143,7 @@ export function buildViewHome(service) {
 			title: 'Unassigned case list',
 			cases: filteredCases.map(caseViewModel),
 			inspectors,
-			data: formData,
+			data: pageData,
 			apiKey: service.osMapsApiKey,
 			inspectorPin: {
 				...selectedInspector,
@@ -273,13 +286,14 @@ export function buildPostHome(service) {
 /**
  * @param {import('express').Request} req
  * @param {number} total
- * @param {Object} formData
+ * @param {PageData} pageData
  * @returns {Object}
  */
-export function handlePagination(req, total, formData) {
-	const page = formData.page;
-	const limit = formData.limit;
+export function handlePagination(req, total, pageData) {
+	const limit = pageData.limit;
 	const totalPages = Math.max(1, Math.ceil(total / limit));
+	//if desired page exceeds total pages, fallback to highest available page
+	const page = pageData.page > totalPages ? totalPages : pageData.page;
 
 	const params = { ...req.query, page: undefined };
 
