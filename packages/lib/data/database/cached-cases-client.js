@@ -1,5 +1,6 @@
 import { CasesClient } from './cases-client.js';
 import { sortCasesByAge } from '../../util/sorting.js';
+import { filterCases } from '../../util/filtering.js';
 
 const CACHE_PREFIX = 'cases_';
 
@@ -41,27 +42,31 @@ export class CachedCasesClient {
 	 * Fetches all cases from cache if there, then applies sort and filtering (TODO) before paginating the resultant cases
 	 * Ideal entry point for fetching cases from the frontend
 	 *
+	 * @param {import('../types.js').Filters} filters
 	 * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
 	 * @param {number} page
 	 * @param {number} pageSize
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
 	 */
-	async getCases(sort, page, pageSize) {
+	async getCases(filters, sort, page, pageSize) {
 		const allCases = await this.getAllCases();
+
+		//filter
+		const filteredCases = filterCases(allCases, filters);
 
 		//sort
 		let sortedCases;
 		switch (sort) {
 			case 'distance':
 				//WIP
-				sortedCases = allCases;
+				sortedCases = filteredCases;
 				break;
 			case 'hybrid':
 				//WIP
-				sortedCases = allCases;
+				sortedCases = filteredCases;
 				break;
 			default:
-				sortedCases = allCases.sort(sortCasesByAge);
+				sortedCases = filteredCases.sort(sortCasesByAge);
 				break;
 		}
 

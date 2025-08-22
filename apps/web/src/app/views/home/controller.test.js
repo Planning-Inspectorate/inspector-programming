@@ -2,7 +2,6 @@ import { describe, mock, test } from 'node:test';
 import {
 	buildViewHome,
 	caseViewModel,
-	filterCases,
 	getCaseColor,
 	sortCases,
 	handlePagination,
@@ -93,35 +92,6 @@ describe('controller.js', () => {
 				firstName: '',
 				lastName: ''
 			});
-		});
-	});
-	describe('filterCases', () => {
-		test('should return all cases if no filters are applied', () => {
-			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
-			const filters = {};
-			const filteredCases = filterCases(cases, filters);
-			assert.strictEqual(filteredCases.length, 3, 'Should return all cases when no filters are applied');
-		});
-		test('should filter cases by minimum age', () => {
-			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
-			const filters = { minimumAge: 15 };
-			const filteredCases = filterCases(cases, filters);
-			assert.strictEqual(filteredCases.length, 2, 'Should return cases with age >= 15');
-			assert.deepStrictEqual(filteredCases, [{ caseAge: 30 }, { caseAge: 20 }]);
-		});
-		test('should filter cases by maximum age', () => {
-			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
-			const filters = { maximumAge: 20 };
-			const filteredCases = filterCases(cases, filters);
-			assert.strictEqual(filteredCases.length, 2, 'Should return cases with age <= 20');
-			assert.deepStrictEqual(filteredCases, [{ caseAge: 10 }, { caseAge: 20 }]);
-		});
-		test('should filter cases by both minimum and maximum age', () => {
-			const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
-			const filters = { minimumAge: 15, maximumAge: 25 };
-			const filteredCases = filterCases(cases, filters);
-			assert.strictEqual(filteredCases.length, 1, 'Should return cases with age between 15 and 25');
-			assert.deepStrictEqual(filteredCases, [{ caseAge: 20 }]);
 		});
 	});
 	describe('getCaseColor', () => {

@@ -29,3 +29,8 @@ export interface CaseViewModel {
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
 }
+
+export interface Filters {
+	minimumAge?: string;
+	maximumAge?: string;
+}
