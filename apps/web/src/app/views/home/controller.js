@@ -53,6 +53,7 @@ export function buildViewHome(service) {
 				...s,
 				validFrom: formatDateForDisplay(s.validFrom, { format: 'dd/MM/yyyy' })
 			}));
+			inspectorData.caseSpecialisms = inspectorData.Specialisms.map((specialism) => specialism.name).join(', ');
 		}
 
 		// Convert the raw query string into a nested object

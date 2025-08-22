@@ -103,9 +103,8 @@ function initialiseMap(apiKey, pins, inspector) {
 			const inspectorTooltip = {
 				title: `Inspector: ${inspectorData.firstName} ${inspectorData.lastName}`,
 				content: `
-                        <strong>Address:</strong> ${inspectorData.address}<br>
+                        <strong>Postcode:</strong> ${inspectorData.postcode}<br>
                         <strong>Grade:</strong> ${inspectorData.grade}<br>
-                        <strong>FTE:</strong> ${inspectorData.fte}<br>
                         <strong>Specialisms:</strong> ${inspectorData.caseSpecialisms}<br>
                     `
 			};
