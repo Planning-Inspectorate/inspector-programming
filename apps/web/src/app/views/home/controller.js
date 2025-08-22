@@ -89,15 +89,13 @@ export function buildViewHome(service) {
 					});
 				}
 			}
-		} else {
-			calendarError = 'No Inspector Selected. Please select an Inspector from the drop down to see this information.';
-			if (['calendar', 'inspector'].includes(req.query.currentTab)) {
-				inspectorError = calendarError;
-				errorSummary.push({
-					text: calendarError,
-					href: '#inspectors'
-				});
-			}
+		} else if (['calendar', 'inspector'].includes(req.query.currentTab)) {
+			calendarError = '';
+			inspectorError = 'Select an inspector';
+			errorSummary.push({
+				text: inspectorError,
+				href: '#inspectors'
+			});
 		}
 
 		const currentStartDate = req.query.calendarStartDate
