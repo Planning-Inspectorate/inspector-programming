@@ -149,7 +149,7 @@ export function getCaseColor(caseAge) {
 
 /**
  *
- * @param {import('@pins/inspector-programming-lib/data/types.js').Case[]} cases
+ * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} cases
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
  * @returns
  */
