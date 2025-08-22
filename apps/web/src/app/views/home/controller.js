@@ -59,9 +59,6 @@ export function buildViewHome(service) {
 
 		const { cases, total } = await service.casesClient.getCases(filters, String(query.sort), page, limit);
 
-		//const filteredCases = filterErrorList.length ? cases : filterCases(cases, query.filters);
-		const filteredCases = cases;
-
 		const formData = {
 			filters,
 			limit,
@@ -118,7 +115,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Unassigned case list',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			cases: filteredCases.map(caseViewModel),
+			cases: cases.map(caseViewModel),
 			inspectors,
 			data: formData,
 			apiKey: service.osMapsApiKey,
