@@ -14,6 +14,7 @@ import {
 import { parse as parseUrl } from 'url';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { assignCasesToInspector } from '../../case/case.js';
 
 /**
  * @typedef {Object} Case
@@ -337,4 +338,18 @@ export function createPaginationItems(page, totalPages, params) {
 	}
 
 	return items;
+}
+
+/**
+ * @param {import('#service').WebService} service
+ * @returns {import('express').Handler}
+ */
+export function buildPostCases(service) {
+	return async (req, res) => {
+		let selectedCases = Array.isArray(req.body.selectedCases) ? req.body.selectedCases : [req.body.selectedCases];
+
+		await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCases);
+		const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
+		return res.redirect(redirectUrl);
+	};
 }
