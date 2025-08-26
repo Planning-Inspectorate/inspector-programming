@@ -144,6 +144,6 @@ export class CachedCasesClient {
 			this.#cache.set(key, cases);
 		}
 
-		return cases.find((/** @type {{ id: string; }} */ item) => item.id == caseId);
+		return cases.find((/** @type {{ caseId: string; }} */ item) => item.caseId == caseId);
 	}
 }
