@@ -44,3 +44,37 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 
 	return failedCases;
 }
+
+/**
+ * @param {string[]} caseIds
+ * @param {import('#service').WebService} service
+ * @returns {Promise<string[]>}
+ */
+export async function getCaseAndLinkedCasesIds(caseIds, service) {
+	for (const caseId of caseIds) {
+		const appeal = await service.casesClient.getCaseById(caseId);
+		if (appeal.linkedCaseStatus == 'parent') {
+			const linkedCasesIds = await getLinkedCaseIdsOfParentId(caseId, service);
+			caseIds = caseIds.concat(linkedCasesIds);
+		}
+	}
+
+	return caseIds;
+}
+
+/**
+ *
+ * @param {string} parentId
+ * @param {import('#service').WebService} service
+ */
+export async function getLinkedCaseIdsOfParentId(parentId, service) {
+	const caseIds = [];
+	const linkedCases = await service.casesClient.getLinkedCasesByParentCaseId(parentId);
+	for (const linkedCase of linkedCases) {
+		if (linkedCase.caseId) {
+			caseIds.push(linkedCase.caseId);
+		}
+	}
+
+	return caseIds;
+}

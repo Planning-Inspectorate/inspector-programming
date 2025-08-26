@@ -28,6 +28,11 @@ export interface CaseViewModel {
 	linkedCaseReferences: string[];
 	caseReceivedDate: Date | null;
 	finalCommentsDate: Date | string;
+	linkedCases: number;
+	linkedCaseStatus: string | null;
+	caseReceivedDate: Date | null;
+	finalCommentsDate: Date;
+	selected: boolean | null;
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
 	leadCaseReference: string | null;
