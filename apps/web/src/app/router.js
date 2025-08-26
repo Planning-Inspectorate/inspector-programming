@@ -54,7 +54,6 @@ export function buildRouter(service) {
 	const postCases = buildPostCases(service);
 	const viewInspector = buildViewInspector(); // TODO - pass service as param (currently unused)
 
-	// selectedCases, inspectorId (req.body)
 	router.get('/', asyncHandler(viewHome));
 	router.post('/cases', asyncHandler(postCases));
 	router.post('/', asyncHandler(postHome));
