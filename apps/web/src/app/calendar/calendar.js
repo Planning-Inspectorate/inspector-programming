@@ -7,7 +7,7 @@ const timeZone = tz(timeZoneName);
 /**
  *
  * @param {import('@pins/inspector-programming-lib/graph/types.js').InitEntraClient} initEntraClient
- * @param {import('src/app/inspector/types.js').Inspector} selectedInspector
+ * @param {import('@pins/inspector-programming-lib/data/types').Inspector} selectedInspector
  * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
  * @param {import('pino').Logger} logger
  * @returns {Promise<import("./types").Event[]>}

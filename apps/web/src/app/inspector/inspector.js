@@ -23,7 +23,7 @@ export async function getInspectorDetails(db, entraId) {
  * @param {import("@pins/inspector-programming-lib/graph/types").AuthSession} authSession
  * @param {import('pino').Logger} logger
  * @param {string} groupId
- * @returns {Promise<import("./types").Inspector[]>}
+ * @returns {Promise<import("@pins/inspector-programming-lib/data/types").Inspector[]>}
  */
 export async function fetchInspectorList(initEntraClient, authSession, logger, groupId) {
 	const client = initEntraClient(authSession);
@@ -42,7 +42,7 @@ export async function fetchInspectorList(initEntraClient, authSession, logger, g
  * @param {import("@pins/inspector-programming-lib/graph/types").AuthSession} authSession
  * @param {import('pino').Logger} logger
  * @param {string} groupId
- * @returns {Promise<import("./types").Inspector[]>}
+ * @returns {Promise<import("@pins/inspector-programming-lib/data/types").Inspector[]>}
  */
 export async function getSortedInspectorList(initEntraClient, authSession, logger, groupId) {
 	const inspectorList = await fetchInspectorList(initEntraClient, authSession, logger, groupId);
@@ -55,7 +55,7 @@ export async function getSortedInspectorList(initEntraClient, authSession, logge
  * @param {import('pino').Logger} logger
  * @param {string} groupId
  * @param {string} id
- * @returns {Promise<import("./types").Inspector|undefined>}
+ * @returns {Promise<import("@pins/inspector-programming-lib/data/types").Inspector|undefined>}
  */
 export async function getInspectorById(initEntraClient, authSession, logger, groupId, id) {
 	const inspectorList = await fetchInspectorList(initEntraClient, authSession, logger, groupId);
@@ -65,11 +65,11 @@ export async function getInspectorById(initEntraClient, authSession, logger, gro
 /**
  * @param {import('#service').WebService} service
  * @param {import("../auth/session.service").SessionWithAuth} authSession
- * @returns {Promise<import("./types").Inspector[]>}
+ * @returns {Promise<import("@pins/inspector-programming-lib/data/types").Inspector[]>}
  */
 export async function getInspectorList(service, authSession) {
 	/**
-	 * @type {(import("./types.js").Inspector)[]}
+	 * @type {(import("@pins/inspector-programming-lib/data/types").Inspector)[]}
 	 */
 	let inspectors = [];
 
@@ -100,7 +100,7 @@ export async function getInspectorList(service, authSession) {
 }
 
 /**
- * @param {import("./types").Inspector[]} inspectorList
+ * @param {import("@pins/inspector-programming-lib/data/types").Inspector[]} inspectorList
  */
 function sortInspectorList(inspectorList) {
 	return inspectorList.toSorted((a, b) => {
@@ -113,7 +113,7 @@ function sortInspectorList(inspectorList) {
 
 /**
  * @param {import("@pins/inspector-programming-lib/graph/types").GroupMember} groupMember
- * @returns {import("./types").Inspector}
+ * @returns {import("@pins/inspector-programming-lib/data/types").Inspector}
  */
 function mapToInspector(groupMember) {
 	return {
