@@ -24,7 +24,10 @@ import { clearSessionData } from '@pins/inspector-programming-lib/util/session.j
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
-		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
+		const inspectorId = req.query.inspectorId
+			? req.query.inspectorId
+			: readSessionData(req, 'caseListData', 'inspectorId', null, 'persistence');
+		const selectedInspector = inspectors.find((i) => inspectorId === i.id);
 		const inspectorData =
 			selectedInspector &&
 			(await service.db.inspector.findFirst({
@@ -66,7 +69,7 @@ export function buildViewHome(service) {
 			limit,
 			page,
 			sort: req.query.sort || 'age',
-			inspectorId: req.query.inspectorId
+			inspectorId
 		};
 		const paginationDetails = handlePagination(req, total, formData);
 		/**
@@ -107,10 +110,21 @@ export function buildViewHome(service) {
 		const calendarGrid = generateCalendar(currentStartDate, calendarEvents);
 		const weekTitle = generateWeekTitle(currentStartDate);
 
+		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
+		for (let caseId of selectedCaseIds) {
+			let caseIndex = filteredCases.findIndex((item) => item.caseId == caseId);
+			if (caseIndex != -1) {
+				filteredCases[caseIndex].selected = true;
+			}
+		}
+
+		const assignmentDate = readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence');
+
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: query.sort }, 'persistence');
-		const caseListError = readSessionData(req, 'caseListData', 'errorMessage', null, 'persistence');
-		clearSessionData(req, 'caseListData', ['selectedCases'], 'persistence');
+
+		//clear session data passed on from /cases
+		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',
@@ -137,7 +151,8 @@ export function buildViewHome(service) {
 			caseTypes,
 			inspectorError,
 			calendarError,
-			errorSummary
+			errorSummary,
+			assignmentDate
 		});
 	};
 }

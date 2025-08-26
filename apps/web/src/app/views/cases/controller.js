@@ -1,5 +1,5 @@
 import { addSessionData, clearSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import { assignCasesToInspector } from '../../case/case.js';
+import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -13,18 +13,21 @@ export function buildPostCases(service) {
 			selectedCases = Array.isArray(req.body.selectedCases) ? req.body.selectedCases : [req.body.selectedCases];
 		}
 
-		const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCases);
+		const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
+		const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
 		let updateCasesResult = {};
 		if (failedCases.length > 0) {
 			updateCasesResult = {
-				selectedCases: failedCases
+				selectedCases: failedCases,
+				inspectorId: req.body.inspectorId,
+				assignmentDate: req.body.assignmentDate
 			};
 
 			addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
 
 			const viewData =
-				failedCases.length == selectedCases.length
+				failedCases.length == selectedCaseIds.length
 					? {
 							bodyCopy: 'Try again later. The following cases were not assigned.',
 							failedCases: failedCases
@@ -34,7 +37,7 @@ export function buildPostCases(service) {
 			return res.render('views/errors/500.njk', viewData);
 		}
 
-		clearSessionData(req, 'caseListData', ['selectedCases'], 'persistence');
+		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
 
 		const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
 
