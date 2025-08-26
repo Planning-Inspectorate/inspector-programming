@@ -1,5 +1,5 @@
 import { CasesClient } from './cases-client.js';
-import { sortCasesByAge } from '../../util/sorting.js';
+import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
 
 const CACHE_PREFIX = 'cases_';
@@ -56,10 +56,11 @@ export class CachedCasesClient {
 
 		//sort
 		let sortedCases;
+		const inspectorCoordinates = { lat: 51.5074, lng: -0.1278 }; //example coords for London
 		switch (sort) {
 			case 'distance':
 				//WIP
-				sortedCases = filteredCases;
+				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(inspectorCoordinates, a, b));
 				break;
 			case 'hybrid':
 				//WIP
