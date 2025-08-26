@@ -80,8 +80,7 @@ export function buildViewHome(service) {
 				calendarEvents = await getSimplifiedEvents(service.entraClient, selectedInspector, req.session, service.logger);
 			} catch (error) {
 				service.logger.error(error, 'Failed to fetch calendar events');
-				calendarError =
-					"Can't view this calendar. Please contact the inspector to ensure their calendar is shared with you.";
+				calendarError = 'Contact Inspector to ensure this calendar is shared with you';
 				if (req.query.currentTab == 'calendar') {
 					errorSummary.push({
 						text: calendarError,
