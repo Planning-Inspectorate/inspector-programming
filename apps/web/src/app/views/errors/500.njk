@@ -31,9 +31,13 @@
 	{%- endfor -%}
 	{%- if not hideDefaultCta -%}
 		<p class="govuk-body">
-			<a href="https://has-appeal.herokuapp.com/help/contact" class="govuk-link">Contact the Planning Inspectorate Customer Support</a> if you continue to experience problems with the service.
+			<a href="https://intranet.planninginspectorate.gov.uk/task/report-it-problem/" class="govuk-link">Littlefish service desk</a> if the problem persists.
 		</p>
 	{%- endif -%}
+
+	<p class="govuk-body">
+		<a href="/" class="govuk-link">Back to case list</a>
+	</p>
 
 	{% if error and isDevelopment %}
 		<hr>

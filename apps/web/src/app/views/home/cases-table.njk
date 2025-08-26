@@ -7,7 +7,7 @@
             { html: govukCheckboxes({
                 name: "selectedCases",
                 classes: "govuk-checkboxes--small",
-                items: [{ value: c.caseId, text: " ", checked: false }]
+                items: [{ value: c.caseId, text: " ", checked: c.selected }]
             }) },
             { html: '<a href="/case/' + c.caseId + '?inspectorId=' + filters.query.inspectorId + '" class="govuk-link">' + c.caseId + '</a>' },
             { text: c.caseType },
