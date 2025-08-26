@@ -9,6 +9,7 @@ import {
 } from '../../calendar/calendar.js';
 import { parse as parseUrl } from 'url';
 import { normalizeFilters, validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
+import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view-model.js';
 
@@ -19,6 +20,7 @@ import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
+		/** @type {import('@pins/inspector-programming-lib/data/types.js').Inspector | undefined} */
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const selectedInspectorDetails = await getInspectorDetails(service.db, selectedInspector?.id);
 
@@ -32,11 +34,18 @@ export function buildViewHome(service) {
 
 		//parse filters query param as expected Filters type
 		let filters = normalizeFilters(query.filters);
-		//validate filters and return any errors to client
+
+		//validate filters
 		const filterErrors = validateFilters(filters);
 		const filterErrorList = Object.values(filterErrors);
 		//if filters are invalid then apply none
 		if (filterErrorList.length) filters = {};
+
+		//validate sort
+		const sortingErrors = validateSorts(String(query.sort), selectedInspector);
+		const sortingErrorList = Object.values(sortingErrors).map((message) => ({ ...message, href: `#` }));
+		//if sort is invalid then sort by age by default
+		if (sortingErrorList.length) query.sort = 'age';
 
 		const { cases, total } = await service.casesClient.getCases(filters, String(query.sort), page, limit);
 

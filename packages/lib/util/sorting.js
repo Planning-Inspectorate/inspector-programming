@@ -1,4 +1,18 @@
 /**
+ * Any checks to apply before sorting will go here
+ * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @param {import('../data/types').Inspector | undefined} selectedInspector
+ * @returns {{ text: string }[]}
+ */
+export function validateSorts(sort, selectedInspector) {
+	const errors = [];
+	if (sort === 'distance') {
+		if (!selectedInspector) errors.push({ text: 'An inspector must be selected before sorting by distance.' });
+	}
+	return errors;
+}
+
+/**
  * Sort function that sorts two cases using the default age algorithm
  * First sorts oldest caseAge first, then if those match sorts oldest caseReceivedDate first, then if those match sorts using lpaName alphabetically
  *
