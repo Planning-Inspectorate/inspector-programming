@@ -229,6 +229,12 @@
         {% set casesTable %}
         <div style="margin: 0; padding: 0;">
             <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">  
+                {% if sortingErrorList.length %}
+                    {{ govukErrorSummary({
+                        titleText: "Sort could not be applied",
+                        errorList: sortingErrorList
+                    }) }}
+                {% endif %}
                 <div style="margin-bottom: 10px;">
                     <span class="govuk-body" style="margin-right: 10px;">Sort by:</span>
                     {% set sorts = [
