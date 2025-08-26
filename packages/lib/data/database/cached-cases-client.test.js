@@ -42,12 +42,12 @@ describe('cached-cases-client', () => {
 		it('should return case by case id', async () => {
 			const mockClient = {};
 			const mockCache = {
-				get: mock.fn(() => [{ id: '1' }, { id: '2' }, { id: '3' }])
+				get: mock.fn(() => [{ caseId: '1' }, { caseId: '2' }, { caseId: '3' }])
 			};
 			const cacheClient = new CachedCasesClient(mockClient, mockCache);
 			const appeal = await cacheClient.getCaseById('2');
 			assert.strictEqual(mockCache.get.mock.callCount(), 1);
-			assert.deepStrictEqual(appeal, { id: '2' });
+			assert.deepStrictEqual(appeal, { caseId: '2' });
 		});
 
 		it('should return linked cases by lead case reference', async () => {
