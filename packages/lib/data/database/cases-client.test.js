@@ -82,6 +82,7 @@ describe('CasesClient', () => {
 					caseStatus: 'lpa_questionnaire',
 					caseType: 'W',
 					linkedCases: 0,
+					linkedCaseStatus: null,
 					lpaName: 'Example Local Planning Authority',
 					lpaRegion: '',
 					siteAddressPostcode: 'SY10 7FA',
@@ -106,6 +107,7 @@ describe('CasesClient', () => {
 					lpaName: 'Other Local Planning Authority',
 					lpaRegion: '',
 					linkedCases: 0,
+					linkedCaseStatus: null,
 					finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 					specialisms: undefined,
 					specialismList: 'None'
