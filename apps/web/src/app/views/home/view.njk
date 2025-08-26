@@ -82,10 +82,10 @@
                     </div>
                 </div>
                 <form id="filter-form" method="get" novalidate>
-                    {% if errorList.length %}
+                    {% if filterErrorList.length %}
                         {{ govukErrorSummary({
                         titleText: "Filters could not be applied",
-                        errorList: errorList
+                        errorList: filterErrorList
                         }) }}
                     {% endif %}
                     <button class="govuk-button" data-module="govuk-button">
