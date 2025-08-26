@@ -109,10 +109,41 @@ export class CachedCasesClient {
 	}
 
 	/**
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
-	 * @returns {import('../types.js').CaseViewModel}
+	 * @param c
+	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
 		return this.#client.caseToViewModel(c);
+	}
+	
+	/**
+	 *
+	 * @param {string} caseId
+	 * @returns {Promise<import('../types').CaseViewModel[]>}
+	 */
+	async getLinkedCasesByParentCaseId(caseId) {
+		const key = CACHE_PREFIX + 'getAllCases';
+		let cases = this.#cache.get(key);
+		if (!cases) {
+			cases = await this.#client.getAllCases();
+			this.#cache.set(key, cases);
+		}
+		return cases.filter((/** @type {{ leadCaseReference: string; }} */ item) => item.leadCaseReference == caseId);
+	}
+
+	/**
+	 *
+	 * @param {string} caseId
+	 * @returns {Promise<import('../types').CaseViewModel>}
+	 */
+	async getCaseById(caseId) {
+		const key = CACHE_PREFIX + 'getAllCases';
+		let cases = this.#cache.get(key);
+		if (!cases) {
+			cases = await this.#client.getAllCases();
+			this.#cache.set(key, cases);
+		}
+
+		return cases.find((/** @type {{ id: string; }} */ item) => item.id == caseId);
 	}
 }

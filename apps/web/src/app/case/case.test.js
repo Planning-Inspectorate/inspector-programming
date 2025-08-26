@@ -1,5 +1,5 @@
 import { beforeEach, describe, test, mock } from 'node:test';
-import { assignCasesToInspector, getCaseDetails } from './case.js';
+import { assignCasesToInspector, getCaseAndLinkedCasesIds, getLinkedCaseIdsOfParentId, getCaseDetails } from './case.js';
 import assert from 'assert';
 
 const mockSession = {};
@@ -13,20 +13,29 @@ const mockCbosApiClient = {
 const mockGetCbosApiClientForSession = mock.fn();
 mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 
+const mockGetLinkedCasesByParentCaseId = mock.fn();
+const mockGetCaseById = mock.fn();
+
 const mockService = {
 	logger: mockLogger,
-	getCbosApiClientForSession: mockGetCbosApiClientForSession
+	getCbosApiClientForSession: mockGetCbosApiClientForSession,
+	casesClient: {
+		getLinkedCasesByParentCaseId: mockGetLinkedCasesByParentCaseId,
+		getCaseById: mockGetCaseById
+	}
 };
 
 beforeEach(() => {
 	mockGetCbosApiClientForSession.mock.resetCalls();
+	mockGetLinkedCasesByParentCaseId.mock.resetCalls();
+	mockGetCaseById.mock.resetCalls();
 	mockService.logger.error.mock.resetCalls();
 	mockService.logger.warn.mock.resetCalls();
 });
 
 describe('assignCasesToInspector', () => {
 	test('should return without calling cbos when inspector id is null', async () => {
-		await assignCasesToInspector(mockSession, mockService, null, []);
+		const failedCases = await assignCasesToInspector(mockSession, mockService, null, []);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
 		assert.strictEqual(mockService.logger.warn.mock.callCount(), 1);
 		assert.deepStrictEqual(failedCases, []);
@@ -54,6 +63,38 @@ describe('assignCasesToInspector', () => {
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockService.logger.error.mock.callCount(), 1);
 		assert.deepStrictEqual(failedCases, ['1']);
+	});
+
+	test('should get all linked cases ids from parent case id', async () => {
+		const linkedCases = [{ caseId: '1' }, { caseId: '2' }, { caseId: '3' }];
+		const expectedLinkedCaseIds = ['1', '2', '3'];
+		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
+		const linkedCasesIds = await getLinkedCaseIdsOfParentId('caseId', mockService);
+		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
+		assert.deepStrictEqual(linkedCasesIds, expectedLinkedCaseIds);
+	});
+
+	test('should add linked cases ids to parent case ids list', async () => {
+		const caseIds = ['1'];
+		const appeal = { caseIds: '1', linkedCaseStatus: 'parent' };
+		const linkedCases = [{ caseId: '2' }, { caseId: '3' }, { caseId: '4' }];
+		const expectedCaseIds = ['1', '2', '3', '4'];
+		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
+		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
+		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
+		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
+		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
+		assert.deepStrictEqual(casesIdsList, expectedCaseIds);
+	});
+
+	test('should not add linked if linked case status is child', async () => {
+		const caseIds = ['1'];
+		const appeal = { caseIds: '1', linkedCaseStatus: 'child' };
+		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
+		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
+		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 0);
+		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
+		assert.deepStrictEqual(casesIdsList, caseIds);
 	});
 });
 
