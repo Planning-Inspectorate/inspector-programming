@@ -79,3 +79,8 @@ export interface LocationPreclusion {
 export interface OrganisationPreclusion {
 	organisation: string;
 }
+
+export interface Coordinates {
+	lat: number | null;
+	lng: number | null;
+}

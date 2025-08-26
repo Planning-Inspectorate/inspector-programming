@@ -1,3 +1,5 @@
+import { distanceBetween } from './distances.js';
+
 /**
  * Any checks to apply before sorting will go here
  * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
@@ -45,4 +47,23 @@ export function sortCasesByAge(caseA, caseB) {
 
 	//otherwise compare normally
 	return (caseA.lpaName || '').localeCompare(caseB.lpaName || '', undefined, { sensitivity: 'base' });
+}
+
+/**
+ *	Sort function that sorts two cases using distance from an inspector's postcode
+ *	If the distance is equal then falls back to the default age sort
+ * @param {import('../data/types').Coordinates} inspectorCoordinates
+ * @param {import('../data/types').CaseViewModel} caseA
+ * @param {import('../data/types').CaseViewModel} caseB
+ * @return {number}
+ */
+export function sortCasesByDistance(inspectorCoordinates, caseA, caseB) {
+	const [distA, distB] = [
+		distanceBetween(inspectorCoordinates, { lat: caseA.siteAddressLatitude, lng: caseA.siteAddressLongitude }),
+		distanceBetween(inspectorCoordinates, { lat: caseB.siteAddressLatitude, lng: caseB.siteAddressLongitude })
+	];
+	if (distA !== null && distB !== null) return distA === distB ? sortCasesByAge(caseA, caseB) : distA - distB;
+	if (distA !== null) return -1;
+	if (distB !== null) return 1;
+	return 0;
 }
