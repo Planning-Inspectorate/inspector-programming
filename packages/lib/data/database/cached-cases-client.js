@@ -75,6 +75,15 @@ export class CachedCasesClient {
 	}
 
 	/**
+	 * Fetch the total count of cases in the database
+	 * leverages caching so can be used frequently alongside other members of this class without performance issues
+	 */
+	async getCasesCount() {
+		const allCases = await this.getAllCases();
+		return allCases?.length || 0;
+	}
+
+	/**
 	 * Fetch all appeals cases currently held in the database
 	 *
 	 * @returns {Promise<import('../types').CaseViewModel[]>}

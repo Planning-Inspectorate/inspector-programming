@@ -36,8 +36,13 @@ export function buildViewHome(service) {
 
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
 
-		const page = req.query.page && (query.sort || 'age') === lastSort ? parseInt(req.query.page) : 1;
+		//fetch total cases count early to help determine page number - cached cases will be used for the subsequent getCases call
+		const total = await service.casesClient.getCasesCount();
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+		/** @type {string} */
+		const sort = query.sort ? String(query.sort) : 'age';
+
+		const page = determinePage(Number(query.page), sort, lastSort, getTotalPages(total, limit));
 
 		//parse filters query param as expected Filters type
 		let filters = normalizeFilters(query.filters);
@@ -47,15 +52,15 @@ export function buildViewHome(service) {
 		//if filters are invalid then apply none
 		if (filterErrorList.length) filters = {};
 
-		const { cases, total } = await service.casesClient.getCases(filters, String(query.sort), page, limit);
+		const { cases } = await service.casesClient.getCases(filters, sort, page, limit);
 
-		/** @type { FormData } */
+		/** @type { PageData } */
 		const pageData = {
 			filters,
 			limit,
 			page,
-			sort: String(req.query.sort) || 'age',
-			inspectorId: String(req.query.inspectorId)
+			sort: sort,
+			inspectorId: req.query.inspectorId
 		};
 		const paginationDetails = handlePagination(req, total, pageData);
 
@@ -126,6 +131,23 @@ export function buildViewHome(service) {
 	};
 }
 
+/**
+ * Determines the current page number by validating the requested page against the total pages and the request parameters.
+ * @param {number} requestedPage
+ * @param {string} requestedSort
+ * @param {string} lastSort
+ * @param {number} totalPages
+ * @returns {number}
+ */
+function determinePage(requestedPage, requestedSort, lastSort, totalPages) {
+	if (!requestedPage) return 1;
+	//if user has changed sort criteria, reset to page 1
+	if ((requestedSort || 'age') !== lastSort) return 1;
+	//if desired page exceeds total pages, fallback to highest available page
+	if (requestedPage > totalPages) return totalPages;
+	return +requestedPage;
+}
+
 export function buildPostHome(service) {
 	return async (req, res) => {
 		service.logger.info('post home');
@@ -160,10 +182,9 @@ export function buildPostHome(service) {
  * @returns {import('#util/types.js').Pagination}
  */
 export function handlePagination(req, total, pageData) {
+	const page = pageData.page;
 	const limit = pageData.limit;
-	const totalPages = Math.max(1, Math.ceil(total / limit));
-	//if desired page exceeds total pages, fallback to highest available page
-	const page = pageData.page > totalPages ? totalPages : pageData.page;
+	const totalPages = getTotalPages(total, limit);
 
 	const params = { ...req.query, page: undefined };
 
@@ -172,6 +193,16 @@ export function handlePagination(req, total, pageData) {
 		next: page < totalPages ? { href: buildQueryString(params, page + 1) } : null,
 		items: createPaginationItems(page, totalPages, params)
 	};
+}
+
+/**
+ * Gets total number of pages based on total items and limit per page
+ * @param {number} total
+ * @param {number} limit
+ * @return {number}
+ */
+function getTotalPages(total, limit) {
+	return Math.max(1, Math.ceil(total / limit));
 }
 
 /**
