@@ -1,8 +1,42 @@
 import { describe, test } from 'node:test';
 import assert from 'assert';
-import { getCaseColor, toCaseViewModel } from './view-model.js';
+import { calendarViewModel, getCaseColor, toCaseViewModel } from './view-model.js';
 
 describe('view-model', () => {
+	describe('calendarViewModel', () => {
+		test('should generate a calendar view model with correct properties', (ctx) => {
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-10-04T12:00:00Z')
+			});
+			const events = [];
+			const viewModel = calendarViewModel('2023-10-02', events);
+			assert.strictEqual(viewModel.currentStartDate.getTime(), new Date('2023-10-02').getTime());
+			assert.strictEqual(viewModel.dates.length, 7);
+			assert.strictEqual(viewModel.times.length, 10);
+			assert.strictEqual(viewModel.grid.length, 20);
+			assert.strictEqual(
+				viewModel.grid.every((column) => column.length === 7),
+				true
+			);
+			assert.strictEqual(viewModel.weekTitle, '02 - 08 October, 2023');
+			assert.strictEqual(viewModel.error, undefined);
+		});
+		test('should fallback to start-of-week if no start date passed in', (ctx) => {
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-12-06T12:00:00Z') // pick a GMT date as it fails in BST otherwise. TODO: fix!
+			});
+			const events = [];
+			const viewModel = calendarViewModel(undefined, events);
+			assert.strictEqual(viewModel.currentStartDate.getTime(), new Date('2023-12-04T00:00:00Z').getTime());
+		});
+		test('should include error if provided', () => {
+			const events = [];
+			const viewModel = calendarViewModel(undefined, events, 'some error');
+			assert.strictEqual(viewModel.error, 'some error');
+		});
+	});
 	describe('toCaseViewModel', () => {
 		test('should return a view model with formatted finalCommentsDate and color', () => {
 			const caseData = {
