@@ -76,8 +76,8 @@ export function inspectorsViewModel(inspectors, selectedInspector, showError) {
 }
 
 /**
- * @param {import('../../inspector/types.js').Inspector} [inspector]
- * @returns {import('../../inspector/types.js').Inspector|undefined}
+ * @param {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel} [inspector]
+ * @returns {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel|undefined}
  */
 export function toInspectorViewModel(inspector) {
 	if (!inspector) {
