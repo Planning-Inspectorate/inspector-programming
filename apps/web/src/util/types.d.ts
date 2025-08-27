@@ -18,13 +18,17 @@ export interface Pagination {
 	items: PaginationItem[];
 }
 
-export type PaginationItem =
-	| { ellipsis: boolean }
-	| {
-			number: number;
-			href: string;
-			current: boolean;
-	  };
+export type PaginationItem = PaginationEllipsis | PaginationLink;
+
+export type PaginationLink = {
+	number: number;
+	href: string;
+	current: boolean;
+};
+
+export type PaginationEllipsis = {
+	ellipsis: boolean;
+};
 
 export interface ErrorSummary {
 	href: string;
