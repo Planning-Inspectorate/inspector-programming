@@ -1,6 +1,13 @@
 import { describe, test } from 'node:test';
 import assert from 'assert';
-import { appealsViewModel, calendarViewModel, getCaseColor, toCaseViewModel } from './view-model.js';
+import {
+	appealsViewModel,
+	calendarViewModel,
+	getCaseColor,
+	inspectorsViewModel,
+	toCaseViewModel,
+	toInspectorViewModel
+} from './view-model.js';
 
 describe('view-model', () => {
 	describe('calendarViewModel', () => {
@@ -89,6 +96,82 @@ describe('view-model', () => {
 		test('should return green for case age 0', () => {
 			const color = getCaseColor(0);
 			assert.strictEqual(color, '00703c', 'Color should be green for case age = 0');
+		});
+	});
+
+	describe('inspectorsViewModel', () => {
+		test('should return the view model', () => {
+			const inspectors = [
+				{ id: '1', firstName: 'John', lastName: 'Doe' },
+				{ id: '2', firstName: 'Jane', lastName: 'Smith' }
+			];
+			const selectedInspector = inspectors[0];
+			const viewModel = inspectorsViewModel(inspectors, selectedInspector, false);
+			assert.strictEqual(Array.isArray(viewModel.list), true);
+			assert.strictEqual(viewModel.list.length, 2);
+			assert.ok(viewModel.selected);
+			assert.strictEqual(viewModel.error, undefined);
+		});
+		test('should show error if no selected inspector', () => {
+			const inspectors = [
+				{ id: '1', firstName: 'John', lastName: 'Doe' },
+				{ id: '2', firstName: 'Jane', lastName: 'Smith' }
+			];
+			const viewModel = inspectorsViewModel(inspectors, undefined, true);
+			assert.strictEqual(viewModel.selected, undefined);
+			assert.strictEqual(typeof viewModel.error, 'string');
+		});
+		test('should not show error if selected inspector', () => {
+			const inspectors = [
+				{ id: '1', firstName: 'John', lastName: 'Doe' },
+				{ id: '2', firstName: 'Jane', lastName: 'Smith' }
+			];
+			const viewModel = inspectorsViewModel(inspectors, inspectors[0], true);
+			assert.ok(viewModel.selected);
+			assert.strictEqual(viewModel.error, undefined);
+		});
+		test('should not show error if showError is false', () => {
+			const inspectors = [
+				{ id: '1', firstName: 'John', lastName: 'Doe' },
+				{ id: '2', firstName: 'Jane', lastName: 'Smith' }
+			];
+			const viewModel = inspectorsViewModel(inspectors, undefined, false);
+			assert.strictEqual(viewModel.selected, undefined);
+			assert.strictEqual(viewModel.error, undefined);
+		});
+	});
+
+	describe('toInspectorViewModel', () => {
+		test('should return undefined if no inspector provided', () => {
+			const result = toInspectorViewModel(undefined);
+			assert.strictEqual(result, undefined);
+		});
+		test('should return the inspector with empty specialisms array', () => {
+			const inspector = { id: '1', firstName: 'John', lastName: 'Doe' };
+			const result = toInspectorViewModel(inspector);
+			assert.strictEqual(result.id, inspector.id);
+			assert.strictEqual(result.firstName, inspector.firstName);
+			assert.strictEqual(result.lastName, inspector.lastName);
+			assert.strictEqual(Array.isArray(result.specialisms), true);
+			assert.strictEqual(result.specialisms.length, 0);
+			assert.strictEqual(typeof result.specialismsList, 'string');
+		});
+		test('should map specialism validFrom dates', () => {
+			const inspector = {
+				id: '1',
+				firstName: 'John',
+				lastName: 'Doe',
+				Specialisms: [
+					{ id: 's1', name: 'Specialism 1', validFrom: new Date('2023-10-01T00:00:00Z') },
+					{ id: 's2', name: 'Specialism 2', validFrom: new Date('2024-01-15T00:00:00Z') }
+				]
+			};
+			const result = toInspectorViewModel(inspector);
+			assert.strictEqual(Array.isArray(result.specialisms), true);
+			assert.strictEqual(result.specialisms.length, 2);
+			assert.strictEqual(result.specialisms[0].validFrom, '01/10/2023');
+			assert.strictEqual(result.specialisms[1].validFrom, '15/01/2024');
+			assert.strictEqual(result.specialismsList, 'Specialism 1, Specialism 2');
 		});
 	});
 });
