@@ -37,7 +37,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 		try {
 			await cbosApiClient.patchAppeal(caseId, appealPatchData);
 		} catch (error) {
-			service.logger.error(error, 'Failed to update case');
+			service.logger.error(error, `Failed to update case ${caseId} for inspector ${inspectorId}`);
 			failedCases.push(caseId);
 		}
 	}
