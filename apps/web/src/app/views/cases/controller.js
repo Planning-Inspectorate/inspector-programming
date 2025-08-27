@@ -27,7 +27,7 @@ export function buildPostCases(service) {
 			addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
 
 			const viewData =
-				failedCases.length == selectedCaseIds.length
+				failedCases.length < selectedCaseIds.length
 					? {
 							bodyCopy: 'Try again later. The following cases were not assigned.',
 							failedCases: failedCases
