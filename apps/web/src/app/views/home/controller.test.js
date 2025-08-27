@@ -66,7 +66,7 @@ describe('controller.js', () => {
 			};
 			service.db.inspector.findFirst.mock.mockImplementationOnce(() => inspectorData);
 			const req = {
-				url: '/',
+				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
@@ -81,6 +81,35 @@ describe('controller.js', () => {
 			// just check a few fields match
 			assert.strictEqual(args.inspectors.selected.id, inspectorData.id);
 			assert.strictEqual(args.inspectors.selected.name, inspectorData.name);
+		});
+		test('should return an error if trying to sort by distance without an inspector selected', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, caseAge: i * 5 })),
+				total: 10
+			}));
+			const req = {
+				url: '/?sort=distance',
+				query: { sort: 'distance' },
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.sortingErrors.length, 1);
+			assert.strictEqual(args.appeals?.cases?.length, 10);
+			assert.deepStrictEqual(args.sortingErrors, [
+				{ text: 'An inspector must be selected before sorting by distance.' }
+			]);
+			//ensure cases sorted by age by default
+			assert.deepStrictEqual(
+				args.appeals.cases.map((c) => c.id),
+				[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+			);
 		});
 	});
 	describe('handlePagination', () => {
