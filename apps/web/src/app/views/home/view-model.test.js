@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'assert';
-import { calendarViewModel, getCaseColor, toCaseViewModel } from './view-model.js';
+import { appealsViewModel, calendarViewModel, getCaseColor, toCaseViewModel } from './view-model.js';
 
 describe('view-model', () => {
 	describe('calendarViewModel', () => {
@@ -35,6 +35,25 @@ describe('view-model', () => {
 			const events = [];
 			const viewModel = calendarViewModel(undefined, events, 'some error');
 			assert.strictEqual(viewModel.error, 'some error');
+		});
+	});
+	describe('appealsViewModel', () => {
+		test('should return an object with a cases array', (ctx) => {
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-10-04T12:00:00Z')
+			});
+			const cases = [
+				{ caseId: 1, caseAge: 10, finalCommentsDate: new Date() },
+				{ caseId: 2, caseAge: 25, finalCommentsDate: new Date() }
+			];
+			const viewModel = appealsViewModel(cases);
+			assert.strictEqual(Array.isArray(viewModel.cases), true);
+			assert.strictEqual(viewModel.cases.length, 2);
+			const case1 = viewModel.cases[0];
+			assert.strictEqual(case1.caseId, 1);
+			assert.strictEqual(case1.caseAge, 10);
+			assert.strictEqual(case1.finalCommentsDate, '04/10/2023');
 		});
 	});
 	describe('toCaseViewModel', () => {
