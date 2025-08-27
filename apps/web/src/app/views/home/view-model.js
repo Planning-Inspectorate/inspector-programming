@@ -62,8 +62,8 @@ export function getCaseColor(caseAge) {
 }
 
 /**
- * @param {import('../../inspector/types.js').Inspector[]} inspectors
- * @param {import('../../inspector/types.js').Inspector} [selectedInspector]
+ * @param {import('../../inspector/types.js').InspectorViewModel[]} inspectors
+ * @param {import('../../inspector/types.js').InspectorViewModel} [selectedInspector]
  * @param {boolean} [showError]
  * @returns {import('./types.js').InspectorsViewModel}
  */
