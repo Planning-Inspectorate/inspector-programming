@@ -72,7 +72,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Unassigned case list',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			errorSummary: [...filterErrorList],
+			errorSummary: [...filterErrorList, ...sortingErrorList],
 			filters: {
 				allocationLevels,
 				caseTypes,
@@ -123,6 +123,7 @@ export function buildViewHome(service) {
 			...viewModel,
 			data: formData,
 			filterErrors,
+			sortingErrors,
 			paginationDetails,
 			specialisms,
 			specialismTypes: allocationLevels,
