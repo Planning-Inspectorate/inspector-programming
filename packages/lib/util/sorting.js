@@ -69,5 +69,5 @@ export function sortCasesByDistance(inspectorCoordinates, caseA, caseB) {
 	}
 	if (distA !== null) return -1;
 	if (distB !== null) return 1;
-	return 0;
+	return sortCasesByAge(caseA, caseB);
 }
