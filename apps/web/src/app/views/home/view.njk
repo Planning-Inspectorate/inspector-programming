@@ -82,12 +82,6 @@
                     </div>
                 </div>
                 <form id="filter-form" method="get" novalidate>
-                    {% if filterErrorList.length %}
-                        {{ govukErrorSummary({
-                        titleText: "Filters could not be applied",
-                        errorList: filterErrorList
-                        }) }}
-                    {% endif %}
                     <button class="govuk-button" data-module="govuk-button">
                         Apply filters
                     </button>
@@ -103,7 +97,7 @@
                                 idPrefix: "filters[minimumAge]",
                                 name: "filters[minimumAge]",
                                 classes: "govuk-input--width-5",
-                                errorMessage: errors.minimumAge,
+                                errorMessage: filterErrors.minimumAge,
                                 value: data.filters.minimumAge
                                 }) + 
                                 govukInput({
@@ -115,7 +109,7 @@
                                     idPrefix: "filters[maximumAge]",
                                     name: "filters[maximumAge]",
                                     classes: "govuk-input--width-5",
-                                    errorMessage: errors.maximumAge,
+                                    errorMessage: filterErrors.maximumAge,
                                     value: data.filters.maximumAge
                                 })
 

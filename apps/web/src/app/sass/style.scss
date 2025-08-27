@@ -153,6 +153,13 @@ $font-family: arial, helvetica, sans-serif;
 	margin-bottom: 0;
 }
 
+.app-filter {
+	.govuk-form-group--error {
+		margin-top: 4px;
+		margin-bottom: 4px;
+	}
+}
+
 .calendar-container {
 	width: 80%;
 	margin: auto;

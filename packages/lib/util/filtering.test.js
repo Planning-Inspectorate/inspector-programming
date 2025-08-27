@@ -78,6 +78,7 @@ describe('validateFilters', () => {
 			'The minimum value must be less than or equal to the maximum value.',
 			'should return "The minimum value must be less than or equal to the maximum value." under minimumAge'
 		);
+		assert.strictEqual(errors.minimumAge.href, '#filters[minimumAge]', 'should return href to minimumAge field');
 	});
 	test('should return an error if an age filter is below 0', () => {
 		const filters = { minimumAge: -1, maximumAge: 5 };
@@ -89,6 +90,7 @@ describe('validateFilters', () => {
 			'Please enter a number between 0 and 500',
 			'should return "Please enter a number between 0 and 500" under minimumAge'
 		);
+		assert.strictEqual(errors.minimumAge.href, '#filters[minimumAge]', 'should return href to minimumAge field');
 	});
 	test('should return an error if an age filter is above 500', () => {
 		const filters = { minimumAge: 10, maximumAge: 501 };
@@ -100,5 +102,6 @@ describe('validateFilters', () => {
 			'Please enter a number between 0 and 500',
 			'should return "Please enter a number between 0 and 500" under maximumAge'
 		);
+		assert.strictEqual(errors.maximumAge.href, '#filters[maximumAge]', 'should return href to maximumAge field');
 	});
 });
