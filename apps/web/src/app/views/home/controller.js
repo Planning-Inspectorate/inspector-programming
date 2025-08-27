@@ -34,7 +34,7 @@ export function buildViewHome(service) {
 		let filters = normalizeFilters(query.filters);
 		//validate filters and return any errors to client
 		const filterErrors = validateFilters(filters);
-		const filterErrorList = Object.values(filterErrors).map((message) => ({ ...message, href: `#` }));
+		const filterErrorList = Object.values(filterErrors);
 		//if filters are invalid then apply none
 		if (filterErrorList.length) filters = {};
 
@@ -57,7 +57,7 @@ export function buildViewHome(service) {
 			pageHeading: 'Unassigned case list',
 			containerClasses: 'pins-container-wide',
 			title: 'Unassigned case list',
-			errorSummary: [],
+			errorSummary: [...filterErrorList],
 			filters: {
 				allocationLevels,
 				caseTypes,
@@ -108,7 +108,6 @@ export function buildViewHome(service) {
 			...viewModel,
 			data: formData,
 			filterErrors,
-			filterErrorList,
 			paginationDetails,
 			specialisms,
 			specialismTypes: allocationLevels,

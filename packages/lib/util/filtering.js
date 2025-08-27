@@ -52,13 +52,16 @@ export function validateFilters(filters) {
 	for (const key of keysToValidate) {
 		const value = filters[key];
 		if (value && (isNaN(+value) || +value < 0 || +value > 500)) {
-			errors[key] = { text: 'Please enter a number between 0 and 500' };
+			errors[key] = { text: 'Please enter a number between 0 and 500', href: `#filters[${key}]` };
 			filters[key] = '';
 		}
 	}
 	if (filters.maximumAge && filters.minimumAge && !isNaN(+filters.minimumAge) && !isNaN(+filters.maximumAge)) {
 		if (+filters.minimumAge > +filters.maximumAge) {
-			errors.minimumAge = { text: 'The minimum value must be less than or equal to the maximum value.' };
+			errors.minimumAge = {
+				text: 'The minimum value must be less than or equal to the maximum value.',
+				href: '#filters[minimumAge]'
+			};
 			filters.minimumAge = '';
 			filters.maximumAge = '';
 		}
