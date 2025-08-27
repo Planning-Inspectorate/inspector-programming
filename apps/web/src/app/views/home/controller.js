@@ -122,9 +122,8 @@ export function buildViewHome(service) {
 		return res.render('views/home/view.njk', {
 			...viewModel,
 			data: formData,
-			filterErrors,
-      sortingErrors,
-			paginationDetails
+      filterErrors,
+      sortingErrors
 		});
 	};
 }
