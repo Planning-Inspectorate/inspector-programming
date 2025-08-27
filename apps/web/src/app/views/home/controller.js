@@ -78,7 +78,8 @@ export function buildViewHome(service) {
 				caseTypes,
 				specialisms,
 				pagination: paginationDetails,
-				query: {}
+				query: {},
+				errors: filterErrors
 			},
 			appeals: appealsViewModel(cases),
 			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab),
@@ -122,7 +123,6 @@ export function buildViewHome(service) {
 		return res.render('views/home/view.njk', {
 			...viewModel,
 			data: formData,
-      filterErrors,
       sortingErrors
 		});
 	};
