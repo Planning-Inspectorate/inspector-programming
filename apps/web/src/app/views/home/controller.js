@@ -120,9 +120,9 @@ export function buildViewHome(service) {
 
 		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
 		for (let caseId of selectedCaseIds) {
-			let caseIndex = filteredCases.findIndex((item) => item.caseId == caseId);
+			let caseIndex = cases.findIndex((item) => item.caseId == caseId);
 			if (caseIndex != -1) {
-				filteredCases[caseIndex].selected = true;
+				cases[caseIndex].selected = true;
 			}
 		}
 
