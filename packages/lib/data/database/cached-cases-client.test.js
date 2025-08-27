@@ -38,5 +38,34 @@ describe('cached-entra-client', () => {
 			assert.strictEqual(mockCache.get.mock.callCount(), 1);
 			assert.strictEqual(mockCache.set.mock.callCount(), 1);
 		});
+
+		it('should return case by case id', async () => {
+			const mockClient = {};
+			const mockCache = {
+				get: mock.fn(() => [{ caseId: '1' }, { caseId: '2' }, { caseId: '3' }])
+			};
+			const cacheClient = new CachedCasesClient(mockClient, mockCache);
+			const appeal = await cacheClient.getCaseById('2');
+			assert.strictEqual(mockCache.get.mock.callCount(), 1);
+			assert.deepStrictEqual(appeal, { caseId: '2' });
+		});
+
+		it('should return linked cases by lead case reference', async () => {
+			const mockClient = {};
+			const mockCache = {
+				get: mock.fn(() => [
+					{ id: '1', leadCaseReference: 'A' },
+					{ id: '2', leadCaseReference: 'B' },
+					{ id: '3', leadCaseReference: 'A' }
+				])
+			};
+			const cacheClient = new CachedCasesClient(mockClient, mockCache);
+			const linkedCases = await cacheClient.getLinkedCasesByParentCaseId('A');
+			assert.strictEqual(mockCache.get.mock.callCount(), 1);
+			assert.deepStrictEqual(linkedCases, [
+				{ id: '1', leadCaseReference: 'A' },
+				{ id: '3', leadCaseReference: 'A' }
+			]);
+		});
 	});
 });

@@ -46,6 +46,7 @@ export class CasesClient {
 			caseStatus: c.caseStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.caseValidDate || new Date()),
 			linkedCases: this.getLinkedCasesCount(c),
+			linkedCaseStatus: c.linkedCaseStatus,
 			caseReceivedDate: c.caseCreatedDate || null,
 			finalCommentsDate: c.finalCommentsDueDate || new Date(),
 			specialisms: c.Specialisms,

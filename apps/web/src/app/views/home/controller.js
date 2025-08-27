@@ -15,6 +15,8 @@ import { parse as parseUrl } from 'url';
 import { normalizeFilters, validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { clearSessionData } from '@pins/inspector-programming-lib/util/session.js';
+
 /**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
@@ -22,7 +24,10 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
-		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
+		const inspectorId = req.query.inspectorId
+			? req.query.inspectorId
+			: readSessionData(req, 'caseListData', 'inspectorId', null, 'persistence');
+		const selectedInspector = inspectors.find((i) => inspectorId === i.id);
 		const inspectorData =
 			selectedInspector &&
 			(await service.db.inspector.findFirst({
@@ -64,7 +69,7 @@ export function buildViewHome(service) {
 			limit,
 			page,
 			sort: req.query.sort || 'age',
-			inspectorId: req.query.inspectorId
+			inspectorId
 		};
 		const paginationDetails = handlePagination(req, total, formData);
 		/**
@@ -105,8 +110,21 @@ export function buildViewHome(service) {
 		const calendarGrid = generateCalendar(currentStartDate, calendarEvents);
 		const weekTitle = generateWeekTitle(currentStartDate);
 
+		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
+		for (let caseId of selectedCaseIds) {
+			let caseIndex = cases.findIndex((item) => item.caseId == caseId);
+			if (caseIndex != -1) {
+				cases[caseIndex].selected = true;
+			}
+		}
+
+		const assignmentDate = readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence');
+
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: query.sort }, 'persistence');
+
+		//clear session data passed on from /cases
+		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
 
 		return res.render('views/home/view.njk', {
 			pageHeading: 'Unassigned case list',
@@ -133,7 +151,8 @@ export function buildViewHome(service) {
 			caseTypes,
 			inspectorError,
 			calendarError,
-			errorSummary
+			errorSummary,
+			assignmentDate
 		});
 	};
 }

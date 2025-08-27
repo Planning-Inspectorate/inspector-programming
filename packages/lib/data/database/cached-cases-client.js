@@ -89,4 +89,35 @@ export class CachedCasesClient {
 		this.#cache.set(key, cases);
 		return cases;
 	}
+
+	/**
+	 *
+	 * @param {string} caseId
+	 * @returns {Promise<import('../types').CaseViewModel[]>}
+	 */
+	async getLinkedCasesByParentCaseId(caseId) {
+		const key = CACHE_PREFIX + 'getAllCases';
+		let cases = this.#cache.get(key);
+		if (!cases) {
+			cases = await this.#client.getAllCases();
+			this.#cache.set(key, cases);
+		}
+		return cases.filter((/** @type {{ leadCaseReference: string; }} */ item) => item.leadCaseReference == caseId);
+	}
+
+	/**
+	 *
+	 * @param {string} caseId
+	 * @returns {Promise<import('../types').CaseViewModel>}
+	 */
+	async getCaseById(caseId) {
+		const key = CACHE_PREFIX + 'getAllCases';
+		let cases = this.#cache.get(key);
+		if (!cases) {
+			cases = await this.#client.getAllCases();
+			this.#cache.set(key, cases);
+		}
+
+		return cases.find((/** @type {{ caseId: string; }} */ item) => item.caseId == caseId);
+	}
 }

@@ -24,8 +24,10 @@ export interface CaseViewModel {
 	caseAge: number;
 	caseAgeColor?: string;
 	linkedCases: number;
+	linkedCaseStatus: string | null;
 	caseReceivedDate: Date | null;
 	finalCommentsDate: Date;
+	selected: boolean | null;
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
 }

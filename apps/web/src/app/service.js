@@ -3,6 +3,8 @@ import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cach
 import { buildInitCasesClient } from '@pins/inspector-programming-lib/data/database/cached-cases-client.js';
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from '#api-service';
+import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
+import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
 
@@ -61,5 +63,20 @@ export class WebService extends BaseService {
 
 	get osMapsApiKey() {
 		return this.#config.osApi.key;
+	}
+
+	/**
+	 * Returns a cbosApiClient instance for the current user session.
+	 * @param {import('../app/auth/session.service.js').SessionWithAuth} session - The current request session
+	 */
+	getCbosApiClientForSession(session) {
+		const userId = getAccountId(session);
+		return new CbosApiClient(
+			{
+				...this.#config.cbos,
+				apiHeader: userId
+			},
+			this.logger
+		);
 	}
 }
