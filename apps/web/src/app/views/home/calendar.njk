@@ -10,8 +10,11 @@
             </div>
         </form>
         <h2>{{ calendar.weekTitle }}</h2>
-        <label for="weekPicker" class="arrow-button">↓</label>
-        <input type="text" id="weekPicker" placeholder="Select date" readonly>
+        <form method="post" id="week-picker-form">
+            <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+            <label for="weekPicker" class="arrow-button">↓</label>
+            <input type="text" name="newStartDate" id="weekPicker" readonly>
+        </div>
     </div>
     <table class="calendar-table">
         <thead>
@@ -40,3 +43,28 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("#weekPicker", {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates) {
+                const weekPickerForm = document.querySelector('#week-picker-form');
+                weekPickerForm.submit();
+            },
+            onMonthChange: function(selectedDates, dateStr, instance) {
+                const year = instance.currentYear;
+                const month = instance.currentMonth;
+                const firstDay = new Date(year, month, 1);
+                instance.setDate(firstDay, false);
+            },
+            onYearChange: function(selectedDates, dateStr, instance) {
+                const year = instance.currentYear;
+                const month = instance.currentMonth;
+                const firstDay = new Date(year, month, 1);
+                instance.setDate(firstDay, false);
+            }
+        });
+    });
+</script>
