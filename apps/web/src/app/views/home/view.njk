@@ -35,7 +35,7 @@
                     {% set inspectorList = (inspectorList.push({
                         text: i.lastName + ', ' + i.firstName,
                         value: i.id,
-                        selected: i.id == data.inspectorId
+                        selected: i.id == filters.query.inspectorId
                     }), inspectorList) %}
                 {% endfor %}
                 {{ govukSelect({
@@ -61,11 +61,12 @@
         <div class="app-filter__content">
             <div class="app-filter__options">
                 <form method="get" novalidate>
-                    <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
-                    <input type="hidden" name="limit" value="{{ data.limit }}">
-                    <input type="hidden" name="page" value="{{ data.page }}">
+                    <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                    <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+                    <input type="hidden" name="page" value="{{ filters.query.page }}">
+                    <input type="hidden" name="sort" value="{{ filters.query.sort }}">
 
-                    {% for key, value in data.filters %}
+                    {% for key, value in filters.query.case %}
                         {% if value is iterable and not value is string %}
                             {% for item in value %}
                                 <input type="hidden" name="filters[{{ key }}][]" value="{{ item }}">
@@ -74,7 +75,6 @@
                             <input type="hidden" name="filters[{{ key }}]" value="{{ value }}">
                         {% endif %}
                     {% endfor %}
-                                
                 </form>
                 <div class="app-filter__header">
                     <div class="app-filter__header-title">
@@ -98,7 +98,7 @@
                                 name: "filters[minimumAge]",
                                 classes: "govuk-input--width-5",
                                 errorMessage: filters.errors.minimumAge,
-                                value: data.filters.minimumAge
+                                value: filters.query.case.minimumAge
                                 }) + 
                                 govukInput({
                                     label: {
@@ -110,7 +110,7 @@
                                     name: "filters[maximumAge]",
                                     classes: "govuk-input--width-5",
                                     errorMessage: filters.errors.maximumAge,
-                                    value: data.filters.maximumAge
+                                    value: filters.query.case.maximumAge
                                 })
 
                         ),
@@ -134,7 +134,7 @@
                                 { value: 'Hearing', text: 'Hearing' },
                                 { value: 'Inquiry', text: 'Inquiry' }
                             ],
-                            values: data.filters.caseProcedure
+                            values: filters.query.case.caseProcedure
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
@@ -156,7 +156,7 @@
                                 { value: 'East', text: 'East' },
                                 { value: 'West', text: 'West' }
                             ],
-                            values: data.filters.lpaRegion
+                            values: filters.query.case.lpaRegion
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
@@ -174,7 +174,7 @@
                                 }
                             },
                             items: filters.caseTypes,
-                            values: data.filters.caseType
+                            values: filters.query.case.caseType
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
@@ -192,7 +192,7 @@
                                 }
                             },
                             items: filters.specialisms,
-                            values: data.filters.caseSpecialisms
+                            values: filters.query.case.caseSpecialisms
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
@@ -211,15 +211,15 @@
                                 }
                             },
                             items: filters.allocationLevels,
-                            values: data.filters.allocationLevel
+                            values: filters.query.case.allocationLevel
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
                     }) }}
-                    <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
-                    <input type="hidden" name="limit" value="{{ data.limit }}">
-                    <input type="hidden" name="page" value="{{ data.page }}">
-                    <input type="hidden" name="sort" value="{{ data.sort }}">
+                    <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                    <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+                    <input type="hidden" name="page" value="{{ filters.query.page }}">
+                    <input type="hidden" name="sort" value="{{ filters.query.sort }}">
                 </form>
             </div>
         </div>
@@ -239,7 +239,7 @@
                     {% for s in sorts %}
                         <a data-sort="{{ s.value }}"
                             href=''
-                            class="sort-pagination-link {% if data.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                            class="sort-pagination-link {% if filters.query.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
                             {{ s.label }}
                         </a>{% if not loop.last %} | {% endif %}
                     {% endfor %}
@@ -251,19 +251,19 @@
                             {% for l in limits %}
                                 <a  data-limit="{{ l }}"
                                     href=''
-                                    class="sort-pagination-link {% if data.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                                    class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
                                     {{ l }}
                                 </a>{% if not loop.last %} | {% endif %}
                             {% endfor %}
                         </div>
-                <input type="hidden" name="sort" value="{{ data.sort }}">
-                <input type="hidden" name="limit" value="{{ data.limit }}">
-                <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
-                <input type="hidden" name="page" value="{{ data.page }}">
+                <input type="hidden" name="sort" value="{{ filters.query.sort }}">
+                <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+                <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                <input type="hidden" name="page" value="{{ filters.query.page }}">
             </form>
         </div>
         <form method="post" action="/notify" novalidate>
-                <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+                <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
                 <div class="align-right">
                     <div class="govuk-form-group">
                         <label class="govuk-label" for="assignment-date">Event date: </label>

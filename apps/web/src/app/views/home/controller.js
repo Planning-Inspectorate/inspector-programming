@@ -1,5 +1,4 @@
 import { getInspectorDetails, getInspectorList } from '../../inspector/inspector.js';
-import qs from 'qs';
 import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
 import {
 	getNextWeekStartDate,
@@ -7,11 +6,10 @@ import {
 	getSimplifiedEvents,
 	getWeekStartDate
 } from '../../calendar/calendar.js';
-import { parse as parseUrl } from 'url';
-import { normalizeFilters, validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
+import { validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view-model.js';
+import { appealsViewModel, calendarViewModel, filtersQueryViewModel, inspectorsViewModel } from './view-model.js';
 import { paginationValues } from './pagination.js';
 
 /**
@@ -25,45 +23,32 @@ export function buildViewHome(service) {
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const selectedInspectorDetails = await getInspectorDetails(service.db, selectedInspector?.id);
 
-		// Convert the raw query string into a nested object
-		const query = qs.parse(parseUrl(req.url).query || '');
-
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
+		const filterQuery = filtersQueryViewModel(req.query, lastSort);
 
-		const page = req.query.page && (query.sort || 'age') === lastSort ? parseInt(req.query.page) : 1;
-		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-
-		//parse filters query param as expected Filters type
-		let filters = normalizeFilters(query.filters);
-
-		//validate filters
-		const filterErrors = validateFilters(filters);
+		// validate filters and return any errors to client
+		const filterErrors = validateFilters(filterQuery);
 		const filterErrorList = Object.values(filterErrors);
-		//if filters are invalid then apply none
-		if (filterErrorList.length) filters = {};
+		// if any filters are invalid then apply none
+		if (filterErrorList.length > 0) {
+			filterQuery.case = {};
+		}
 
 		//validate sort
-		const sortingErrors = validateSorts(String(query.sort), selectedInspector);
+		const sortingErrors = validateSorts(filterQuery.sort, selectedInspector);
 		const sortingErrorList = Object.values(sortingErrors).map((message) => ({ ...message, href: `#` }));
 		//if sort is invalid then sort by age by default
-		if (sortingErrorList.length) query.sort = 'age';
+		if (sortingErrorList.length) filterQuery.sort = 'age';
 
 		const { cases, total } = await service.casesClient.getCases(
-			filters,
-			String(query.sort),
-			page,
-			limit,
+			filterQuery.case,
+			filterQuery.sort,
+			filterQuery.page,
+			filterQuery.limit,
 			selectedInspector
 		);
 
-		const formData = {
-			filters,
-			limit,
-			page,
-			sort: req.query.sort || 'age',
-			inspectorId: req.query.inspectorId
-		};
-		const paginationDetails = paginationValues(req, total, formData);
+		const paginationDetails = paginationValues(req, total, filterQuery);
 
 		const isCalendarTab = req.query.currentTab === 'calendar';
 		const isInspectorTab = req.query.currentTab === 'inspector';
@@ -79,14 +64,15 @@ export function buildViewHome(service) {
 				caseTypes,
 				specialisms,
 				pagination: paginationDetails,
-				query: {},
+				query: filterQuery,
 				errors: filterErrors
 			},
 			appeals: appealsViewModel(cases),
 			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab),
 			map: {
 				apiKey: service.osMapsApiKey
-			}
+			},
+			sortingErrors
 		};
 
 		/**
@@ -119,13 +105,9 @@ export function buildViewHome(service) {
 		viewModel.calendar = calendarViewModel(req.query.calendarStartDate, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
-		addSessionData(req, 'lastRequest', { sort: query.sort }, 'persistence');
+		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');
 
-		return res.render('views/home/view.njk', {
-			...viewModel,
-			data: formData,
-      sortingErrors
-		});
+		return res.render('views/home/view.njk', viewModel);
 	};
 }
 

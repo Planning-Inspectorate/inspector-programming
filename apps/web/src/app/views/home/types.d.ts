@@ -36,14 +36,24 @@ export interface Filters {
 	query: FilterQuery;
 
 	// filter-specific errors, where keys are the filter input name
-	errors?: {
-		minimumAge?: TextValue;
-		maximumAge?: TextValue;
-	};
+	errors?: FilterErrors;
+}
+
+export interface FilterErrors {
+	minimumAge?: TextValue;
+	maximumAge?: TextValue;
 }
 
 export interface FilterQuery {
-	// case filters
+	case?: FilterCaseQuery;
+
+	limit?: number;
+	page?: number;
+	sort?: string | 'age' | 'distance' | 'hybrid';
+	inspectorId?: string;
+}
+
+export interface FilterCaseQuery {
 	allocationLevel?: string[];
 	caseProcedure?: string[];
 	caseSpecialisms?: string[];
@@ -51,11 +61,6 @@ export interface FilterQuery {
 	lpaRegion?: string[];
 	minimumAge?: string;
 	maximumAge?: string;
-
-	limit?: number;
-	page?: number;
-	sort?: string | 'age' | 'distance' | 'hybrid';
-	inspectorId?: string;
 }
 
 export interface InspectorsViewModel {

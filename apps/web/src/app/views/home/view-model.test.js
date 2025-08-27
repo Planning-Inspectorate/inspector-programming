@@ -3,6 +3,7 @@ import assert from 'assert';
 import {
 	appealsViewModel,
 	calendarViewModel,
+	filtersQueryViewModel,
 	getCaseColor,
 	inspectorsViewModel,
 	toCaseViewModel,
@@ -138,6 +139,55 @@ describe('view-model', () => {
 			const viewModel = inspectorsViewModel(inspectors, undefined, false);
 			assert.strictEqual(viewModel.selected, undefined);
 			assert.strictEqual(viewModel.error, undefined);
+		});
+	});
+
+	describe('filtersQueryViewModel', () => {
+		test('should parse query parameters into filter query', () => {
+			const query = {
+				page: '2',
+				limit: '20',
+				sort: 'age',
+				inspectorId: '123',
+				'filters[allocationLevel]': ['level1', 'level2'],
+				'filters[caseProcedure]': ['procedure1'],
+				'filters[minimumAge]': '10',
+				'filters[maximumAge]': '50'
+			};
+			const previousSort = 'age';
+			const filterQuery = filtersQueryViewModel(query, previousSort);
+			assert.strictEqual(filterQuery.page, 2);
+			assert.strictEqual(filterQuery.limit, 20);
+			assert.strictEqual(filterQuery.sort, 'age');
+			assert.strictEqual(filterQuery.inspectorId, '123');
+			assert.deepStrictEqual(filterQuery.case.allocationLevel, ['level1', 'level2']);
+			assert.deepStrictEqual(filterQuery.case.caseProcedure, ['procedure1']);
+			assert.strictEqual(filterQuery.case.minimumAge, '10');
+			assert.strictEqual(filterQuery.case.maximumAge, '50');
+		});
+		test('should add default page', () => {
+			const query = {};
+			const filterQuery = filtersQueryViewModel(query);
+			assert.strictEqual(filterQuery.page, 1);
+		});
+		test('should add default limit', () => {
+			const query = {};
+			const filterQuery = filtersQueryViewModel(query);
+			assert.strictEqual(filterQuery.limit, 10);
+		});
+		test('should add default sort', () => {
+			const query = {};
+			const filterQuery = filtersQueryViewModel(query);
+			assert.strictEqual(filterQuery.sort, 'age');
+		});
+		test('should revert to page 1 on sort change', () => {
+			const query = {
+				page: '10',
+				sort: 'age'
+			};
+			const filterQuery = filtersQueryViewModel(query, 'distance');
+			assert.strictEqual(filterQuery.sort, 'age');
+			assert.strictEqual(filterQuery.page, 1);
 		});
 	});
 

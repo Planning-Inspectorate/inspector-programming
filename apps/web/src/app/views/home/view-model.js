@@ -57,6 +57,50 @@ export function getCaseColor(caseAge) {
 }
 
 /**
+ * @param {import('qs').ParsedQs} query
+ * @param {string} [previousSort]
+ * @returns {import('./types.js').FilterQuery}
+ */
+export function filtersQueryViewModel(query, previousSort) {
+	/** @type {import('./types.js').FilterQuery} */
+	const filters = {
+		page: query.page ? Number(query.page) : 1,
+		limit: query.limit ? Number(query.limit) : 10,
+		sort: query.sort ? String(query.sort) : 'age',
+		case: {}
+	};
+
+	if (query.inspectorId) {
+		filters.inspectorId = String(query.inspectorId);
+	}
+
+	if (previousSort !== filters.sort) {
+		// reset to first page if sort has changed
+		filters.page = 1;
+	}
+
+	const arrayProps = ['allocationLevel', 'caseProcedure', 'caseSpecialisms', 'caseType', 'lpaRegion'];
+
+	for (const arrayProp of arrayProps) {
+		const value = query[`filters[${arrayProp}]`];
+		if (value && Array.isArray(value)) {
+			filters.case[arrayProp] = value;
+		}
+	}
+
+	const stringProps = ['minimumAge', 'maximumAge'];
+
+	for (const stringProp of stringProps) {
+		const value = query[`filters[${stringProp}]`];
+		if (value) {
+			filters.case[stringProp] = String(value);
+		}
+	}
+
+	return filters;
+}
+
+/**
  * @param {import('../../inspector/types.js').Inspector[]} inspectors
  * @param {import('../../inspector/types.js').Inspector} [selectedInspector]
  * @param {boolean} [showError]
