@@ -107,8 +107,8 @@ export function buildViewHome(service) {
 		return res.render('views/home/view.njk', {
 			...viewModel,
 			data: formData,
-      filterErrors,
-      filterErrorList,
+			filterErrors,
+			filterErrorList,
 			paginationDetails,
 			specialisms,
 			specialismTypes: allocationLevels,
