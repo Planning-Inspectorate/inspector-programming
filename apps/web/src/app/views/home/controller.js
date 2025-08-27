@@ -20,7 +20,7 @@ import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view
 export function buildViewHome(service) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
-		/** @type {import('@pins/inspector-programming-lib/data/types.js').Inspector | undefined} */
+		/** @type {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel | undefined} */
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
 		const selectedInspectorDetails = await getInspectorDetails(service.db, selectedInspector?.id);
 
@@ -47,7 +47,13 @@ export function buildViewHome(service) {
 		//if sort is invalid then sort by age by default
 		if (sortingErrorList.length) query.sort = 'age';
 
-		const { cases, total } = await service.casesClient.getCases(filters, String(query.sort), page, limit);
+		const { cases, total } = await service.casesClient.getCases(
+			filters,
+			String(query.sort),
+			page,
+			limit,
+			selectedInspector
+		);
 
 		const formData = {
 			filters,

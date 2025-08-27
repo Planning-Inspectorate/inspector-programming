@@ -46,9 +46,10 @@ export class CachedCasesClient {
 	 * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
 	 * @param {number} page
 	 * @param {number} pageSize
+	 * @param {import("@pins/inspector-programming-lib/data/types").InspectorViewModel|undefined} selectedInspector
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
 	 */
-	async getCases(filters, sort, page, pageSize) {
+	async getCases(filters, sort, page, pageSize, selectedInspector) {
 		const allCases = await this.getAllCases();
 
 		//filter
@@ -56,11 +57,10 @@ export class CachedCasesClient {
 
 		//sort
 		let sortedCases;
-		const inspectorCoordinates = { lat: 51.5074, lng: -0.1278 }; //example coords for London
+		const inspectorCoords = { lat: selectedInspector?.latitude || null, lng: selectedInspector?.longitude || null };
 		switch (sort) {
 			case 'distance':
-				//WIP
-				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(inspectorCoordinates, a, b));
+				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(inspectorCoords, a, b));
 				break;
 			case 'hybrid':
 				//WIP

@@ -6,13 +6,15 @@
  * @returns {number | null} Distance in km
  */
 export function distanceBetween(coordinatesA, coordinatesB) {
-	if (
-		typeof coordinatesA.lat !== 'number' ||
-		typeof coordinatesA.lng !== 'number' ||
-		typeof coordinatesB.lat !== 'number' ||
-		typeof coordinatesB.lng !== 'number'
-	)
+	//if any coordinates are null, cant calculate distance
+	if (coordinatesA.lat == null || coordinatesA.lng == null || coordinatesB.lat == null || coordinatesB.lng == null)
 		return null;
+
+	// Normalize to numbers (Decimal has a .toNumber() method, number passes through fine)
+	coordinatesA.lat = typeof coordinatesA.lat === 'number' ? coordinatesA.lat : coordinatesA.lat.toNumber();
+	coordinatesA.lng = typeof coordinatesA.lng === 'number' ? coordinatesA.lng : coordinatesA.lng.toNumber();
+	coordinatesB.lat = typeof coordinatesB.lat === 'number' ? coordinatesB.lat : coordinatesB.lat.toNumber();
+	coordinatesB.lng = typeof coordinatesB.lng === 'number' ? coordinatesB.lng : coordinatesB.lng.toNumber();
 
 	const earthRadius = 6371;
 	const latDiff = ((coordinatesB.lat - coordinatesA.lat) * Math.PI) / 180;
