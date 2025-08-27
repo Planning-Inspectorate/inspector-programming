@@ -123,11 +123,8 @@ export function buildViewHome(service) {
 			...viewModel,
 			data: formData,
 			filterErrors,
-			sortingErrors,
-			paginationDetails,
-			specialisms,
-			specialismTypes: allocationLevels,
-			caseTypes
+      sortingErrors,
+			paginationDetails
 		});
 	};
 }
