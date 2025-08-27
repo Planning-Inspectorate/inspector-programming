@@ -21,7 +21,8 @@ describe('controller.js', () => {
 				},
 				casesClient: {
 					getAllCases: mock.fn(() => []),
-					getCases: mock.fn(() => ({ cases: [], total: 0 }))
+					getCases: mock.fn(() => ({ cases: [], total: 0 })),
+					getCasesCount: mock.fn(() => 0)
 				},
 				db: {
 					inspector: {

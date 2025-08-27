@@ -13,6 +13,15 @@ import { addSessionData, readSessionData } from '@pins/inspector-programming-lib
 import { appealsViewModel, calendarViewModel, inspectorsViewModel } from './view-model.js';
 
 /**
+ * @typedef {Object} PageData
+ * @property {import('@pins/inspector-programming-lib/data/types.js').Filters} filters
+ * @property {number} limit
+ * @property {number} page
+ * @property {string} sort
+ * @property {string} inspectorId
+ */
+
+/**
  * @param {import('#service').WebService} service
  * @returns {import('express').Handler}
  */
@@ -26,9 +35,12 @@ export function buildViewHome(service) {
 		const query = qs.parse(parseUrl(req.url).query || '');
 
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
-
-		const page = req.query.page && (query.sort || 'age') === lastSort ? parseInt(req.query.page) : 1;
 		const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+
+		/** @type {string} */
+		const sort = query.sort ? String(query.sort) : 'age';
+		//if user has changed sort criteria, reset to page 1 - naive page value before we validate in getCases
+		const naivePage = !sort || sort !== lastSort ? 1 : +(query.page || 1);
 
 		//parse filters query param as expected Filters type
 		let filters = normalizeFilters(query.filters);
@@ -38,16 +50,17 @@ export function buildViewHome(service) {
 		//if filters are invalid then apply none
 		if (filterErrorList.length) filters = {};
 
-		const { cases, total } = await service.casesClient.getCases(filters, String(query.sort), page, limit);
+		const { cases, total, page } = await service.casesClient.getCases(filters, sort, naivePage, limit);
 
-		const formData = {
+		/** @type { PageData } */
+		const pageData = {
 			filters,
 			limit,
 			page,
-			sort: req.query.sort || 'age',
+			sort: sort,
 			inspectorId: req.query.inspectorId
 		};
-		const paginationDetails = handlePagination(req, total, formData);
+		const paginationDetails = handlePagination(req, total, pageData);
 
 		const isCalendarTab = req.query.currentTab === 'calendar';
 		const isInspectorTab = req.query.currentTab === 'inspector';
@@ -106,7 +119,7 @@ export function buildViewHome(service) {
 
 		return res.render('views/home/view.njk', {
 			...viewModel,
-			data: formData,
+			data: pageData,
 			filterErrors,
 			paginationDetails,
 			specialisms,
@@ -146,12 +159,12 @@ export function buildPostHome(service) {
 /**
  * @param {import('express').Request} req
  * @param {number} total
- * @param {{page: number, limit: number}} formData
+ * @param {PageData} pageData
  * @returns {import('#util/types.js').Pagination}
  */
-export function handlePagination(req, total, formData) {
-	const page = formData.page;
-	const limit = formData.limit;
+export function handlePagination(req, total, pageData) {
+	const page = pageData.page;
+	const limit = pageData.limit;
 	const totalPages = Math.max(1, Math.ceil(total / limit));
 
 	const params = { ...req.query, page: undefined };

@@ -50,6 +50,11 @@ export function toCaseViewModel(c) {
 	};
 }
 
+/**
+ * Determines the color code based on the age of the case.
+ * @param {number} caseAge
+ * @returns
+ */
 export function getCaseColor(caseAge) {
 	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
@@ -57,8 +62,8 @@ export function getCaseColor(caseAge) {
 }
 
 /**
- * @param {import('../../inspector/types.js').Inspector[]} inspectors
- * @param {import('../../inspector/types.js').Inspector} [selectedInspector]
+ * @param {import('../../inspector/types.js').InspectorViewModel[]} inspectors
+ * @param {import('../../inspector/types.js').InspectorViewModel} [selectedInspector]
  * @param {boolean} [showError]
  * @returns {import('./types.js').InspectorsViewModel}
  */
