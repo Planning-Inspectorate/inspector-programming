@@ -126,6 +126,9 @@ export function buildPostHome(service) {
 			newStartDate = getPreviousWeekStartDate(currentDate);
 		} else if (req.body.calendarAction == 'nextWeek') {
 			newStartDate = getNextWeekStartDate(currentDate);
+		} else if (req.body.newStartDate) {
+			const date = new Date(req.body.newStartDate);
+			newStartDate = getWeekStartDate(date);
 		} else {
 			const today = new Date();
 			newStartDate = getWeekStartDate(today);
