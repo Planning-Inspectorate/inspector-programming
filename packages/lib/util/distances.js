@@ -1,5 +1,6 @@
 /**
  * Fairly accurate distance calculation using the Haversine formula
+ * https://www.vcalc.com/wiki/vcalc/haversine-distance - for reference
  *
  * @param {import('../data/types').Coordinates} coordinatesA
  * @param {import('../data/types').Coordinates} coordinatesB

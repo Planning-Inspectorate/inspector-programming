@@ -62,7 +62,11 @@ export function sortCasesByDistance(inspectorCoordinates, caseA, caseB) {
 		distanceBetween(inspectorCoordinates, { lat: caseA.siteAddressLatitude, lng: caseA.siteAddressLongitude }),
 		distanceBetween(inspectorCoordinates, { lat: caseB.siteAddressLatitude, lng: caseB.siteAddressLongitude })
 	];
-	if (distA !== null && distB !== null) return distA === distB ? sortCasesByAge(caseA, caseB) : distA - distB;
+	if (distA !== null && distB !== null) {
+		//if distances are equal then fall back to age sort
+		if (distA === distB) return sortCasesByAge(caseA, caseB);
+		return distA - distB;
+	}
 	if (distA !== null) return -1;
 	if (distB !== null) return 1;
 	return 0;

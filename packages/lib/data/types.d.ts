@@ -2,7 +2,7 @@ import { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/
 import { Event } from '@microsoft/microsoft-graph-types';
 import { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client';
 import { Inspector } from '@pins/inspector-programming-database/src/client';
-import { Decimal } from 'packages/database/src/client/runtime/library';
+import { Decimal } from '@pins/inspector-programming-database/src/client/runtime/library';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;

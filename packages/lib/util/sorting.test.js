@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { sortCasesByAge } from './sorting.js';
+import { sortCasesByAge, sortCasesByDistance } from './sorting.js';
+import { Decimal } from '@prisma/client/runtime/library.js';
 
 describe('sorting', () => {
 	describe('sortCasesByAge', () => {
@@ -182,6 +183,81 @@ describe('sorting', () => {
 				cases.map((c) => c.caseId),
 				['ref4', 'ref2', 'ref1', 'ref5', 'ref3']
 			);
+		});
+	});
+	describe('sortCasesByDistance', () => {
+		const inspectorCoordinates = { lat: 50.4155, lng: -4.8882 }; //Plymouth
+		const cases = {
+			newcastle: { siteAddressLatitude: 54.980328, siteAddressLongitude: -1.6157238 },
+			london: { siteAddressLatitude: 51.4998415, siteAddressLongitude: -0.1246377 },
+			edinburgh: { siteAddressLatitude: 55.953251, siteAddressLongitude: -3.188267 },
+			manchester: { siteAddressLatitude: 53.3497019, siteAddressLongitude: -2.2962547 },
+			portsmouth: { siteAddressLatitude: 50.8038674, siteAddressLongitude: -1.0723581 }
+		};
+		const casesArray = [cases.portsmouth, cases.manchester, cases.edinburgh, cases.london, cases.newcastle];
+
+		it('should sort cases by distance in descending order when specified by sort parameter', () => {
+			let sortedCases = casesArray.sort((a, b) => sortCasesByDistance(inspectorCoordinates, a, b));
+			assert.strictEqual(sortedCases.length, 5, 'Should return the same number of cases');
+			assert.deepStrictEqual(sortedCases, [
+				cases.portsmouth,
+				cases.london,
+				cases.manchester,
+				cases.newcastle,
+				cases.edinburgh
+			]);
+		});
+		it('should place cases with wholly invalid coordinates at the bottom of the list when sorting by distance', async () => {
+			const mockCasesArray = [{ siteAddressLatitude: null, siteAddressLongitude: null }, ...casesArray];
+
+			let sortedCases = mockCasesArray.sort((a, b) => sortCasesByDistance(inspectorCoordinates, a, b));
+			assert.strictEqual(sortedCases.length, 6, 'Should return the same number of cases');
+			assert.deepStrictEqual(sortedCases, [
+				cases.portsmouth,
+				cases.london,
+				cases.manchester,
+				cases.newcastle,
+				cases.edinburgh,
+				{ siteAddressLatitude: null, siteAddressLongitude: null }
+			]);
+		});
+		it('multiple cases with invalid coordinates in different permutations should all be sorted to the bottom of the list when sorting by distance', async () => {
+			const mockCasesArray = [
+				{ siteAddressLatitude: null, siteAddressLongitude: null },
+				{ siteAddressLatitude: null, siteAddressLongitude: -2.2962547 },
+				{ siteAddressLatitude: 54.980328, siteAddressLongitude: null },
+				...casesArray
+			];
+
+			let sortedCases = mockCasesArray.sort((a, b) => sortCasesByDistance(inspectorCoordinates, a, b));
+			assert.strictEqual(sortedCases.length, 8, 'Should return the same number of cases');
+			assert.deepStrictEqual(sortedCases, [
+				cases.portsmouth,
+				cases.london,
+				cases.manchester,
+				cases.newcastle,
+				cases.edinburgh,
+				{ siteAddressLatitude: null, siteAddressLongitude: null },
+				{ siteAddressLatitude: null, siteAddressLongitude: -2.2962547 },
+				{ siteAddressLatitude: 54.980328, siteAddressLongitude: null }
+			]);
+		});
+		it('can sort cases with coordinates in either Decimal or number format', () => {
+			const mockCasesArray = [
+				{ siteAddressLatitude: 54.980328, siteAddressLongitude: -1.6157238 }, //newcastle
+				{ siteAddressLatitude: new Decimal(55.953251), siteAddressLongitude: new Decimal(-3.188267) }, //edinburgh
+				{ siteAddressLatitude: new Decimal(50.8038674), siteAddressLongitude: new Decimal(-1.0723581) }, //portsmouth
+				{ siteAddressLatitude: new Decimal(53.3497019), siteAddressLongitude: new Decimal(-2.2962547) } //manchester
+			];
+
+			let sortedCases = mockCasesArray.sort((a, b) => sortCasesByDistance(inspectorCoordinates, a, b));
+			assert.strictEqual(sortedCases.length, 4, 'Should return the same number of cases');
+			assert.deepStrictEqual(sortedCases, [
+				{ siteAddressLatitude: new Decimal(50.8038674), siteAddressLongitude: new Decimal(-1.0723581) }, //portsmouth
+				{ siteAddressLatitude: new Decimal(53.3497019), siteAddressLongitude: new Decimal(-2.2962547) }, //manchester
+				{ siteAddressLatitude: 54.980328, siteAddressLongitude: -1.6157238 }, //newcastle
+				{ siteAddressLatitude: new Decimal(55.953251), siteAddressLongitude: new Decimal(-3.188267) } //edinburgh
+			]);
 		});
 	});
 });
