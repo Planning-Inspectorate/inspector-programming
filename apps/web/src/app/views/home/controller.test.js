@@ -100,9 +100,9 @@ describe('controller.js', () => {
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
-			assert.strictEqual(args.sortingErrors.length, 1);
+			assert.strictEqual(args.errorSummary.length, 1);
 			assert.strictEqual(args.appeals?.cases?.length, 10);
-			assert.deepStrictEqual(args.sortingErrors, [
+			assert.deepStrictEqual(args.errorSummary, [
 				{ text: 'An inspector must be selected before sorting by distance.', href: '#inspectors' }
 			]);
 			//ensure cases sorted by age by default
