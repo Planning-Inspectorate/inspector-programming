@@ -38,6 +38,8 @@ apps_config = {
     api_app_rg   = "pins-rg-appeals-bo-dev"
   }
 
+  functions_node_version = 22
+
   gov_notify = {
     template_ids = {
       assigned_case                        = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
