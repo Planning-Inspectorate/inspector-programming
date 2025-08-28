@@ -36,7 +36,7 @@ export function buildViewHome(service) {
 
 		//validate sort
 		const sortingErrors = validateSorts(filterQuery.sort, selectedInspector);
-		const sortingErrorList = Object.values(sortingErrors).map((message) => ({ ...message, href: `#` }));
+		const sortingErrorList = Object.values(sortingErrors);
 		//if sort is invalid then sort by age by default
 		if (sortingErrorList.length) filterQuery.sort = 'age';
 
@@ -68,7 +68,11 @@ export function buildViewHome(service) {
 				errors: filterErrors
 			},
 			appeals: appealsViewModel(cases),
-			inspectors: inspectorsViewModel(inspectors, selectedInspectorDetails, isCalendarTab || isInspectorTab),
+			inspectors: inspectorsViewModel(
+				inspectors,
+				selectedInspectorDetails,
+				isCalendarTab || isInspectorTab || sortingErrorList.length > 0
+			),
 			map: {
 				apiKey: service.osMapsApiKey
 			},

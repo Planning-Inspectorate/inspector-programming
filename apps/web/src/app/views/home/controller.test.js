@@ -103,7 +103,7 @@ describe('controller.js', () => {
 			assert.strictEqual(args.sortingErrors.length, 1);
 			assert.strictEqual(args.appeals?.cases?.length, 10);
 			assert.deepStrictEqual(args.sortingErrors, [
-				{ text: 'An inspector must be selected before sorting by distance.' }
+				{ text: 'An inspector must be selected before sorting by distance.', href: '#inspectors' }
 			]);
 			//ensure cases sorted by age by default
 			assert.deepStrictEqual(
