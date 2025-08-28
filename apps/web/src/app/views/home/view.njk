@@ -459,6 +459,8 @@
                 // Initialize tabs
                 submitFormForTab ('#tab_outlookView', 'calendar');
                 submitFormForTab ('#tab_inspector', 'inspector');
+                submitFormForTab('#tab_cases', '');
+                submitFormForTab('#tab_mapView', '');
 
             if (typeof accessibleAutocomplete !== 'undefined') {
             accessibleAutocomplete.enhanceSelectElement({
@@ -472,7 +474,7 @@
     });
 </script>
 
-{% if errorSummary and errorSummary.length != 0 %}
+{% if errorSummary  %}
     <script>
         window.addEventListener('load', () => {
             window.scrollTo(0, 0);
