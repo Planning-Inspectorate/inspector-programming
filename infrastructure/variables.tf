@@ -42,6 +42,8 @@ variable "apps_config" {
       api_app_rg   = string
     })
 
+    functions_node_version = number
+
     gov_notify = object({
       template_ids = object({
         assigned_case                        = string
