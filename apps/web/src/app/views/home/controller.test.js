@@ -1,7 +1,8 @@
 import { describe, mock, test } from 'node:test';
-import { buildViewHome } from './controller.js';
+import { buildPostHome, buildViewHome } from './controller.js';
 import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
+import { format, toZonedTime } from 'date-fns-tz';
 
 describe('controller.js', () => {
 	describe('buildViewHome', () => {
@@ -112,4 +113,109 @@ describe('controller.js', () => {
 			);
 		});
 	});
+	describe('buildPostHome', () => {
+		const mockService = () => {
+			return {
+				logger: mockLogger()
+			};
+		};
+		test('should calculate last weeks start date if calendarAction is prevWeek', async () => {
+			const service = mockService();
+			const req = {
+				body: {
+					inspectorId: 'inspectorId',
+					calendarAction: 'prevWeek',
+					currentStartDate: '2025-08-04T12:00:00Z'
+				}
+			};
+			const res = { redirect: mock.fn() };
+			const controller = buildPostHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const expectedDate = new Date(2025, 6, 28, 0, 0, 0, 0);
+			const expectedDateString = convertDateToDateTimeString(expectedDate);
+			assert.strictEqual(
+				res.redirect.mock.calls[0].arguments[0].includes(
+					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
+				),
+				true
+			);
+		});
+		test('should calculate next weeks start date if calendarAction is nextWeek', async () => {
+			const service = mockService();
+			const req = {
+				body: {
+					inspectorId: 'inspectorId',
+					calendarAction: 'nextWeek',
+					currentStartDate: '2025-08-04T12:00:00Z'
+				}
+			};
+			const res = { redirect: mock.fn() };
+			const controller = buildPostHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const expectedDate = new Date(2025, 7, 11, 0, 0, 0, 0);
+			const expectedDateString = convertDateToDateTimeString(expectedDate);
+			assert.strictEqual(
+				res.redirect.mock.calls[0].arguments[0].includes(
+					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
+				),
+				true
+			);
+		});
+		test('should calculate today weeks start date if calendarAction and newStartDate is not given', async (ctx) => {
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-10-04T12:00:00Z')
+			});
+			const service = mockService();
+			const req = {
+				body: {
+					inspectorId: 'inspectorId'
+				}
+			};
+			const res = { redirect: mock.fn() };
+			const controller = buildPostHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const expectedDate = new Date(2023, 9, 2, 0, 0, 0, 0);
+			const expectedDateString = convertDateToDateTimeString(expectedDate);
+			assert.strictEqual(
+				res.redirect.mock.calls[0].arguments[0].includes(
+					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
+				),
+				true
+			);
+		});
+		test('should calculate week beginning of newStartDate', async () => {
+			const service = mockService();
+			const req = {
+				body: {
+					inspectorId: 'inspectorId',
+					newStartDate: '2025-08-16T12:00:00Z'
+				}
+			};
+			const res = { redirect: mock.fn() };
+			const controller = buildPostHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const expectedDate = new Date(2025, 7, 11, 0, 0, 0, 0);
+			const expectedDateString = convertDateToDateTimeString(expectedDate);
+			assert.strictEqual(
+				res.redirect.mock.calls[0].arguments[0].includes(
+					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
+				),
+				true
+			);
+		});
+	});
 });
+
+/**
+ * @param {Date} date
+ */
+function convertDateToDateTimeString(date) {
+	const timeZone = 'Europe/London';
+	const convertedDate = toZonedTime(date, timeZone);
+	return format(convertedDate, 'EEE MMM dd yyyy HH:mm:ss', { timeZone });
+}
