@@ -1,7 +1,7 @@
 <div class="calendar-container">
     <div class="calendar-header">
         <form method="post">
-            <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+            <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
             <input type="hidden" name="currentStartDate" value="{{ calendar.currentStartDate }}">
             <button type="submit">Today</button>
             <div class="nav-buttons">
@@ -11,7 +11,7 @@
         </form>
         <h2>{{ calendar.weekTitle }}</h2>
         <form method="post" id="week-picker-form">
-            <input type="hidden" name="inspectorId" value="{{ data.inspectorId }}">
+            <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
             <label for="weekPicker" class="arrow-button">↓</label>
             <input type="text" name="newStartDate" id="weekPicker" readonly>
         </div>
