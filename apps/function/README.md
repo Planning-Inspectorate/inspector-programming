@@ -1,0 +1,2 @@
+# Function
+This package includes the Functions used for integration. See [Create a function in Azure from the command line](https://learn.microsoft.com/en-gb/azure/azure-functions/how-to-create-function-azure-cli) for adding new functions.

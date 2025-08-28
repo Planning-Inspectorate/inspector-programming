@@ -1,0 +1,17 @@
+{
+  "name": "inspector-programming-function",
+  "version": "1.0.0",
+  "description": "Function app for handling integrations",
+  "main": "src/functions/*.js",
+  "type": "module",
+  "scripts": {
+    "start": "func start",
+    "test": "node --test"
+  },
+  "private": true,
+  "dependencies": {
+    "@azure/functions": "*",
+    "@pins/inspector-programming-database": "^0.0.0",
+    "dotenv": "*"
+  }
+}
