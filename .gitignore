@@ -96,3 +96,6 @@ workspace.json
 # generated Prisma client
 packages/database/src/client
 tmp
+
+# Azure Function
+local.settings.json
