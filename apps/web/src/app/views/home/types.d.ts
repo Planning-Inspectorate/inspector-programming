@@ -1,5 +1,5 @@
 import { CalendarEntry } from '../../calendar/types';
-import { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
+import { CaseViewModel, Coordinates } from '@pins/inspector-programming-lib/data/types';
 import { InspectorViewModel } from '../../inspector/types';
 import { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from '#util/types';
 
@@ -61,6 +61,7 @@ export interface FilterCaseQuery {
 	lpaRegion?: string[];
 	minimumAge?: string;
 	maximumAge?: string;
+	inspectorCoordinates?: Coordinates;
 }
 
 export interface InspectorsViewModel {

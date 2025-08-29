@@ -1,3 +1,5 @@
+import { distanceBetween } from './distances.js';
+
 /**
  * Normalize query params into Filters object for type safety
  * @param {string | import('qs').ParsedQs | (string | import('qs').ParsedQs)[] | undefined} filters
@@ -24,6 +26,16 @@ export function normalizeFilters(filters) {
 export function filterCases(cases, filters) {
 	//sanitise filters object
 	const cleanFilters = !(typeof filters === 'object' && filters !== null && !Array.isArray(filters)) ? {} : filters;
+
+	//if inspector selected, filter out cases <5km from inspector
+	if (filters.inspectorCoordinates) {
+		cases = cases.filter((c) => {
+			const caseCoordinates = { lat: c.siteAddressLatitude, lng: c.siteAddressLongitude };
+			const distance = distanceBetween(filters.inspectorCoordinates, caseCoordinates);
+			if (distance && distance < 5) return false;
+			return true;
+		});
+	}
 
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided

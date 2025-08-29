@@ -19,9 +19,10 @@ function initialiseMap(apiKey, pins, inspector) {
 		'esri/Graphic',
 		'esri/layers/VectorTileLayer',
 		'esri/geometry/Point',
+		'esri/geometry/Circle',
 		'esri/config',
 		'esri/core/reactiveUtils'
-	], function (Map, MapView, Graphic, VectorTileLayer, Point, esriConfig, reactiveUtils) {
+	], function (Map, MapView, Graphic, VectorTileLayer, Point, Circle, esriConfig, reactiveUtils) {
 		esriConfig.request.interceptors.push({
 			urls: serviceUrl,
 			before: function (params) {
@@ -89,6 +90,30 @@ function initialiseMap(apiKey, pins, inspector) {
 			if (!inspectorData || !inspectorData.latitude || !inspectorData.longitude) {
 				return;
 			}
+
+			const exclusionRadius = new Circle({
+				center: new Point({
+					x: inspectorData.longitude,
+					y: inspectorData.latitude
+				}),
+				geodesic: true,
+				radius: 5,
+				radiusUnit: 'kilometers'
+			});
+
+			const circleGraphic = new Graphic({
+				geometry: exclusionRadius,
+				symbol: {
+					type: 'simple-fill',
+					style: 'none',
+					outline: {
+						width: 2,
+						color: 'red'
+					}
+				}
+			});
+			graphics.push(circleGraphic);
+
 			const point = new Point({
 				x: inspectorData.longitude,
 				y: inspectorData.latitude
