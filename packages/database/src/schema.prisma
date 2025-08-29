@@ -55,6 +55,9 @@ model AppealCase {
   linkedCaseStatus  String?
   leadCaseReference String?
 
+  LeadCase   AppealCase?  @relation("LinkedCases", fields: [leadCaseReference], references: [caseReference], onDelete: NoAction, onUpdate: NoAction)
+  ChildCases AppealCase[] @relation("LinkedCases")
+
   appellantCostsAppliedFor Boolean?
   lpaCostsAppliedFor       Boolean?
 

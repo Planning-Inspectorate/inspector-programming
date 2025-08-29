@@ -33,7 +33,8 @@ describe('CasesClient', () => {
 					leadCaseReference: null,
 					appellantCostsAppliedFor: null,
 					lpaCostsAppliedFor: null,
-					inspectorId: null
+					inspectorId: null,
+					ChildCases: []
 				},
 				{
 					caseReference: 'ref2',
@@ -59,7 +60,8 @@ describe('CasesClient', () => {
 					leadCaseReference: null,
 					appellantCostsAppliedFor: null,
 					lpaCostsAppliedFor: null,
-					inspectorId: null
+					inspectorId: null,
+					ChildCases: []
 				}
 			];
 
@@ -81,7 +83,7 @@ describe('CasesClient', () => {
 					caseReceivedDate: null,
 					caseStatus: 'lpa_questionnaire',
 					caseType: 'W',
-					linkedCases: 0,
+					linkedCaseReferences: [],
 					lpaName: 'Example Local Planning Authority',
 					lpaRegion: '',
 					siteAddressPostcode: 'SY10 7FA',
@@ -89,7 +91,8 @@ describe('CasesClient', () => {
 					siteAddressLongitude: -3.064346,
 					finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 					specialismList: 'None',
-					specialisms: undefined
+					specialisms: undefined,
+					leadCaseReference: null
 				},
 				{
 					allocationBand: 1,
@@ -105,10 +108,11 @@ describe('CasesClient', () => {
 					siteAddressLongitude: -3.001122,
 					lpaName: 'Other Local Planning Authority',
 					lpaRegion: '',
-					linkedCases: 0,
+					linkedCaseReferences: [],
 					finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 					specialisms: undefined,
-					specialismList: 'None'
+					specialismList: 'None',
+					leadCaseReference: null
 				}
 			]);
 		});
@@ -128,11 +132,12 @@ describe('CasesClient', () => {
 				lpaRegion: '',
 				caseStatus: 'lpa_questionnaire',
 				caseAge: 49,
-				linkedCases: 0,
+				linkedCaseReferences: [],
 				caseReceivedDate: null,
 				finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 				specialisms: undefined,
-				specialismList: 'None'
+				specialismList: 'None',
+				leadCaseReference: null
 			},
 			{
 				caseId: 'ref2',
@@ -147,11 +152,12 @@ describe('CasesClient', () => {
 				lpaRegion: '',
 				caseStatus: 'lpa_questionnaire',
 				caseAge: 49,
-				linkedCases: 0,
+				linkedCaseReferences: [],
 				caseReceivedDate: null,
 				finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 				specialisms: undefined,
-				specialismList: 'None'
+				specialismList: 'None',
+				leadCaseReference: null
 			},
 			{
 				caseId: 'ref3',
@@ -166,11 +172,12 @@ describe('CasesClient', () => {
 				lpaRegion: '',
 				caseStatus: 'lpa_questionnaire',
 				caseAge: 49,
-				linkedCases: 0,
+				linkedCaseReferences: [],
 				caseReceivedDate: null,
 				finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 				specialisms: undefined,
-				specialismList: 'None'
+				specialismList: 'None',
+				leadCaseReference: null
 			},
 			{
 				caseId: 'ref4',
@@ -185,11 +192,12 @@ describe('CasesClient', () => {
 				lpaRegion: '',
 				caseStatus: 'lpa_questionnaire',
 				caseAge: 49,
-				linkedCases: 0,
+				linkedCaseReferences: [],
 				caseReceivedDate: null,
 				finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 				specialisms: undefined,
-				specialismList: 'None'
+				specialismList: 'None',
+				leadCaseReference: null
 			},
 			{
 				caseId: 'ref5',
@@ -204,11 +212,12 @@ describe('CasesClient', () => {
 				lpaRegion: '',
 				caseStatus: 'lpa_questionnaire',
 				caseAge: 49,
-				linkedCases: 0,
+				linkedCaseReferences: [],
 				caseReceivedDate: null,
 				finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 				specialisms: undefined,
-				specialismList: 'None'
+				specialismList: 'None',
+				leadCaseReference: null
 			}
 		];
 

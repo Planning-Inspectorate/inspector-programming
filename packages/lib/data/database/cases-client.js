@@ -22,7 +22,11 @@ export class CasesClient {
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
 	async getAllCases() {
-		const cases = await this.#client.appealCase.findMany();
+		const cases = await this.#client.appealCase.findMany({
+			include: {
+				ChildCases: true
+			}
+		});
 		return cases.map((c) => this.caseToViewModel(c));
 	}
 
@@ -45,21 +49,29 @@ export class CasesClient {
 			lpaRegion: c.lpaRegion || '',
 			caseStatus: c.caseStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.caseValidDate || new Date()),
-			linkedCases: this.getLinkedCasesCount(c),
+			linkedCaseReferences: this.getLinkedCaseReferences(c),
 			caseReceivedDate: c.caseCreatedDate || null,
 			finalCommentsDate: c.finalCommentsDueDate || new Date(),
 			specialisms: c.Specialisms,
-			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.name).join(', ') : 'None'
+			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.name).join(', ') : 'None',
+			leadCaseReference: c.leadCaseReference || null
 		};
 	}
 
 	/**
-	 * Returns the number of linked appeals for a case.
+	 * Returns the case references of the linked cases (both child and lead).
 	 * @param {import('@pins/inspector-programming-database/src/client').AppealCase} c
-	 * @returns {number}
+	 * @returns {string[]}
 	 */
-	getLinkedCasesCount(c) {
-		return Array.isArray(c.linkedAppeals) ? c.linkedAppeals.length : 0;
+	getLinkedCaseReferences(c) {
+		const references = [];
+		if (c.ChildCases && c.ChildCases.length > 0) {
+			references.push(...c.ChildCases.map((child) => child.caseReference));
+		}
+		if (c.leadCaseReference) {
+			references.push(c.leadCaseReference);
+		}
+		return references;
 	}
 
 	/**
