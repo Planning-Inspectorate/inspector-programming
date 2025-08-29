@@ -1,6 +1,8 @@
 import { CasesClient } from './cases-client.js';
 import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
+import { formatDateForDisplay } from '../../util/date.js';
+import { getCaseColor } from 'inspector-programming-web/src/app/views/home/view-model.js';
 
 const CACHE_PREFIX = 'cases_';
 
@@ -89,5 +91,23 @@ export class CachedCasesClient {
 		cases = await this.#client.getAllCases();
 		this.#cache.set(key, cases);
 		return cases;
+	}
+
+	/**
+	 * @param c
+	 * @returns {CaseViewModel}
+	 */
+	caseToViewModel(c) {
+		const hasSpecialisms = Array.isArray(c.Specialisms) && c.Specialisms.length > 0;
+		const hasEvents = Array.isArray(c.Events) && c.Events.length > 0;
+		return {
+			...this.#client.caseToViewModel(c),
+			siteAddress: c.siteAddressLine1,
+			specialismList: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
+			appealStartDate: hasEvents ? formatDateForDisplay(c.Events[0].eventStartDateTime, { format: 'dd/MM/yyyy' }) : '',
+			caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
+			eventType: hasEvents ? c.Events[0].eventType : 'No events',
+			caseAgeColor: getCaseColor(c.caseAge)
+		};
 	}
 }
