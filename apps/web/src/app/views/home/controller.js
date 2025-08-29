@@ -30,8 +30,15 @@ export function buildViewHome(service) {
 		const filterErrors = validateFilters(filterQuery);
 		const filterErrorList = Object.values(filterErrors);
 		// if any filters are invalid then apply none
-		if (filterErrorList.length > 0) {
+		if (filterErrorList.length > 0 || !filterQuery.case) {
 			filterQuery.case = {};
+		}
+
+		if (selectedInspectorDetails) {
+			filterQuery.case.inspectorCoordinates = {
+				lat: selectedInspectorDetails.latitude,
+				lng: selectedInspectorDetails.longitude
+			};
 		}
 
 		// validate sort

@@ -56,6 +56,15 @@ describe('filterCases', () => {
 			'Should filter cases to be within given bounds even without provided filters'
 		);
 	});
+	test('should filter cases by distance if inspectorCoordinates given', () => {
+		const cases = [
+			{ siteAddressLatitude: 53.39187376517464, siteAddressLongitude: -3.0184334236250976, caseAge: 10 },
+			{ siteAddressLatitude: 53.37769043861336, siteAddressLongitude: -2.9241815577749253, caseAge: 10 }
+		];
+		const filters = { inspectorCoordinates: { lat: 53.40861797122585, lng: -2.978980043591226 } };
+		const filteredCases = filterCases(cases, filters);
+		assert.strictEqual(filteredCases.length, 1);
+	});
 });
 describe('validateFilters', () => {
 	test('should return no errors if all filters are valid - age filters', () => {
