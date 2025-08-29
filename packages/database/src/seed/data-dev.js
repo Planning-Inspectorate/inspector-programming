@@ -57,7 +57,7 @@ function generateAppeals() {
 		variations.push(...newVariations);
 	}
 
-	return variations.map((variation, index) => {
+	const appeals = variations.map((variation, index) => {
 		// not concerned with time zone issues, just rough dates is OK
 		const valid = addWeeks(now, -Math.floor(index / 2));
 		const created = addDays(valid, -crypto.randomInt(5));
@@ -80,16 +80,35 @@ function generateAppeals() {
 			Events: generateCaseEvents(reference, valid)
 		};
 	});
+
+	// replaced inline linked-case generation with helper
+	const linkedCases = generateLinkedCases(appeals, variations, now);
+	return [...appeals, ...linkedCases];
+}
+
+/**
+ * @param {Array} array The array to shuffle
+ * @returns {Array} The shuffled array
+ */
+function shuffleArray(array) {
+	const result = [...array];
+	for (let i = result.length - 1; i > 0; i--) {
+		const j = crypto.randomInt(i + 1);
+		[result[i], result[j]] = [result[j], result[i]];
+	}
+	return result;
 }
 
 let specialismIdCounter = 0;
 
 function nextSpecialismId() {
-	const id = specialismIdCounter++;
-	if (id >= caseSpecialismIds.length) {
-		throw new Error('No more specialism IDs available');
+	// If we've used all IDs, cycle back to the beginning
+	if (specialismIdCounter >= caseSpecialismIds.length) {
+		specialismIdCounter = 0; // Reset the counter to reuse IDs
 	}
-	return caseSpecialismIds[id];
+	const id = caseSpecialismIds[specialismIdCounter];
+	specialismIdCounter++;
+	return id;
 }
 
 function generateCaseSpecialisms() {
@@ -313,4 +332,52 @@ export async function seedDev(dbClient) {
 	}
 
 	console.log('dev seed complete');
+}
+
+/**
+ * Generate linked (child) cases for a randomly selected 50% of the supplied appeals.
+ * Each selected appeal becomes a lead case with 2 child cases.
+ * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]} appeals
+ * @param {object[]} variations
+ * @param {Date} now
+ * @returns {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]}
+ */
+function generateLinkedCases(appeals, variations, now) {
+	const linkedCases = [];
+
+	// 50% of appeals become lead cases
+	const leadCaseCount = Math.floor(appeals.length * 0.5);
+	const allIndices = Array.from({ length: appeals.length }, (_, i) => i);
+	const shuffledIndices = shuffleArray(allIndices);
+	const selectedLeadIndices = shuffledIndices.slice(0, leadCaseCount);
+
+	for (const leadIndex of selectedLeadIndices) {
+		const leadCaseReference = appeals[leadIndex].caseReference;
+
+		for (let j = 0; j < 2; j++) {
+			const childIndex = appeals.length + linkedCases.length + 1;
+			const paddedIndex = String(childIndex).padStart(5, '0');
+			const reference = `69${paddedIndex}`;
+			const location = mockLocations[childIndex % mockLocations.length];
+			const valid = addWeeks(now, -Math.floor(childIndex / 2));
+			const created = addDays(valid, -crypto.randomInt(5));
+			const finalCommentsDue = addWeeks(valid, 5);
+
+			linkedCases.push({
+				...mockAppeal,
+				...variations[leadIndex % variations.length],
+				siteAddressPostcode: location.siteAddressPostcode,
+				siteAddressLatitude: location.siteAddressLatitude,
+				siteAddressLongitude: location.siteAddressLongitude,
+				caseReference: reference,
+				leadCaseReference,
+				caseCreatedDate: created,
+				caseValidDate: valid,
+				finalCommentsDueDate: finalCommentsDue,
+				Specialisms: generateCaseSpecialisms(),
+				Events: generateCaseEvents(reference, valid)
+			});
+		}
+	}
+	return linkedCases;
 }

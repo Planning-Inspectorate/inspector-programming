@@ -19,7 +19,7 @@
             { text: c.lpaRegion },
             { html: govukTag({text: c.caseStatus }) },
             { html: '<span class="case-border" style="--border-color:#' + c.caseAgeColor + ';">' + c.caseAge + '</span>' },
-            { text: c.linkedCases },
+            { text: c.linkedCaseReferences[0] },
             { text: c.finalCommentsDate }
         ]), caseRows) %}
 {% endfor %}

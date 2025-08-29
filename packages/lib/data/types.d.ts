@@ -25,11 +25,12 @@ export interface CaseViewModel {
 	caseStatus: string | null;
 	caseAge: number;
 	caseAgeColor?: string;
-	linkedCases: number;
+	linkedCaseReferences: string[];
 	caseReceivedDate: Date | null;
 	finalCommentsDate: Date | string;
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
+	leadCaseReference: string | null;
 }
 
 export interface Filters {
