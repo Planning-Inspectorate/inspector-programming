@@ -132,3 +132,24 @@ model InspectorSpecialism {
 
   Inspector Inspector @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
 }
+
+model CalendarEventTiming {
+  id                       String                    @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  CalendarEventTimingRules CalendarEventTimingRule[]
+  prepTime                 Int
+  siteVisitTime            Int
+  reportTime               Int
+  costsTime                Int
+}
+
+model CalendarEventTimingRule {
+  id                    String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  calendarEventTimingId String @db.UniqueIdentifier
+  caseType              String
+  caseProcedure         String
+  allocationLevel       String
+
+  CalendarEventTiming CalendarEventTiming @relation(fields: [calendarEventTimingId], references: [id], onDelete: Cascade)
+
+  @@unique([caseType, caseProcedure, allocationLevel])
+}
