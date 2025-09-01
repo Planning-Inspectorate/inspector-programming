@@ -101,6 +101,8 @@ export class CachedCasesClient {
 	 * @returns {number}
 	 */
 	determinePage(requestedPage, totalPages) {
+		//default to first page if not a number
+		if (isNaN(+requestedPage)) return 1;
 		//if desired page exceeds total pages, fallback to highest available page
 		if (requestedPage > totalPages) return totalPages;
 		return +requestedPage;
