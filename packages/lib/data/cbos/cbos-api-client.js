@@ -1,4 +1,13 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+
+const VALID_APPEAL_STATUS = [
+	APPEAL_CASE_STATUS.READY_TO_START,
+	APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
+	APPEAL_CASE_STATUS.STATEMENTS,
+	APPEAL_CASE_STATUS.FINAL_COMMENTS,
+	APPEAL_CASE_STATUS.EVENT
+]; // APPEAL_CASE_STATUS.EVIDENCE, APPEAL_CASE_STATUS.WITNESSES
 
 /**
  * Client for interacting with the CBOS API, providing methods to fetch cases,
@@ -32,6 +41,87 @@ export class CbosApiClient {
 		this.config = cbosConfig;
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
 		this.logger = logger;
+	}
+
+	/**
+	 * Fetches all cases for the user.
+	 * @returns {Promise<{ cases: Object[], ids: number[] }>} An object containing the array of case view models.
+	 * @throws {Error} If fetching cases fails.
+	 */
+	async getAllUnassignedCases({ pageNumber = 1, pageSize = 10 } = {}) {
+		/**
+		 * @type {string[]}
+		 */
+		let appealIds = [];
+		for (let appealStatus of VALID_APPEAL_STATUS) {
+			try {
+				const ids = await this.fetchAppealIds({ pageNumber, pageSize, appealStatus });
+				appealIds = appealIds.concat(ids);
+			} catch (error) {
+				this.logger.error({ error: error }, '[CaseController] Error fetching case ids');
+				throw new Error('Failed to fetch cases. Please try again later.');
+			}
+		}
+
+		try {
+			const appealDetails = await this.fetchAppealDetails(appealIds);
+			let mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c)));
+			return { cases: mappedAppeals, ids: appealIds };
+		} catch (error) {
+			this.logger.error({ error: error }, '[CaseController] Error fetching case details');
+			throw new Error('Failed to fetch cases. Please try again later.');
+		}
+	}
+
+	/**
+	 * Maps an appeal to appeal case for db
+	 * @param {Object} c - The appeal case object.
+	 * @returns {Object} The mapped view model object.
+	 */
+	async appealToAppealCaseModel(c) {
+		let linkedCaseStatus;
+		let leadCaseReference;
+
+		if (c.isParentAppeal) {
+			linkedCaseStatus = 'Parent';
+		} else if (c.isChildAppeal) {
+			linkedCaseStatus = 'Child';
+			// TODO - process c.linkedAppeals here
+			leadCaseReference = '';
+		}
+
+		return {
+			caseId: c.appealId,
+			caseReference: c.appealReference,
+			caseType: (await this.getAppealType(c.appealType)) || '',
+			caseStatus: c.appealStatus || 'Unassigned',
+			caseProcedure: c.procedureType || '',
+			originalDevelopmentDescription: '',
+			allocationLevel: c.allocationDetails?.level || '',
+			allocationBand: c.allocationDetails?.band,
+			siteAddressLine1: c.appealSite.addressLine1 || '',
+			siteAddressLine2: c.appealSite.addressLine2 || '',
+			siteAddressTown: '',
+			siteAddressCounty: c.appealSite.county || '',
+			siteAddressPostcode: c.appealSite?.postCode || '',
+			siteAddressLatitude: null,
+			siteAddressLongitude: null,
+			lpaCode: '',
+			lpaName: c.localPlanningDepartment || '',
+			lpaRegion: c.lpaRegion || '',
+			caseCreatedDate: c.createdAt,
+			caseValidDate: c.validAt,
+			finalCommentsDueDate: c.appealTimetable?.finalCommentsDueDate
+				? new Date(c.appealTimetable.finalCommentsDueDate)
+				: new Date(),
+			linkedCaseStatus,
+			leadCaseReference
+			// appellantCostsAppliedFor
+			// lpaCostsAppliedFor
+			// inspectorId
+			// Events
+			// Specialisms
+		};
 	}
 
 	/**
@@ -99,9 +189,6 @@ export class CbosApiClient {
 			allocationBand: c.allocationDetails?.band || '',
 			caseLevel: c.allocationDetails?.level || '',
 			siteAddressPostcode: c.appealSite?.postCode || '',
-			lpaName: c.localPlanningDepartment || '',
-			lpaRegion: c.lpaRegion || '',
-			caseStatus: c.appealStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.validAt),
 			linkedCases: this.getLinkedCasesCount(c),
 			finalCommentsDate: c.appealTimetable?.finalCommentsDueDate
@@ -139,8 +226,11 @@ export class CbosApiClient {
 	 * @returns {Promise<string[]>} Promise resolving to an array of appeal IDs.
 	 * @throws {Error} If fetching appeal IDs fails.
 	 */
-	async fetchAppealIds({ pageNumber = 1, pageSize = 10 } = {}) {
-		const url = `${this.config.apiUrl}/appeals?hasInspector=false&pageNumber=${pageNumber}&pageSize=${pageSize}`;
+	async fetchAppealIds({ pageNumber = 1, pageSize = 10, appealStatus = '' } = {}) {
+		let url = `${this.config.apiUrl}/appeals?hasInspector=false&pageNumber=${pageNumber}&pageSize=${pageSize}`;
+		if (appealStatus != '') {
+			url += `&status=${appealStatus}`;
+		}
 		try {
 			const response = await this.fetchWithTimeout(url);
 			if (!response.ok) {

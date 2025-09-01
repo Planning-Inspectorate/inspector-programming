@@ -23,6 +23,7 @@ datasource db {
 /// see https://github.com/Planning-Inspectorate/data-model/
 model AppealCase {
   caseReference                  String  @id
+  caseId                         Int     @unique
   caseStatus                     String?
   caseType                       String?
   caseProcedure                  String?
