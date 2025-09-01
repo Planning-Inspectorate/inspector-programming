@@ -37,6 +37,15 @@ export interface Filters {
 	maximumAge?: string;
 }
 
+export interface FilterQuery {
+	case?: FilterCaseQuery;
+
+	limit?: number;
+	page?: number;
+	sort?: string | 'age' | 'distance' | 'hybrid';
+	inspectorId?: string;
+}
+
 export interface InspectorViewModel extends Inspector {
 	specialisms: Specialism[];
 	specialismsList: string;

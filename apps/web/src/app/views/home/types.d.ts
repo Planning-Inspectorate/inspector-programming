@@ -44,15 +44,6 @@ export interface FilterErrors {
 	maximumAge?: TextValue;
 }
 
-export interface FilterQuery {
-	case?: FilterCaseQuery;
-
-	limit?: number;
-	page?: number;
-	sort?: string | 'age' | 'distance' | 'hybrid';
-	inspectorId?: string;
-}
-
 export interface FilterCaseQuery {
 	allocationLevel?: string[];
 	caseProcedure?: string[];
