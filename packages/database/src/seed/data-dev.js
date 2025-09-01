@@ -69,6 +69,7 @@ function generateAppeals() {
 		return {
 			...mockAppeal,
 			...variation,
+			caseId: index,
 			siteAddressPostcode: location.siteAddressPostcode,
 			siteAddressLatitude: location.siteAddressLatitude,
 			siteAddressLongitude: location.siteAddressLongitude,
