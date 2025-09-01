@@ -12,6 +12,7 @@
   "scripts": {
     "commitlint": "commitlint --from=$(git cherry origin/main | head -n 1 | cut -c 3-)",
     "db-migrate-dev": "npm run migrate-dev --workspace @pins/inspector-programming-database",
+    "db-reset-dev": "npm run reset-dev --workspace @pins/inspector-programming-database",
     "db-migrate-prod": "npm run migrate-prod --workspace @pins/inspector-programming-database",
     "db-generate": "npm run generate --workspace @pins/inspector-programming-database",
     "db-seed": "npm run seed --workspace @pins/inspector-programming-database",
