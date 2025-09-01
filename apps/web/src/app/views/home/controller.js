@@ -39,13 +39,14 @@ export function buildViewHome(service) {
 		//if sort is invalid then sort by age by default
 		if (sortingErrorList.length) filterQuery.sort = 'age';
 
-		const { cases, total } = await service.casesClient.getCases(
+		const { cases, total, page } = await service.casesClient.getCases(
 			filterQuery.case,
 			filterQuery.sort,
 			filterQuery.page,
 			filterQuery.limit,
 			selectedInspector
 		);
+		filterQuery.page = page; //update displayed page after validating against number of results
 
 		const paginationDetails = paginationValues(req, total, filterQuery);
 
@@ -109,6 +110,7 @@ export function buildViewHome(service) {
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');
 
+		console.info(viewModel);
 		return res.render('views/home/view.njk', viewModel);
 	};
 }

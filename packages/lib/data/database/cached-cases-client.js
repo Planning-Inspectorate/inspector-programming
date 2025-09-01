@@ -47,7 +47,7 @@ export class CachedCasesClient {
 	 * @param {number} page
 	 * @param {number} pageSize
 	 * @param {import("@pins/inspector-programming-lib/data/types").InspectorViewModel|undefined} selectedInspector
-	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number }>}
+	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number, page: number }>}
 	 */
 	async getCases(filters, sort, page, pageSize, selectedInspector) {
 		const allCases = await this.getAllCases();
@@ -71,8 +71,11 @@ export class CachedCasesClient {
 				break;
 		}
 
-		//paginate
-		return this.#client.paginateCases(sortedCases, page, pageSize);
+		//paginate and validate page number based on number of results
+		const totalPages = Math.max(1, Math.ceil((sortedCases.length || 0) / pageSize)) || 1;
+		const processedPage = this.determinePage(page, totalPages);
+		const paginatedResults = await this.#client.paginateCases(sortedCases, processedPage, pageSize);
+		return { ...paginatedResults, page: processedPage };
 	}
 
 	/**
@@ -89,5 +92,17 @@ export class CachedCasesClient {
 		cases = await this.#client.getAllCases();
 		this.#cache.set(key, cases);
 		return cases;
+	}
+
+	/**
+	 * Determines the current page number by validating the requested page against the number of results
+	 * @param {number} requestedPage
+	 * @param {number} totalPages
+	 * @returns {number}
+	 */
+	determinePage(requestedPage, totalPages) {
+		//if desired page exceeds total pages, fallback to highest available page
+		if (requestedPage > totalPages) return totalPages;
+		return +requestedPage;
 	}
 }
