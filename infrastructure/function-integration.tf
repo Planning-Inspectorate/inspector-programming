@@ -30,7 +30,7 @@ module "function_integration" {
 
   # settings
   function_node_version = var.apps_config.functions_node_version
-  key_vault_id          = azurerm_key_vault.main.id
+#   key_vault_id          = azurerm_key_vault.main.id
   app_settings = {
     SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
   }
