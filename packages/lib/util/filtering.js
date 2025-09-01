@@ -39,7 +39,7 @@ export function filterCases(cases, filters) {
 /**
  *	Validates filter object and returns any errors back to display to client under their respective filter field
  *
- * @param {import('@pins/inspector-programming-lib/data/types.js').Filters} filters
+ * @param {import('@pins/inspector-programming-lib/data/types.js').FilterQuery} filters
  * @returns {ValidationErrors}
  */
 export function validateFilters(filters) {

@@ -50,6 +50,11 @@ export function toCaseViewModel(c) {
 	};
 }
 
+/**
+ * Determines the color code based on the age of the case.
+ * @param {number} caseAge
+ * @returns
+ */
 export function getCaseColor(caseAge) {
 	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
 	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
@@ -59,10 +64,10 @@ export function getCaseColor(caseAge) {
 /**
  * @param {import('qs').ParsedQs} query
  * @param {string} [previousSort]
- * @returns {import('./types.js').FilterQuery}
+ * @returns {import('@pins/inspector-programming-lib/data/types.js').FilterQuery}
  */
 export function filtersQueryViewModel(query, previousSort) {
-	/** @type {import('./types.js').FilterQuery} */
+	/** @type {import('@pins/inspector-programming-lib/data/types.js').FilterQuery} */
 	const filters = {
 		page: query.page ? Number(query.page) : 1,
 		limit: query.limit ? Number(query.limit) : 10,
@@ -101,8 +106,8 @@ export function filtersQueryViewModel(query, previousSort) {
 }
 
 /**
- * @param {import('../../inspector/types.js').Inspector[]} inspectors
- * @param {import('../../inspector/types.js').Inspector} [selectedInspector]
+ * @param {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel[]} inspectors
+ * @param {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel} [selectedInspector]
  * @param {boolean} [showError]
  * @returns {import('./types.js').InspectorsViewModel}
  */
