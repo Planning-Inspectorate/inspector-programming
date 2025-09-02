@@ -9,6 +9,11 @@ updates:
     directory: '/' # Location of package manifests
     schedule:
       interval: 'weekly'
+    groups:
+      prisma: # group prisma library and client updates together
+        patterns:
+          - 'prisma'
+          - '@prisma/*'
   - package-ecosystem: 'terraform'
     directory: '/infrastructure' # Location of package manifests
     schedule:
