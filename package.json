@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@azure/functions": "^4.7.2",
-    "@azure/identity": "^4.10.2",
+    "@azure/identity": "^4.11.1",
     "@azure/msal-node": "^3.7.2",
     "@date-fns/tz": "^1.4.1",
     "@faker-js/faker": "^10.0.0",
