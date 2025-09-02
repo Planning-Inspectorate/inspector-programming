@@ -12,8 +12,8 @@ apps_config = {
 
   api = {
     events = {
-      days_past   = 30
-      days_future = 7
+      days_past   = 1
+      days_future = 183 # approx 6 months
     }
     mock_data = false
   }
@@ -22,10 +22,12 @@ apps_config = {
     client_id                = "d26a7ba3-6f35-4ab6-b395-7e1e971ab6c7"
     group_application_access = "128f1af5-2438-443b-bec0-99e93e3989d0"
     groups = { # TODO - set these
-      inspectors           = ""
-      team_leads           = ""
-      national_team        = ""
-      api_inspector_groups = []
+      inspectors    = ""
+      team_leads    = ""
+      national_team = ""
+      api_inspector_groups = [
+        "dfcab300-f268-4eb3-820e-1758fa69c150"
+      ]
     }
   }
 
