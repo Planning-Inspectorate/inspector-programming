@@ -70,6 +70,10 @@ components:
           type: string
         endDate:
           type: string
+        isAllDay:
+          type: boolean
+        isOutOfOffice:
+          type: boolean
       required:
         - id
         - userEmail

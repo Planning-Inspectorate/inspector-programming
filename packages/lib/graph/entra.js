@@ -70,7 +70,7 @@ export class EntraClient {
 			.api(
 				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999`
 			)
-			.select(['id', 'subject', 'start', 'end'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
 			.header('Prefer', 'outlook.timezone="Europe/London"')
 			.get();
 	}
@@ -92,7 +92,7 @@ export class EntraClient {
 		const listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
-			.select(['id', 'subject', 'start', 'end'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
 			.top(PER_PAGE);
 
 		const events = [];

@@ -4,6 +4,8 @@ export interface CalendarEvent {
 	title: string;
 	startDate: string;
 	endDate: string;
+	isAllDay?: boolean;
+	isOutOfOffice?: boolean;
 }
 
 export interface NamedTestDates {
