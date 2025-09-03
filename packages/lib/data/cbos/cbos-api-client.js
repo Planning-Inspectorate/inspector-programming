@@ -6,8 +6,10 @@ const VALID_APPEAL_STATUS = [
 	APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
 	APPEAL_CASE_STATUS.STATEMENTS,
 	APPEAL_CASE_STATUS.FINAL_COMMENTS,
-	APPEAL_CASE_STATUS.EVENT
-]; // APPEAL_CASE_STATUS.EVIDENCE, APPEAL_CASE_STATUS.WITNESSES
+	APPEAL_CASE_STATUS.EVENT,
+	APPEAL_CASE_STATUS.EVIDENCE,
+	APPEAL_CASE_STATUS.WITNESSES
+];
 
 /**
  * Client for interacting with the CBOS API, providing methods to fetch cases,
@@ -45,28 +47,21 @@ export class CbosApiClient {
 
 	/**
 	 * Fetches all cases for the user.
-	 * @returns {Promise<{ cases: Object[], ids: number[] }>} An object containing the array of case view models.
+	 * @returns {Promise<{ cases: Object[], caseReferences: string[] }>} An object containing the array of case view models.
 	 * @throws {Error} If fetching cases fails.
 	 */
-	async getAllUnassignedCases({ pageNumber = 1, pageSize = 10 } = {}) {
-		/**
-		 * @type {string[]}
-		 */
-		let appealIds = [];
-		for (let appealStatus of VALID_APPEAL_STATUS) {
-			try {
-				const ids = await this.fetchAppealIds({ pageNumber, pageSize, appealStatus });
-				appealIds = appealIds.concat(ids);
-			} catch (error) {
-				this.logger.error({ error: error }, '[CaseController] Error fetching case ids');
-				throw new Error('Failed to fetch cases. Please try again later.');
-			}
-		}
-
+	async getUnassignedCases({ pageNumber = 1, pageSize = 10, fetchAll = true } = {}) {
 		try {
+			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
 			const appealDetails = await this.fetchAppealDetails(appealIds);
-			let mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c)));
-			return { cases: mappedAppeals, ids: appealIds };
+			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c)));
+			const filteredAppeals = mappedAppeals.filter((appeal) => VALID_APPEAL_STATUS.includes(appeal.caseStatus));
+			const filteredCaseReferences = [];
+			for (const appeal of filteredAppeals) {
+				filteredCaseReferences.push(appeal.caseReference);
+			}
+
+			return { cases: filteredAppeals, caseReferences: filteredCaseReferences };
 		} catch (error) {
 			this.logger.error({ error: error }, '[CaseController] Error fetching case details');
 			throw new Error('Failed to fetch cases. Please try again later.');
@@ -223,21 +218,34 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch appeal IDs for a given Azure AD user.
-	 * @returns {Promise<string[]>} Promise resolving to an array of appeal IDs.
+	 * @returns {Promise<number[]>} Promise resolving to an array of appeal IDs.
 	 * @throws {Error} If fetching appeal IDs fails.
 	 */
-	async fetchAppealIds({ pageNumber = 1, pageSize = 10, appealStatus = '' } = {}) {
-		let url = `${this.config.apiUrl}/appeals?hasInspector=false&pageNumber=${pageNumber}&pageSize=${pageSize}`;
-		if (appealStatus != '') {
-			url += `&status=${appealStatus}`;
-		}
+	async fetchAppealIds({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
 		try {
-			const response = await this.fetchWithTimeout(url);
-			if (!response.ok) {
-				throw new Error(`Failed to fetch appeal IDs. Status: ${response.status}`);
+			/**
+			 * @type {any[]}
+			 */
+			let appealIds = [];
+			let continueToFetch = true;
+			while (continueToFetch) {
+				const url = `${this.config.apiUrl}/appeals?hasInspector=false&pageNumber=${pageNumber}&pageSize=${pageSize}`;
+				const response = await this.fetchWithTimeout(url);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch appeal IDs. Status: ${response.status}`);
+				}
+				const data = await response.json();
+				const maxPageNumber = data.pageCount;
+
+				if (fetchAll && pageNumber < maxPageNumber) {
+					pageSize = data.itemCount;
+				} else {
+					continueToFetch = false;
+					appealIds = data.items?.map((item) => item.appealId) || [];
+				}
 			}
-			const data = await response.json();
-			return data.items?.map((item) => item.appealId) || [];
+
+			return appealIds;
 		} catch (error) {
 			const message = error?.error || error?.message || 'Failed to fetch appeal IDs';
 			throw new Error(`Failed to fetch appeal IDs: ${message}`);
@@ -246,7 +254,7 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch details for each appeal ID in parallel.
-	 * @param {string[]} appealIds - Array of appeal IDs.
+	 * @param {number[]} appealIds - Array of appeal IDs.
 	 * @returns {Promise<Object[]>} Promise resolving to an array of appeal detail objects.
 	 * @throws {Error} If fetching any appeal details fails.
 	 */

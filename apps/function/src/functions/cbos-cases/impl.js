@@ -8,8 +8,8 @@ export function buildCbosFetchCases(service) {
 	return async (timer, context) => {
 		try {
 			context.log('fetching cases from CBOS');
-			const appealsData = await service.cbosClient.getAllUnassignedCases({ pageSize: 100 });
-			await service.dbClient.$executeRaw`SELECT 1`; // dummy query to use the dbClient
+			const appealsData = await service.cbosClient.getUnassignedCases();
+
 			await service.dbClient.$transaction(
 				appealsData.cases.map((c) =>
 					service.dbClient.appealCase.upsert({
@@ -22,8 +22,8 @@ export function buildCbosFetchCases(service) {
 
 			await service.dbClient.appealCase.deleteMany({
 				where: {
-					caseId: {
-						notIn: appealsData.ids
+					caseReference: {
+						notIn: appealsData.caseReferences
 					}
 				}
 			});
