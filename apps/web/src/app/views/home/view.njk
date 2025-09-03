@@ -16,6 +16,10 @@
 
 {% from "views/home/map/map.njk" import osMap %}
 
+{% from "views/macros/compile-query-fields.njk" import compileSortPaginationQueryFields %}
+{% from "views/macros/compile-query-fields.njk" import compileFilterQueryFields %}
+
+
 {% block pageContent %}
 <div class="filter-container">
     <div class="app-filter">
@@ -216,10 +220,9 @@
                         classes: "custom-filter-dropdown",
                         open: true
                     }) }}
+                    {{ compileSortPaginationQueryFields(filters) }}
                     <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                    <input type="hidden" name="limit" value="{{ filters.query.limit }}">
                     <input type="hidden" name="page" value="{{ filters.query.page }}">
-                    <input type="hidden" name="sort" value="{{ filters.query.sort }}">
                 </form>
             </div>
         </div>
@@ -256,8 +259,8 @@
                                 </a>{% if not loop.last %} | {% endif %}
                             {% endfor %}
                         </div>
-                <input type="hidden" name="sort" value="{{ filters.query.sort }}">
-                <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+                {{ compileFilterQueryFields(filters) }}
+                {{ compileSortPaginationQueryFields(filters)}}
                 <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
                 <input type="hidden" name="page" value="{{ filters.query.page }}">
             </form>
@@ -389,16 +392,6 @@
                 const sortPaginationForm = document.getElementById('sort-pagination-form');
                 const filterForm = document.getElementById('filter-form');
                 if (!sortPaginationForm || !filterForm) return;
-
-                // Copy inputs from the filter form whose name attrs start with 'filters[' into sort form
-                const filterInputs = filterForm.querySelectorAll('input[name^="filters["]');
-                filterInputs.forEach(input => {
-                    const clone = document.createElement('input');
-                    clone.type = 'hidden';
-                    clone.name = input.name;
-                    clone.value = input.value;
-                    sortPaginationForm.appendChild(clone);
-                });
 
                 if(e.target?.dataset?.sort){
                     const sortInput = sortPaginationForm.querySelector('input[name="sort"]');

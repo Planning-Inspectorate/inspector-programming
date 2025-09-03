@@ -1,0 +1,26 @@
+{% macro compileFilterQueryFields(filters) %}
+  {% for key, value in filters.query.case %}
+    {% if value is defined and value != "" %}
+      {# Normalize single string to array for iteration #}
+      {% set val = value %}
+      {% if val is string %}
+        {% set val = [val] %}
+      {% endif %}
+
+      {% for v in val %}
+        <input type="hidden" name="filters[{{ key }}]" value="{{ v }}">
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro compileSortPaginationQueryFields(filters) %}
+  {# Preserve other top-level params #}
+  {% if filters.query.sort %}
+    <input type="hidden" name="sort" value="{{ filters.query.sort }}">
+  {% endif %}
+  {% if filters.query.limit %}
+    <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+  {% endif %}
+{% endmacro %}
+
