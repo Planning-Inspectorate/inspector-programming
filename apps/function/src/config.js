@@ -15,7 +15,8 @@ export function loadConfig() {
 		CBOS_FETCH_CASES_SCHEDULE,
 		NODE_ENV,
 		SQL_CONNECTION_STRING,
-		LOG_LEVEL
+		LOG_LEVEL,
+		OS_API_KEY
 	} = process.env;
 
 	if (!SQL_CONNECTION_STRING) {
@@ -33,6 +34,9 @@ export function loadConfig() {
 			datasourceUrl: SQL_CONNECTION_STRING
 		},
 		logLevel: LOG_LEVEL || 'info',
-		NODE_ENV: NODE_ENV || 'development'
+		NODE_ENV: NODE_ENV || 'development',
+		osApi: {
+			key: OS_API_KEY
+		}
 	};
 }

@@ -10,4 +10,7 @@ interface Config {
 	database: Prisma.PrismaClientOptions;
 	NODE_ENV: string;
 	logLevel: string;
+	osApi: {
+		key: string;
+	};
 }

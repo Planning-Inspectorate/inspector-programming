@@ -1,4 +1,5 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 
 const VALID_APPEAL_STATUS = [
@@ -37,12 +38,14 @@ export class CbosApiClient {
 	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
 	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
 	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
+	 * @param {string} osApiKey - Key for OS API
 	 * @param {Object} logger - Logger instance for logging warnings and errors.
 	 */
-	constructor(cbosConfig, logger) {
+	constructor(cbosConfig, osApiKey, logger) {
 		this.config = cbosConfig;
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
 		this.logger = logger;
+		this.osApiClient = new OsApiClient(osApiKey);
 	}
 
 	/**
@@ -74,8 +77,7 @@ export class CbosApiClient {
 	 * @returns {Object} The mapped view model object.
 	 */
 	async appealToAppealCaseModel(c) {
-		let linkedCaseStatus;
-		let leadCaseReference;
+		let linkedCaseStatus, leadCaseReference, latitude, longitude;
 
 		if (c.isParentAppeal) {
 			linkedCaseStatus = 'Parent';
@@ -83,6 +85,22 @@ export class CbosApiClient {
 			linkedCaseStatus = 'Child';
 			// TODO - process c.linkedAppeals here
 			leadCaseReference = '';
+		}
+
+		try {
+			const appealCoordinates = await this.osApiClient.addressesForPostcode(c.appealSite.postCode);
+			if (appealCoordinates.results && appealCoordinates.results.length > 0) {
+				const locationData = appealCoordinates.results[0];
+				if ('DPA' in locationData) {
+					latitude = locationData.DPA.LAT;
+					longitude = locationData.DPA.LNG;
+				} else if ('LPI' in locationData) {
+					latitude = locationData.LPI.LAT;
+					longitude = locationData.LPI.LNG;
+				}
+			}
+		} catch (error) {
+			this.logger.error(`Failed to fetch postcode coordinates: ${error}`);
 		}
 
 		return {
@@ -99,8 +117,8 @@ export class CbosApiClient {
 			siteAddressTown: '',
 			siteAddressCounty: c.appealSite.county || '',
 			siteAddressPostcode: c.appealSite?.postCode || '',
-			siteAddressLatitude: null,
-			siteAddressLongitude: null,
+			siteAddressLatitude: latitude,
+			siteAddressLongitude: longitude,
 			lpaCode: '',
 			lpaName: c.localPlanningDepartment || '',
 			lpaRegion: c.lpaRegion || '',
