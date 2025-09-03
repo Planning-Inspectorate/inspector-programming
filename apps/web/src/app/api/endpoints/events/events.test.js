@@ -142,13 +142,17 @@ describe('events', () => {
 								id: 'id1',
 								subject: 'Test Event 1',
 								start: { dateTime: dates.twoDaysAgo.toISOString() },
-								end: { dateTime: dates.oneDayAgo.toISOString() }
+								end: { dateTime: dates.oneDayAgo.toISOString() },
+								isAllDay: true,
+								showAs: 'oof'
 							},
 							{
 								id: 'id2',
 								subject: 'Test Event 2',
 								start: { dateTime: dates.fourDaysAgo.toISOString() },
-								end: { dateTime: dates.oneDayAgo.toISOString() }
+								end: { dateTime: dates.oneDayAgo.toISOString() },
+								isAllDay: false,
+								showAs: 'busy'
 							}
 						];
 					case '7a0c62e2-182a-47a8-987a-26d0faa02876':
@@ -157,7 +161,9 @@ describe('events', () => {
 								id: 'id3',
 								subject: 'Test Event 3',
 								start: { dateTime: dates.threeDaysAgo.toISOString() },
-								end: { dateTime: dates.oneDayAgo.toISOString() }
+								end: { dateTime: dates.oneDayAgo.toISOString() },
+								isAllDay: false,
+								showAs: 'free'
 							}
 						];
 				}
@@ -172,21 +178,27 @@ describe('events', () => {
 					userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
 					title: 'Test Event 1',
 					startDate: dates.twoDaysAgo.toISOString(),
-					endDate: dates.oneDayAgo.toISOString()
+					endDate: dates.oneDayAgo.toISOString(),
+					isAllDay: true,
+					isOutOfOffice: true
 				},
 				{
 					id: 'id2',
 					userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
 					title: 'Test Event 2',
 					startDate: dates.fourDaysAgo.toISOString(),
-					endDate: dates.oneDayAgo.toISOString()
+					endDate: dates.oneDayAgo.toISOString(),
+					isAllDay: false,
+					isOutOfOffice: false
 				},
 				{
 					id: 'id3',
 					userEmail: 'inspector-programming-test-2@planninginspectorate.gov.uk',
 					title: 'Test Event 3',
 					startDate: dates.threeDaysAgo.toISOString(),
-					endDate: dates.oneDayAgo.toISOString()
+					endDate: dates.oneDayAgo.toISOString(),
+					isAllDay: false,
+					isOutOfOffice: false
 				}
 			]);
 		});
@@ -229,14 +241,18 @@ describe('events', () => {
 							id: 'id1',
 							subject: 'Test Event 1',
 							start: { dateTime: dates.twoDaysAgo.toISOString() },
-							end: { dateTime: dates.oneDayAgo.toISOString() }
+							end: { dateTime: dates.oneDayAgo.toISOString() },
+							isAllDay: false,
+							showAs: 'busy'
 						},
 						//future event
 						{
 							id: 'id2',
 							subject: 'Test Event 2',
 							start: { dateTime: dates.oneDayAgo.toISOString() },
-							end: { dateTime: dates.twoDaysAhead.toISOString() }
+							end: { dateTime: dates.twoDaysAhead.toISOString() },
+							isAllDay: true,
+							showAs: 'oof'
 						}
 					];
 				case '7a0c62e2-182a-47a8-987a-26d0faa02876':
@@ -245,7 +261,9 @@ describe('events', () => {
 							id: 'id3',
 							subject: 'Test Event 3',
 							start: { dateTime: dates.threeDaysAgo.toISOString() },
-							end: { dateTime: dates.oneDayAgo.toISOString() }
+							end: { dateTime: dates.oneDayAgo.toISOString() },
+							isAllDay: false,
+							showAs: 'free'
 						}
 					];
 			}
@@ -260,21 +278,27 @@ describe('events', () => {
 				userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
 				title: 'Test Event 1',
 				startDate: dates.twoDaysAgo.toISOString(),
-				endDate: dates.oneDayAgo.toISOString()
+				endDate: dates.oneDayAgo.toISOString(),
+				isAllDay: false,
+				isOutOfOffice: false
 			},
 			{
 				id: 'id2',
 				userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
 				title: 'Test Event 2',
 				startDate: dates.oneDayAgo.toISOString(),
-				endDate: dates.twoDaysAhead.toISOString()
+				endDate: dates.twoDaysAhead.toISOString(),
+				isAllDay: true,
+				isOutOfOffice: true
 			},
 			{
 				id: 'id3',
 				userEmail: 'inspector-programming-test-2@planninginspectorate.gov.uk',
 				title: 'Test Event 3',
 				startDate: dates.threeDaysAgo.toISOString(),
-				endDate: dates.oneDayAgo.toISOString()
+				endDate: dates.oneDayAgo.toISOString(),
+				isAllDay: false,
+				isOutOfOffice: false
 			}
 		]);
 	});

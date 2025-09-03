@@ -23,6 +23,8 @@ export interface CalendarEvent {
 		dateTime: string;
 		timeZone: string;
 	};
+	isAllDay?: boolean;
+	showAs?: string;
 }
 
 interface AuthSession {
