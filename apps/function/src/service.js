@@ -28,7 +28,7 @@ export class FunctionService {
 		const logger = initLogger(config);
 		this.logger = logger;
 		this.dbClient = newDatabaseClient(config.database);
-		this.cbosClient = new CbosApiClient(config.cbos, logger);
+		this.cbosClient = new CbosApiClient(config.cbos, config.osApi.key, logger);
 	}
 
 	get cbosFetchCasesSchedule() {

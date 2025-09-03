@@ -27,10 +27,17 @@ export function buildCbosFetchCases(service) {
 					}
 				}
 			});
+
+			await service.dbClient.appealCasePollStatus.create({
+				data: {
+					lastPollAt: new Date(),
+					casesFetched: appealsData.caseReferences.length
+				}
+			});
+
 			context.log('cases fetched');
 		} catch (error) {
 			context.log('Error during case fetch:', error.message);
-			console.log(error.message);
 			throw new Error('Error during case fetch');
 		} finally {
 			context.log('timer object:', timer);
