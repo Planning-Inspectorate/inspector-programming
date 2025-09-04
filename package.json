@@ -31,7 +31,7 @@
     "@date-fns/tz": "^1.4.1",
     "@faker-js/faker": "^10.0.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "@planning-inspectorate/data-model": "^1.13.0",
+    "@planning-inspectorate/data-model": "^1.16.0",
     "@prisma/client": "^6.15.0",
     "accessible-autocomplete": "^3.0.1",
     "body-parser": "^2.2.0",
