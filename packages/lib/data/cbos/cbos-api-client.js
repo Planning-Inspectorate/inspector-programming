@@ -1,5 +1,4 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
-import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 
 const VALID_APPEAL_STATUS = [
@@ -32,20 +31,24 @@ export class CbosApiClient {
 	static fetchPromise = null;
 
 	/**
+	 * @typedef {import('@pins/inspector-programming-lib/os/os-api-client.js')} OsApiClient
+	 */
+
+	/**
 	 * Creates an instance of CbosApiClient.
 	 * @param {Object} cbosConfig - Configuration object for the API client.
 	 * @param {string} cbosConfig.apiUrl - Base URL for the CBOS API.
 	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
 	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
 	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
-	 * @param {string} osApiKey - Key for OS API
+	 * @param {OsApiClient} osApiClient - Key for OS API
 	 * @param {Object} logger - Logger instance for logging warnings and errors.
 	 */
-	constructor(cbosConfig, osApiKey, logger) {
+	constructor(cbosConfig, osApiClient, logger) {
 		this.config = cbosConfig;
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
 		this.logger = logger;
-		this.osApiClient = new OsApiClient(osApiKey);
+		this.osApiClient = osApiClient;
 	}
 
 	/**
@@ -112,10 +115,10 @@ export class CbosApiClient {
 			originalDevelopmentDescription: '',
 			allocationLevel: c.allocationDetails?.level || '',
 			allocationBand: c.allocationDetails?.band,
-			siteAddressLine1: c.appealSite.addressLine1 || '',
-			siteAddressLine2: c.appealSite.addressLine2 || '',
+			siteAddressLine1: c.appealSite?.addressLine1 || '',
+			siteAddressLine2: c.appealSite?.addressLine2 || '',
 			siteAddressTown: '',
-			siteAddressCounty: c.appealSite.county || '',
+			siteAddressCounty: c.appealSite?.county || '',
 			siteAddressPostcode: c.appealSite?.postCode || '',
 			siteAddressLatitude: latitude,
 			siteAddressLongitude: longitude,
@@ -202,6 +205,9 @@ export class CbosApiClient {
 			allocationBand: c.allocationDetails?.band || '',
 			caseLevel: c.allocationDetails?.level || '',
 			siteAddressPostcode: c.appealSite?.postCode || '',
+			lpaName: c.localPlanningDepartment || '',
+			lpaRegion: c.lpaRegion || '',
+			caseStatus: c.appealStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.validAt),
 			linkedCases: this.getLinkedCasesCount(c),
 			finalCommentsDate: c.appealTimetable?.finalCommentsDueDate

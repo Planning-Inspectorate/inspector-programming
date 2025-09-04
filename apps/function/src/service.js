@@ -1,5 +1,6 @@
 import { newDatabaseClient } from '@pins/inspector-programming-database';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
+import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initLogger } from '@pins/inspector-programming-lib/util/logger.js';
 
 /**
@@ -28,7 +29,8 @@ export class FunctionService {
 		const logger = initLogger(config);
 		this.logger = logger;
 		this.dbClient = newDatabaseClient(config.database);
-		this.cbosClient = new CbosApiClient(config.cbos, config.osApi.key, logger);
+		const osApiClient = new OsApiClient(config.osApi.key);
+		this.cbosClient = new CbosApiClient(config.cbos, osApiClient, logger);
 	}
 
 	get cbosFetchCasesSchedule() {
