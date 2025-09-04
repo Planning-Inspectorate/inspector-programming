@@ -23,6 +23,9 @@ interface Config extends BaseConfig {
 	cases: {
 		casesCacheTtl: number;
 	};
+	inspectors: {
+		inspectorsCacheTtl: number;
+	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;
