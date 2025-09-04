@@ -13,8 +13,6 @@ export class InspectorClient {
 	 */
 	constructor(dbClient) {
 		this.#client = dbClient;
-		console.info('made client');
-		console.info(this.#client);
 	}
 
 	/**
@@ -32,5 +30,13 @@ export class InspectorClient {
 				Specialisms: true
 			}
 		});
+	}
+
+	/**
+	 * Fetches a list of all inspectors in database
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector[]>}
+	 */
+	async getAllInspectors() {
+		return this.#client.inspector.findMany({ include: { Specialisms: true } });
 	}
 }
