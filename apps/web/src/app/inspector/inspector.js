@@ -1,24 +1,6 @@
 import { checkAccountGroupAccess, getAccountId } from '#util/account.js';
 
 /**
- *
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} db
- * @param {string|undefined} entraId
- * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector|null>}
- */
-export async function getInspectorDetails(db, entraId) {
-	if (!entraId) {
-		return null;
-	}
-	return db.inspector.findFirst({
-		where: { entraId },
-		include: {
-			Specialisms: true
-		}
-	});
-}
-
-/**
  * @param {import("@pins/inspector-programming-lib/graph/types").InitEntraClient} initEntraClient
  * @param {import("@pins/inspector-programming-lib/graph/types").AuthSession} authSession
  * @param {import('pino').Logger} logger
