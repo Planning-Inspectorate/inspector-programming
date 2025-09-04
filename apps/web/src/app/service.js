@@ -5,6 +5,7 @@ import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from '#api-service';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
+import { InspectorClient } from '@pins/inspector-programming-lib/data/database/inspector-client.js';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -27,6 +28,8 @@ export class WebService extends BaseService {
 
 		const casesCache = new MapCache(config.cases.casesCacheTtl);
 		this.casesClient = buildInitCasesClient(this.dbClient, casesCache);
+
+		this.inspectorClient = new InspectorClient(this.dbClient);
 
 		const entraGroupCache = new MapCache(config.entra.cacheTtl);
 		this.entraClient = buildInitEntraClient(!config.auth.disabled, entraGroupCache);
