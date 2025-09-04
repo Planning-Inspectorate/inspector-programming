@@ -1,4 +1,4 @@
-import { getInspectorDetails, getInspectorList } from '../../inspector/inspector.js';
+import { getInspectorList } from '../../inspector/inspector.js';
 import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
 import {
 	getNextWeekStartDate,
@@ -21,7 +21,7 @@ export function buildViewHome(service) {
 		const inspectors = await getInspectorList(service, req.session);
 		/** @type {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel | undefined} */
 		const selectedInspector = inspectors.find((i) => req.query.inspectorId === i.id);
-		const selectedInspectorDetails = await getInspectorDetails(service.db, selectedInspector?.id);
+		const selectedInspectorDetails = await service.inspectorClient.getInspectorDetails(selectedInspector?.id);
 
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
 		const filterQuery = filtersQueryViewModel(req.query, lastSort);

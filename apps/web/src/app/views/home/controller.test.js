@@ -24,10 +24,8 @@ describe('controller.js', () => {
 					getAllCases: mock.fn(() => []),
 					getCases: mock.fn(() => ({ cases: [], total: 0 }))
 				},
-				db: {
-					inspector: {
-						findFirst: mock.fn()
-					}
+				inspectorClient: {
+					getInspectorDetails: mock.fn()
 				}
 			};
 		};
@@ -65,7 +63,7 @@ describe('controller.js', () => {
 				latitude: 51.4508591,
 				Specialisms: []
 			};
-			service.db.inspector.findFirst.mock.mockImplementationOnce(() => inspectorData);
+			service.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspectorData);
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
@@ -78,7 +76,7 @@ describe('controller.js', () => {
 			assert.deepStrictEqual(service.casesClient.getCases.mock.calls[0].arguments[0], {
 				inspectorCoordinates: { lat: 51.4508591, lng: -2.5828931 }
 			});
-			assert.strictEqual(service.db.inspector.findFirst.mock.callCount(), 1);
+			assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.appeals?.cases?.length, 10);
@@ -134,7 +132,7 @@ describe('controller.js', () => {
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.deepStrictEqual(service.casesClient.getCases.mock.calls[0].arguments[0], {});
-			assert.strictEqual(service.db.inspector.findFirst.mock.callCount(), 1);
+			assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.appeals?.cases?.length, 10);
