@@ -17,6 +17,9 @@ mockInitEntraClient.mock.mockImplementation(() => mockEntraClient);
 
 const mockService = {
 	entraClient: mockInitEntraClient,
+	inspectorClient: {
+		getAllInspectors: mock.fn()
+	},
 	logger: mockLogger,
 	entraGroupIds: {
 		teamLeads: '0',
@@ -335,7 +338,7 @@ describe('inspectors', () => {
 				}
 			}
 		};
-
+		mockService.inspectorClient.getAllInspectors.mock.mockImplementationOnce(() => expectedInspectorList);
 		mockEntraClient.listAllGroupMembers.mock.mockImplementationOnce(() => groupMemberList);
 		const inspectorList = await getInspectorList(mockService, mockSessionWithAccount);
 		assert.deepStrictEqual(inspectorList, expectedInspectorList);
@@ -392,6 +395,7 @@ describe('inspectors', () => {
 			}
 		};
 
+		mockService.inspectorClient.getAllInspectors.mock.mockImplementationOnce(() => expectedInspectorList);
 		mockEntraClient.listAllGroupMembers.mock.mockImplementationOnce(() => groupMemberList);
 		const inspectorList = await getInspectorList(mockService, mockSessionWithAccount);
 		assert.deepStrictEqual(inspectorList, expectedInspectorList);
@@ -437,6 +441,7 @@ describe('inspectors', () => {
 			}
 		};
 
+		mockService.inspectorClient.getAllInspectors.mock.mockImplementationOnce(() => expectedInspectorList);
 		mockEntraClient.listAllGroupMembers.mock.mockImplementationOnce(() => groupMemberList);
 		const inspectorList = await getInspectorList(mockService, mockSessionWithAccount);
 		assert.deepStrictEqual(inspectorList, expectedInspectorList);

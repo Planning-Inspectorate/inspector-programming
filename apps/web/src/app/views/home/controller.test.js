@@ -25,7 +25,8 @@ describe('controller.js', () => {
 					getCases: mock.fn(() => ({ cases: [], total: 0 }))
 				},
 				inspectorClient: {
-					getInspectorDetails: mock.fn()
+					getInspectorDetails: mock.fn(),
+					getAllInspectors: mock.fn()
 				}
 			};
 		};
