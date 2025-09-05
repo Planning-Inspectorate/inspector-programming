@@ -8,18 +8,22 @@ export function buildCbosFetchCases(service) {
 	return async (timer, context) => {
 		try {
 			context.log('fetching cases from CBOS');
+
+			// Fetchs and filters unassigned cases from cbos
 			const appealsData = await service.cbosClient.getUnassignedCases();
 
+			// Updates/creates cases within the inspector programming database
 			await service.dbClient.$transaction(
-				appealsData.cases.map((c) =>
+				appealsData.cases.map((appeal) =>
 					service.dbClient.appealCase.upsert({
-						where: { caseReference: c.caseReference },
-						update: { ...omit(c, ['caseReference']) },
-						create: { ...c }
+						where: { caseReference: appeal.caseReference },
+						update: { ...omit(appeal, ['caseReference']) },
+						create: { ...appeal }
 					})
 				)
 			);
 
+			// Delete any cases that are no longer in cbos
 			await service.dbClient.appealCase.deleteMany({
 				where: {
 					caseReference: {
@@ -28,6 +32,7 @@ export function buildCbosFetchCases(service) {
 				}
 			});
 
+			// Create record of latest successfull update
 			await service.dbClient.appealCasePollStatus.create({
 				data: {
 					lastPollAt: new Date(),
