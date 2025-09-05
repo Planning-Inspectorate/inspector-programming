@@ -1,4 +1,7 @@
 import { newDatabaseClient } from '@pins/inspector-programming-database';
+import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
+import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
+import { initLogger } from '@pins/inspector-programming-lib/util/logger.js';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -10,6 +13,10 @@ export class FunctionService {
 	 */
 	#config;
 	/**
+	 * @type {import('pino').Logger}
+	 */
+	logger;
+	/**
 	 * @type {import('@pins/inspector-programming-database/src/client').PrismaClient}
 	 */
 	dbClient;
@@ -19,9 +26,11 @@ export class FunctionService {
 	 */
 	constructor(config) {
 		this.#config = config;
+		const logger = initLogger(config);
+		this.logger = logger;
 		this.dbClient = newDatabaseClient(config.database);
-
-		// TODO: add CBOS client
+		const osApiClient = new OsApiClient(config.osApi.key);
+		this.cbosClient = new CbosApiClient(config.cbos, osApiClient, logger);
 	}
 
 	get cbosFetchCasesSchedule() {
