@@ -1,7 +1,7 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 
-const VALID_APPEAL_STATUS = [
+const READY_TO_ASSIGN_APPEAL_STATUSES = [
 	APPEAL_CASE_STATUS.READY_TO_START,
 	APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
 	APPEAL_CASE_STATUS.STATEMENTS,
@@ -41,7 +41,7 @@ export class CbosApiClient {
 	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
 	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
 	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
-	 * @param {OsApiClient} osApiClient - Key for OS API
+	 * @param {OsApiClient} osApiClient - Client for OS API
 	 * @param {Object} logger - Logger instance for logging warnings and errors.
 	 */
 	constructor(cbosConfig, osApiClient, logger) {
@@ -52,7 +52,7 @@ export class CbosApiClient {
 	}
 
 	/**
-	 * Fetches all cases for the user.
+	 * Fetches and filters all unassigned cases
 	 * @returns {Promise<{ cases: Object[], caseReferences: string[] }>} An object containing the array of case view models.
 	 * @throws {Error} If fetching cases fails.
 	 */
@@ -61,13 +61,12 @@ export class CbosApiClient {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
 			const appealDetails = await this.fetchAppealDetails(appealIds);
 			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c)));
-			const filteredAppeals = mappedAppeals.filter((appeal) => VALID_APPEAL_STATUS.includes(appeal.caseStatus));
 			const filteredCaseReferences = [];
-			for (const appeal of filteredAppeals) {
+			for (const appeal of mappedAppeals) {
 				filteredCaseReferences.push(appeal.caseReference);
 			}
 
-			return { cases: filteredAppeals, caseReferences: filteredCaseReferences };
+			return { cases: mappedAppeals, caseReferences: filteredCaseReferences };
 		} catch (error) {
 			this.logger.error({ error: error }, '[CaseController] Error fetching case details');
 			throw new Error('Failed to fetch cases. Please try again later.');
@@ -77,10 +76,10 @@ export class CbosApiClient {
 	/**
 	 * Maps an appeal to appeal case for db
 	 * @param {Object} c - The appeal case object.
-	 * @returns {Object} The mapped view model object.
+	 * @returns {Promise<Object>} The mapped view model object.
 	 */
 	async appealToAppealCaseModel(c) {
-		let linkedCaseStatus, leadCaseReference, latitude, longitude;
+		let linkedCaseStatus, leadCaseReference;
 
 		if (c.isParentAppeal) {
 			linkedCaseStatus = 'Parent';
@@ -90,21 +89,7 @@ export class CbosApiClient {
 			leadCaseReference = '';
 		}
 
-		try {
-			const appealCoordinates = await this.osApiClient.addressesForPostcode(c.appealSite.postCode);
-			if (appealCoordinates.results && appealCoordinates.results.length > 0) {
-				const locationData = appealCoordinates.results[0];
-				if ('DPA' in locationData) {
-					latitude = locationData.DPA.LAT;
-					longitude = locationData.DPA.LNG;
-				} else if ('LPI' in locationData) {
-					latitude = locationData.LPI.LAT;
-					longitude = locationData.LPI.LNG;
-				}
-			}
-		} catch (error) {
-			this.logger.error(`Failed to fetch postcode coordinates: ${error}`);
-		}
+		const appealCoordinates = await this.getAppealCoordinates(c);
 
 		return {
 			caseId: c.appealId,
@@ -120,16 +105,16 @@ export class CbosApiClient {
 			siteAddressTown: '',
 			siteAddressCounty: c.appealSite?.county || '',
 			siteAddressPostcode: c.appealSite?.postCode || '',
-			siteAddressLatitude: latitude,
-			siteAddressLongitude: longitude,
-			lpaCode: '',
+			siteAddressLatitude: appealCoordinates?.latitude,
+			siteAddressLongitude: appealCoordinates?.longitude,
+			lpaCode: '', // TODO - fetch from /appeals/local-planning-authorities
 			lpaName: c.localPlanningDepartment || '',
 			lpaRegion: c.lpaRegion || '',
 			caseCreatedDate: c.createdAt,
 			caseValidDate: c.validAt,
 			finalCommentsDueDate: c.appealTimetable?.finalCommentsDueDate
 				? new Date(c.appealTimetable.finalCommentsDueDate)
-				: new Date(),
+				: null,
 			linkedCaseStatus,
 			leadCaseReference
 			// appellantCostsAppliedFor
@@ -138,6 +123,31 @@ export class CbosApiClient {
 			// Events
 			// Specialisms
 		};
+	}
+
+	/**
+	 * Maps an appeal to appeal case for db
+	 * @param {Object} c - The appeal case object.
+	 * @returns {Promise<Object|undefined>} The mapped view model object.
+	 */
+	async getAppealCoordinates(c) {
+		try {
+			let latitude, longitude;
+			const appealCoordinates = await this.osApiClient.addressesForPostcode(c.appealSite.postCode);
+			if (appealCoordinates.results && appealCoordinates.results.length > 0) {
+				const locationData = appealCoordinates.results[0];
+				if ('DPA' in locationData) {
+					latitude = locationData.DPA.LAT;
+					longitude = locationData.DPA.LNG;
+				} else if ('LPI' in locationData) {
+					latitude = locationData.LPI.LAT;
+					longitude = locationData.LPI.LNG;
+				}
+				return { latitude, longitude };
+			}
+		} catch (error) {
+			this.logger.error(`Failed to fetch postcode coordinates: ${error}`);
+		}
 	}
 
 	/**
@@ -265,7 +275,10 @@ export class CbosApiClient {
 					pageSize = data.itemCount;
 				} else {
 					continueToFetch = false;
-					appealIds = data.items?.map((item) => item.appealId) || [];
+					const filteredData = data.items?.filter((item) =>
+						READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus)
+					);
+					appealIds = filteredData.map((item) => item.appealId) || [];
 				}
 			}
 

@@ -39,21 +39,62 @@ afterEach(() => {
 test('fetchAppealIds returns appeal IDs', async () => {
 	global.fetch = async () => ({
 		ok: true,
-		json: async () => ({ items: [{ appealId: '6000084' }, { appealId: '6000083' }] })
+		json: async () => ({
+			items: [
+				{ appealId: '6000089', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
+				{ appealId: '6000088', appealStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
+				{ appealId: '6000087', appealStatus: APPEAL_CASE_STATUS.STATEMENTS },
+				{ appealId: '6000086', appealStatus: APPEAL_CASE_STATUS.FINAL_COMMENTS },
+				{ appealId: '6000085', appealStatus: APPEAL_CASE_STATUS.EVENT },
+				{ appealId: '6000084', appealStatus: APPEAL_CASE_STATUS.EVIDENCE },
+				{ appealId: '6000083', appealStatus: APPEAL_CASE_STATUS.WITNESSES }
+			]
+		})
 	});
 	const ids = await client.fetchAppealIds();
-	assert.deepStrictEqual(ids, ['6000084', '6000083']);
+	assert.deepStrictEqual(ids, ['6000089', '6000088', '6000087', '6000086', '6000085', '6000084', '6000083']);
+});
+
+test('fetchAppealIds should not return cases with invalid appeal statuses ', async () => {
+	global.fetch = async () => ({
+		ok: true,
+		json: async () => ({
+			items: [
+				{ appealId: '6000089', appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
+				{ appealId: '6000088', appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER },
+				{ appealId: '6000087', appealStatus: APPEAL_CASE_STATUS.CLOSED },
+				{ appealId: '6000086', appealStatus: APPEAL_CASE_STATUS.COMPLETE },
+				{ appealId: '6000085', appealStatus: APPEAL_CASE_STATUS.INVALID },
+				{ appealId: '6000084', appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
+				{ appealId: '6000083', appealStatus: APPEAL_CASE_STATUS.VALIDATION },
+				{ appealId: '6000082', appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
+			]
+		})
+	});
+	const ids = await client.fetchAppealIds();
+	assert.deepStrictEqual(ids.length, 0);
 });
 
 test('fetchAppealIds returns all appeal IDs', async () => {
 	const responses = [
 		{
 			ok: true,
-			json: async () => ({ items: [{ appealId: '6000084' }], itemCount: 2, pageCount: 2 })
+			json: async () => ({
+				items: [{ appealId: '6000084', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }],
+				itemCount: 2,
+				pageCount: 2
+			})
 		},
 		{
 			ok: true,
-			json: async () => ({ items: [{ appealId: '6000084' }, { appealId: '6000083' }], itemCount: 2, pageCount: 1 })
+			json: async () => ({
+				items: [
+					{ appealId: '6000084', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
+					{ appealId: '6000083', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }
+				],
+				itemCount: 2,
+				pageCount: 1
+			})
 		}
 	];
 	let call = 0;
@@ -196,6 +237,55 @@ test('appealToAppealCaseModel should maps parent appeal values correctly', async
 	assert.deepStrictEqual(mappedCase, expectedCase);
 });
 
+test('getAppealCoordinates should handle DPA values if returned by OS API', async () => {
+	const c = {
+		appealSite: {
+			postCode: 'postcode'
+		}
+	};
+
+	const appealCoordinates = {
+		results: [{ DPA: { LAT: 1.23, LNG: 4.56 } }]
+	};
+
+	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => appealCoordinates);
+
+	const coordinates = await client.getAppealCoordinates(c);
+	assert.deepStrictEqual(coordinates, { latitude: 1.23, longitude: 4.56 });
+});
+
+test('getAppealCoordinates should handle LPI values if returned by OS API', async () => {
+	const c = {
+		appealSite: {
+			postCode: 'postcode'
+		}
+	};
+
+	const appealCoordinates = {
+		results: [{ LPI: { LAT: 1.23, LNG: 4.56 } }]
+	};
+
+	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => appealCoordinates);
+
+	const coordinates = await client.getAppealCoordinates(c);
+	assert.deepStrictEqual(coordinates, { latitude: 1.23, longitude: 4.56 });
+});
+
+test('getAppealCoordinates should return nothing if error occurs', async () => {
+	const c = {
+		appealSite: {
+			postCode: 'postcode'
+		}
+	};
+
+	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => {
+		return Error();
+	});
+
+	const coordinates = await client.getAppealCoordinates(c);
+	assert.strictEqual(coordinates, undefined);
+});
+
 test('appealToAppealCaseModel should map child appeal values correctly', async () => {
 	const createdAtDate = new Date(2023, 1, 1);
 	const validAtDate = new Date(2023, 2, 2);
@@ -229,74 +319,6 @@ test('appealToAppealCaseModel should map child appeal values correctly', async (
 
 	const appealCoordinates = {
 		results: [{ DPA: { LAT: 1.23, LNG: 4.56 } }]
-	};
-
-	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => appealCoordinates);
-	CbosApiClient.appealTypesCache = [{ type: 'Enforcement notice appeal', key: 'C' }];
-
-	const expectedCase = {
-		caseId: 1,
-		caseReference: '60001',
-		caseType: 'C',
-		caseStatus: 'issue_determination',
-		caseProcedure: 'procedure',
-		originalDevelopmentDescription: '',
-		allocationLevel: 'level',
-		allocationBand: 5,
-		siteAddressLine1: 'address line 1',
-		siteAddressLine2: 'address line 2',
-		siteAddressTown: '',
-		siteAddressCounty: 'county',
-		siteAddressPostcode: 'postcode',
-		siteAddressLatitude: 1.23,
-		siteAddressLongitude: 4.56,
-		lpaCode: '',
-		lpaName: 'planning department',
-		lpaRegion: 'region',
-		caseCreatedDate: createdAtDate,
-		caseValidDate: validAtDate,
-		finalCommentsDueDate: finalCommentsDueDate,
-		linkedCaseStatus: 'Child',
-		leadCaseReference: ''
-	};
-
-	const mappedCase = await client.appealToAppealCaseModel(c);
-	assert.deepStrictEqual(mappedCase, expectedCase);
-});
-
-test('appealToAppealCaseModel should handle LPI values if returned by OS API', async () => {
-	const createdAtDate = new Date(2023, 1, 1);
-	const validAtDate = new Date(2023, 2, 2);
-	const finalCommentsDueDate = new Date(2023, 3, 3);
-	const c = {
-		appealId: 1,
-		appealReference: '60001',
-		appealType: 'Enforcement notice appeal',
-		appealStatus: 'issue_determination',
-		procedureType: 'procedure',
-		allocationDetails: {
-			level: 'level',
-			band: 5
-		},
-		appealSite: {
-			addressLine1: 'address line 1',
-			addressLine2: 'address line 2',
-			county: 'county',
-			postCode: 'postcode'
-		},
-		localPlanningDepartment: 'planning department',
-		lpaRegion: 'region',
-		createdAt: createdAtDate,
-		validAt: validAtDate,
-		appealTimetable: {
-			finalCommentsDueDate: finalCommentsDueDate
-		},
-		isParentAppeal: false,
-		isChildAppeal: true
-	};
-
-	const appealCoordinates = {
-		results: [{ LPI: { LAT: 1.23, LNG: 4.56 } }]
 	};
 
 	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => appealCoordinates);
@@ -402,19 +424,23 @@ test('getUnassignedCases should return cases with valid appeal statuses', async 
 	const responses = [
 		{
 			ok: true,
-			json: async () => ({ items: [{ appealId: '1' }], itemCount: 7, pageCount: 7 })
+			json: async () => ({
+				items: [{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }],
+				itemCount: 7,
+				pageCount: 7
+			})
 		},
 		{
 			ok: true,
 			json: async () => ({
 				items: [
-					{ appealId: '1' },
-					{ appealId: '2' },
-					{ appealId: '3' },
-					{ appealId: '4' },
-					{ appealId: '5' },
-					{ appealId: '6' },
-					{ appealId: '7' }
+					{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
+					{ appealId: '2', appealStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
+					{ appealId: '3', appealStatus: APPEAL_CASE_STATUS.STATEMENTS },
+					{ appealId: '4', appealStatus: APPEAL_CASE_STATUS.FINAL_COMMENTS },
+					{ appealId: '5', appealStatus: APPEAL_CASE_STATUS.EVENT },
+					{ appealId: '6', appealStatus: APPEAL_CASE_STATUS.EVIDENCE },
+					{ appealId: '7', appealStatus: APPEAL_CASE_STATUS.WITNESSES }
 				],
 				itemCount: 7,
 				pageCount: 1
@@ -499,95 +525,27 @@ test('getUnassignedCases should not return cases with invalid appeal statuses', 
 	const responses = [
 		{
 			ok: true,
-			json: async () => ({ items: [{ appealId: '1' }], itemCount: 7, pageCount: 7 })
+			json: async () => ({
+				items: [{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER }],
+				itemCount: 7,
+				pageCount: 7
+			})
 		},
 		{
 			ok: true,
 			json: async () => ({
 				items: [
-					{ appealId: '1' },
-					{ appealId: '2' },
-					{ appealId: '3' },
-					{ appealId: '4' },
-					{ appealId: '5' },
-					{ appealId: '6' },
-					{ appealId: '7' },
-					{ appealId: '8' }
+					{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
+					{ appealId: '2', appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER },
+					{ appealId: '3', appealStatus: APPEAL_CASE_STATUS.CLOSED },
+					{ appealId: '4', appealStatus: APPEAL_CASE_STATUS.COMPLETE },
+					{ appealId: '5', appealStatus: APPEAL_CASE_STATUS.INVALID },
+					{ appealId: '6', appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
+					{ appealId: '7', appealStatus: APPEAL_CASE_STATUS.VALIDATION },
+					{ appealId: '8', appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
 				],
 				itemCount: 7,
 				pageCount: 1
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '1',
-				appealReference: '60001',
-				appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '2',
-				appealReference: '60002',
-				appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '3',
-				appealReference: '60003',
-				appealStatus: APPEAL_CASE_STATUS.CLOSED,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '4',
-				appealReference: '60004',
-				appealStatus: APPEAL_CASE_STATUS.COMPLETE,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '5',
-				appealReference: '60005',
-				appealStatus: APPEAL_CASE_STATUS.INVALID,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '6',
-				appealReference: '60006',
-				appealStatus: APPEAL_CASE_STATUS.TRANSFERRED,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '7',
-				appealReference: '60007',
-				appealStatus: APPEAL_CASE_STATUS.VALIDATION,
-				appealType: 'appealType'
-			})
-		},
-		{
-			ok: true,
-			json: async () => ({
-				appealId: '8',
-				appealReference: '60008',
-				appealStatus: APPEAL_CASE_STATUS.WITHDRAWN,
-				appealType: 'appealType'
 			})
 		}
 	];
