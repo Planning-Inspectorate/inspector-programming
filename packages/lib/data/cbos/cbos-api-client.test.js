@@ -88,12 +88,9 @@ test('fetchAppealIds returns all appeal IDs', async () => {
 		{
 			ok: true,
 			json: async () => ({
-				items: [
-					{ appealId: '6000084', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
-					{ appealId: '6000083', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }
-				],
+				items: [{ appealId: '6000083', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }],
 				itemCount: 2,
-				pageCount: 1
+				pageCount: 2
 			})
 		}
 	];
@@ -422,14 +419,6 @@ test('appealToAppealCaseModel should handle OS API error', async () => {
 
 test('getUnassignedCases should return cases with valid appeal statuses', async () => {
 	const responses = [
-		{
-			ok: true,
-			json: async () => ({
-				items: [{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }],
-				itemCount: 7,
-				pageCount: 7
-			})
-		},
 		{
 			ok: true,
 			json: async () => ({

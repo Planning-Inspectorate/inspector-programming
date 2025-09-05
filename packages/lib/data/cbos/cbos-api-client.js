@@ -56,7 +56,7 @@ export class CbosApiClient {
 	 * @returns {Promise<{ cases: Object[], caseReferences: string[] }>} An object containing the array of case view models.
 	 * @throws {Error} If fetching cases fails.
 	 */
-	async getUnassignedCases({ pageNumber = 1, pageSize = 10, fetchAll = true } = {}) {
+	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
 			const appealDetails = await this.fetchAppealDetails(appealIds);
@@ -258,7 +258,7 @@ export class CbosApiClient {
 	async fetchAppealIds({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
 		try {
 			/**
-			 * @type {any[]}
+			 * @type {number[]}
 			 */
 			let appealIds = [];
 			let continueToFetch = true;
@@ -271,14 +271,16 @@ export class CbosApiClient {
 				const data = await response.json();
 				const maxPageNumber = data.pageCount;
 
+				const filteredData = data.items?.filter((item) => READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus));
+
+				for (let item of filteredData) {
+					appealIds.push(item.appealId);
+				}
+
 				if (fetchAll && pageNumber < maxPageNumber) {
-					pageSize = data.itemCount;
+					pageNumber += 1;
 				} else {
 					continueToFetch = false;
-					const filteredData = data.items?.filter((item) =>
-						READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus)
-					);
-					appealIds = filteredData.map((item) => item.appealId) || [];
 				}
 			}
 
