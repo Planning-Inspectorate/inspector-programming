@@ -45,6 +45,8 @@ export async function getInspectorById(initEntraClient, authSession, logger, gro
 }
 
 /**
+ * Frontend-facing
+ * Fetches formatted and sorted list of inspectors from Entra - validated that they also exist in our local db too
  * @param {import('#service').WebService} service
  * @param {import("../auth/session.service").SessionWithAuth} authSession
  * @returns {Promise<import("@pins/inspector-programming-lib/data/types").InspectorViewModel[]>}
@@ -77,6 +79,12 @@ export async function getInspectorList(service, authSession) {
 			inspectors.push(inspector);
 		}
 	}
+
+	//validate retrieved inspectors also exist in Entra group
+	//const dbInspectors = await service.inspectorClient.getAllInspectors();
+	//console.info(dbInspectors[0]);
+	//console.info(inspectors[0]);
+	//inspectors.filter((i) => )
 
 	return inspectors;
 }
