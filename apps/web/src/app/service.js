@@ -1,6 +1,7 @@
 import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js';
 import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cached-entra-client.js';
 import { buildInitCasesClient } from '@pins/inspector-programming-lib/data/database/cached-cases-client.js';
+import { buildInitInspectorClient } from '@pins/inspector-programming-lib/data/database/cached-inspector-client.js';
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from '#api-service';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
@@ -27,6 +28,9 @@ export class WebService extends BaseService {
 
 		const casesCache = new MapCache(config.cases.casesCacheTtl);
 		this.casesClient = buildInitCasesClient(this.dbClient, casesCache);
+
+		const inspectorCache = new MapCache(config.inspectors.inspectorsCacheTtl);
+		this.inspectorClient = buildInitInspectorClient(this.dbClient, inspectorCache);
 
 		const entraGroupCache = new MapCache(config.entra.cacheTtl);
 		this.entraClient = buildInitEntraClient(!config.auth.disabled, entraGroupCache);

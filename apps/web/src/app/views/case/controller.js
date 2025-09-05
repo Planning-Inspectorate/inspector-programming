@@ -1,6 +1,5 @@
 import { getCaseDetails } from '../../case/case.js';
 import { toInspectorViewModel } from '../home/view-model.js';
-import { getInspectorDetails } from '../../inspector/inspector.js';
 import { caseToViewModel } from './view-model.js';
 
 /**
@@ -11,7 +10,7 @@ export function buildViewCase(service) {
 	return async (req, res) => {
 		/** @type {string} */
 		const inspectorId = String(req.query.inspectorId);
-		const inspectorData = await getInspectorDetails(service.db, inspectorId);
+		const inspectorData = await service.inspectorClient.getInspectorDetails(inspectorId);
 
 		/** @type {string} */
 		const caseId = String(req.params.caseId);

@@ -45,9 +45,6 @@ describe('buildViewCase', () => {
 
 		const service = {
 			db: {
-				inspector: {
-					findFirst: mock.fn(async ({ where }) => (where.entraId === inspectorData.id ? inspectorData : null))
-				},
 				appealCase: {
 					findUnique: mock.fn(async ({ where }) => (where.caseReference === caseData.caseReference ? caseData : null))
 				}
@@ -55,6 +52,9 @@ describe('buildViewCase', () => {
 			osMapsApiKey: 'test-api-key',
 			casesClient: {
 				caseToViewModel: mock.fn(() => caseViewModel)
+			},
+			inspectorClient: {
+				getInspectorDetails: mock.fn(async (entraId) => (entraId === inspectorData.id ? inspectorData : null))
 			}
 		};
 
@@ -90,18 +90,15 @@ describe('buildViewCase', () => {
 			caseAgeColor: '00703c'
 		});
 
-		assert.strictEqual(service.db.inspector.findFirst.mock.calls.length, 1);
 		assert.strictEqual(service.db.appealCase.findUnique.mock.calls.length, 1);
 		assert.strictEqual(service.casesClient.caseToViewModel.mock.calls.length, 1);
+		assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.calls.length, 1);
 		assert.deepStrictEqual(service.casesClient.caseToViewModel.mock.calls[0].arguments[0], caseData);
 	});
 
 	test('handles missing inspectorId and caseId gracefully', async () => {
 		const service = {
 			db: {
-				inspector: {
-					findFirst: mock.fn(async () => null)
-				},
 				appealCase: {
 					findUnique: mock.fn(async () => null)
 				}
@@ -109,6 +106,9 @@ describe('buildViewCase', () => {
 			osMapsApiKey: 'test-api-key',
 			casesClient: {
 				caseToViewModel: mock.fn(() => null)
+			},
+			inspectorClient: {
+				getInspectorDetails: mock.fn(async () => null)
 			}
 		};
 
@@ -130,8 +130,8 @@ describe('buildViewCase', () => {
 		assert.strictEqual(renderedModel.inspectorPin, toInspectorViewModel(null));
 		assert.strictEqual(renderedModel.caseData, null);
 
-		assert.strictEqual(service.db.inspector.findFirst.mock.calls.length, 1);
 		assert.strictEqual(service.db.appealCase.findUnique.mock.calls.length, 1);
+		assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.calls.length, 1);
 		assert.strictEqual(service.casesClient.caseToViewModel.mock.calls.length, 1);
 		assert.strictEqual(service.casesClient.caseToViewModel.mock.calls[0].arguments[0], null);
 	});

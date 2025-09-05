@@ -1,24 +1,6 @@
 import { checkAccountGroupAccess, getAccountId } from '#util/account.js';
 
 /**
- *
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} db
- * @param {string|undefined} entraId
- * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector|null>}
- */
-export async function getInspectorDetails(db, entraId) {
-	if (!entraId) {
-		return null;
-	}
-	return db.inspector.findFirst({
-		where: { entraId },
-		include: {
-			Specialisms: true
-		}
-	});
-}
-
-/**
  * @param {import("@pins/inspector-programming-lib/graph/types").InitEntraClient} initEntraClient
  * @param {import("@pins/inspector-programming-lib/graph/types").AuthSession} authSession
  * @param {import('pino').Logger} logger
@@ -63,6 +45,8 @@ export async function getInspectorById(initEntraClient, authSession, logger, gro
 }
 
 /**
+ * Frontend-facing
+ * Fetches formatted and sorted list of inspectors from Entra - validated that they also exist in our local db too
  * @param {import('#service').WebService} service
  * @param {import("../auth/session.service").SessionWithAuth} authSession
  * @returns {Promise<import("@pins/inspector-programming-lib/data/types").InspectorViewModel[]>}
@@ -95,6 +79,10 @@ export async function getInspectorList(service, authSession) {
 			inspectors.push(inspector);
 		}
 	}
+
+	//validate retrieved inspectors also exist in Entra group
+	const dbInspectorIds = ((await service.inspectorClient.getAllInspectors()) || []).map((i) => i.id);
+	inspectors = inspectors.filter((i) => dbInspectorIds.includes(i.id));
 
 	return inspectors;
 }

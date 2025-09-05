@@ -42,6 +42,7 @@ export function loadConfig() {
 		AZURE_TENANT_ID,
 		CACHE_CONTROL_MAX_AGE,
 		CASES_CACHE_TTL,
+		INSPECTORS_CACHE_TTL,
 		ENTRA_GROUP_CACHE_TTL,
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
@@ -125,6 +126,9 @@ export function loadConfig() {
 		},
 		cases: {
 			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
+		},
+		inspectors: {
+			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15)
 		},
 		database: {
 			datasourceUrl: SQL_CONNECTION_STRING
