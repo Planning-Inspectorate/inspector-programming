@@ -6,7 +6,7 @@ import {
 } from '@planning-inspectorate/data-model';
 import { addDays, addWeeks } from 'date-fns';
 import { mockLocations } from './data-dev-mock-locations.js';
-import { SPECIALISMS } from './specialisms.js';
+import { SPECIALISMS, WORKING_ABOVE_BAND_SPECIALISMS } from './specialisms.js';
 import crypto from 'node:crypto';
 import { caseSpecialismIds, inspectorSpecialismIds } from './data-dev-guids.js';
 import { generateCaseEvents } from './data-dev-events.js';
@@ -167,6 +167,15 @@ const inspectors = [
 						proficiency: 'In Training',
 						validFrom: '2025-06-09T23:00:00Z'
 					}
+				},
+				{
+					where: { id: inspectorSpecialismIds[10] },
+					create: {
+						id: inspectorSpecialismIds[10],
+						name: WORKING_ABOVE_BAND_SPECIALISMS[0],
+						proficiency: 'Trained',
+						validFrom: '2025-06-09T23:00:00Z'
+					}
 				}
 			]
 		}
@@ -198,6 +207,15 @@ const inspectors = [
 						id: inspectorSpecialismIds[3],
 						name: 'Hearings trained',
 						proficiency: 'In Training',
+						validFrom: '2025-06-09T23:00:00Z'
+					}
+				},
+				{
+					where: { id: inspectorSpecialismIds[11] },
+					create: {
+						id: inspectorSpecialismIds[11],
+						name: WORKING_ABOVE_BAND_SPECIALISMS[1],
+						proficiency: 'Trained',
 						validFrom: '2025-06-09T23:00:00Z'
 					}
 				}

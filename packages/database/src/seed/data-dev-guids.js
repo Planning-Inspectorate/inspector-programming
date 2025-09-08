@@ -12,7 +12,9 @@ export const inspectorSpecialismIds = [
 	'2a0d1bbb-1c07-4ec5-88e2-aca343ec6375',
 	'214346b2-7e4c-4ca2-92b4-c742d81a1fb0',
 	'27fe25d8-8e0a-409b-a22f-fea7104200d8',
-	'03918a8f-37fb-4d17-8fc6-56306a159226'
+	'03918a8f-37fb-4d17-8fc6-56306a159226',
+	'dcfdbcbf-da14-420a-ba10-4859f578aa17',
+	'd55a9433-70bc-47d3-9fb9-06e774897aee'
 ];
 
 export const caseSpecialismIds = [
