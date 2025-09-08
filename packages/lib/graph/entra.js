@@ -3,6 +3,9 @@ import { URL } from 'node:url';
 const PER_PAGE = 500; // max 999 per page
 const MAX_PAGES = 10; // max 5000 entries
 
+// Extension id
+export const EXTENSION_ID = 'uk.gov.planninginspectorate.programming';
+
 // odata reference properties and values
 export const ODATA = Object.freeze({
 	NEXT_LINK: '@odate.nextLink',
@@ -71,6 +74,7 @@ export class EntraClient {
 				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999`
 			)
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
+			.expand([`extensions($filter=id eq '${EXTENSION_ID}')`])
 			.header('Prefer', 'outlook.timezone="Europe/London"')
 			.get();
 	}
@@ -93,6 +97,7 @@ export class EntraClient {
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity'])
+			.expand([`extensions($filter=id eq '${EXTENSION_ID}')`])
 			.top(PER_PAGE);
 
 		const events = [];

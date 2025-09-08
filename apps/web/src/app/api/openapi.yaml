@@ -78,9 +78,16 @@ components:
           type: string
         sensitivity:
           type: string
+        systemEvent:
+          type: boolean
+        caseReference:
+          type: string
+        eventType:
+          type: string
       required:
         - id
         - userEmail
         - title
         - startDate
         - endDate
+        - systemEvent
