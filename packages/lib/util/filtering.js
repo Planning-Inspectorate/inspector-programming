@@ -42,6 +42,12 @@ export function filterCases(cases, filters) {
 		});
 	}
 
+	if (filters.caseSpecialisms) {
+		cases = cases.filter((c) => {
+			return c.specialisms?.some((specialism) => filters.caseSpecialisms?.includes(specialism.specialism));
+		});
+	}
+
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
 		if (!(c.caseAge >= +(cleanFilters.minimumAge || 0) && c.caseAge <= +(cleanFilters.maximumAge || 999))) return false;
