@@ -24,7 +24,8 @@ export class CasesClient {
 	async getAllCases() {
 		const cases = await this.#client.appealCase.findMany({
 			include: {
-				ChildCases: true
+				ChildCases: true,
+				Specialisms: true
 			}
 		});
 		return cases.map((c) => this.caseToViewModel(c));
