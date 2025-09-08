@@ -22,3 +22,5 @@ export const SPECIALISMS = Object.freeze([
 	'Waste',
 	'Water'
 ]);
+
+export const WORKING_ABOVE_BAND_SPECIALISMS = Object.freeze(['WAB approved at Band 2', 'WAB approved at Band 3']);
