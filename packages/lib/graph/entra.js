@@ -3,6 +3,9 @@ import { URL } from 'node:url';
 const PER_PAGE = 500; // max 999 per page
 const MAX_PAGES = 10; // max 5000 entries
 
+// Extension id
+export const EXTENSION_ID = 'uk.gov.planninginspectorate.programming';
+
 // odata reference properties and values
 export const ODATA = Object.freeze({
 	NEXT_LINK: '@odate.nextLink',
@@ -66,13 +69,22 @@ export class EntraClient {
 		endDate.setHours(23, 59, 59, 999);
 		endDate.setDate(endDate.getDate() + 90);
 
-		return this.#client
+		const response = await this.#client
 			.api(
 				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999`
 			)
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
+			.expand([`extensions($filter=id eq '${EXTENSION_ID}')`])
 			.header('Prefer', 'outlook.timezone="Europe/London"')
 			.get();
+
+		// map extension metadata for convenience
+		if (Array.isArray(response?.value)) {
+			for (const event of response.value) {
+				EntraClient.#applyExtensionMetadata(event);
+			}
+		}
+		return response;
 	}
 
 	/**
@@ -93,12 +105,18 @@ export class EntraClient {
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
+			.expand([`extensions($filter=id eq '${EXTENSION_ID}')`])
 			.top(PER_PAGE);
 
 		const events = [];
 		for (let i = 0; i < MAX_PAGES; i++) {
 			const res = await listEvents.get();
-			if (res.value?.length) events.push(...res.value);
+			if (res.value?.length) {
+				for (const event of res.value) {
+					EntraClient.#applyExtensionMetadata(event);
+				}
+				events.push(...res.value);
+			}
 
 			const nextLink = res[ODATA.NEXT_LINK];
 			if (!nextLink) {
@@ -109,6 +127,24 @@ export class EntraClient {
 			listEvents.skipToken(token);
 		}
 		return events.flat();
+	}
+
+	/**
+	 * Apply convenience metadata onto an event if the open extension exists
+	 * @param {import('./types').CalendarEvent} event
+	 * @returns
+	 */
+	static #applyExtensionMetadata(event) {
+		if (!Array.isArray(event.extensions)) return;
+		const ext = event.extensions.find((e) => e.id === EXTENSION_ID);
+		if (!ext) return;
+		event.systemEvent = true;
+		if (typeof ext.caseReference === 'string') {
+			event.caseReference = ext.caseReference;
+		}
+		if (typeof ext.eventType === 'string') {
+			event.eventType = ext.eventType;
+		}
 	}
 
 	/**

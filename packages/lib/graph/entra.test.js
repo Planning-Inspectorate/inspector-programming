@@ -1,6 +1,7 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
 import { EntraClient, ODATA } from './entra.js';
+import { EXTENSION_ID } from './entra.js';
 
 describe('EntraClient', () => {
 	const mockClient = () => {
@@ -9,6 +10,9 @@ describe('EntraClient', () => {
 				return this;
 			},
 			select() {
+				return this;
+			},
+			expand() {
 				return this;
 			},
 			query() {
@@ -285,6 +289,97 @@ describe('EntraClient', () => {
 			assert.strictEqual(client.get.mock.callCount(), 10);
 		});
 	});
+
+	// New tests for extension metadata mapping
+	describe('extension metadata mapping', () => {
+		it('getUserCalendarEvents applies extension metadata when present', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => ({
+				value: [
+					{
+						id: 'evt-1',
+						subject: 'Event With Extension',
+						start: { dateTime: '2025-09-10T09:00:00.000Z', timeZone: 'UTC' },
+						end: { dateTime: '2025-09-10T10:00:00.000Z', timeZone: 'UTC' },
+						extensions: [{ id: EXTENSION_ID, extensionName: 'pinsExt', caseReference: '6900216', eventType: 'Hearing' }]
+					}
+				]
+			}));
+			const entra = new EntraClient(client);
+			const res = await entra.getUserCalendarEvents('user-1');
+			assert.strictEqual(res.value[0].systemEvent, true);
+			assert.strictEqual(res.value[0].caseReference, '6900216');
+			assert.strictEqual(res.value[0].eventType, 'Hearing');
+		});
+
+		it('getUserCalendarEvents leaves event unchanged when no extension', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => ({
+				value: [
+					{
+						id: 'evt-2',
+						subject: 'Event Without Extension',
+						start: { dateTime: '2025-09-10T11:00:00.000Z', timeZone: 'UTC' },
+						end: { dateTime: '2025-09-10T12:00:00.000Z', timeZone: 'UTC' },
+						extensions: [{ id: 'some-other-extension', extensionName: 'other' }]
+					}
+				]
+			}));
+			const entra = new EntraClient(client);
+			const res = await entra.getUserCalendarEvents('user-1');
+			assert.strictEqual(res.value[0].systemEvent, undefined);
+			assert.strictEqual(res.value[0].caseReference, undefined);
+			assert.strictEqual(res.value[0].eventType, undefined);
+		});
+
+		it('listAllUserCalendarEvents applies extension metadata across events', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => ({
+				value: [
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'evt-3',
+						subject: 'Paged Event 1',
+						start: { dateTime: '2025-09-11T09:00:00.000Z', timeZone: 'UTC' },
+						end: { dateTime: '2025-09-11T10:00:00.000Z', timeZone: 'UTC' },
+						extensions: [{ id: EXTENSION_ID, extensionName: 'pinsExt', caseReference: '6900216', eventType: 'Inquiry' }]
+					},
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'evt-4',
+						subject: 'Paged Event 2 - No CaseRef',
+						start: { dateTime: '2025-09-11T11:00:00.000Z', timeZone: 'UTC' },
+						end: { dateTime: '2025-09-11T12:00:00.000Z', timeZone: 'UTC' },
+						extensions: [{ id: EXTENSION_ID, extensionName: 'pinsExt', eventType: 'SiteVisit' }]
+					},
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'evt-5',
+						subject: 'Paged Event 3 - No Extension',
+						start: { dateTime: '2025-09-11T13:00:00.000Z', timeZone: 'UTC' },
+						end: { dateTime: '2025-09-11T14:00:00.000Z', timeZone: 'UTC' }
+					}
+				]
+			}));
+			const entra = new EntraClient(client);
+			const events = await entra.listAllUserCalendarEvents('user-1', {
+				calendarEventsDayRange: 1,
+				calendarEventsFromDateOffset: 0
+			});
+			const evt3 = events.find((e) => e.id === 'evt-3');
+			const evt4 = events.find((e) => e.id === 'evt-4');
+			const evt5 = events.find((e) => e.id === 'evt-5');
+			assert.ok(evt3 && evt4 && evt5);
+			assert.strictEqual(evt3.systemEvent, true);
+			assert.strictEqual(evt3.caseReference, '6900216');
+			assert.strictEqual(evt3.eventType, 'Inquiry');
+			assert.strictEqual(evt4.systemEvent, true);
+			assert.strictEqual(evt4.caseReference, undefined);
+			assert.strictEqual(evt4.eventType, 'SiteVisit');
+			assert.strictEqual(evt5.systemEvent, undefined);
+		});
+	});
+
 	describe('extractSkipToken', () => {
 		const tests = [
 			{
