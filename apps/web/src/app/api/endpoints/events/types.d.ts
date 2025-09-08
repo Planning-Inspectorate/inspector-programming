@@ -7,6 +7,9 @@ export interface CalendarEvent {
 	isAllDay?: boolean;
 	isOutOfOffice?: boolean;
 	status?: string;
+	systemEvent: boolean;
+	caseReference?: string;
+	eventType?: string;
 	sensitivity: string;
 }
 

@@ -4,6 +4,7 @@ import express from 'express';
 import { createRoutes } from './controller.js';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 import { TestServer } from '@pins/inspector-programming-lib/testing/test-server.js';
+import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 
 /** @type {import('#service').WebService} */
 let mockService;
@@ -185,7 +186,8 @@ describe('events', () => {
 					isAllDay: true,
 					isOutOfOffice: true,
 					status: 'oof',
-					sensitivity: 'normal'
+					sensitivity: 'normal',
+					systemEvent: false
 				},
 				{
 					id: 'id2',
@@ -196,7 +198,8 @@ describe('events', () => {
 					isAllDay: false,
 					isOutOfOffice: false,
 					status: 'busy',
-					sensitivity: 'normal'
+					sensitivity: 'normal',
+					systemEvent: false
 				},
 				{
 					id: 'id3',
@@ -207,7 +210,8 @@ describe('events', () => {
 					isAllDay: false,
 					isOutOfOffice: false,
 					status: 'free',
-					sensitivity: 'normal'
+					sensitivity: 'normal',
+					systemEvent: false
 				}
 			]);
 		});
@@ -294,7 +298,8 @@ describe('events', () => {
 				isAllDay: false,
 				isOutOfOffice: false,
 				status: 'busy',
-				sensitivity: 'normal'
+				sensitivity: 'normal',
+				systemEvent: false
 			},
 			{
 				id: 'id2',
@@ -305,7 +310,8 @@ describe('events', () => {
 				isAllDay: true,
 				isOutOfOffice: true,
 				status: 'oof',
-				sensitivity: 'normal'
+				sensitivity: 'normal',
+				systemEvent: false
 			},
 			{
 				id: 'id3',
@@ -316,7 +322,61 @@ describe('events', () => {
 				isAllDay: false,
 				isOutOfOffice: false,
 				status: 'free',
-				sensitivity: 'normal'
+				sensitivity: 'normal',
+				systemEvent: false
+			}
+		]);
+	});
+
+	test('includes system event metadata when extension present', async (ctx) => {
+		mockService.entraConfig.groupIds.inspectorGroups = 'groupA';
+		mockService.entraConfig.calendarEventsDayRange = 3;
+		mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async () => [
+			{
+				id: 'user-1',
+				displayName: 'system event user',
+				givenName: 'system',
+				surname: 'user',
+				mail: 'system-user@planninginspectorate.gov.uk'
+			}
+		]);
+
+		mock.method(mockService.apiService.entraClient, 'listAllUserCalendarEvents', async () => [
+			{
+				id: 'evt-system',
+				subject: 'System Generated Event',
+				start: { dateTime: dates.twoDaysAgo.toISOString() },
+				end: { dateTime: dates.oneDayAgo.toISOString() },
+				isAllDay: false,
+				showAs: 'busy',
+				sensitivity: 'normal',
+				extensions: [
+					{
+						id: `Microsoft.OutlookServices.OpenTypeExtension.${EXTENSION_ID}`,
+						caseReference: 'CASE-123',
+						eventType: 'HEARING'
+					}
+				]
+			}
+		]);
+
+		const server = await newServer(ctx);
+		const res = await server.get('/');
+		assert.strictEqual(res.status, 200);
+		assert.deepStrictEqual(await res.json(), [
+			{
+				id: 'evt-system',
+				userEmail: 'system-user@planninginspectorate.gov.uk',
+				title: 'System Generated Event',
+				startDate: dates.twoDaysAgo.toISOString(),
+				endDate: dates.oneDayAgo.toISOString(),
+				isAllDay: false,
+				isOutOfOffice: false,
+				status: 'busy',
+				sensitivity: 'normal',
+				systemEvent: true,
+				caseReference: 'CASE-123',
+				eventType: 'HEARING'
 			}
 		]);
 	});

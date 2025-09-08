@@ -1,6 +1,7 @@
 import { Router as createRouter } from 'express';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { getUsersInEntraGroups } from '../users/controller.js';
+import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -59,17 +60,7 @@ export function getCalendarEventsForEntraUsers(service) {
 						//startDate and endDate are in UTC timezone
 						const formattedEvents = [];
 						for (const event of usersEvents || []) {
-							formattedEvents.push({
-								id: event.id,
-								userEmail: user.email,
-								title: event.subject,
-								startDate: event.start?.dateTime || 'N/A',
-								endDate: event.end?.dateTime || 'N/A',
-								isAllDay: !!event.isAllDay,
-								isOutOfOffice: (event.showAs || '').toLowerCase() === 'oof',
-								status: event.showAs,
-								sensitivity: event.sensitivity
-							});
+							formattedEvents.push(formatCalendarEvent(event, user));
 						}
 						return formattedEvents;
 					})
@@ -100,4 +91,44 @@ function chunkArray(array, chunkSize) {
 		chunks.push(array.slice(i, i + chunkSize));
 	}
 	return chunks;
+}
+
+/** @typedef {import('@pins/inspector-programming-lib/graph/types').CalendarEvent} GraphCalendarEvent */
+/** @typedef {import('./types').CalendarEvent} AppCalendarEvent */
+/** @typedef {import('../users/types').User} User */
+
+/**
+ * @param {GraphCalendarEvent} event
+ * @param {User} user
+ * @returns {AppCalendarEvent}
+ */
+function formatCalendarEvent(event, user) {
+	/** @type {boolean} */
+	let systemEvent = false;
+	/** @type {string} */
+	let caseReference;
+	/** @type {string} */
+	let eventType;
+	if (Array.isArray(event.extensions)) {
+		const ext = event.extensions.find((e) => e.id === `Microsoft.OutlookServices.OpenTypeExtension.${EXTENSION_ID}`);
+		if (ext) {
+			systemEvent = !!ext;
+			if (typeof ext.caseReference === 'string') caseReference = ext.caseReference;
+			if (typeof ext.eventType === 'string') eventType = ext.eventType;
+		}
+	}
+	return {
+		id: event.id,
+		userEmail: user.email,
+		title: event.subject,
+		startDate: event.start?.dateTime || 'N/A',
+		endDate: event.end?.dateTime || 'N/A',
+		isAllDay: !!event.isAllDay,
+		isOutOfOffice: (event.showAs || '').toLowerCase() === 'oof',
+		status: event.showAs,
+		sensitivity: event.sensitivity,
+		systemEvent,
+		caseReference,
+		eventType
+	};
 }

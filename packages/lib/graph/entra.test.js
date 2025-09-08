@@ -1,6 +1,7 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
 import { EntraClient, ODATA } from './entra.js';
+import { EXTENSION_ID } from './entra.js';
 
 describe('EntraClient', () => {
 	const mockClient = () => {
@@ -9,6 +10,9 @@ describe('EntraClient', () => {
 				return this;
 			},
 			select() {
+				return this;
+			},
+			expand() {
 				return this;
 			},
 			query() {
@@ -285,6 +289,60 @@ describe('EntraClient', () => {
 			assert.strictEqual(client.get.mock.callCount(), 10);
 		});
 	});
+	describe('Event with extension', () => {
+		it('should return events with extensions', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => {
+				return {
+					value: [
+						{
+							[ODATA.TYPE]: ODATA.EVENT_TYPE,
+							id: 'id1',
+							subject: 'System Event with Extension',
+							start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' },
+							extensions: [
+								{
+									extensionName: 'Microsoft.OutlookServices.OpenTypeExtension',
+									id: `Microsoft.OutlookServices.OpenTypeExtension.${EXTENSION_ID}`,
+									caseReference: '6900216',
+									eventType: 'HEARING'
+								}
+							]
+						},
+						{
+							[ODATA.TYPE]: ODATA.EVENT_TYPE,
+							id: 'id2',
+							subject: 'Regular Event without Extension',
+							start: { dateTime: '2025-08-14T10:00:00.0000000', timeZone: 'UTC' },
+							end: { dateTime: '2025-08-14T11:00:00.0000000', timeZone: 'UTC' }
+						}
+					]
+				};
+			});
+			const entra = new EntraClient(client);
+			const events = await entra.listAllUserCalendarEvents('testGroup', {
+				calendarEventsDayRange: 3,
+				calendarEventsFromDateOffset: 0
+			});
+			assert.strictEqual(client.get.mock.callCount(), 1);
+			assert.strictEqual(events.length, 2);
+
+			// Check event with extension
+			const systemEvent = events.find((e) => e.id === 'id1');
+			assert.ok(systemEvent);
+			assert.ok(Array.isArray(systemEvent.extensions));
+			assert.strictEqual(systemEvent.extensions.length, 1);
+			assert.strictEqual(systemEvent.extensions[0].caseReference, '6900216');
+			assert.strictEqual(systemEvent.extensions[0].eventType, 'HEARING');
+
+			// Check event without extension
+			const regularEvent = events.find((e) => e.id === 'id2');
+			assert.ok(regularEvent);
+			assert.strictEqual(regularEvent.extensions, undefined);
+		});
+	});
+
 	describe('extractSkipToken', () => {
 		const tests = [
 			{
