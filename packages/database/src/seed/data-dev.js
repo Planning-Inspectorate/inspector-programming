@@ -385,6 +385,7 @@ function generateLinkedCases(appeals, variations, now) {
 			linkedCases.push({
 				...mockAppeal,
 				...variations[leadIndex % variations.length],
+				caseId: childIndex,
 				siteAddressPostcode: location.siteAddressPostcode,
 				siteAddressLatitude: location.siteAddressLatitude,
 				siteAddressLongitude: location.siteAddressLongitude,
