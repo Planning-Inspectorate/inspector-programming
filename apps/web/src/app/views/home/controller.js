@@ -11,7 +11,6 @@ import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
 import { addSessionData, clearSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { appealsViewModel, calendarViewModel, filtersQueryViewModel, inspectorsViewModel } from './view-model.js';
 import { paginationValues } from './pagination.js';
-import { assignCasesToInspector } from '../../case/case.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -162,20 +161,6 @@ export function buildPostHome(service) {
 				? `/inspector/${req.body.inspectorId}`
 				: `/?inspectorId=${req.body.inspectorId}&calendarStartDate=${newStartDate}`;
 
-		return res.redirect(redirectUrl);
-	};
-}
-
-/**
- * @param {import('#service').WebService} service
- * @returns {import('express').Handler}
- */
-export function buildPostCases(service) {
-	return async (req, res) => {
-		let selectedCases = Array.isArray(req.body.selectedCases) ? req.body.selectedCases : [req.body.selectedCases];
-
-		await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCases);
-		const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
 		return res.redirect(redirectUrl);
 	};
 }
