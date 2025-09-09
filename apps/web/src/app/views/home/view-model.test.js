@@ -55,7 +55,10 @@ describe('view-model', () => {
 				{ caseId: 1, caseAge: 10, finalCommentsDate: new Date() },
 				{ caseId: 2, caseAge: 25, finalCommentsDate: new Date() }
 			];
-			const viewModel = appealsViewModel(cases);
+			const req = {
+				session: {}
+			};
+			const viewModel = appealsViewModel(cases, req);
 			assert.strictEqual(Array.isArray(viewModel.cases), true);
 			assert.strictEqual(viewModel.cases.length, 2);
 			const case1 = viewModel.cases[0];

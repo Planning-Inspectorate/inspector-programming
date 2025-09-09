@@ -1,5 +1,10 @@
 import { beforeEach, describe, test, mock } from 'node:test';
-import { assignCasesToInspector, getCaseAndLinkedCasesIds, getLinkedCaseIdsOfParentId, getCaseDetails } from './case.js';
+import {
+	assignCasesToInspector,
+	getCaseAndLinkedCasesIds,
+	getLinkedCaseIdsOfParentId,
+	getCaseDetails
+} from './case.js';
 import assert from 'assert';
 
 const mockSession = {};
@@ -76,7 +81,7 @@ describe('assignCasesToInspector', () => {
 
 	test('should add linked cases ids to parent case ids list', async () => {
 		const caseIds = ['1'];
-		const appeal = { caseIds: '1', linkedCaseStatus: 'parent' };
+		const appeal = { caseIds: '1', linkedCaseStatus: 'Parent' };
 		const linkedCases = [{ caseId: '2' }, { caseId: '3' }, { caseId: '4' }];
 		const expectedCaseIds = ['1', '2', '3', '4'];
 		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
@@ -89,7 +94,7 @@ describe('assignCasesToInspector', () => {
 
 	test('should not add linked if linked case status is child', async () => {
 		const caseIds = ['1'];
-		const appeal = { caseIds: '1', linkedCaseStatus: 'child' };
+		const appeal = { caseIds: '1', linkedCaseStatus: 'Child' };
 		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
 		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 0);
