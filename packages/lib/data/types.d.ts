@@ -104,6 +104,8 @@ export interface CbosSingleAppealResponse {
 		town?: string;
 		/** @example "DT6 5RN" */
 		postCode?: string;
+		/** NOT IN ORIGINAL APPEALS BACKOFFICE TYPE */
+		county?: string;
 	};
 	costs?: {
 		appellantApplicationFolder?: {
@@ -292,6 +294,7 @@ export interface CbosSingleAppealResponse {
 	/** @example "lpa@example.com" */
 	lpaEmailAddress?: string;
 	lpaQuestionnaireId?: any;
+	lpaRegion: string; //NOT IN ORIGINAL APPEALS BACKOFFICE TYPE
 	/** @example "52279/APP/1/151419" */
 	planningApplicationReference?: string;
 	/** @example "Written" */
@@ -344,4 +347,12 @@ export interface AppealCaseModel {
 	finalCommentsDueDate: Date | null;
 	linkedCaseStatus: string;
 	leadCaseReference: string;
+}
+
+export interface CbosAppealTypes {
+	id: number;
+	type: string;
+	key: string;
+	processCode: string;
+	enabled: boolean;
 }

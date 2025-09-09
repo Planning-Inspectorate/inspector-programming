@@ -19,11 +19,6 @@ const READY_TO_ASSIGN_APPEAL_STATUSES = [
  */
 export class CbosApiClient {
 	/**
-	 * Static cache for appeal types, shared across all instances.
-	 */
-	static appealTypesCache = null;
-
-	/**
 	 * Static promise for fetching appeal types, to prevent duplicate requests.
 	 * @type {?Promise<Object[]>}
 	 */
@@ -203,7 +198,10 @@ export class CbosApiClient {
 				const data = await response.json();
 				const maxPageNumber = data.pageCount;
 
-				const filteredData = data.items?.filter((item) => READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus));
+				const filteredData = data.items?.filter(
+					/** @param {{ appealStatus: string }} item */
+					(item) => READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus)
+				);
 
 				for (let item of filteredData) {
 					appealIds.push(item.appealId);
@@ -252,7 +250,7 @@ export class CbosApiClient {
 
 	/**
 	 * Fetches the list of appeal types from the external API, with caching.
-	 * @returns {Promise<Object[]>} Promise resolving to an array of appeal type objects.
+	 * @returns {Promise<import('../types').CbosAppealTypes[]>} Promise resolving to an array of appeal type objects.
 	 * @throws {Error} If the request fails or the response is not OK.
 	 */
 	async fetchAppealTypes() {
@@ -287,20 +285,8 @@ export class CbosApiClient {
 	 * @returns {Promise<string>} The display key for the appeal type, or 'Unknown Appeal Type' if not found.
 	 */
 	async getAppealType(appealType) {
-		if (!CbosApiClient.appealTypesCache) {
-			if (!CbosApiClient.fetchPromise) {
-				CbosApiClient.fetchPromise = this.fetchAppealTypes().then((data) => {
-					CbosApiClient.appealTypesCache = data;
-					return data;
-				});
-			}
-			await CbosApiClient.fetchPromise;
-		}
-		/** @type {any} */
-		const found =
-			CbosApiClient.appealTypesCache !== null
-				? CbosApiClient.appealTypesCache.find((item) => item.type === appealType)
-				: null;
+		const appealTypes = await this.fetchAppealTypes();
+		const found = appealTypes.find((item) => item.type === appealType);
 		return found ? found.key : 'Unknown Appeal Type';
 	}
 }
