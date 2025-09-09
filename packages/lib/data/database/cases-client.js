@@ -38,7 +38,7 @@ export class CasesClient {
 	 */
 	caseToViewModel(c) {
 		return {
-			caseId: c.caseReference,
+			caseReference: c.caseReference,
 			caseType: c.caseType || '',
 			caseProcedure: c.caseProcedure || '',
 			allocationBand: c.allocationBand || '',

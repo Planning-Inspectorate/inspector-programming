@@ -1,14 +1,14 @@
 /**
  * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} db
- * @param {string} caseId
+ * @param {string} caseReference
  * @returns {Promise<import('./types').CaseWithEventsAndSpecialisms | null>}
  */
-export async function getCaseDetails(db, caseId) {
-	if (!caseId) {
+export async function getCaseDetails(db, caseReference) {
+	if (!caseReference) {
 		return null;
 	}
 	return db.appealCase.findUnique({
-		where: { caseReference: caseId },
+		where: { caseReference: caseReference },
 		include: { Events: true, Specialisms: true }
 	});
 }
@@ -52,7 +52,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
  */
 export async function getCaseAndLinkedCasesIds(caseIds, service) {
 	for (const caseId of caseIds) {
-		const appeal = await service.casesClient.getCaseById(caseId);
+		const appeal = await service.casesClient.getCaseByReference(caseId);
 		if (appeal && appeal.linkedCaseStatus == 'Parent') {
 			const linkedCasesIds = await getLinkedCaseIdsOfParentId(caseId, service);
 			caseIds = caseIds.concat(linkedCasesIds);

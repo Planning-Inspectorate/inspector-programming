@@ -52,8 +52,8 @@ describe('view-model', () => {
 				now: new Date('2023-10-04T12:00:00Z')
 			});
 			const cases = [
-				{ caseId: 1, caseAge: 10, finalCommentsDate: new Date() },
-				{ caseId: 2, caseAge: 25, finalCommentsDate: new Date() }
+				{ caseReference: 1, caseAge: 10, finalCommentsDate: new Date() },
+				{ caseReference: 2, caseAge: 25, finalCommentsDate: new Date() }
 			];
 			const req = {
 				session: {}
@@ -62,7 +62,7 @@ describe('view-model', () => {
 			assert.strictEqual(Array.isArray(viewModel.cases), true);
 			assert.strictEqual(viewModel.cases.length, 2);
 			const case1 = viewModel.cases[0];
-			assert.strictEqual(case1.caseId, 1);
+			assert.strictEqual(case1.caseReference, 1);
 			assert.strictEqual(case1.caseAge, 10);
 			assert.strictEqual(case1.finalCommentsDate, '04/10/2023');
 		});

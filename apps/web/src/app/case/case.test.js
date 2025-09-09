@@ -19,21 +19,21 @@ const mockGetCbosApiClientForSession = mock.fn();
 mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 
 const mockGetLinkedCasesByParentCaseId = mock.fn();
-const mockGetCaseById = mock.fn();
+const mockGetCaseByReference = mock.fn();
 
 const mockService = {
 	logger: mockLogger,
 	getCbosApiClientForSession: mockGetCbosApiClientForSession,
 	casesClient: {
 		getLinkedCasesByParentCaseId: mockGetLinkedCasesByParentCaseId,
-		getCaseById: mockGetCaseById
+		getCaseByReference: mockGetCaseByReference
 	}
 };
 
 beforeEach(() => {
 	mockGetCbosApiClientForSession.mock.resetCalls();
 	mockGetLinkedCasesByParentCaseId.mock.resetCalls();
-	mockGetCaseById.mock.resetCalls();
+	mockGetCaseByReference.mock.resetCalls();
 	mockService.logger.error.mock.resetCalls();
 	mockService.logger.warn.mock.resetCalls();
 });
@@ -85,20 +85,20 @@ describe('assignCasesToInspector', () => {
 		const linkedCases = [{ caseId: '2' }, { caseId: '3' }, { caseId: '4' }];
 		const expectedCaseIds = ['1', '2', '3', '4'];
 		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
-		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
+		mockGetCaseByReference.mock.mockImplementationOnce(() => appeal);
 		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
-		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
+		assert.strictEqual(mockGetCaseByReference.mock.callCount(), 1);
 		assert.deepStrictEqual(casesIdsList, expectedCaseIds);
 	});
 
 	test('should not add linked if linked case status is child', async () => {
 		const caseIds = ['1'];
 		const appeal = { caseIds: '1', linkedCaseStatus: 'Child' };
-		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
+		mockGetCaseByReference.mock.mockImplementationOnce(() => appeal);
 		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 0);
-		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
+		assert.strictEqual(mockGetCaseByReference.mock.callCount(), 1);
 		assert.deepStrictEqual(casesIdsList, caseIds);
 	});
 });

@@ -8,15 +8,15 @@ describe('controller.js', () => {
 		beforeEach(() => {
 			mockGetCbosApiClientForSession.mock.resetCalls();
 			mockCbosApiClient.patchAppeal.mock.resetCalls();
-			mockCasesClient.getCaseById.mock.resetCalls();
+			mockCasesClient.getCaseByReference.mock.resetCalls();
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 		});
 		const mockCasesClient = {
-			getCaseById: mock.fn(),
+			getCaseByReference: mock.fn(),
 			getLinkedCasesByParentCaseId: mock.fn()
 		};
 		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child' };
-		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
+		mockCasesClient.getCaseByReference.mock.mockImplementation(() => appeal);
 		const mockCbosApiClient = {
 			patchAppeal: mock.fn()
 		};
