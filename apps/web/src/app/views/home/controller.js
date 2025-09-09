@@ -65,7 +65,7 @@ export function buildViewHome(service) {
 
 		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
 		for (let caseId of selectedCaseIds) {
-			let caseIndex = cases.findIndex((item) => item.caseId == caseId);
+			let caseIndex = cases.findIndex((item) => item.caseReference == caseId);
 			if (caseIndex != -1) {
 				cases[caseIndex].selected = true;
 			}

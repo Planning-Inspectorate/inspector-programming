@@ -124,7 +124,7 @@ describe('CasesClient', () => {
 	describe('paginateCases', () => {
 		const fiveMockCases = [
 			{
-				caseId: 'ref1',
+				caseReference: 'ref1',
 				caseType: 'W',
 				caseProcedure: 'inquiry',
 				allocationBand: 1,
@@ -144,7 +144,7 @@ describe('CasesClient', () => {
 				leadCaseReference: null
 			},
 			{
-				caseId: 'ref2',
+				caseReference: 'ref2',
 				caseType: 'W',
 				caseProcedure: 'inquiry',
 				allocationBand: 1,
@@ -164,7 +164,7 @@ describe('CasesClient', () => {
 				leadCaseReference: null
 			},
 			{
-				caseId: 'ref3',
+				caseReference: 'ref3',
 				caseType: 'W',
 				caseProcedure: 'inquiry',
 				allocationBand: 1,
@@ -184,7 +184,7 @@ describe('CasesClient', () => {
 				leadCaseReference: null
 			},
 			{
-				caseId: 'ref4',
+				caseReference: 'ref4',
 				caseType: 'W',
 				caseProcedure: 'inquiry',
 				allocationBand: 1,
@@ -204,7 +204,7 @@ describe('CasesClient', () => {
 				leadCaseReference: null
 			},
 			{
-				caseId: 'ref5',
+				caseReference: 'ref5',
 				caseType: 'W',
 				caseProcedure: 'inquiry',
 				allocationBand: 1,
@@ -242,15 +242,15 @@ describe('CasesClient', () => {
 				casesClient.paginateCases(fiveMockCases, 1, 5)
 			]);
 			assert.deepStrictEqual(
-				threePaginatedCases.cases.map((c) => c.caseId),
+				threePaginatedCases.cases.map((c) => c.caseReference),
 				['ref1', 'ref2', 'ref3']
 			);
 			assert.deepStrictEqual(
-				fourPaginatedCases.cases.map((c) => c.caseId),
+				fourPaginatedCases.cases.map((c) => c.caseReference),
 				['ref1', 'ref2', 'ref3', 'ref4']
 			);
 			assert.deepStrictEqual(
-				fivePaginatedCases.cases.map((c) => c.caseId),
+				fivePaginatedCases.cases.map((c) => c.caseReference),
 				['ref1', 'ref2', 'ref3', 'ref4', 'ref5']
 			);
 			assert.deepStrictEqual(threePaginatedCases.total, 5);
@@ -263,7 +263,7 @@ describe('CasesClient', () => {
 
 			const pageTwo = await casesClient.paginateCases(fiveMockCases, 2, 2);
 			assert.deepStrictEqual(
-				pageTwo.cases.map((c) => c.caseId),
+				pageTwo.cases.map((c) => c.caseReference),
 				['ref3', 'ref4']
 			);
 			assert.deepStrictEqual(pageTwo.total, 5);
@@ -274,7 +274,7 @@ describe('CasesClient', () => {
 
 			const overflowPageTwo = await casesClient.paginateCases(fiveMockCases, 2, 3);
 			assert.deepStrictEqual(
-				overflowPageTwo.cases.map((c) => c.caseId),
+				overflowPageTwo.cases.map((c) => c.caseReference),
 				['ref4', 'ref5']
 			);
 			assert.deepStrictEqual(overflowPageTwo.total, 5);

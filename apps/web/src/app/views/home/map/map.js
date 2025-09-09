@@ -58,7 +58,7 @@ function initialiseMap(apiKey, pins, inspector) {
 				symbol: markerSymbol,
 				attributes: caseData,
 				popupTemplate: {
-					title: 'Case ' + caseData.caseId,
+					title: 'Case ' + caseData.caseReference,
 					content: [
 						{
 							type: 'fields',
@@ -76,7 +76,7 @@ function initialiseMap(apiKey, pins, inspector) {
 					],
 					actions: [
 						{
-							id: `toggle-select-case-${caseData.caseId}`,
+							id: `toggle-select-case-${caseData.caseReference}`,
 							icon: 'check-circle',
 							title: SELECT_CASE_ACTION
 						}
@@ -213,7 +213,7 @@ function initialiseMap(apiKey, pins, inspector) {
 						new CustomEvent('caseStateChange', {
 							detail: {
 								caseId: selectedCase,
-								selected: !pins.find(({ caseId }) => caseId === selectedCase).selected
+								selected: !pins.find(({ caseReference: caseId }) => caseId === selectedCase).selected
 							}
 						})
 					);
@@ -227,9 +227,9 @@ function initialiseMap(apiKey, pins, inspector) {
 			const graphic = view.graphics.find((graphic) => graphic.attributes?.caseId === event.detail.caseId);
 
 			if (graphic) {
-				const caseData = pins.find(({ caseId }) => caseId === event.detail.caseId);
+				const caseData = pins.find(({ caseReference: caseId }) => caseId === event.detail.caseId);
 				caseData.selected = event.detail.selected;
-				console.debug('caseStateChange, syncing map state', caseData.caseId, caseData.selected);
+				console.debug('caseStateChange, syncing map state', caseData.caseReference, caseData.selected);
 
 				graphic.popupTemplate.actions.items[0].title = event.detail.selected
 					? UNSELECT_CASE_ACTION

@@ -115,7 +115,7 @@ export class CachedCasesClient {
 	caseToViewModel(c) {
 		return this.#client.caseToViewModel(c);
 	}
-	
+
 	/**
 	 *
 	 * @param {string} caseId
@@ -133,10 +133,10 @@ export class CachedCasesClient {
 
 	/**
 	 *
-	 * @param {string} caseId
+	 * @param {string} caseReference
 	 * @returns {Promise<import('../types').CaseViewModel>}
 	 */
-	async getCaseById(caseId) {
+	async getCaseByReference(caseReference) {
 		const key = CACHE_PREFIX + 'getAllCases';
 		let cases = this.#cache.get(key);
 		if (!cases) {
@@ -144,6 +144,6 @@ export class CachedCasesClient {
 			this.#cache.set(key, cases);
 		}
 
-		return cases.find((/** @type {{ caseId: string; }} */ item) => item.caseId == caseId);
+		return cases.find((/** @type {{ caseReference: string; }} */ item) => item.caseReference == caseReference);
 	}
 }
