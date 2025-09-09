@@ -8,7 +8,7 @@ import {
 } from '../../calendar/calendar.js';
 import { validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
-import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { addSessionData, clearSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { appealsViewModel, calendarViewModel, filtersQueryViewModel, inspectorsViewModel } from './view-model.js';
 import { paginationValues } from './pagination.js';
 import { assignCasesToInspector } from '../../case/case.js';
@@ -64,6 +64,14 @@ export function buildViewHome(service) {
 		const isCalendarTab = req.query.currentTab === 'calendar';
 		const isInspectorTab = req.query.currentTab === 'inspector';
 
+		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
+		for (let caseId of selectedCaseIds) {
+			let caseIndex = cases.findIndex((item) => item.caseId == caseId);
+			if (caseIndex != -1) {
+				cases[caseIndex].selected = true;
+			}
+		}
+
 		/** @type {import('./types.js').HomeViewModel} */
 		const viewModel = {
 			pageHeading: 'Unassigned case list',
@@ -78,7 +86,7 @@ export function buildViewHome(service) {
 				query: filterQuery,
 				errors: filterErrors
 			},
-			appeals: appealsViewModel(cases),
+			appeals: appealsViewModel(cases, req),
 			inspectors: inspectorsViewModel(
 				inspectors,
 				selectedInspectorDetails,
@@ -118,23 +126,11 @@ export function buildViewHome(service) {
 
 		viewModel.calendar = calendarViewModel(req.query.calendarStartDate, calendarEvents, calendarError);
 
-		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
-		for (let caseId of selectedCaseIds) {
-			let caseIndex = cases.findIndex((item) => item.caseId == caseId);
-			if (caseIndex != -1) {
-				cases[caseIndex].selected = true;
-			}
-		}
-
-		// const assignmentDate = readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence');
-
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');
 
-		// const caseListError = readSessionData(req, 'caseListData', 'errorMessage', null, 'persistence');
-
 		//clear session data passed on from /cases
-		// clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
+		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
 
 		return res.render('views/home/view.njk', viewModel);
 	};

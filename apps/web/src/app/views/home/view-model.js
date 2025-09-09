@@ -1,3 +1,4 @@
+import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import {
 	generateCalendar,
 	generateDatesList,
@@ -28,11 +29,13 @@ export function calendarViewModel(calendarStartDate, events, error) {
 
 /**
  * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} cases
+ * @param {import('express').Request} req
  * @returns {import('./types.js').AppealsViewModel}
  */
-export function appealsViewModel(cases) {
+export function appealsViewModel(cases, req) {
 	return {
-		cases: cases.map(toCaseViewModel)
+		cases: cases.map(toCaseViewModel),
+		assignmentDate: readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence')
 	};
 }
 

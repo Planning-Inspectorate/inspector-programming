@@ -53,7 +53,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 export async function getCaseAndLinkedCasesIds(caseIds, service) {
 	for (const caseId of caseIds) {
 		const appeal = await service.casesClient.getCaseById(caseId);
-		if (appeal.linkedCaseStatus == 'parent') {
+		if (appeal && appeal.linkedCaseStatus == 'Parent') {
 			const linkedCasesIds = await getLinkedCaseIdsOfParentId(caseId, service);
 			caseIds = caseIds.concat(linkedCasesIds);
 		}
