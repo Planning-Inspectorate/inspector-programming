@@ -20,7 +20,6 @@ const READY_TO_ASSIGN_APPEAL_STATUSES = [
 export class CbosApiClient {
 	/**
 	 * Static cache for appeal types, shared across all instances.
-	 * @type {?Object[]}
 	 */
 	static appealTypesCache = null;
 
@@ -128,7 +127,7 @@ export class CbosApiClient {
 	/**
 	 * Maps an appeal to appeal case for db
 	 * @param {import('../types').CbosSingleAppealResponse} c - The appeal case object.
-	 * @returns {Promise<{latitude: Decimal | number | undefined, longitude: Decimal | number | undefined}|undefined>} The mapped view model object.
+	 * @returns {Promise<{latitude: number | undefined, longitude: number | undefined}|undefined>} The mapped view model object.
 	 */
 	async getAppealCoordinates(c) {
 		try {
@@ -147,25 +146,6 @@ export class CbosApiClient {
 			}
 		} catch (error) {
 			this.logger.error(`Failed to fetch postcode coordinates: ${error}`);
-		}
-	}
-
-	/**
-	 * Fetches all cases for the user.
-	 * @returns {Promise<{ cases: Object[] }>} An object containing the array of case view models.
-	 * @throws {Error} If fetching cases fails.
-	 */
-	async getCases({ pageNumber = 1, pageSize = 10 } = {}) {
-		try {
-			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize });
-			if (appealIds.length === 0) {
-				this.logger.warn('[CaseController] No appeal IDs found for the user.');
-			}
-			const appealDetails = await this.fetchAppealDetails(appealIds);
-			return await Promise.all(appealDetails.map((c) => this.appealToViewModel(c)));
-		} catch (error) {
-			this.logger.error({ error: error }, '[CaseController] Error fetching cases');
-			throw new Error('Failed to fetch cases. Please try again later.');
 		}
 	}
 
@@ -195,49 +175,11 @@ export class CbosApiClient {
 			return response;
 		} catch (error) {
 			clearTimeout(timeoutId);
-			if (error.name === 'AbortError') {
+			if (error instanceof Error && error.name === 'AbortError') {
 				throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
 			}
 			throw error;
 		}
-	}
-
-	/**
-	 * Maps an appeal case object to a view model for UI consumption.
-	 * @param {import("../types").CbosSingleAppealResponse} c - The appeal case object.
-	 * @returns {Promise<import("../types").CaseViewModel>} The mapped view model object.
-	 */
-	async appealToViewModel(c) {
-		return {
-			caseId: c.appealReference || null,
-			caseType: (await this.getAppealType(c.appealType || '')) || '',
-			caseProcedure: c.procedureType || '',
-			allocationBand: c.allocationDetails?.band || '',
-			caseLevel: c.allocationDetails?.level || '',
-			siteAddressPostcode: c.appealSite?.postCode || '',
-			lpaName: c.localPlanningDepartment || '',
-			lpaRegion: c.lpaRegion || '',
-			caseStatus: c.appealStatus || 'Unassigned',
-			caseAge: this.getCaseAgeInWeeks(c.validAt),
-			finalCommentsDate: c.appealTimetable?.finalCommentsDueDate
-				? new Date(c.appealTimetable.finalCommentsDueDate)
-				: new Date()
-			// programmingStatus: c.programmingStatus || ''
-		};
-	}
-
-	/**
-	 * Calculates the case age in weeks from the valid date.
-	 * @param {string|Date} validDate - The valid date of the case.
-	 * @returns {number} Age in weeks (rounded down).
-	 */
-	getCaseAgeInWeeks(validDate) {
-		if (!validDate) return 0;
-		const startDate = new Date(validDate);
-		const now = new Date();
-		const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-		const diffMs = +now - +startDate;
-		return diffMs < 0 ? 0 : Math.floor(diffMs / msPerWeek);
 	}
 
 	/**

@@ -128,42 +128,9 @@ test('getAppealType returns Unknown Appeal Type if not found', async () => {
 	assert.strictEqual(key, 'Unknown Appeal Type');
 });
 
-test('getCaseAgeInWeeks returns correct weeks', () => {
-	const now = new Date();
-	const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-	assert.strictEqual(client.getCaseAgeInWeeks(twoWeeksAgo), 2);
-});
-
 test('getLinkedCasesCount returns sum of linked and other appeals', () => {
 	const c = { linkedAppeals: [1, 2] };
 	assert.strictEqual(client.getLinkedCasesCount(c), 2);
-});
-
-test('appealToViewModel maps specified fields correctly', async () => {
-	client.getAppealType = async () => 'Y';
-	const c = {
-		appealReference: '6000084',
-		appealType: 'Y',
-		procedureType: 'written',
-		allocationDetails: { band: '3', level: 'A' },
-		appealSite: { postCode: 'BN14 0TT' },
-		localPlanningDepartment: 'Bristol City Council',
-		appealStatus: 'issue_determination',
-		validAt: new Date(Date.now() - 5 * 7 * 24 * 60 * 60 * 1000), // 5 weeks ago
-		linkedAppeals: [],
-		otherAppeals: [],
-		appealTimetable: {}
-	};
-	const vm = await client.appealToViewModel(c);
-	assert.strictEqual(vm.caseId, '6000084');
-	assert.strictEqual(vm.caseType, 'Y');
-	assert.strictEqual(vm.caseProcedure, 'written');
-	assert.strictEqual(vm.allocationBand, '3');
-	assert.strictEqual(vm.caseLevel, 'A');
-	assert.strictEqual(vm.siteAddressPostcode, 'BN14 0TT');
-	assert.strictEqual(vm.lpaName, 'Bristol City Council');
-	assert.strictEqual(vm.caseStatus, 'issue_determination');
-	assert.strictEqual(vm.caseAge, 5);
 });
 
 test('appealToAppealCaseModel should maps parent appeal values correctly', async () => {

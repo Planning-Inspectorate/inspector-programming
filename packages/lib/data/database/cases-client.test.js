@@ -276,4 +276,14 @@ describe('CasesClient', () => {
 			assert.deepStrictEqual(overflowPageTwo.total, 5);
 		});
 	});
+	describe('getCaseAgeInWeeks', () => {
+		it('should get the correct age of the case', () => {
+			const mockClient = {};
+			const casesClient = new CasesClient(mockClient);
+
+			const now = new Date();
+			const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+			assert.strictEqual(casesClient.getCaseAgeInWeeks(twoWeeksAgo), 2);
+		});
+	});
 });
