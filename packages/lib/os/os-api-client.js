@@ -21,7 +21,7 @@ export class OsApiClient {
 	}
 
 	/**
-	 * @param {string} postcode
+	 * @param {string | undefined} postcode
 	 * @returns {Promise<import('./os-types.js').OsPlaces.Response>}
 	 */
 	async addressesForPostcode(postcode) {
@@ -31,7 +31,7 @@ export class OsApiClient {
 		return this.#fetch('/search/places/v1/postcode', {
 			postcode,
 			// TODO: check which parameters are actually required
-			maxresults: 10,
+			maxresults: '10',
 			output_srs: 'WGS84' // including this returns LNG and LAT values
 		});
 	}

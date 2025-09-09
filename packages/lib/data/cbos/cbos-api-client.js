@@ -41,8 +41,8 @@ export class CbosApiClient {
 	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
 	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
 	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
-	 * @param {OsApiClient} osApiClient - Client for OS API
-	 * @param {Object} logger - Logger instance for logging warnings and errors.
+	 * @param {import('packages/lib/os/os-api-client').OsApiClient} osApiClient - Client for OS API
+	 * @param {import('pino').Logger} logger - Logger instance for logging warnings and errors.
 	 */
 	constructor(cbosConfig, osApiClient, logger) {
 		this.config = cbosConfig;
@@ -75,25 +75,25 @@ export class CbosApiClient {
 
 	/**
 	 * Maps an appeal to appeal case for db
-	 * @param {Object} c - The appeal case object.
-	 * @returns {Promise<Object>} The mapped view model object.
+	 * @param {import('../types').CbosSingleAppealResponse} c - The appeal case object.
+	 * @returns {Promise<import('../types').AppealCaseModel>} The mapped view model object.
 	 */
 	async appealToAppealCaseModel(c) {
-		let linkedCaseStatus, leadCaseReference;
+		let linkedCaseStatus = '',
+			leadCaseReference = '';
 
 		if (c.isParentAppeal) {
 			linkedCaseStatus = 'Parent';
 		} else if (c.isChildAppeal) {
 			linkedCaseStatus = 'Child';
 			// TODO - process c.linkedAppeals here
-			leadCaseReference = '';
 		}
 
 		const appealCoordinates = await this.getAppealCoordinates(c);
 
 		return {
-			caseId: c.appealId,
-			caseReference: c.appealReference,
+			caseId: c.appealId || '',
+			caseReference: c.appealReference || '',
 			caseType: (await this.getAppealType(c.appealType)) || '',
 			caseStatus: c.appealStatus || 'Unassigned',
 			caseProcedure: c.procedureType || '',
@@ -110,8 +110,8 @@ export class CbosApiClient {
 			lpaCode: '', // TODO - fetch from /appeals/local-planning-authorities
 			lpaName: c.localPlanningDepartment || '',
 			lpaRegion: c.lpaRegion || '',
-			caseCreatedDate: c.createdAt,
-			caseValidDate: c.validAt,
+			caseCreatedDate: c.createdAt || '',
+			caseValidDate: c.validAt || '',
 			finalCommentsDueDate: c.appealTimetable?.finalCommentsDueDate
 				? new Date(c.appealTimetable.finalCommentsDueDate)
 				: null,
@@ -127,13 +127,13 @@ export class CbosApiClient {
 
 	/**
 	 * Maps an appeal to appeal case for db
-	 * @param {Object} c - The appeal case object.
-	 * @returns {Promise<Object|undefined>} The mapped view model object.
+	 * @param {import('../types').CbosSingleAppealResponse} c - The appeal case object.
+	 * @returns {Promise<{latitude: Decimal | number | undefined, longitude: Decimal | number | undefined}|undefined>} The mapped view model object.
 	 */
 	async getAppealCoordinates(c) {
 		try {
 			let latitude, longitude;
-			const appealCoordinates = await this.osApiClient.addressesForPostcode(c.appealSite.postCode);
+			const appealCoordinates = await this.osApiClient.addressesForPostcode(c.appealSite?.postCode);
 			if (appealCoordinates.results && appealCoordinates.results.length > 0) {
 				const locationData = appealCoordinates.results[0];
 				if ('DPA' in locationData) {
@@ -204,13 +204,13 @@ export class CbosApiClient {
 
 	/**
 	 * Maps an appeal case object to a view model for UI consumption.
-	 * @param {Object} c - The appeal case object.
-	 * @returns {Object} The mapped view model object.
+	 * @param {import("../types").CbosSingleAppealResponse} c - The appeal case object.
+	 * @returns {Promise<import("../types").CaseViewModel>} The mapped view model object.
 	 */
 	async appealToViewModel(c) {
 		return {
-			caseId: c.appealReference,
-			caseType: (await this.getAppealType(c.appealType)) || '',
+			caseId: c.appealReference || null,
+			caseType: (await this.getAppealType(c.appealType || '')) || '',
 			caseProcedure: c.procedureType || '',
 			allocationBand: c.allocationDetails?.band || '',
 			caseLevel: c.allocationDetails?.level || '',
@@ -219,21 +219,11 @@ export class CbosApiClient {
 			lpaRegion: c.lpaRegion || '',
 			caseStatus: c.appealStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.validAt),
-			linkedCases: this.getLinkedCasesCount(c),
 			finalCommentsDate: c.appealTimetable?.finalCommentsDueDate
 				? new Date(c.appealTimetable.finalCommentsDueDate)
 				: new Date()
 			// programmingStatus: c.programmingStatus || ''
 		};
-	}
-
-	/**
-	 * Returns the count of linked appeals for a case.
-	 * @param {Object} c - Case object containing linkedAppeals array.
-	 * @returns {number} Count of linked cases, or 0 if the array is empty or missing.
-	 */
-	getLinkedCasesCount(c) {
-		return Array.isArray(c.linkedAppeals) ? c.linkedAppeals.length : 0;
 	}
 
 	/**
@@ -246,7 +236,7 @@ export class CbosApiClient {
 		const startDate = new Date(validDate);
 		const now = new Date();
 		const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-		const diffMs = now - startDate;
+		const diffMs = +now - +startDate;
 		return diffMs < 0 ? 0 : Math.floor(diffMs / msPerWeek);
 	}
 
@@ -286,7 +276,14 @@ export class CbosApiClient {
 
 			return appealIds;
 		} catch (error) {
-			const message = error?.error || error?.message || 'Failed to fetch appeal IDs';
+			/** @type {any} */
+			//default error vals - stringified error or fallback val
+			let message = String(error) || 'Unknown error';
+			//if error comes from appeals backoffice api
+			if (error && typeof error === 'object' && 'error' in error) message = error.error;
+			//if error is an Error object with a message
+			else if (error instanceof Error) message = error.message;
+
 			throw new Error(`Failed to fetch appeal IDs: ${message}`);
 		}
 	}
@@ -294,7 +291,7 @@ export class CbosApiClient {
 	/**
 	 * Fetch details for each appeal ID in parallel.
 	 * @param {number[]} appealIds - Array of appeal IDs.
-	 * @returns {Promise<Object[]>} Promise resolving to an array of appeal detail objects.
+	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.
 	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetails(appealIds) {
@@ -335,14 +332,16 @@ export class CbosApiClient {
 			this.appealTypesCache.set(cacheKey, data);
 			return data;
 		} catch (error) {
-			this.logger.error(`Error fetching appeal types from ${url}:`, error.message);
+			this.logger.error(
+				`Error fetching appeal types from ${url}: ${error instanceof Error ? error.message : String(error)}`
+			);
 			throw error;
 		}
 	}
 
 	/**
 	 * Gets the display key for a given appeal type, fetching and caching appeal types if needed.
-	 * @param {string} appealType - The appeal type identifier.
+	 * @param {string | undefined} appealType - The appeal type identifier.
 	 * @returns {Promise<string>} The display key for the appeal type, or 'Unknown Appeal Type' if not found.
 	 */
 	async getAppealType(appealType) {
@@ -355,7 +354,11 @@ export class CbosApiClient {
 			}
 			await CbosApiClient.fetchPromise;
 		}
-		const found = CbosApiClient.appealTypesCache.find((item) => item.type === appealType);
+		/** @type {any} */
+		const found =
+			CbosApiClient.appealTypesCache !== null
+				? CbosApiClient.appealTypesCache.find((item) => item.type === appealType)
+				: null;
 		return found ? found.key : 'Unknown Appeal Type';
 	}
 }
