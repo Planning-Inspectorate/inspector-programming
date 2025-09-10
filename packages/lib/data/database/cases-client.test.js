@@ -11,6 +11,7 @@ describe('CasesClient', () => {
 			const mockCases = [
 				{
 					caseReference: 'testref',
+					caseId: 1,
 					caseStatus: 'lpa_questionnaire',
 					caseType: 'W',
 					caseProcedure: 'inquiry',
@@ -38,6 +39,7 @@ describe('CasesClient', () => {
 				},
 				{
 					caseReference: 'ref2',
+					caseId: 2,
 					caseStatus: 'lpa_questionnaire',
 					caseType: 'W',
 					caseProcedure: 'written',
@@ -77,14 +79,14 @@ describe('CasesClient', () => {
 				{
 					allocationBand: 1,
 					caseAge: 45,
-					caseId: 'testref',
+					caseReference: 'testref',
+					caseId: 1,
 					caseLevel: 'H',
 					caseProcedure: 'inquiry',
 					caseReceivedDate: null,
 					caseStatus: 'lpa_questionnaire',
 					caseType: 'W',
 					linkedCaseReferences: [],
-					linkedCases: 0,
 					linkedCaseStatus: null,
 					lpaName: 'Example Local Planning Authority',
 					lpaRegion: '',
@@ -99,7 +101,8 @@ describe('CasesClient', () => {
 				{
 					allocationBand: 1,
 					caseAge: 45,
-					caseId: 'ref2',
+					caseReference: 'ref2',
+					caseId: 2,
 					caseLevel: 'A',
 					caseProcedure: 'written',
 					caseReceivedDate: null,
@@ -111,7 +114,6 @@ describe('CasesClient', () => {
 					lpaName: 'Other Local Planning Authority',
 					lpaRegion: '',
 					linkedCaseReferences: [],
-					linkedCases: 0,
 					linkedCaseStatus: null,
 					finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 					specialisms: undefined,
