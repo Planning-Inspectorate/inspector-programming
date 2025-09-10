@@ -19,21 +19,21 @@ const mockGetCbosApiClientForSession = mock.fn();
 mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 
 const mockGetLinkedCasesByParentCaseId = mock.fn();
-const mockGetCaseByReference = mock.fn();
+const mockGetCaseById = mock.fn();
 
 const mockService = {
 	logger: mockLogger,
 	getCbosApiClientForSession: mockGetCbosApiClientForSession,
 	casesClient: {
 		getLinkedCasesByParentCaseId: mockGetLinkedCasesByParentCaseId,
-		getCaseByReference: mockGetCaseByReference
+		getCaseById: mockGetCaseById
 	}
 };
 
 beforeEach(() => {
 	mockGetCbosApiClientForSession.mock.resetCalls();
 	mockGetLinkedCasesByParentCaseId.mock.resetCalls();
-	mockGetCaseByReference.mock.resetCalls();
+	mockGetCaseById.mock.resetCalls();
 	mockService.logger.error.mock.resetCalls();
 	mockService.logger.warn.mock.resetCalls();
 });
@@ -80,25 +80,25 @@ describe('assignCasesToInspector', () => {
 	});
 
 	test('should add linked cases ids to parent case ids list', async () => {
-		const caseIds = ['1'];
-		const appeal = { caseIds: '1', linkedCaseStatus: 'Parent' };
-		const linkedCases = [{ caseId: '2' }, { caseId: '3' }, { caseId: '4' }];
-		const expectedCaseIds = ['1', '2', '3', '4'];
+		const caseIds = [1];
+		const appeal = { caseReference: '1', caseId: 1, linkedCaseStatus: 'Parent' };
+		const linkedCases = [{ caseId: 2 }, { caseId: 3 }, { caseId: 4 }];
+		const expectedCaseIds = [1, 2, 3, 4];
 		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
-		mockGetCaseByReference.mock.mockImplementationOnce(() => appeal);
+		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
 		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
-		assert.strictEqual(mockGetCaseByReference.mock.callCount(), 1);
+		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
 		assert.deepStrictEqual(casesIdsList, expectedCaseIds);
 	});
 
 	test('should not add linked if linked case status is child', async () => {
-		const caseIds = ['1'];
-		const appeal = { caseIds: '1', linkedCaseStatus: 'Child' };
-		mockGetCaseByReference.mock.mockImplementationOnce(() => appeal);
+		const caseIds = [1];
+		const appeal = { caseReference: '1', caseId: 1, linkedCaseStatus: 'Child' };
+		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
 		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 0);
-		assert.strictEqual(mockGetCaseByReference.mock.callCount(), 1);
+		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
 		assert.deepStrictEqual(casesIdsList, caseIds);
 	});
 });

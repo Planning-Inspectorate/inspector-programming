@@ -282,7 +282,7 @@ export class CbosApiClient {
 
 	/**
 	 *
-	 * @param {string} appealId
+	 * @param {number} appealId
 	 * @param {object} appealData
 	 */
 	async patchAppeal(appealId, appealData) {

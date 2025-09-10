@@ -19,8 +19,8 @@ export async function getCaseDetails(db, caseReference) {
  * @param {import('../auth/session.service').SessionWithAuth} session
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
- * @param {string[]} caseIds
- * @returns {Promise<string[]>}
+ * @param {number[]} caseIds
+ * @returns {Promise<number[]>}
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
 	if (inspectorId == null || inspectorId == '') {
@@ -46,15 +46,16 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 }
 
 /**
- * @param {string[]} caseIds
+ * @param {number[]} caseIds
  * @param {import('#service').WebService} service
- * @returns {Promise<string[]>}
+ * @returns {Promise<number[]>}
  */
 export async function getCaseAndLinkedCasesIds(caseIds, service) {
 	for (const caseId of caseIds) {
-		const appeal = await service.casesClient.getCaseByReference(caseId);
-		if (appeal && appeal.linkedCaseStatus == 'Parent') {
-			const linkedCasesIds = await getLinkedCaseIdsOfParentId(caseId, service);
+		const appeal = await service.casesClient.getCaseById(caseId);
+		const caseReference = appeal.caseReference;
+		if (appeal && caseReference && appeal.linkedCaseStatus == 'Parent') {
+			const linkedCasesIds = await getLinkedCaseIdsOfParentId(caseReference, service);
 			caseIds = caseIds.concat(linkedCasesIds);
 		}
 	}
@@ -66,6 +67,7 @@ export async function getCaseAndLinkedCasesIds(caseIds, service) {
  *
  * @param {string} parentId
  * @param {import('#service').WebService} service
+ * @returns {Promise<number[]>}
  */
 export async function getLinkedCaseIdsOfParentId(parentId, service) {
 	const caseIds = [];

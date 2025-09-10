@@ -8,15 +8,15 @@ describe('controller.js', () => {
 		beforeEach(() => {
 			mockGetCbosApiClientForSession.mock.resetCalls();
 			mockCbosApiClient.patchAppeal.mock.resetCalls();
-			mockCasesClient.getCaseByReference.mock.resetCalls();
+			mockCasesClient.getCaseById.mock.resetCalls();
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 		});
 		const mockCasesClient = {
-			getCaseByReference: mock.fn(),
+			getCaseById: mock.fn(),
 			getLinkedCasesByParentCaseId: mock.fn()
 		};
 		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child' };
-		mockCasesClient.getCaseByReference.mock.mockImplementation(() => appeal);
+		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
 		const mockCbosApiClient = {
 			patchAppeal: mock.fn()
 		};
@@ -32,7 +32,7 @@ describe('controller.js', () => {
 
 		test('should update one case', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: '1' } };
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1 } };
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -44,7 +44,7 @@ describe('controller.js', () => {
 
 		test('should update list of cases', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: ['1', '2', '3'] } };
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3] } };
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -59,7 +59,7 @@ describe('controller.js', () => {
 				throw new Error();
 			});
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: ['1'] }, session: {} };
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: [1] }, session: {} };
 			const res = { render: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -75,7 +75,7 @@ describe('controller.js', () => {
 				throw new Error();
 			});
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: ['1', '2'] }, session: {} };
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: [1, 2] }, session: {} };
 			const res = { render: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -85,7 +85,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
 			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
 				bodyCopy: 'Try again later. The following cases were not assigned.',
-				failedCases: ['1']
+				failedCases: [1]
 			});
 		});
 	});
