@@ -85,7 +85,7 @@ export class CasesClient {
 		const now = new Date();
 		const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 		const diffMs = now - startDate;
-		return diffMs < 0 ? 0 : Math.floor(diffMs / msPerWeek);
+		return diffMs < 0 ? 0 : Math.round(diffMs / msPerWeek);
 	}
 
 	/**
