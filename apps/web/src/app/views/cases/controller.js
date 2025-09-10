@@ -10,11 +10,10 @@ export function buildPostCases(service) {
 		let selectedCases = [];
 
 		if (req.body.selectedCases) {
-			selectedCases = Array.isArray(req.body.selectedCases) ? req.body.selectedCases : [req.body.selectedCases];
+			selectedCases = Array.isArray(req.body.selectedCases)
+				? req.body.selectedCases.map((id) => parseInt(id))
+				: [parseInt(req.body.selectedCases)];
 		}
-
-		console.log(req.body.selectedCases);
-		console.log(typeof selectedCases[0]);
 
 		const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
 		const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
