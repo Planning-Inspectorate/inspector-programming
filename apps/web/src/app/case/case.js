@@ -23,7 +23,7 @@ export async function getCaseDetails(db, caseReference) {
  * @returns {Promise<number[]>}
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
-	if (inspectorId == null || inspectorId == '') {
+	if (!inspectorId || inspectorId == '') {
 		service.logger.warn('No inspector selected');
 		return caseIds;
 	}
