@@ -122,28 +122,17 @@ export class CachedCasesClient {
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
 	async getLinkedCasesByParentCaseId(caseId) {
-		const key = CACHE_PREFIX + 'getAllCases';
-		let cases = this.#cache.get(key);
-		if (!cases) {
-			cases = await this.#client.getAllCases();
-			this.#cache.set(key, cases);
-		}
-		return cases.filter((/** @type {{ leadCaseReference: string; }} */ item) => item.leadCaseReference == caseId);
+		const cases = await this.getAllCases();
+		return cases.filter((item) => item.leadCaseReference == caseId);
 	}
 
 	/**
 	 *
 	 * @param {number} caseId
-	 * @returns {Promise<import('../types').CaseViewModel>}
+	 * @returns {Promise<import('../types').CaseViewModel|undefined>}
 	 */
 	async getCaseById(caseId) {
-		const key = CACHE_PREFIX + 'getAllCases';
-		let cases = this.#cache.get(key);
-		if (!cases) {
-			cases = await this.#client.getAllCases();
-			this.#cache.set(key, cases);
-		}
-
-		return cases.find((/** @type {{ caseId: number; }} */ item) => item.caseId == caseId);
+		const cases = await this.getAllCases();
+		return cases.find((item) => item.caseId == caseId);
 	}
 }
