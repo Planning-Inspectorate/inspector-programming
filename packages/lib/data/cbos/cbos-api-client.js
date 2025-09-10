@@ -19,16 +19,6 @@ const READY_TO_ASSIGN_APPEAL_STATUSES = [
  */
 export class CbosApiClient {
 	/**
-	 * Static promise for fetching appeal types, to prevent duplicate requests.
-	 * @type {?Promise<Object[]>}
-	 */
-	static fetchPromise = null;
-
-	/**
-	 * @typedef {import('@pins/inspector-programming-lib/os/os-api-client.js')} OsApiClient
-	 */
-
-	/**
 	 * Creates an instance of CbosApiClient.
 	 * @param {Object} cbosConfig - Configuration object for the API client.
 	 * @param {string} cbosConfig.apiUrl - Base URL for the CBOS API.

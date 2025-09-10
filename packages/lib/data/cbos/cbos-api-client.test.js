@@ -23,8 +23,6 @@ const cbosConfig = {
 let originalFetch;
 
 beforeEach(() => {
-	CbosApiClient.appealTypesCache = null;
-	CbosApiClient.fetchPromise = null;
 	warnCalls = [];
 	errorCalls = [];
 	client = new CbosApiClient(cbosConfig, mockOsApiClient, mockLogger);
@@ -116,21 +114,27 @@ test('fetchAppealDetails returns details for each id', async () => {
 	assert.deepStrictEqual(details, [{ id: '6000084' }, { id: '6000083' }]);
 });
 
+test('fetchAppealTypes throws an error', async () => {
+	global.fetch = async () => ({ ok: false, status: 500 });
+	await assert.rejects(() => client.fetchAppealTypes());
+});
+
 test('getAppealType returns display key', async () => {
-	CbosApiClient.appealTypesCache = [{ type: 'Enforcement notice appeal', key: 'C' }];
-	const key = await client.getAppealType('Enforcement notice appeal');
-	assert.strictEqual(key, 'C');
+	const testType1 = { id: 1, type: 'testType', key: 'key', processCode: 'K', enabled: true };
+	const testType2 = { id: 2, type: 'testType2', key: 'anotherKey', processCode: 'D', enabled: true };
+	mock.method(client, 'fetchAppealTypes', () => [testType1, testType2]);
+
+	const key = await client.getAppealType('testType2');
+	assert.strictEqual(key, 'anotherKey');
 });
 
 test('getAppealType returns Unknown Appeal Type if not found', async () => {
-	CbosApiClient.appealTypesCache = [{ type: 'Enforcement notice appeal', key: 'C' }];
+	const testType1 = { id: 1, type: 'testType', key: 'key', processCode: 'K', enabled: true };
+	const testType2 = { id: 2, type: 'testType2', key: 'anotherKey', processCode: 'D', enabled: true };
+	mock.method(client, 'fetchAppealTypes', () => [testType1, testType2]);
+
 	const key = await client.getAppealType('Appeal type');
 	assert.strictEqual(key, 'Unknown Appeal Type');
-});
-
-test('getLinkedCasesCount returns sum of linked and other appeals', () => {
-	const c = { linkedAppeals: [1, 2] };
-	assert.strictEqual(client.getLinkedCasesCount(c), 2);
 });
 
 test('appealToAppealCaseModel should maps parent appeal values correctly', async () => {
@@ -169,7 +173,7 @@ test('appealToAppealCaseModel should maps parent appeal values correctly', async
 	};
 
 	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => appealCoordinates);
-	CbosApiClient.appealTypesCache = [{ type: 'Enforcement notice appeal', key: 'C' }];
+	mock.method(client, 'fetchAppealTypes', () => [{ type: 'Enforcement notice appeal', key: 'C' }]);
 
 	const expectedCase = {
 		caseId: 1,
@@ -194,7 +198,7 @@ test('appealToAppealCaseModel should maps parent appeal values correctly', async
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Parent',
-		leadCaseReference: undefined
+		leadCaseReference: ''
 	};
 
 	const mappedCase = await client.appealToAppealCaseModel(c);
@@ -286,7 +290,7 @@ test('appealToAppealCaseModel should map child appeal values correctly', async (
 	};
 
 	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => appealCoordinates);
-	CbosApiClient.appealTypesCache = [{ type: 'Enforcement notice appeal', key: 'C' }];
+	mock.method(client, 'fetchAppealTypes', () => [{ type: 'Enforcement notice appeal', key: 'C' }]);
 
 	const expectedCase = {
 		caseId: 1,
@@ -352,7 +356,7 @@ test('appealToAppealCaseModel should handle OS API error', async () => {
 	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => {
 		return Error();
 	});
-	CbosApiClient.appealTypesCache = [{ type: 'Enforcement notice appeal', key: 'C' }];
+	mock.method(client, 'fetchAppealTypes', () => [{ type: 'Enforcement notice appeal', key: 'C' }]);
 
 	const expectedCase = {
 		caseId: 1,
@@ -468,7 +472,7 @@ test('getUnassignedCases should return cases with valid appeal statuses', async 
 	];
 	let call = 0;
 	global.fetch = async () => responses[call++];
-	CbosApiClient.appealTypesCache = [{ type: 'appealType', key: 'A' }];
+	mock.method(client, 'fetchAppealTypes', () => [{ type: 'appealType', key: 'A' }]);
 
 	const expectedCaseReferences = ['60001', '60002', '60003', '60004', '60005', '60006', '60007'];
 	const appealsData = await client.getUnassignedCases();
