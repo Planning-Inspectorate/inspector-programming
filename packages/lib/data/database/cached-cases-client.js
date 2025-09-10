@@ -109,7 +109,7 @@ export class CachedCasesClient {
 	}
 
 	/**
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true } }>} c
+	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {import('../types.js').CaseViewModel}
 	 */
 	caseToViewModel(c) {
