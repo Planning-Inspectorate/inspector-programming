@@ -133,10 +133,10 @@ export class CachedCasesClient {
 
 	/**
 	 *
-	 * @param {string} caseReference
+	 * @param {number} caseId
 	 * @returns {Promise<import('../types').CaseViewModel>}
 	 */
-	async getCaseByReference(caseReference) {
+	async getCaseById(caseId) {
 		const key = CACHE_PREFIX + 'getAllCases';
 		let cases = this.#cache.get(key);
 		if (!cases) {
@@ -144,6 +144,6 @@ export class CachedCasesClient {
 			this.#cache.set(key, cases);
 		}
 
-		return cases.find((/** @type {{ caseReference: string; }} */ item) => item.caseReference == caseReference);
+		return cases.find((/** @type {{ caseId: number; }} */ item) => item.caseId == caseId);
 	}
 }

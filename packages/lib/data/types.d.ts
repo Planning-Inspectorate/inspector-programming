@@ -13,6 +13,7 @@ export interface FetchCasesResponse {
 
 export interface CaseViewModel {
 	caseReference: string | null;
+	caseId: number | null;
 	caseType: string | null;
 	caseProcedure: string | null;
 	allocationBand: string | number | null;
