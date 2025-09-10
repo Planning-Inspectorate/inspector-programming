@@ -24,7 +24,8 @@ export class CasesClient {
 	async getAllCases() {
 		const cases = await this.#client.appealCase.findMany({
 			include: {
-				ChildCases: true
+				ChildCases: true,
+				Specialisms: true
 			}
 		});
 		return cases.map((c) => this.caseToViewModel(c));
@@ -32,7 +33,7 @@ export class CasesClient {
 
 	/**
 	 * Maps a case object to a view model for UI consumption.
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true } }>} c
+	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
@@ -52,15 +53,15 @@ export class CasesClient {
 			linkedCaseReferences: this.getLinkedCaseReferences(c),
 			caseReceivedDate: c.caseCreatedDate || null,
 			finalCommentsDate: c.finalCommentsDueDate || new Date(),
-			specialisms: null, //c.Specialisms,	//specialisms not yet implemented in db model
-			specialismList: null, //c.Specialisms ? c.Specialisms.map((s) => s.name).join(', ') : 'None',
+			specialisms: c.Specialisms,
+			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 			leadCaseReference: c.leadCaseReference || null
 		};
 	}
 
 	/**
 	 * Returns the case references of the linked cases (both child and lead).
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true } }>} c
+	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {string[]}
 	 */
 	getLinkedCaseReferences(c) {
