@@ -80,6 +80,7 @@ export class WebService extends BaseService {
 				...this.#config.cbos,
 				apiHeader: userId
 			},
+			this.osApiClient,
 			this.logger
 		);
 	}
