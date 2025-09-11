@@ -46,10 +46,9 @@ export class CachedCasesClient {
 	 * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
 	 * @param {number} page
 	 * @param {number} pageSize
-	 * @param {import("@pins/inspector-programming-lib/data/types").InspectorViewModel|undefined} selectedInspector
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number, page: number }>}
 	 */
-	async getCases(filters, sort, page, pageSize, selectedInspector) {
+	async getCases(filters, sort, page, pageSize) {
 		const allCases = await this.getAllCases();
 
 		//filter
@@ -57,10 +56,9 @@ export class CachedCasesClient {
 
 		//sort
 		let sortedCases;
-		const inspectorCoords = { lat: selectedInspector?.latitude || null, lng: selectedInspector?.longitude || null };
 		switch (sort) {
 			case 'distance':
-				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(inspectorCoords, a, b));
+				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(filters.inspectorCoordinates, a, b));
 				break;
 			case 'hybrid':
 				//WIP
@@ -109,7 +107,7 @@ export class CachedCasesClient {
 	}
 
 	/**
-	 * @param c
+	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
