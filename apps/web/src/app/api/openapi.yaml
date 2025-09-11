@@ -76,6 +76,8 @@ components:
           type: boolean
         status:
           type: string
+        sensitivity:
+          type: string
       required:
         - id
         - userEmail

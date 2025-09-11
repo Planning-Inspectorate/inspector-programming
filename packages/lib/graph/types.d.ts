@@ -25,6 +25,7 @@ export interface CalendarEvent {
 	};
 	isAllDay?: boolean;
 	showAs?: string;
+	sensitivity: string;
 }
 
 interface AuthSession {

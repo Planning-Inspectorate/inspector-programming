@@ -7,6 +7,7 @@ export interface CalendarEvent {
 	isAllDay?: boolean;
 	isOutOfOffice?: boolean;
 	status?: string;
+	sensitivity: string;
 }
 
 export interface NamedTestDates {
