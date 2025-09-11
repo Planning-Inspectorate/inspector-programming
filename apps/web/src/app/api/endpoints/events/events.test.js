@@ -144,7 +144,8 @@ describe('events', () => {
 								start: { dateTime: dates.twoDaysAgo.toISOString() },
 								end: { dateTime: dates.oneDayAgo.toISOString() },
 								isAllDay: true,
-								showAs: 'oof'
+								showAs: 'oof',
+								sensitivity: 'normal'
 							},
 							{
 								id: 'id2',
@@ -152,7 +153,8 @@ describe('events', () => {
 								start: { dateTime: dates.fourDaysAgo.toISOString() },
 								end: { dateTime: dates.oneDayAgo.toISOString() },
 								isAllDay: false,
-								showAs: 'busy'
+								showAs: 'busy',
+								sensitivity: 'normal'
 							}
 						];
 					case '7a0c62e2-182a-47a8-987a-26d0faa02876':
@@ -163,7 +165,8 @@ describe('events', () => {
 								start: { dateTime: dates.threeDaysAgo.toISOString() },
 								end: { dateTime: dates.oneDayAgo.toISOString() },
 								isAllDay: false,
-								showAs: 'free'
+								showAs: 'free',
+								sensitivity: 'normal'
 							}
 						];
 				}
@@ -181,7 +184,8 @@ describe('events', () => {
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: true,
 					isOutOfOffice: true,
-					status: 'oof'
+					status: 'oof',
+					sensitivity: 'normal'
 				},
 				{
 					id: 'id2',
@@ -191,7 +195,8 @@ describe('events', () => {
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: false,
 					isOutOfOffice: false,
-					status: 'busy'
+					status: 'busy',
+					sensitivity: 'normal'
 				},
 				{
 					id: 'id3',
@@ -201,7 +206,8 @@ describe('events', () => {
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: false,
 					isOutOfOffice: false,
-					status: 'free'
+					status: 'free',
+					sensitivity: 'normal'
 				}
 			]);
 		});
@@ -246,7 +252,8 @@ describe('events', () => {
 							start: { dateTime: dates.twoDaysAgo.toISOString() },
 							end: { dateTime: dates.oneDayAgo.toISOString() },
 							isAllDay: false,
-							showAs: 'busy'
+							showAs: 'busy',
+							sensitivity: 'normal'
 						},
 						//future event
 						{
@@ -255,7 +262,8 @@ describe('events', () => {
 							start: { dateTime: dates.oneDayAgo.toISOString() },
 							end: { dateTime: dates.twoDaysAhead.toISOString() },
 							isAllDay: true,
-							showAs: 'oof'
+							showAs: 'oof',
+							sensitivity: 'normal'
 						}
 					];
 				case '7a0c62e2-182a-47a8-987a-26d0faa02876':
@@ -266,7 +274,8 @@ describe('events', () => {
 							start: { dateTime: dates.threeDaysAgo.toISOString() },
 							end: { dateTime: dates.oneDayAgo.toISOString() },
 							isAllDay: false,
-							showAs: 'free'
+							showAs: 'free',
+							sensitivity: 'normal'
 						}
 					];
 			}
@@ -284,7 +293,8 @@ describe('events', () => {
 				endDate: dates.oneDayAgo.toISOString(),
 				isAllDay: false,
 				isOutOfOffice: false,
-				status: 'busy'
+				status: 'busy',
+				sensitivity: 'normal'
 			},
 			{
 				id: 'id2',
@@ -294,7 +304,8 @@ describe('events', () => {
 				endDate: dates.twoDaysAhead.toISOString(),
 				isAllDay: true,
 				isOutOfOffice: true,
-				status: 'oof'
+				status: 'oof',
+				sensitivity: 'normal'
 			},
 			{
 				id: 'id3',
@@ -304,7 +315,8 @@ describe('events', () => {
 				endDate: dates.oneDayAgo.toISOString(),
 				isAllDay: false,
 				isOutOfOffice: false,
-				status: 'free'
+				status: 'free',
+				sensitivity: 'normal'
 			}
 		]);
 	});

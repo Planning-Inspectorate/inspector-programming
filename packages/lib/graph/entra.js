@@ -92,7 +92,7 @@ export class EntraClient {
 		const listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
-			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity'])
 			.top(PER_PAGE);
 
 		const events = [];
