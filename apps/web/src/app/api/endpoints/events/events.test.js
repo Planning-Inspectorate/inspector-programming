@@ -144,7 +144,10 @@ describe('events', () => {
 								start: { dateTime: dates.twoDaysAgo.toISOString() },
 								end: { dateTime: dates.oneDayAgo.toISOString() },
 								isAllDay: true,
-								showAs: 'oof'
+								showAs: 'oof',
+								systemEvent: true,
+								caseReference: '6900216',
+								eventType: 'TEST'
 							},
 							{
 								id: 'id2',
@@ -181,7 +184,10 @@ describe('events', () => {
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: true,
 					isOutOfOffice: true,
-					status: 'oof'
+					status: 'oof',
+					systemEvent: true,
+					caseReference: '6900216',
+					eventType: 'TEST'
 				},
 				{
 					id: 'id2',
@@ -191,7 +197,8 @@ describe('events', () => {
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: false,
 					isOutOfOffice: false,
-					status: 'busy'
+					status: 'busy',
+					systemEvent: false
 				},
 				{
 					id: 'id3',
@@ -201,7 +208,8 @@ describe('events', () => {
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: false,
 					isOutOfOffice: false,
-					status: 'free'
+					status: 'free',
+					systemEvent: false
 				}
 			]);
 		});
@@ -248,14 +256,17 @@ describe('events', () => {
 							isAllDay: false,
 							showAs: 'busy'
 						},
-						//future event
+						//future event with metadata
 						{
 							id: 'id2',
 							subject: 'Test Event 2',
 							start: { dateTime: dates.oneDayAgo.toISOString() },
 							end: { dateTime: dates.twoDaysAhead.toISOString() },
 							isAllDay: true,
-							showAs: 'oof'
+							showAs: 'oof',
+							systemEvent: true,
+							caseReference: '6900216',
+							eventType: 'TEST'
 						}
 					];
 				case '7a0c62e2-182a-47a8-987a-26d0faa02876':
@@ -284,7 +295,8 @@ describe('events', () => {
 				endDate: dates.oneDayAgo.toISOString(),
 				isAllDay: false,
 				isOutOfOffice: false,
-				status: 'busy'
+				status: 'busy',
+				systemEvent: false
 			},
 			{
 				id: 'id2',
@@ -294,7 +306,10 @@ describe('events', () => {
 				endDate: dates.twoDaysAhead.toISOString(),
 				isAllDay: true,
 				isOutOfOffice: true,
-				status: 'oof'
+				status: 'oof',
+				systemEvent: true,
+				caseReference: '6900216',
+				eventType: 'TEST'
 			},
 			{
 				id: 'id3',
@@ -304,7 +319,8 @@ describe('events', () => {
 				endDate: dates.oneDayAgo.toISOString(),
 				isAllDay: false,
 				isOutOfOffice: false,
-				status: 'free'
+				status: 'free',
+				systemEvent: false
 			}
 		]);
 	});

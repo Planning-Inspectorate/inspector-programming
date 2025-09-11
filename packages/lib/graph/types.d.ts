@@ -25,6 +25,14 @@ export interface CalendarEvent {
 	};
 	isAllDay?: boolean;
 	showAs?: string;
+	extensions?: CalendarEventExtension[];
+}
+
+interface CalendarEventExtension {
+	extensionName: string;
+	id: string;
+	caseReference?: string;
+	eventType?: string;
 }
 
 interface AuthSession {
