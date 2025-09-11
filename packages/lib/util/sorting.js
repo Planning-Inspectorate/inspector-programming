@@ -53,15 +53,18 @@ export function sortCasesByAge(caseA, caseB) {
 /**
  *	Sort function that sorts two cases using distance from an inspector's postcode
  *	If the distance is equal then falls back to the default age sort
- * @param {import('../data/types').Coordinates} inspectorCoordinates
+ * @param {import('../data/types').Coordinates | undefined} inspectorCoordinates
  * @param {import('../data/types').CaseViewModel} caseA
  * @param {import('../data/types').CaseViewModel} caseB
  * @return {number}
  */
 export function sortCasesByDistance(inspectorCoordinates, caseA, caseB) {
+	//ensure inspector coords are in correct format, else default to null (will result in age sort)
+	const validInspectorCoords =
+		inspectorCoordinates?.lat && inspectorCoordinates?.lng ? inspectorCoordinates : { lat: null, lng: null };
 	const [distA, distB] = [
-		distanceBetween(inspectorCoordinates, { lat: caseA.siteAddressLatitude, lng: caseA.siteAddressLongitude }),
-		distanceBetween(inspectorCoordinates, { lat: caseB.siteAddressLatitude, lng: caseB.siteAddressLongitude })
+		distanceBetween(validInspectorCoords, { lat: caseA.siteAddressLatitude, lng: caseA.siteAddressLongitude }),
+		distanceBetween(validInspectorCoords, { lat: caseB.siteAddressLatitude, lng: caseB.siteAddressLongitude })
 	];
 	if (distA !== null && distB !== null) {
 		//if distances are equal then fall back to age sort

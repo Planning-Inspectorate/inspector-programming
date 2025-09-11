@@ -53,8 +53,7 @@ export function buildViewHome(service) {
 			filterQuery.case,
 			filterQuery.sort,
 			filterQuery.page,
-			filterQuery.limit,
-			selectedInspector
+			filterQuery.limit
 		);
 		filterQuery.page = page; //update displayed page after validating against number of results
 

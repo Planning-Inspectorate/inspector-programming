@@ -31,7 +31,12 @@ export function filterCases(cases, filters) {
 	if (filters.inspectorCoordinates) {
 		cases = cases.filter((c) => {
 			const caseCoordinates = { lat: c.siteAddressLatitude, lng: c.siteAddressLongitude };
-			const distance = distanceBetween(filters.inspectorCoordinates, caseCoordinates);
+			//ensure inspector coords are in correct format, else default to null (will result in age sort)
+			const validInspectorCoords =
+				filters.inspectorCoordinates?.lat && filters.inspectorCoordinates?.lng
+					? filters.inspectorCoordinates
+					: { lat: null, lng: null };
+			const distance = distanceBetween(validInspectorCoords, caseCoordinates);
 			if (distance && distance < 5) return false;
 			return true;
 		});
