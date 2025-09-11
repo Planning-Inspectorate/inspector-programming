@@ -66,7 +66,8 @@ export function getCalendarEventsForEntraUsers(service) {
 								startDate: event.start?.dateTime || 'N/A',
 								endDate: event.end?.dateTime || 'N/A',
 								isAllDay: !!event.isAllDay,
-								isOutOfOffice: (event.showAs || '').toLowerCase() === 'oof'
+								isOutOfOffice: (event.showAs || '').toLowerCase() === 'oof',
+								status: event.showAs
 							});
 						}
 						return formattedEvents;

@@ -180,7 +180,8 @@ describe('events', () => {
 					startDate: dates.twoDaysAgo.toISOString(),
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: true,
-					isOutOfOffice: true
+					isOutOfOffice: true,
+					status: 'oof'
 				},
 				{
 					id: 'id2',
@@ -189,7 +190,8 @@ describe('events', () => {
 					startDate: dates.fourDaysAgo.toISOString(),
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: false,
-					isOutOfOffice: false
+					isOutOfOffice: false,
+					status: 'busy'
 				},
 				{
 					id: 'id3',
@@ -198,7 +200,8 @@ describe('events', () => {
 					startDate: dates.threeDaysAgo.toISOString(),
 					endDate: dates.oneDayAgo.toISOString(),
 					isAllDay: false,
-					isOutOfOffice: false
+					isOutOfOffice: false,
+					status: 'free'
 				}
 			]);
 		});
@@ -280,7 +283,8 @@ describe('events', () => {
 				startDate: dates.twoDaysAgo.toISOString(),
 				endDate: dates.oneDayAgo.toISOString(),
 				isAllDay: false,
-				isOutOfOffice: false
+				isOutOfOffice: false,
+				status: 'busy'
 			},
 			{
 				id: 'id2',
@@ -289,7 +293,8 @@ describe('events', () => {
 				startDate: dates.oneDayAgo.toISOString(),
 				endDate: dates.twoDaysAhead.toISOString(),
 				isAllDay: true,
-				isOutOfOffice: true
+				isOutOfOffice: true,
+				status: 'oof'
 			},
 			{
 				id: 'id3',
@@ -298,7 +303,8 @@ describe('events', () => {
 				startDate: dates.threeDaysAgo.toISOString(),
 				endDate: dates.oneDayAgo.toISOString(),
 				isAllDay: false,
-				isOutOfOffice: false
+				isOutOfOffice: false,
+				status: 'free'
 			}
 		]);
 	});

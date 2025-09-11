@@ -74,6 +74,8 @@ components:
           type: boolean
         isOutOfOffice:
           type: boolean
+        status:
+          type: string
       required:
         - id
         - userEmail
