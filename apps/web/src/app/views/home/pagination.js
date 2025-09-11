@@ -37,17 +37,21 @@ export function buildQueryString(params, newPage) {
  * @param {number} page .
  * @param {number} totalPages
  * @param {Object} params
- * @returns {Array<Object>}
+ * @returns {import('#util/types.js').PaginationItem[]}
  */
 export function createPaginationItems(page, totalPages, params) {
+	/** @type {import('#util/types.js').PaginationItem[]}*/
 	const items = [];
+	/**
+	 * @param {number} n
+	 */
 	const addPage = (n) =>
 		items.push({
 			number: n,
 			href: buildQueryString(params, n),
 			current: page === n
 		});
-	const addEllipsis = () => items.push({ ellipsis: true, visuallyHiddenText: 'Ellipsis' });
+	const addEllipsis = () => items.push({ ellipsis: true });
 
 	if (totalPages <= 7) {
 		for (let i = 1; i <= totalPages; i++) addPage(i);
