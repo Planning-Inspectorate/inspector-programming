@@ -68,17 +68,17 @@ describe('filterCases', () => {
 });
 describe('validateFilters', () => {
 	test('should return no errors if all filters are valid - age filters', () => {
-		const filters = { minimumAge: 10, maximumAge: 30 };
+		const filters = { case: { minimumAge: 10, maximumAge: 30 } };
 		const errors = validateFilters(filters);
 		assert.strictEqual(Object.keys(errors).length, 0, 'should return no errors if all filters are valid - age filters');
 	});
 	test('should return no errors for a valid minimumAge filters alone', () => {
-		const filters = { minimumAge: 10 };
+		const filters = { case: { minimumAge: 10 } };
 		const errors = validateFilters(filters);
 		assert.strictEqual(Object.keys(errors).length, 0, 'should return no errors for a valid minimumAge filters alone');
 	});
 	test('should return an error if minimumAge is larger than maximumAge', () => {
-		const filters = { minimumAge: 10, maximumAge: 5 };
+		const filters = { case: { minimumAge: 10, maximumAge: 5 } };
 		const errors = validateFilters(filters);
 		assert.strictEqual(Object.keys(errors).length, 1, 'should return one error');
 		assert.ok('minimumAge' in errors, "result should have an 'minimumAge' property");
@@ -90,7 +90,7 @@ describe('validateFilters', () => {
 		assert.strictEqual(errors.minimumAge.href, '#filters[minimumAge]', 'should return href to minimumAge field');
 	});
 	test('should return an error if an age filter is below 0', () => {
-		const filters = { minimumAge: -1, maximumAge: 5 };
+		const filters = { case: { minimumAge: -1, maximumAge: 5 } };
 		const errors = validateFilters(filters);
 		assert.strictEqual(Object.keys(errors).length, 1, 'should return one error');
 		assert.ok('minimumAge' in errors, "result should have an 'minimumAge' property");
@@ -102,7 +102,7 @@ describe('validateFilters', () => {
 		assert.strictEqual(errors.minimumAge.href, '#filters[minimumAge]', 'should return href to minimumAge field');
 	});
 	test('should return an error if an age filter is above 500', () => {
-		const filters = { minimumAge: 10, maximumAge: 501 };
+		const filters = { case: { minimumAge: 10, maximumAge: 501 } };
 		const errors = validateFilters(filters);
 		assert.strictEqual(Object.keys(errors).length, 1, 'should return one error');
 		assert.ok('maximumAge' in errors, "result should have an 'maximumAge' property");
