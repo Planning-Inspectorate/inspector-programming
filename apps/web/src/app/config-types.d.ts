@@ -26,6 +26,9 @@ interface Config extends BaseConfig {
 	inspectors: {
 		inspectorsCacheTtl: number;
 	};
+	calendar: {
+		calendarCacheTtl: number;
+	};
 	cbos: {
 		apiUrl: string;
 		timeoutMs: number;

@@ -43,6 +43,7 @@ export function loadConfig() {
 		CACHE_CONTROL_MAX_AGE,
 		CASES_CACHE_TTL,
 		INSPECTORS_CACHE_TTL,
+		CALENDAR_CACHE_TTL,
 		CBOS_API_TIMEOUT,
 		CBOS_API_URL,
 		CBOS_APPEAL_TYPE_CACHE_TTL,
@@ -132,6 +133,9 @@ export function loadConfig() {
 		},
 		inspectors: {
 			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15)
+		},
+		calendar: {
+			calendarCacheTtl: parseInt(CALENDAR_CACHE_TTL || 15)
 		},
 		cbos: {
 			apiUrl: CBOS_API_URL,

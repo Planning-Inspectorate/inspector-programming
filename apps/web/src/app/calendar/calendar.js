@@ -190,14 +190,14 @@ export function getNextWeekStartDate(currentStartDate) {
  * @param {string} inspectorId
  * @param {number[]} caseIds
  */
-export function generateCaseCalendarEvents(service, inspectorId, caseIds) {
+export async function generateCaseCalendarEvents(service, inspectorId, caseIds) {
 	if (!inspectorId || inspectorId == '') {
 		service.logger.warn('No inspector selected');
 		return [];
 	}
 
 	try {
-		const timingRules = 0; //fetch timingrules
+		const timingRules = await service.calendarClient.getAllCalendarEventTimingRules();
 		console.log(timingRules);
 		for (let caseId of caseIds) {
 			console.log(caseId);
