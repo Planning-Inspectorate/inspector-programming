@@ -193,18 +193,38 @@ export function getNextWeekStartDate(currentStartDate) {
 export async function generateCaseCalendarEvents(service, inspectorId, caseIds) {
 	if (!inspectorId || inspectorId == '') {
 		service.logger.warn('No inspector selected');
-		return [];
+		return { errorMessage: 'No inspector selected', data: [] };
 	}
 
 	try {
 		const timingRules = await service.calendarClient.getAllCalendarEventTimingRules();
-		console.log(timingRules);
 		for (let caseId of caseIds) {
-			console.log(caseId);
+			const rule = await matchTimingRuleToCase(service, timingRules, caseId);
+			return rule ? rule : { errorMessage: 'No rules match this case' };
 			//match timing rules to cases to generate outlook events
 		}
 	} catch (err) {
 		service.logger.error(err, `Failed to generate case calendar events for inspector ${inspectorId}`);
-		return [];
+		return { errorMessage: 'An error occurred', data: [] };
 	}
+}
+
+/**
+ * matches a timing rule to a given case
+ * @param {import('#service').WebService} service
+ * @param {import('@pins/inspector-programming-database/src/client').CalendarEventTimingRule[]} timingRules
+ * @param {number} caseId
+ * @returns {Promise<import('@pins/inspector-programming-database/src/client').CalendarEventTimingRule | undefined>}
+ */
+async function matchTimingRuleToCase(service, timingRules, caseId) {
+	const fullCase = await service.casesClient.getCaseById(caseId);
+	const found = fullCase
+		? timingRules.find(
+				(r) =>
+					r.caseProcedure === fullCase.caseProcedure &&
+					r.allocationLevel === fullCase.caseLevel &&
+					r.caseType === fullCase.caseType
+			)
+		: undefined;
+	return found;
 }
