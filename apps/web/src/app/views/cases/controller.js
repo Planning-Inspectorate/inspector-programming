@@ -12,33 +12,20 @@ export function buildPostCases(service) {
 
 		if (req.body.selectedCases) {
 			selectedCases = Array.isArray(req.body.selectedCases)
-				? req.body.selectedCases.map((id) => parseInt(id))
+				? req.body.selectedCases.map(
+						/** @param {*} id */
+						(id) => parseInt(id)
+					)
 				: [parseInt(req.body.selectedCases)];
 		}
+
+		//need a date to assign events to in the calendar
+		if (!req.body.assignmentDate) return handleFailure(req, res, selectedCases, selectedCases);
 
 		const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
 		const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
-		let updateCasesResult = {};
-		if (failedCases.length > 0) {
-			updateCasesResult = {
-				selectedCases: failedCases,
-				inspectorId: req.body.inspectorId,
-				assignmentDate: req.body.assignmentDate
-			};
-
-			addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
-
-			const viewData =
-				failedCases.length < selectedCaseIds.length
-					? {
-							bodyCopy: 'Try again later. The following cases were not assigned.',
-							failedCases: failedCases
-						}
-					: {};
-
-			return res.render('views/errors/500.njk', viewData);
-		}
+		if (failedCases.length > 0) return handleFailure(req, res, failedCases, selectedCaseIds);
 
 		const eventsToAdd = await generateCaseCalendarEvents(service, req.body.inspectorId, selectedCaseIds);
 		console.log(eventsToAdd);
@@ -49,4 +36,38 @@ export function buildPostCases(service) {
 
 		return res.redirect(redirectUrl);
 	};
+}
+
+/**
+ * handles a failure in the case assignment process
+ * compiles the response to attach to the user session and renders the error view with the details of the failed cases
+ * @param {*} req
+ * @param {*} res
+ * @param {number[]} failedCases
+ * @param {number[]} selectedCaseIds
+ * @returns
+ */
+function handleFailure(req, res, failedCases, selectedCaseIds) {
+	let updateCasesResult = {};
+	updateCasesResult = {
+		selectedCases: failedCases,
+		inspectorId: req.body.inspectorId,
+		assignmentDate: req.body.assignmentDate
+	};
+
+	addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
+
+	let viewData = {};
+	if (failedCases.length < selectedCaseIds.length) {
+		viewData = {
+			bodyCopy: 'Try again later. The following cases were not assigned.',
+			failedCases: failedCases
+		};
+	} else if (!req.body.assignmentDate) {
+		viewData = {
+			bodyCopy: 'Select an event date.'
+		};
+	}
+
+	return res.render('views/errors/500.njk', viewData);
 }
