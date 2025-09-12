@@ -2,6 +2,7 @@ import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js
 import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cached-entra-client.js';
 import { buildInitCasesClient } from '@pins/inspector-programming-lib/data/database/cached-cases-client.js';
 import { buildInitInspectorClient } from '@pins/inspector-programming-lib/data/database/cached-inspector-client.js';
+import { CalendarClient } from '@pins/inspector-programming-lib/data/database/calendar-client.js';
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { ApiService } from '#api-service';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
@@ -36,6 +37,8 @@ export class WebService extends BaseService {
 
 		const entraGroupCache = new MapCache(config.entra.cacheTtl);
 		this.entraClient = buildInitEntraClient(!config.auth.disabled, entraGroupCache);
+
+		this.calendarClient = new CalendarClient(this.dbClient);
 
 		this.notifyClient = initGovNotify(config.notify, this.logger);
 
