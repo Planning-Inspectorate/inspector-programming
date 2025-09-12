@@ -65,6 +65,24 @@ describe('filterCases', () => {
 		const filteredCases = filterCases(cases, filters);
 		assert.strictEqual(filteredCases.length, 1);
 	});
+	test('should filter cases by specialism if caseSpecialisms given', () => {
+		const cases = [
+			{ specialisms: [{ specialism: 'Enforcement' }], caseAge: 10 },
+			{ specialisms: [{ specialism: 'Shopping' }], caseAge: 10 }
+		];
+		const filters = { caseSpecialisms: ['Enforcement'] };
+		const filteredCases = filterCases(cases, filters);
+		assert.strictEqual(filteredCases.length, 1);
+	});
+	test('should allow cases that have at least one specialism in caseSpecialisms', () => {
+		const cases = [
+			{ specialisms: [{ specialism: 'Enforcement' }, { specialism: 'Other' }], caseAge: 10 },
+			{ specialisms: [{ specialism: 'Shopping' }], caseAge: 10 }
+		];
+		const filters = { caseSpecialisms: ['Enforcement', 'Shopping'] };
+		const filteredCases = filterCases(cases, filters);
+		assert.strictEqual(filteredCases.length, 2);
+	});
 });
 describe('validateFilters', () => {
 	test('should return no errors if all filters are valid - age filters', () => {
