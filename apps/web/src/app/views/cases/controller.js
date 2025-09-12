@@ -1,5 +1,6 @@
 import { addSessionData, clearSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
+import { generateCaseCalendarEvents } from '../../calendar/calendar.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -38,6 +39,9 @@ export function buildPostCases(service) {
 
 			return res.render('views/errors/500.njk', viewData);
 		}
+
+		const eventsToAdd = await generateCaseCalendarEvents(service, req.body.inspectorId, selectedCaseIds);
+		console.log(eventsToAdd);
 
 		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
 

@@ -183,3 +183,28 @@ export function getPreviousWeekStartDate(currentStartDate) {
 export function getNextWeekStartDate(currentStartDate) {
 	return addWeeks(currentStartDate, 1, { in: timeZone });
 }
+
+/**
+ * generates the calendar events after assigning a set of cases to an inspector
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorId
+ * @param {number[]} caseIds
+ */
+export function generateCaseCalendarEvents(service, inspectorId, caseIds) {
+	if (!inspectorId || inspectorId == '') {
+		service.logger.warn('No inspector selected');
+		return [];
+	}
+
+	try {
+		const timingRules = 0; //fetch timingrules
+		console.log(timingRules);
+		for (let caseId of caseIds) {
+			console.log(caseId);
+			//match timing rules to cases to generate outlook events
+		}
+	} catch (err) {
+		service.logger.error(err, `Failed to generate case calendar events for inspector ${inspectorId}`);
+		return [];
+	}
+}
