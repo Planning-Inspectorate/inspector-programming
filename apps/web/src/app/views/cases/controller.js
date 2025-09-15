@@ -1,4 +1,4 @@
-import { addSessionData, clearSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { addSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 import { generateCaseCalendarEvents } from '../../calendar/calendar.js';
 
@@ -19,38 +19,57 @@ export function buildPostCases(service) {
 				: [parseInt(req.body.selectedCases)];
 		}
 
-		//need a date to assign events to in the calendar
-		if (!req.body.assignmentDate) return handleFailure(req, res, selectedCases, selectedCases, 'Select an event date.');
-		if (!req.body.inspectorId)
-			return handleFailure(req, res, selectedCases, selectedCases, 'Select an inspector to assign cases to.');
+		const errors = {
+			selectInspectorError: req.body.inspectorId ? false : true,
+			selectCasesError: selectedCases.length == 0 ? true : false,
+			selectAssignmentDateError: req.body.assignmentDate ? false : true
+		};
 
-		const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
-		const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
+		if (errors.selectInspectorError || errors.selectCasesError || errors.selectAssignmentDateError) {
+			const updateCasesResult = {
+				selectedCases: selectedCases,
+				inspectorId: req.body.inspectorId,
+				assignmentDate: req.body.assignmentDate
+			};
 
-		if (failedCases.length > 0)
-			return handleFailure(
-				req,
-				res,
-				failedCases,
-				selectedCaseIds,
-				'Try again later. The requested cases were not assigned.'
-			);
+			addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
+			addSessionData(req, 'errors', errors, 'persistence');
+		} else {
+			const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
+			const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
-		try {
-			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
-			service.logger.info('Calendar events created: ' + eventsToAdd.length); //placeholder
-		} catch (/** @type {any} */ err) {
-			service.logger.error(err, `Failed to generate case calendar events for inspector ${req.body.inspectorId}`);
-			return handleFailure(
-				req,
-				res,
-				selectedCases,
-				selectedCases,
-				'An error occurred when generating case calendar events. Please try again later.'
-			);
+			if (failedCases.length > 0)
+				return handleFailure(
+					req,
+					res,
+					failedCases,
+					selectedCaseIds,
+					'Try again later. The requested cases were not assigned.'
+				);
+
+			try {
+				const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
+				service.logger.info('Calendar events created: ' + eventsToAdd.length); //placeholder
+			} catch (/** @type {any} */ err) {
+				service.logger.error(err, `Failed to generate case calendar events for inspector ${req.body.inspectorId}`);
+				return handleFailure(
+					req,
+					res,
+					selectedCases,
+					selectedCases,
+					'An error occurred when generating case calendar events. Please try again later.'
+				);
+			}
+
+			const success = {
+				successSummary: {
+					heading: 'Cases have been assigned',
+					body: 'Cases have been removed from the unassigned case list'
+				}
+			};
+
+			addSessionData(req, 'success', success, 'persistence');
 		}
-
-		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
 
 		const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
 

@@ -70,6 +70,12 @@ export function buildViewHome(service) {
 			}
 		}
 
+		// get output from /cases
+		const selectInspectorError = readSessionData(req, 'errors', 'selectInspectorError', false, 'persistence');
+		const successSummary = readSessionData(req, 'success', 'successSummary', null, 'persistence');
+
+		const appeals = appealsViewModel(cases, req);
+
 		/** @type {import('./types.js').HomeViewModel} */
 		const viewModel = {
 			pageHeading: 'Unassigned case list',
@@ -84,15 +90,16 @@ export function buildViewHome(service) {
 				query: filterQuery,
 				errors: filterErrors
 			},
-			appeals: appealsViewModel(cases, req),
+			appeals,
 			inspectors: inspectorsViewModel(
 				inspectors,
 				selectedInspectorDetails,
-				isCalendarTab || isInspectorTab || sortingErrorList.length > 0
+				isCalendarTab || isInspectorTab || selectInspectorError || sortingErrorList.length > 0
 			),
 			map: {
 				apiKey: service.osMapsApiKey
-			}
+			},
+			successSummary
 		};
 
 		/**
@@ -114,11 +121,25 @@ export function buildViewHome(service) {
 					});
 				}
 			}
-		} else if (isCalendarTab || isInspectorTab) {
+		} else if (isCalendarTab || isInspectorTab || selectInspectorError) {
 			calendarError = '';
 			viewModel.errorSummary.push({
 				text: 'Select an inspector',
 				href: '#inspectors'
+			});
+		}
+
+		if (appeals.assignmentDateError) {
+			viewModel.errorSummary?.push({
+				text: appeals.assignmentDateError,
+				href: '#assignment-date'
+			});
+		}
+
+		if (appeals.caseListError) {
+			viewModel.errorSummary?.push({
+				text: appeals.caseListError,
+				href: '#caseListError'
 			});
 		}
 
@@ -129,6 +150,13 @@ export function buildViewHome(service) {
 
 		//clear session data passed on from /cases
 		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
+		clearSessionData(
+			req,
+			'errors',
+			['selectInspectorError', 'selectCasesError', 'selectAssignmentDateError'],
+			'persistence'
+		);
+		clearSessionData(req, 'success', ['successSummary'], 'persistence');
 
 		return res.render('views/home/view.njk', viewModel);
 	};
