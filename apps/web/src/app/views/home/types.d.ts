@@ -6,7 +6,7 @@ import { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from 
 export interface HomeViewModel extends PageViewModel {
 	filters: Filters;
 	errorSummary?: ErrorSummary[];
-
+	successSummary?: SuccessSummary;
 	appeals?: AppealsViewModel;
 	calendar?: CalendarViewModel;
 	inspectors?: InspectorsViewModel;
@@ -16,6 +16,8 @@ export interface HomeViewModel extends PageViewModel {
 export interface AppealsViewModel {
 	cases: CaseViewModel[];
 	assignmentDate?: Date;
+	caseListError?: string;
+	assignmentDateError?: string;
 }
 
 export interface CalendarViewModel {

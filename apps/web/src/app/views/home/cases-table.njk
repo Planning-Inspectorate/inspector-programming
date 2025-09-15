@@ -24,6 +24,14 @@
         ]), caseRows) %}
 {% endfor %}
 
+{% if appeals.caseListError %}
+    {{ govukErrorMessage({
+        id: "caseListError",
+        text: appeals.caseListError,
+        visuallyHiddenText: "Error"
+    }) }}
+{% endif %}
+
 {{ govukTable({
     classes: "govuk-!-font-size-14 home-cases-table",
     head: [
