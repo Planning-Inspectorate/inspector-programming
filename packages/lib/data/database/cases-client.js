@@ -118,4 +118,18 @@ export class CasesClient {
 			total: allCases.length || 0
 		};
 	}
+
+	/**
+	 *
+	 * @param {string[]} caseReferences
+	 */
+	async deleteCases(caseReferences) {
+		await this.#client.appealCase.deleteMany({
+			where: {
+				caseReference: {
+					in: caseReferences
+				}
+			}
+		});
+	}
 }
