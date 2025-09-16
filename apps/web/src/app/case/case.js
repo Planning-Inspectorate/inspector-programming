@@ -20,7 +20,7 @@ export async function getCaseDetails(db, caseReference) {
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
  * @param {number[]} caseIds
- * @returns {Promise<(string | undefined)[]>}
+ * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCases: (string | undefined)[]}>}
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
 	const cbosApiClient = service.getCbosApiClientForSession(session);
@@ -37,22 +37,28 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 		service.logger.error(error, `Failed to fetch case details for case details`);
 	}
 
-	let failedCases = [];
+	const assignedCases = appeals.filter((appeal) => appeal.inspector);
+	const alreadyAssignedCases = assignedCases.map((appeal) => appeal.appealReference);
+	const failedCaseReferences = [];
+	const failedCaseIds = [];
 
-	for (let appeal of appeals) {
-		try {
-			if (appeal.inspector || !appeal.appealId) {
-				failedCases.push(appeal.appealReference);
-			} else {
+	if (alreadyAssignedCases.length == 0) {
+		let successfullCases = [];
+		for (let appeal of appeals) {
+			try {
 				await cbosApiClient.patchAppeal(appeal.appealId, appealPatchData);
+				successfullCases.push(appeal.appealReference);
+			} catch (error) {
+				service.logger.error(error, `Failed to update case ${appeal.appealReference} for inspector ${inspectorId}`);
+				failedCaseReferences.push(appeal.appealReference);
+				failedCaseIds.push(appeal.appealId);
 			}
-		} catch (error) {
-			service.logger.error(error, `Failed to update case ${appeal.appealReference} for inspector ${inspectorId}`);
-			failedCases.push(appeal.appealReference);
 		}
+
+		service.casesClient.deleteCases(successfullCases);
 	}
 
-	return failedCases;
+	return { failedCaseReferences, failedCaseIds, alreadyAssignedCases };
 }
 
 /**

@@ -143,6 +143,14 @@ export function buildViewHome(service) {
 			});
 		}
 
+		const assignedCasesError = readSessionData(req, 'errors', 'assignedCasesError', null, 'persistence');
+		if (assignedCasesError) {
+			viewModel.errorSummary?.push({
+				text: assignedCasesError,
+				href: ''
+			});
+		}
+
 		viewModel.calendar = calendarViewModel(req.query.calendarStartDate, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
@@ -153,7 +161,7 @@ export function buildViewHome(service) {
 		clearSessionData(
 			req,
 			'errors',
-			['selectInspectorError', 'selectCasesError', 'selectAssignmentDateError'],
+			['selectInspectorError', 'selectCasesError', 'selectAssignmentDateError', 'assignedCasesError'],
 			'persistence'
 		);
 		clearSessionData(req, 'success', ['successSummary'], 'persistence');
