@@ -62,14 +62,14 @@ function generateAppeals() {
 		const valid = addWeeks(now, -Math.floor(index / 2));
 		const created = addDays(valid, -crypto.randomInt(5));
 		const finalCommentsDue = addWeeks(valid, 5);
-		const paddedIndex = String(index + 1).padStart(5, '0');
+		const paddedIndex = String(index + 1).padStart(6, '0');
 		const location = mockLocations[index % mockLocations.length];
-		const reference = `69${paddedIndex}`;
+		const reference = `6${paddedIndex}`;
 
 		return {
 			...mockAppeal,
 			...variation,
-			caseId: index,
+			caseId: index + 1,
 			siteAddressPostcode: location.siteAddressPostcode,
 			siteAddressLatitude: location.siteAddressLatitude,
 			siteAddressLongitude: location.siteAddressLongitude,
