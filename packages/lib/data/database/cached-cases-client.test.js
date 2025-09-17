@@ -104,6 +104,16 @@ describe('cached-cases-client', () => {
 				const page = cacheClient.determinePage(requestedPage, totalPages);
 				assert.strictEqual(page, 1);
 			});
+			it('should remove cases from cache', async () => {
+				const mockClient = { deleteCases: mock.fn() };
+				const mockCache = {
+					get: mock.fn(() => [{ caseReference: '1' }, { caseReference: '2' }, { caseReference: '3' }]),
+					set: mock.fn()
+				};
+				const cacheClient = new CachedCasesClient(mockClient, mockCache);
+				await cacheClient.deleteCases(['1', '3']);
+				assert.deepStrictEqual(mockCache.set.mock.calls[0].arguments[1], [{ caseReference: '2' }]);
+			});
 		});
 	});
 });
