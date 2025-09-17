@@ -14,12 +14,14 @@ describe('controller.js', () => {
 		});
 		const mockCasesClient = {
 			getCaseById: mock.fn(),
-			getLinkedCasesByParentCaseId: mock.fn()
+			getLinkedCasesByParentCaseId: mock.fn(),
+			deleteCases: mock.fn()
 		};
 		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child', caseType: 'H', caseProcedure: 'W', caseLevel: 'B' };
 		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
 		const mockCbosApiClient = {
-			patchAppeal: mock.fn()
+			patchAppeal: mock.fn(),
+			fetchAppealDetails: mock.fn()
 		};
 		const mockGetCbosApiClientForSession = mock.fn();
 		mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
@@ -45,6 +47,8 @@ describe('controller.js', () => {
 		};
 
 		test('should update one case', async () => {
+			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2025-09-18' }, session: {} };
 			const res = { redirect: mock.fn() };
@@ -58,6 +62,12 @@ describe('controller.js', () => {
 		});
 
 		test('should update list of cases', async () => {
+			const appealsDetailsList = [
+				{ appealId: 1, appealReference: '1' },
+				{ appealId: 2, appealReference: '2' },
+				{ appealId: 3, appealReference: '3' }
+			];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
 				body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: '2025-09-18' },
@@ -74,6 +84,8 @@ describe('controller.js', () => {
 		});
 
 		test('should render 500 template when update to cbos fails on all cases', async () => {
+			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
 				throw new Error();
 			});
@@ -95,6 +107,11 @@ describe('controller.js', () => {
 		});
 
 		test('should render 500 template when update to cbos fails on some cases', async () => {
+			const appealsDetailsList = [
+				{ appealId: 1, appealReference: '1' },
+				{ appealId: 2, appealReference: '2' }
+			];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
 				throw new Error();
 			});
@@ -112,22 +129,58 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
 			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
 				bodyCopy: 'Try again later. The following cases were not assigned.',
-				failedCases: [1]
+				failedCases: ['1']
 			});
 		});
-		test('should render 500 template when assignment date not provided', async () => {
+
+		test('should not update cases if no inspector is selected', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: [1, 2] }, session: {} };
-			const res = { render: mock.fn() };
+			const req = { body: { selectedCases: ['1', '2', '3'], assignmentDate: new Date() }, session: {} };
+			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
 			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
-			assert.strictEqual(res.render.mock.callCount(), 1);
-			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
-			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
-				bodyCopy: 'Select an event date.'
-			});
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=undefined');
+		});
+
+		test('should not update cases if no assginementDate is selected', async () => {
+			const service = mockService();
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: ['1', '2', '3'] }, session: {} };
+			const res = { redirect: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
+			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+		});
+
+		test('should not update cases if no cases are selected', async () => {
+			const service = mockService();
+			const req = { body: { inspectorId: 'inspectorId', assignmentDate: new Date() }, session: {} };
+			const res = { redirect: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
+			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+		});
+
+		test('should not update case if inspector already assigned', async () => {
+			const appealsDetailsList = [{ appealId: 1, appealReference: '1', inspector: 'inspectorId' }];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			const service = mockService();
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: new Date() }, session: {} };
+			const res = { redirect: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
+			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
 		});
 	});
 });

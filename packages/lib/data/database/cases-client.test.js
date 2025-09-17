@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
 import { CasesClient } from './cases-client.js';
 
@@ -290,6 +290,18 @@ describe('CasesClient', () => {
 			const now = new Date();
 			const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 			assert.strictEqual(casesClient.getCaseAgeInWeeks(twoWeeksAgo), 2);
+		});
+	});
+	describe('getAllCases', () => {
+		const mockClient = {
+			appealCase: {
+				deleteMany: mock.fn()
+			}
+		};
+		const casesClient = new CasesClient(mockClient);
+		casesClient.deleteCases(['1']);
+		assert.deepStrictEqual(mockClient.appealCase.deleteMany.mock.calls[0].arguments[0], {
+			where: { caseReference: { in: ['1'] } }
 		});
 	});
 });
