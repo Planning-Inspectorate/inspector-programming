@@ -64,7 +64,7 @@ export class CbosApiClient {
 	 */
 	async appealToAppealCaseModel(c) {
 		let linkedCaseStatus = '',
-			leadCaseReference = '';
+			leadCaseReference;
 
 		if (c.isParentAppeal) {
 			linkedCaseStatus = 'Parent';

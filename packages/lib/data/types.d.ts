@@ -352,7 +352,7 @@ export interface AppealCaseModel {
 	caseValidDate: string;
 	finalCommentsDueDate: Date | null;
 	linkedCaseStatus: string;
-	leadCaseReference: string;
+	leadCaseReference: string | undefined;
 }
 
 export interface CbosAppealTypes {
