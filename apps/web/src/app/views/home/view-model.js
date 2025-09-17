@@ -91,9 +91,7 @@ export function filtersQueryViewModel(query, previousSort) {
 
 	for (const arrayProp of arrayProps) {
 		const value = query[`filters[${arrayProp}]`];
-		if (value && Array.isArray(value)) {
-			filters.case[arrayProp] = value;
-		} else if (typeof value === 'string') {
+		if (value && (Array.isArray(value) || typeof value === 'string')) {
 			filters.case[arrayProp] = value;
 		}
 	}
