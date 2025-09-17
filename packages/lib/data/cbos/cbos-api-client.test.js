@@ -200,7 +200,7 @@ test('appealToAppealCaseModel should maps parent appeal values correctly', async
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Parent',
-		leadCaseReference: ''
+		leadCaseReference: undefined
 	};
 
 	const mappedCase = await client.appealToAppealCaseModel(c);
@@ -317,7 +317,7 @@ test('appealToAppealCaseModel should map child appeal values correctly', async (
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Child',
-		leadCaseReference: ''
+		leadCaseReference: undefined
 	};
 
 	const mappedCase = await client.appealToAppealCaseModel(c);
@@ -383,7 +383,7 @@ test('appealToAppealCaseModel should handle OS API error', async () => {
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Child',
-		leadCaseReference: ''
+		leadCaseReference: undefined
 	};
 
 	const mappedCase = await client.appealToAppealCaseModel(c);
