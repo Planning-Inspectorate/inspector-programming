@@ -43,6 +43,7 @@ export interface Filters {
 	minimumAge?: string;
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;
+	caseProcedure?: string[];
 }
 
 export interface FilterQuery {
