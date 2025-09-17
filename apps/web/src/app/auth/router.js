@@ -38,7 +38,12 @@ export function createRoutesAndGuards(service, authService) {
 	// check logged in
 	const assertIsAuthenticated = buildAssertIsAuthenticated(service.logger, authService);
 	// check group membership
-	const assertGroupAccess = buildAssertGroupAccess(service.logger, service.authConfig.groups.applicationAccess);
+	const assertGroupAccess = buildAssertGroupAccess(
+		service.logger,
+		service.entraConfig.groupIds.inspectors,
+		service.entraConfig.groupIds.nationalTeam,
+		service.entraConfig.groupIds.teamLeads
+	);
 
 	return {
 		router,

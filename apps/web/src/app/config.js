@@ -36,7 +36,6 @@ export function loadConfig() {
 		API_MOCK_DATA,
 		APP_HOSTNAME,
 		AUTH_DISABLED,
-		AUTH_GROUP_APPLICATION_ACCESS,
 		AZURE_CLIENT_ID,
 		AZURE_CLIENT_SECRET,
 		AZURE_TENANT_ID,
@@ -91,7 +90,6 @@ export function loadConfig() {
 	const authDisabled = AUTH_DISABLED === 'true' && !isProduction;
 	if (!authDisabled) {
 		const props = {
-			AUTH_GROUP_APPLICATION_ACCESS,
 			AZURE_CLIENT_ID,
 			AZURE_CLIENT_SECRET,
 			AZURE_TENANT_ID
@@ -117,9 +115,6 @@ export function loadConfig() {
 			clientSecret: AZURE_CLIENT_SECRET,
 			discoveryKeysEndpoint: `https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys`,
 			disabled: authDisabled,
-			groups: {
-				applicationAccess: AUTH_GROUP_APPLICATION_ACCESS
-			},
 			redirectUri: `${protocol}${APP_HOSTNAME}/auth/redirect`,
 			signoutUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/logout',
 			tenantId: AZURE_TENANT_ID

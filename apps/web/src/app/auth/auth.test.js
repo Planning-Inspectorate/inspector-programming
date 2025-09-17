@@ -48,9 +48,16 @@ describe('auth', () => {
 						clientId: 'client-id',
 						clientSecret: 'client-secret',
 						disabled: false,
-						groups: { applicationAccess: 'group-1' },
 						redirectUri: '/redirect',
 						signoutUrl: '/signout'
+					},
+					entraConfig: {
+						groupIds: {
+							inspectors: 'inspectors-group',
+							teamLeads: 'team-lead-group',
+							nationalTeam: 'national-team-group',
+							inspectorGroups: 'inspector-groups'
+						}
 					},
 					logger: mockLogger(),
 					redisClient: null

@@ -12,10 +12,6 @@ interface Config extends BaseConfig {
 		clientSecret: string;
 		discoveryKeysEndpoint: string;
 		disabled: boolean;
-		groups: {
-			// group ID for accessing the application
-			applicationAccess: string;
-		};
 		redirectUri: string;
 		signoutUrl: string;
 		tenantId: string;
