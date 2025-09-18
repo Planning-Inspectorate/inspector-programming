@@ -26,7 +26,7 @@ apps_config = {
       team_leads    = ""
       national_team = ""
       api_inspector_groups = [
-        "dfcab300-f268-4eb3-820e-1758fa69c150"
+        "239b971c-080b-40bd-add4-7f1e19050a0e"
       ]
     }
   }
