@@ -231,18 +231,88 @@ export function getNextWeekStartDate(currentStartDate) {
 export async function generateCaseCalendarEvents(service, assignmentDate, caseIds) {
 	/** @type {import('./types').CalendarEventInput[]} */
 	const allEvents = [];
+	/** @type {import('./types').BookedEventTimeslot[]} */
+	const inspectorEvents = [];
+	const assignment = new Date(assignmentDate);
+
+	//fetch info from calendar client
 	const timingRules = await service.calendarClient.getAllCalendarEventTimingRules();
-	for (let caseId of caseIds) {
-		const fullCase = await service.casesClient.getCaseById(caseId);
-		if (!fullCase) throw new Error('Case details could not be fetched for case: ' + caseId);
+	let bankHolidays = await service.calendarClient.getEnglandWalesBankHolidays();
 
-		const rule = matchTimingRuleToCase(timingRules, fullCase);
-		if (!rule) throw new Error('No timing rules matching case: ' + caseId);
+	//filter down the number of bank holiday dates if we dont expect to have to check them when allocating times for our events
+	bankHolidays = bankHolidays?.length
+		? bankHolidays.filter((holiday) => {
+				const [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
+				pastLimit.setDate(pastLimit.getUTCDate() - 10);
+				futureLimit.setDate(futureLimit.getUTCDate() + 60);
+				return holidayDate > pastLimit && holidayDate < futureLimit;
+			})
+		: [];
 
-		const events = generateEvents(rule.CalendarEventTiming, fullCase, assignmentDate);
-		allEvents.push(...events);
+	const bankHolidayEvents = compileBankHolidays(bankHolidays);
+
+	//we want to iterate stages FIRST - go through a stage for all cases before moving onto the next
+	//then they can be grouped by stage in the calendar
+	for (let stage of Object.values(CALENDAR_EVENT_STAGES)) {
+		//get the date to start from based on current stage
+		const stageStartDate = getStageStartDate(stage, assignment, inspectorEvents);
+
+		for (let caseId of caseIds) {
+			//will be cached
+			const fullCase = await service.casesClient.getCaseById(caseId);
+			if (!fullCase) throw new Error('Case details could not be fetched for case: ' + caseId);
+
+			const rule = matchTimingRuleToCase(timingRules, fullCase);
+			if (!rule) throw new Error('No timing rules matching case: ' + caseId);
+
+			//if timing rule doesn't include current stage then skip
+			const stageTime = stageLookup(stage, rule.CalendarEventTiming);
+			if (stageTime === null)
+				throw new Error('Invalid appeals stage while generating calendar events. Ensure app is correctly configured.');
+			if (!(+stageTime > 0)) continue;
+
+			const events = generateEvents(stage, stageTime, fullCase, stageStartDate, inspectorEvents, bankHolidayEvents);
+			allEvents.push(...events);
+		}
 	}
 	return allEvents;
+}
+
+/**
+ * use inspector calendar and bank holidays collection to compile list of previously booked timeslots in the inspectors calendar
+ * @param {string[]} bankHolidays
+ * @returns {import('./types').BookedEventTimeslot[]}
+ */
+function compileBankHolidays(bankHolidays) {
+	const bankHolidayTimes = bankHolidays.map((holidayString) => {
+		const baseDate = new Date(holidayString);
+		const [start, end] = [new Date(baseDate), new Date(baseDate)];
+		start.setUTCHours(0, 0, 0, 0);
+		end.setUTCHours(23, 59, 59, 999);
+		return { startTime: start, endTime: end };
+	});
+	return bankHolidayTimes;
+}
+
+/**
+ *
+ * @param {string} stage
+ * @param {Date} assignment
+ * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
+ */
+function getStageStartDate(stage, assignment, inspectorEvents) {
+	let startDate = new Date(assignment);
+	if (stage === CALENDAR_EVENT_STAGES.PREP) {
+		startDate.setUTCDate(startDate.getUTCDate() - 1);
+		return startDate;
+	}
+
+	inspectorEvents.sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime));
+
+	startDate = new Date(inspectorEvents[0].startTime);
+	startDate.setUTCDate(startDate.getUTCDate() + 1);
+
+	return startDate;
 }
 
 /**
@@ -265,30 +335,37 @@ function matchTimingRuleToCase(timingRules, fullCase) {
 
 /**
  * generates calendar event json objects for all stages of the case programming process
- * @param {import('@pins/inspector-programming-database/src/client').CalendarEventTiming} timingRule
+ * @param {string} stage
+ * @param {number} stageTime
  * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel} fullCase
- * @param {string} assignmentDate
+ * @param {Date} assignment
+ * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
+ * @param {import('./types').BookedEventTimeslot[]} bankHolidayEvents
  * @returns {import('./types').CalendarEventInput[]}
  */
-function generateEvents(timingRule, fullCase, assignmentDate) {
+function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents, bankHolidayEvents) {
 	/** @type {import('./types').CalendarEventInput[]} */
 	const events = [];
 
-	for (let stage of Object.values(CALENDAR_EVENT_STAGES)) {
-		//if timing rule doesn't include current stage then skip
-		const stageTime = stageLookup(stage, timingRule);
-		if (stageTime === null)
-			throw new Error('Invalid appeals stage while generating calendar events. Ensure app is correctly configured.');
-		if (!(+stageTime > 0)) continue;
+	//check if stage needs to be split into multiple events due to length
+	const stageTimes = splitLongEvents(stageTime);
 
-		const startDate = getCalendarEventStartDate(stage, assignmentDate);
+	for (const time of stageTimes) {
+		while (
+			!eventFitsIntoDay([...inspectorEvents, ...bankHolidayEvents], assignment, time) ||
+			[0, 6].includes(assignment.getDay())
+		) {
+			offsetEventByOne(stage, assignment);
+		}
+
+		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
 		const event = buildEventJson(
 			{
-				subject: `${fullCase.caseReference} - ${fullCase.caseType} - ${fullCase.lpaName} - ${stage} - ${String(stageTime)}`,
-				startTime: startDate.toISOString(), //placeholder
-				endTime: startDate.toISOString(), //placeholder
-				streetAddress: '1 smith way',
-				postcode: 'pe24 4ff'
+				subject: `${fullCase.caseReference} - ${fullCase.caseType} - ${fullCase.lpaName} - ${stage} - ${String(time)}`,
+				startTime: eventTimings.startTime.toISOString(),
+				endTime: eventTimings.endTime.toISOString(),
+				streetAddress: null, //TBC: CaseViewModel only has postcode currently
+				postcode: fullCase.siteAddressPostcode
 			},
 			{
 				caseReference: fullCase.caseReference ?? undefined,
@@ -296,23 +373,105 @@ function generateEvents(timingRule, fullCase, assignmentDate) {
 			}
 		);
 		events.push(event);
+		inspectorEvents.push(eventTimings);
 	}
 	return events;
 }
 
 /**
- * fetches the correct date to schedule the given stage of the casework process for
- * @param {string} stage
- * @param {string} assignment
- * @returns
+ * check if there is enough time in the desired date to allocate a calendar event of the desired length
+ * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
+ * @param {Date} assignmentDate
+ * @param {number} eventLength
+ * @returns {boolean}
  */
-function getCalendarEventStartDate(stage, assignment) {
-	//TODO	-	handling time zones to come in ppb-157
+function eventFitsIntoDay(inspectorEvents, assignmentDate, eventLength) {
+	const clone = new Date(assignmentDate);
+	const eventsThatDay = inspectorEvents.filter(
+		(e) => clone.toISOString().slice(0, 10) === e.startTime.toISOString().slice(0, 10)
+	);
+	let hoursThatDay = eventLength;
+	eventsThatDay.forEach((e) => {
+		const diffHours = (+e.endTime - +e.startTime) / (1000 * 60 * 60);
+		hoursThatDay += diffHours;
+	});
+	return hoursThatDay <= 8;
+}
+
+/**
+ * events longer than 8h must be split into chunks of maximum 8 hours
+ * processes a raw eventLength and splits into chunks of 8 hours to be iterated over
+ * @param {number} eventLength
+ */
+function splitLongEvents(eventLength) {
+	const events = [];
+	if (eventLength > 8) {
+		let fullDayEventsCount = Math.floor(eventLength / 8);
+		while (fullDayEventsCount > 0) {
+			events.push(8);
+			fullDayEventsCount--;
+		}
+		const remainingEventTime = eventLength % 8;
+		if (remainingEventTime) events.push(remainingEventTime);
+	} else {
+		events.push(eventLength);
+	}
+	return events;
+}
+
+/**
+ * offsets a date by one day in the appropriate direction based on the stage we are scheduling for
+ * prep events move backwards, all others move forwards
+ * @param {string} stage
+ * @param {Date} assignment
+ */
+function offsetEventByOne(stage, assignment) {
+	if (stage === CALENDAR_EVENT_STAGES.PREP) {
+		assignment.setDate(assignment.getUTCDate() - 1);
+	} else {
+		assignment.setDate(assignment.getUTCDate() + 1);
+	}
+}
+
+/**
+ * fetches the correct date to schedule the given stage of the casework process for
+ * creates a clone of assignment so we dont change the one from generateEvents - we keep it scoped to this stage we are currently on
+ * @param {Date} assignment
+ * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
+ * @param {number} eventLength
+ * @returns {import('./types').BookedEventTimeslot}
+ */
+function allocateCalendarEventTime(assignment, inspectorEvents, eventLength) {
 	const assignmentDate = new Date(assignment);
-	if (stage === CALENDAR_EVENT_STAGES.PREP) assignmentDate.setDate(assignmentDate.getDate() - 1);
-	else if (stage === CALENDAR_EVENT_STAGES.REPORT) assignmentDate.setDate(assignmentDate.getDate() + 1);
-	else if (stage === CALENDAR_EVENT_STAGES.COSTS) assignmentDate.setDate(assignmentDate.getDate() + 2);
-	return assignmentDate;
+	assignmentDate.setUTCHours(9, 0, 0, 0);
+	const assignmentEnd = new Date(assignmentDate);
+	assignmentEnd.setUTCHours(assignmentDate.getUTCHours() + eventLength);
+
+	//check provisionally allocated slot against other events in inspector calendar and re-allocate as required
+	while (eventOverlaps(assignmentDate, assignmentEnd, inspectorEvents)) {
+		assignmentDate.setUTCHours(assignmentDate.getUTCHours() + 1);
+		assignmentEnd.setUTCHours(assignmentEnd.getUTCHours() + 1);
+	}
+
+	return { startTime: assignmentDate, endTime: assignmentEnd };
+}
+
+/**
+ * checks through the list of booked slots to see if the prospective slot has already been taken
+ * this algorithm relies on checking the other date's orientation around the fixed points in time we have: start and end dates
+ * As a general rule we can say: if the OTHER event wraps around our point in time (start date and end date of each) then it overlaps with our event
+ * @param {Date} prospectiveStartTime
+ * @param {Date} prospectiveEndTime
+ * @param {import('./types').BookedEventTimeslot[]} bookedTimeslots
+ */
+function eventOverlaps(prospectiveStartTime, prospectiveEndTime, bookedTimeslots) {
+	for (const slot of bookedTimeslots) {
+		if (prospectiveStartTime <= slot.startTime && prospectiveEndTime > slot.startTime) return true; //start date of existing event
+		if (slot.startTime <= prospectiveStartTime && slot.endTime > prospectiveStartTime) return true; //start date of prospective event
+		if (prospectiveEndTime >= slot.endTime && prospectiveStartTime < slot.endTime) return true; //end date of existing event
+		if (slot.endTime >= prospectiveEndTime && slot.startTime < prospectiveEndTime) return true; //end date of prospective event
+	}
+	return false;
 }
 
 /**
@@ -338,7 +497,7 @@ function stageLookup(stageString, timingRule) {
 
 /**
  * helper function that returns a calendar event json object from an object containing event info
- * @param {{subject: string, startTime: string, endTime: string, streetAddress: string, postcode: string}} event
+ * @param {{subject: string, startTime: string, endTime: string, streetAddress: string|null, postcode: string|null}} event
  * @param {{caseReference?: string, eventType?: string}} extensionProps - extensions have no fixed schema - extension properties are optional and are omitted if not provided
  * @returns {import('./types').CalendarEventInput}
  */
@@ -346,7 +505,7 @@ function buildEventJson(event, extensionProps) {
 	return {
 		subject: event.subject,
 		start: {
-			dateTime: event.startTime, //toIsoString
+			dateTime: event.startTime,
 			timeZone: 'UTC'
 		},
 		end: {
