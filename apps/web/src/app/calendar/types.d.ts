@@ -28,8 +28,8 @@ export interface CalendarEventInput {
 	};
 	location: {
 		address: {
-			street: string;
-			postalCode: string;
+			street: string | null;
+			postalCode: string | null;
 		};
 	};
 	extensions: [
@@ -40,4 +40,9 @@ export interface CalendarEventInput {
 			eventType?: string;
 		}
 	];
+}
+
+export interface BookedEventTimeslot {
+	startTime: Date;
+	endTime: Date;
 }
