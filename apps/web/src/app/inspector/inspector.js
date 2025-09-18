@@ -81,8 +81,10 @@ export async function getInspectorList(service, authSession) {
 	}
 
 	//validate retrieved inspectors also exist in Entra group
-	const dbInspectorIds = ((await service.inspectorClient.getAllInspectors()) || []).map((i) => i.id);
-	inspectors = inspectors.filter((i) => dbInspectorIds.includes(i.id));
+	if (!service.disableOnlyLocalInspectors) {
+		const dbInspectorIds = ((await service.inspectorClient.getAllInspectors()) || []).map((i) => i.id);
+		inspectors = inspectors.filter((i) => dbInspectorIds.includes(i.id));
+	}
 
 	return inspectors;
 }
