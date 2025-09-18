@@ -27,7 +27,14 @@ export function buildPostCases(service) {
 		const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
 		const failedCases = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
-		if (failedCases.length > 0) return handleFailure(req, res, failedCases, selectedCaseIds);
+		if (failedCases.length > 0)
+			return handleFailure(
+				req,
+				res,
+				failedCases,
+				selectedCaseIds,
+				'Try again later. The requested cases were not assigned.'
+			);
 
 		try {
 			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
@@ -58,7 +65,7 @@ export function buildPostCases(service) {
  * @param {*} res
  * @param {number[]} failedCases
  * @param {number[]} selectedCaseIds
- * @param {string=} errorMessage
+ * @param {string} errorMessage
  * @returns
  */
 function handleFailure(req, res, failedCases, selectedCaseIds, errorMessage) {

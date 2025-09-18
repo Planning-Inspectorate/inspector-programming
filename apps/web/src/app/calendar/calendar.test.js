@@ -328,7 +328,7 @@ describe('calendar', () => {
 		};
 		it('should generate a list of calendar event json objects for a case', async () => {
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, 'testInspector', '2025-10-10', [1]);
+			const res = await generateCaseCalendarEvents(service, '2025-10-10', [1]);
 			assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
 			assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 1);
 			assert.strictEqual(res.length, 4);
@@ -339,7 +339,7 @@ describe('calendar', () => {
 		});
 		it('multiple cases should yield multiple sets of json objects', async () => {
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, 'testInspector', '2025-10-10', [1, 2, 3]);
+			const res = await generateCaseCalendarEvents(service, '2025-10-10', [1, 2, 3]);
 			assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
 			assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 3);
 			assert.strictEqual(res.length, 12);
@@ -352,23 +352,25 @@ describe('calendar', () => {
 		it('no case details found for caseId should error', async () => {
 			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => undefined);
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, 'testInspector', '2025-10-10', [1, 2, 3]);
+			await assert.rejects(generateCaseCalendarEvents(service, '2025-10-10', [1, 2, 3]), {
+				message: 'Case details could not be fetched for case: 1'
+			});
 			assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
 			assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 1);
-			assert.deepStrictEqual(res, []);
 		});
 		it('no timing rule matching case details should error', async () => {
 			const appeal = { caseId: 'caseId', caseType: 'A', caseProcedure: 'P', caseLevel: 'B' };
 			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => appeal);
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, 'testInspector', '2025-10-10', [1, 2, 3]);
+			await assert.rejects(generateCaseCalendarEvents(service, '2025-10-10', [1, 2, 3]), {
+				message: 'No timing rules matching case: 1'
+			});
 			assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
 			assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 1);
-			assert.deepStrictEqual(res, []);
 		});
 		it('calendar event extensions should only submit those that are provided', async () => {
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, 'testInspector', '2025-10-10', [1]);
+			const res = await generateCaseCalendarEvents(service, '2025-10-10', [1]);
 			assert.strictEqual(res.length, 4);
 			assert.strictEqual(res[0].extensions[0]['@odata.type'], 'microsoft.graph.openTypeExtension');
 			assert.strictEqual(res[0].extensions[0].extensionName, 'uk.gov.planninginspectorate.programming');

@@ -16,7 +16,7 @@ describe('controller.js', () => {
 			getCaseById: mock.fn(),
 			getLinkedCasesByParentCaseId: mock.fn()
 		};
-		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child' };
+		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child', caseType: 'H', caseProcedure: 'W', caseLevel: 'B' };
 		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
 		const mockCbosApiClient = {
 			patchAppeal: mock.fn()
@@ -46,7 +46,7 @@ describe('controller.js', () => {
 
 		test('should update one case', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2025-09-18' } };
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2025-09-18' }, session: {} };
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -59,7 +59,10 @@ describe('controller.js', () => {
 
 		test('should update list of cases', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: '2025-09-18' } };
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: '2025-09-18' },
+				session: {}
+			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -86,7 +89,9 @@ describe('controller.js', () => {
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
-			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {});
+			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
+				bodyCopy: 'Try again later. The requested cases were not assigned.'
+			});
 		});
 
 		test('should render 500 template when update to cbos fails on some cases', async () => {
