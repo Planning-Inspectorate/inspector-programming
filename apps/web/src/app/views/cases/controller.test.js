@@ -12,23 +12,36 @@ describe('controller.js', () => {
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
 		});
+		//mock clients
 		const mockCasesClient = {
 			getCaseById: mock.fn(),
 			getLinkedCasesByParentCaseId: mock.fn(),
 			deleteCases: mock.fn()
 		};
-		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child', caseType: 'H', caseProcedure: 'W', caseLevel: 'B' };
-		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
 		const mockCbosApiClient = {
 			patchAppeal: mock.fn(),
 			fetchAppealDetails: mock.fn()
 		};
-		const mockGetCbosApiClientForSession = mock.fn();
-		mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
-
-		const mockCalendarClient = {
-			getAllCalendarEventTimingRules: mock.fn()
+		const mockEntraClientInstance = {
+			listAllUserCalendarEvents: mock.fn()
 		};
+		const mockGetCbosApiClientForSession = mock.fn();
+		const mockCalendarClient = {
+			getAllCalendarEventTimingRules: mock.fn(),
+			getEnglandWalesBankHolidays: mock.fn()
+		};
+		const mockService = () => {
+			return {
+				logger: mockLogger(),
+				getCbosApiClientForSession: mockGetCbosApiClientForSession,
+				casesClient: mockCasesClient,
+				calendarClient: mockCalendarClient,
+				entraClient: mock.fn(() => mockEntraClientInstance)
+			};
+		};
+
+		//mock data responses
+		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child', caseType: 'H', caseProcedure: 'W', caseLevel: 'B' };
 		const mockTimingRule = {
 			id: 1,
 			caseType: 'H',
@@ -36,15 +49,42 @@ describe('controller.js', () => {
 			allocationLevel: 'B',
 			CalendarEventTiming: { prepTime: 2, siteVisitTime: 3, reportTime: 2, costsTime: 1 }
 		};
+		const [event1, event2] = [
+			{
+				id: 'caseId',
+				subject: 'test case',
+				start: {
+					dateTime: new Date('2025-08-08T12:00:00.000Z'),
+					timeZone: 'UTC'
+				},
+				end: {
+					dateTime: new Date('2025-08-08T14:00:00.000Z'),
+					timeZone: 'UTC'
+				},
+				sensitivity: 'normal'
+			},
+			{
+				id: 'caseId2',
+				subject: 'test case 2',
+				start: {
+					dateTime: new Date('2025-08-09T11:00:00.000Z'),
+					timeZone: 'UTC'
+				},
+				end: {
+					dateTime: new Date('2025-08-09T15:00:00.000Z'),
+					timeZone: 'UTC'
+				},
+				sensitivity: 'normal'
+			}
+		];
+		const existingEvents = [event1, event2];
+
+		//mock implementations
+		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
+		mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
+		mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementation(() => []);
+		mockEntraClientInstance.listAllUserCalendarEvents.mock.mockImplementation(() => existingEvents);
 		mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementation(() => [mockTimingRule]);
-		const mockService = () => {
-			return {
-				logger: mockLogger(),
-				getCbosApiClientForSession: mockGetCbosApiClientForSession,
-				casesClient: mockCasesClient,
-				calendarClient: mockCalendarClient
-			};
-		};
 
 		test('should update one case', async () => {
 			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
