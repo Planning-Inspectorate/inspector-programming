@@ -37,7 +37,13 @@ export function buildPostCases(service) {
 			);
 
 		try {
-			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
+			const eventsToAdd = await generateCaseCalendarEvents(
+				service,
+				req.body.inspectorId,
+				req.session,
+				req.body.assignmentDate,
+				selectedCaseIds
+			);
 			service.logger.info('Calendar events created: ' + eventsToAdd.length); //placeholder
 		} catch (/** @type {any} */ err) {
 			service.logger.error(err, `Failed to generate case calendar events for inspector ${req.body.inspectorId}`);

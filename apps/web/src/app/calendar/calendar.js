@@ -193,16 +193,40 @@ export function getNextWeekStartDate(currentStartDate) {
 }
 
 /**
+ * used to hold an array holding both events already in the inspectors calendar as well as prospective events we have allocated times for but not yet finalised
+ * used for time allocation with respect to other yet-to-be-finalised events
+ * @typedef {object} BookedEventTimeslot
+ * @property {Date} startTime
+ * @property {Date} endTime
+ */
+
+/**
  * generates the calendar events after assigning a set of cases to an inspector
  * @param {import('#service').WebService} service
+ * @param {string} inspectorId
+ * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
  * @param {string} assignmentDate
  * @param {number[]} caseIds
  * @returns {Promise<import('./types').CalendarEventInput[]>}
  */
-export async function generateCaseCalendarEvents(service, assignmentDate, caseIds) {
+export async function generateCaseCalendarEvents(service, inspectorId, authSession, assignmentDate, caseIds) {
 	/** @type {import('./types').CalendarEventInput[]} */
 	const allEvents = [];
 	const timingRules = await service.calendarClient.getAllCalendarEventTimingRules();
+	const client = service.entraClient(authSession);
+	if (!client) {
+		throw new Error('Could not configure Entra client');
+	}
+	const inspectorCalendar = await client.listAllUserCalendarEvents(inspectorId, {
+		calendarEventsDayRange: 1,
+		calendarEventsFromDateOffset: 2
+	});
+
+	/** @type {BookedEventTimeslot[]} */
+	const inspectorEvents = inspectorCalendar.map((e) => {
+		return { startTime: new Date(e.start.dateTime), endTime: new Date(e.end.dateTime) };
+	});
+
 	for (let caseId of caseIds) {
 		const fullCase = await service.casesClient.getCaseById(caseId);
 		if (!fullCase) throw new Error('Case details could not be fetched for case: ' + caseId);
@@ -210,7 +234,7 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 		const rule = matchTimingRuleToCase(timingRules, fullCase);
 		if (!rule) throw new Error('No timing rules matching case: ' + caseId);
 
-		const events = generateEvents(rule.CalendarEventTiming, fullCase, assignmentDate);
+		const events = generateEvents(rule.CalendarEventTiming, fullCase, assignmentDate, inspectorEvents);
 		allEvents.push(...events);
 	}
 	return allEvents;
@@ -239,9 +263,10 @@ function matchTimingRuleToCase(timingRules, fullCase) {
  * @param {import('@pins/inspector-programming-database/src/client').CalendarEventTiming} timingRule
  * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel} fullCase
  * @param {string} assignmentDate
+ * @param {BookedEventTimeslot[]} inspectorEvents
  * @returns {import('./types').CalendarEventInput[]}
  */
-function generateEvents(timingRule, fullCase, assignmentDate) {
+function generateEvents(timingRule, fullCase, assignmentDate, inspectorEvents) {
 	/** @type {import('./types').CalendarEventInput[]} */
 	const events = [];
 
@@ -252,12 +277,12 @@ function generateEvents(timingRule, fullCase, assignmentDate) {
 			throw new Error('Invalid appeals stage while generating calendar events. Ensure app is correctly configured.');
 		if (!(+stageTime > 0)) continue;
 
-		const startDate = getCalendarEventStartDate(stage, assignmentDate);
+		const eventTimings = allocateCalendarEventTime(stage, assignmentDate, inspectorEvents);
 		const event = buildEventJson(
 			{
 				subject: `${fullCase.caseReference} - ${fullCase.caseType} - ${fullCase.lpaName} - ${stage} - ${String(stageTime)}`,
-				startTime: startDate.toISOString(), //placeholder
-				endTime: startDate.toISOString(), //placeholder
+				startTime: eventTimings.startTime.toISOString(), //placeholder
+				endTime: eventTimings.endTime.toISOString(), //placeholder
 				streetAddress: '1 smith way',
 				postcode: 'pe24 4ff'
 			},
@@ -267,7 +292,10 @@ function generateEvents(timingRule, fullCase, assignmentDate) {
 			}
 		);
 		events.push(event);
+		inspectorEvents.push(eventTimings);
 	}
+	console.info('events');
+	console.info(inspectorEvents);
 	return events;
 }
 
@@ -275,15 +303,50 @@ function generateEvents(timingRule, fullCase, assignmentDate) {
  * fetches the correct date to schedule the given stage of the casework process for
  * @param {string} stage
  * @param {string} assignment
- * @returns
+ * @param {BookedEventTimeslot[]} inspectorEvents
+ * @returns {BookedEventTimeslot}
  */
-function getCalendarEventStartDate(stage, assignment) {
+function allocateCalendarEventTime(stage, assignment, inspectorEvents) {
 	//TODO	-	handling time zones to come in ppb-157
 	const assignmentDate = new Date(assignment);
-	if (stage === CALENDAR_EVENT_STAGES.PREP) assignmentDate.setDate(assignmentDate.getDate() - 1);
-	else if (stage === CALENDAR_EVENT_STAGES.REPORT) assignmentDate.setDate(assignmentDate.getDate() + 1);
-	else if (stage === CALENDAR_EVENT_STAGES.COSTS) assignmentDate.setDate(assignmentDate.getDate() + 2);
-	return assignmentDate;
+	const isFriday = assignmentDate.getDay() === 5;
+	if (stage === CALENDAR_EVENT_STAGES.PREP) {
+		const isMonday = assignmentDate.getDay() === 1;
+		assignmentDate.setDate(assignmentDate.getDate() - (isMonday ? 3 : 1));
+	} else if (stage === CALENDAR_EVENT_STAGES.REPORT) {
+		assignmentDate.setDate(assignmentDate.getDate() + (isFriday ? 3 : 1));
+	} else if (stage === CALENDAR_EVENT_STAGES.COSTS) {
+		const isThursday = assignmentDate.getDay() === 4;
+		assignmentDate.setDate(assignmentDate.getDate() + (isThursday || isFriday ? 4 : 2));
+	}
+
+	allocateTime(assignmentDate, inspectorEvents);
+	return { startTime: assignmentDate, endTime: assignmentDate };
+}
+
+/**
+ * logic to compute the time of day to allocate to the calendar event (since all events share this logic)
+ * @param {Date} assignmentDate
+ * @param {BookedEventTimeslot[]} inspectorEvents
+ */
+function allocateTime(assignmentDate, inspectorEvents) {
+	//TODO - work in end date into this
+	assignmentDate.setHours(9, 0, 0, 0);
+	while (eventOverlaps(assignmentDate, inspectorEvents)) {
+		assignmentDate.setHours(assignmentDate.getHours() + 1);
+	}
+}
+
+/**
+ * checks through the list of booked slots to see if the prospective slot has already been taken
+ * @param {Date} prospectiveStartTime
+ * @param {BookedEventTimeslot[]} bookedTimeslots
+ */
+function eventOverlaps(prospectiveStartTime, bookedTimeslots) {
+	for (const slot of bookedTimeslots) {
+		if (prospectiveStartTime >= slot.startTime && prospectiveStartTime < slot.endTime) return true;
+	}
+	return false;
 }
 
 /**
