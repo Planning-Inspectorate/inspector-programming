@@ -30,7 +30,7 @@ export function buildPostCases(service) {
 			saveSelectedData(selectedCases, req);
 			addSessionData(req, 'errors', errors, 'persistence');
 			return redirectToHome(req, res);
-		} 
+		}
 
 		return handleCases(selectedCases, service, req, res);
 	};
@@ -38,7 +38,7 @@ export function buildPostCases(service) {
 
 /**
  * handles the assignment of cases to the selected inspector then assigns the events to calendar
- * @param {number[]} selectedCases 
+ * @param {number[]} selectedCases
  * @param {import('#service').WebService} service
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -96,7 +96,7 @@ async function handleCases(selectedCases, service, req, res) {
 
 		addSessionData(req, 'success', success, 'persistence');
 	}
-	
+
 	return redirectToHome(req, res);
 }
 
@@ -150,10 +150,10 @@ function saveSelectedData(selectedCases, req) {
 }
 
 /**
- * 
- * @param {import('express').Request} req 
- * @param {import('express').Response} res 
- * @returns 
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns
  */
 function redirectToHome(req, res) {
 	const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
