@@ -20,7 +20,7 @@ export async function getCaseDetails(db, caseReference) {
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
  * @param {number[]} caseIds
- * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCases: (string | undefined)[]}>}
+ * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCaseReferences: (string | undefined)[]}>}
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
 	const cbosApiClient = service.getCbosApiClientForSession(session);
@@ -32,24 +32,34 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 	let appeals = [];
 
 	try {
+		// Get latest data from cbos
 		appeals = await cbosApiClient.fetchAppealDetails(caseIds);
 	} catch (error) {
+		// Get and return failed case data from cache
 		service.logger.error(error, `Failed to fetch case details for case details`);
+		const cases = await service.casesClient.getCasesByIds(caseIds);
+		const caseReferences = cases.map((item) => (item.caseReference ? item.caseReference : undefined));
+		return { failedCaseReferences: caseReferences, failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
 	}
 
 	const assignedCases = appeals.filter((appeal) => appeal.inspector);
-	const alreadyAssignedCases = assignedCases.map((appeal) => appeal.appealReference);
+	const alreadyAssignedCaseReferences = assignedCases.map((appeal) => appeal.appealReference);
 	const failedCaseReferences = [];
 	const failedCaseIds = [];
 
-	if (alreadyAssignedCases.length == 0) {
+	if (alreadyAssignedCaseReferences.length == 0) {
 		let successfullCases = [];
 		for (let appeal of appeals) {
 			try {
+				if (!appeal.appealId) throw new Error('appealId is undefined');
+				if (!appeal.appealReference) throw new Error('appealReference is undefined');
 				await cbosApiClient.patchAppeal(appeal.appealId, appealPatchData);
 				successfullCases.push(appeal.appealReference);
 			} catch (error) {
-				service.logger.error(error, `Failed to update case ${appeal.appealReference} for inspector ${inspectorId}`);
+				service.logger.error(
+					error,
+					`Failed to update case (appealId: ${appeal.appealId}, appealReference: ${appeal.appealReference}) for inspector ${inspectorId}`
+				);
 				failedCaseReferences.push(appeal.appealReference);
 				failedCaseIds.push(appeal.appealId);
 			}
@@ -58,7 +68,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 		service.casesClient.deleteCases(successfullCases);
 	}
 
-	return { failedCaseReferences, failedCaseIds, alreadyAssignedCases };
+	return { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences };
 }
 
 /**

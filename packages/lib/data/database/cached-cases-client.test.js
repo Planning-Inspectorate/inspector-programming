@@ -50,6 +50,17 @@ describe('cached-cases-client', () => {
 			assert.deepStrictEqual(appeal, { caseId: 2 });
 		});
 
+		it('should return cases by case ids', async () => {
+			const mockClient = {};
+			const mockCache = {
+				get: mock.fn(() => [{ caseId: 1 }, { caseId: 2 }, { caseId: 3 }])
+			};
+			const cacheClient = new CachedCasesClient(mockClient, mockCache);
+			const appeals = await cacheClient.getCasesByIds([2]);
+			assert.strictEqual(mockCache.get.mock.callCount(), 1);
+			assert.deepStrictEqual(appeals, [{ caseId: 2 }]);
+		});
+
 		it('should return linked cases by lead case reference', async () => {
 			const mockClient = {};
 			const mockCache = {
@@ -67,6 +78,18 @@ describe('cached-cases-client', () => {
 				{ id: '3', leadCaseReference: 'A' }
 			]);
 		});
+
+		it('should remove cases from cache', async () => {
+			const mockClient = { deleteCases: mock.fn() };
+			const mockCache = {
+				get: mock.fn(() => [{ caseReference: '1' }, { caseReference: '2' }, { caseReference: '3' }]),
+				set: mock.fn()
+			};
+			const cacheClient = new CachedCasesClient(mockClient, mockCache);
+			await cacheClient.deleteCases(['1', '3']);
+			assert.deepStrictEqual(mockCache.set.mock.calls[0].arguments[1], [{ caseReference: '2' }]);
+		});
+
 		describe('determinePage', () => {
 			it('should return requested page if valid', () => {
 				const mockClient = { getAllCases: mock.fn(() => [3, 4, 5]) };
@@ -103,16 +126,6 @@ describe('cached-cases-client', () => {
 				const totalPages = 5;
 				const page = cacheClient.determinePage(requestedPage, totalPages);
 				assert.strictEqual(page, 1);
-			});
-			it('should remove cases from cache', async () => {
-				const mockClient = { deleteCases: mock.fn() };
-				const mockCache = {
-					get: mock.fn(() => [{ caseReference: '1' }, { caseReference: '2' }, { caseReference: '3' }]),
-					set: mock.fn()
-				};
-				const cacheClient = new CachedCasesClient(mockClient, mockCache);
-				await cacheClient.deleteCases(['1', '3']);
-				assert.deepStrictEqual(mockCache.set.mock.calls[0].arguments[1], [{ caseReference: '2' }]);
 			});
 		});
 	});

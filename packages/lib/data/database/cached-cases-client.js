@@ -136,6 +136,16 @@ export class CachedCasesClient {
 
 	/**
 	 *
+	 * @param {number[]} caseIds
+	 * @returns {Promise<import('../types').CaseViewModel[]>}
+	 */
+	async getCasesByIds(caseIds) {
+		const cases = await this.getAllCases();
+		return cases.filter((item) => item.caseId && caseIds.includes(item.caseId));
+	}
+
+	/**
+	 *
 	 * @param {string[]} caseReferences
 	 */
 	async deleteCases(caseReferences) {

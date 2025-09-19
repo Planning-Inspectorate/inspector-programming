@@ -45,12 +45,11 @@ export function buildPostCases(service) {
  */
 async function handleCases(selectedCases, service, req, res) {
 	const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
-	const { failedCaseReferences, failedCaseIds, alreadyAssignedCases } = await assignCasesToInspector(
-		req.session,
-		service,
-		req.body.inspectorId,
-		selectedCaseIds
-	);
+	const {
+		failedCaseReferences,
+		failedCaseIds,
+		alreadyAssignedCaseReferences: alreadyAssignedCases
+	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
 	if (alreadyAssignedCases.length > 0) {
 		// Save error to be displayed on home page

@@ -292,7 +292,7 @@ describe('CasesClient', () => {
 			assert.strictEqual(casesClient.getCaseAgeInWeeks(twoWeeksAgo), 2);
 		});
 	});
-	describe('getAllCases', () => {
+	describe('deleteCases', () => {
 		const mockClient = {
 			appealCase: {
 				deleteMany: mock.fn()
