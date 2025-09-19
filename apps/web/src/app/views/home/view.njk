@@ -267,28 +267,28 @@
         </div>
         <form method="post" action="/cases" novalidate>
                 <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                {% if caseListError %}
-                    {{ govukErrorMessage({
-                        text: caseListError,
-                        visuallyHiddenText: "Error",
-                        classes: 'align-right'
-                    }) }}
-                {% endif %}
                 <div class="align-right">
-                    <div class="govuk-form-group">
+                    <div class="govuk-form-group {% if appeals.assignmentDateError %} margin-top-error-40px {% endif %}">
                         <label class="govuk-label" for="assignment-date">Event date: </label>
                     </div>
                     <div class="govuk-form-group">
-                        <input type="date" class="govuk-input" id="assignment-date" name="assignmentDate", value="{{appeals.assignmentDate}}">
+                        {{ govukInput({
+                            id: "assignment-date",
+                            name: "assignmentDate",
+                            classes: "govuk-input",
+                            type: "date",
+                            value: appeals.assignmentDate,
+                            errorMessage: {text: appeals.assignmentDateError} if appeals.assignmentDateError else null
+                        }) }}
                     </div>
                     <div class="govuk-form-group">
                         {{ govukButton({
                             text: "Assign selected cases",
-                            type: "submit"
+                            type: "submit",
+                            classes: "margin-top-error-40px" if appeals.assignmentDateError else null
                         }) }}
                     </div>
                 </div>
-
             {% include 'views/home/cases-table.njk' %}
             </form>
 

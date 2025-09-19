@@ -15,34 +15,60 @@ export async function getCaseDetails(db, caseReference) {
 
 /**
  * Assigns cases to inspector
- * Returns case ids that failed to be updated
+ * Returns case references that failed to be updated or already assigned
  * @param {import('../auth/session.service').SessionWithAuth} session
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
  * @param {number[]} caseIds
- * @returns {Promise<number[]>}
+ * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCaseReferences: (string | undefined)[]}>}
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
-	if (!inspectorId || inspectorId == '') {
-		service.logger.warn('No inspector selected');
-		return caseIds;
-	}
-
 	const cbosApiClient = service.getCbosApiClientForSession(session);
 	const appealPatchData = { inspector: inspectorId };
 
-	let failedCases = [];
+	/**
+	 * @type {import("@pins/inspector-programming-lib/data/types").CbosSingleAppealResponse[]}
+	 */
+	let appeals = [];
 
-	for (let caseId of caseIds) {
-		try {
-			await cbosApiClient.patchAppeal(caseId, appealPatchData);
-		} catch (error) {
-			service.logger.error(error, `Failed to update case ${caseId} for inspector ${inspectorId}`);
-			failedCases.push(caseId);
-		}
+	try {
+		// Get latest data from cbos
+		appeals = await cbosApiClient.fetchAppealDetails(caseIds);
+	} catch (error) {
+		// Get and return failed case data from cache
+		service.logger.error(error, `Failed to fetch case details for case details`);
+		const cases = await service.casesClient.getCasesByIds(caseIds);
+		const caseReferences = cases.map((item) => (item.caseReference ? item.caseReference : undefined));
+		return { failedCaseReferences: caseReferences, failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
 	}
 
-	return failedCases;
+	const assignedCases = appeals.filter((appeal) => appeal.inspector);
+	const alreadyAssignedCaseReferences = assignedCases.map((appeal) => appeal.appealReference);
+	const failedCaseReferences = [];
+	const failedCaseIds = [];
+
+	if (alreadyAssignedCaseReferences.length == 0) {
+		let successfullCases = [];
+		for (let appeal of appeals) {
+			try {
+				if (!appeal.appealId) throw new Error('appealId is undefined');
+				if (!appeal.appealReference) throw new Error('appealReference is undefined');
+				await cbosApiClient.patchAppeal(appeal.appealId, appealPatchData);
+				successfullCases.push(appeal.appealReference);
+			} catch (error) {
+				service.logger.error(
+					error,
+					`Failed to update case (appealId: ${appeal.appealId}, appealReference: ${appeal.appealReference}) for inspector ${inspectorId}`
+				);
+				failedCaseReferences.push(appeal.appealReference);
+				failedCaseIds.push(appeal.appealId);
+			}
+		}
+
+		service.casesClient.deleteCases(successfullCases);
+	}
+
+	return { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences };
 }
 
 /**

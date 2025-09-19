@@ -47,3 +47,8 @@ export interface RadioOption {
 export interface TextValue {
 	text: string;
 }
+
+export interface SuccessSummary {
+	heading: string;
+	body: string;
+}

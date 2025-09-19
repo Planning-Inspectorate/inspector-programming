@@ -133,4 +133,32 @@ export class CachedCasesClient {
 		const cases = await this.getAllCases();
 		return cases.find((item) => item.caseId == caseId);
 	}
+
+	/**
+	 *
+	 * @param {number[]} caseIds
+	 * @returns {Promise<import('../types').CaseViewModel[]>}
+	 */
+	async getCasesByIds(caseIds) {
+		const cases = await this.getAllCases();
+		return cases.filter((item) => item.caseId && caseIds.includes(item.caseId));
+	}
+
+	/**
+	 *
+	 * @param {string[]} caseReferences
+	 */
+	async deleteCases(caseReferences) {
+		this.#client.deleteCases(caseReferences);
+
+		const key = CACHE_PREFIX + 'getAllCases';
+		let cases = this.#cache.get(key);
+
+		if (cases) {
+			cases = cases.filter(
+				(/** @type {{ caseReference: string; }} */ appeal) => !caseReferences.includes(appeal.caseReference)
+			);
+			this.#cache.set(key, cases);
+		}
+	}
 }

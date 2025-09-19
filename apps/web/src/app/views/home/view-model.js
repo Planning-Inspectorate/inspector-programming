@@ -33,9 +33,15 @@ export function calendarViewModel(calendarStartDate, events, error) {
  * @returns {import('./types.js').AppealsViewModel}
  */
 export function appealsViewModel(cases, req) {
+	// get errors output from /cases
+	const selectCasesError = readSessionData(req, 'errors', 'selectCasesError', false, 'persistence');
+	const selectAssignmentDateError = readSessionData(req, 'errors', 'selectAssignmentDateError', false, 'persistence');
+
 	return {
 		cases: cases.map(toCaseViewModel),
-		assignmentDate: readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence')
+		assignmentDate: readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence'),
+		caseListError: selectCasesError ? 'Select case(s) to assign' : undefined,
+		assignmentDateError: selectAssignmentDateError ? 'Select an event date' : undefined
 	};
 }
 
