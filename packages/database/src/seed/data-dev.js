@@ -25,7 +25,6 @@ const mockAppeal = {
 	siteAddressTown: 'Example Town',
 	siteAddressCounty: 'Example County',
 	siteAddressPostcode: 'EX1 2PL',
-	lpaCode: 'Q9999',
 	lpaName: 'Example Local Planning Authority',
 	caseCreatedDate: new Date('2025-07-30T12:15:00Z'),
 	caseValidDate: new Date('2025-07-31T23:00:00Z'),
@@ -330,6 +329,9 @@ const inspectors = [
 export async function seedDev(dbClient) {
 	const appeals = generateAppeals();
 
+	// assign valid LPA codes to all appeals
+	await assignAppealLpaCodes(dbClient, appeals);
+
 	console.log('seeding', appeals.length, 'appeals');
 
 	for (const appeal of appeals) {
@@ -351,6 +353,33 @@ export async function seedDev(dbClient) {
 	}
 
 	console.log('dev seed complete');
+}
+
+/**
+ * Set a proportion of appeals to valid `lpaCode` values from the `Lpa` table.
+ * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]} appeals
+ * @param {number} ratio
+ */
+async function assignAppealLpaCodes(dbClient, appeals, ratio = 1) {
+	try {
+		if (!appeals.length || ratio <= 0) return;
+		const lpas = await dbClient.lpa.findMany({ select: { lpaCode: true } });
+		if (!lpas.length) return;
+
+		const targetCount = Math.floor(appeals.length * ratio);
+		if (!targetCount) return;
+
+		const indices = appeals.map((_, i) => i);
+		const selected = shuffleArray(indices).slice(0, targetCount);
+
+		selected.forEach((appealIdx, i) => {
+			const { lpaCode } = lpas[i % lpas.length];
+			appeals[appealIdx].lpaCode = lpaCode;
+		});
+	} catch (err) {
+		console.warn('failed assigning LPA codes to appeals', err);
+	}
 }
 
 /**

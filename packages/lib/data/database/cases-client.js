@@ -25,7 +25,16 @@ export class CasesClient {
 		const cases = await this.#client.appealCase.findMany({
 			include: {
 				ChildCases: true,
-				Specialisms: true
+				Specialisms: true,
+				Lpa: {
+					include: {
+						LpaRegion: {
+							include: {
+								LpaRegionName: true
+							}
+						}
+					}
+				}
 			}
 		});
 		return cases.map((c) => this.caseToViewModel(c));
@@ -48,7 +57,7 @@ export class CasesClient {
 			siteAddressLatitude: Number(c.siteAddressLatitude),
 			siteAddressLongitude: Number(c.siteAddressLongitude),
 			lpaName: c.lpaName || '',
-			lpaRegion: c.lpaRegion || '',
+			lpaRegion: c.Lpa ? c.Lpa?.LpaRegion?.LpaRegionName?.name : '',
 			caseStatus: c.caseStatus || 'Unassigned',
 			caseAge: this.getCaseAgeInWeeks(c.caseValidDate || new Date()),
 			linkedCaseReferences: this.getLinkedCaseReferences(c),

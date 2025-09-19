@@ -44,10 +44,11 @@ model AppealCase {
   siteAddressLatitude  Decimal? @db.Decimal(9, 6)
   siteAddressLongitude Decimal? @db.Decimal(9, 6)
 
-  lpaCode   String?
+  lpaCode String?
   // not data-model fields but may be populated from C-BOS
-  lpaName   String?
-  lpaRegion String?
+  lpaName String?
+
+  Lpa Lpa? @relation(fields: [lpaCode], references: [lpaCode])
 
   caseCreatedDate      DateTime?
   caseValidDate        DateTime?
@@ -153,4 +154,37 @@ model CalendarEventTimingRule {
   CalendarEventTiming CalendarEventTiming @relation(fields: [calendarEventTimingId], references: [id], onDelete: Cascade)
 
   @@unique([caseType, caseProcedure, allocationLevel])
+}
+
+/// Partial LPA model. Currently stores code, name, and region info; may be extended later.
+model Lpa {
+  id      String  @id @default(uuid()) @db.UniqueIdentifier
+  lpaCode String  @unique
+  lpaName String?
+
+  lpaRegionId String    @db.UniqueIdentifier
+  LpaRegion   LpaRegion @relation(fields: [lpaRegionId], references: [id])
+
+  AppealCases AppealCase[]
+
+  @@index([lpaRegionId])
+}
+
+model LpaRegion {
+  id              String        @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  number          Int
+  lpaRegionNameId String        @db.UniqueIdentifier
+  LpaRegionName   LpaRegionName @relation(fields: [lpaRegionNameId], references: [id], onDelete: Cascade)
+
+  Lpas Lpa[]
+
+  @@unique([lpaRegionNameId, number])
+  @@index([lpaRegionNameId])
+}
+
+model LpaRegionName {
+  id   String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  name String @unique
+
+  LpaRegion LpaRegion[]
 }
