@@ -21,11 +21,11 @@ export function buildPostCases(service) {
 
 		const errors = {
 			selectInspectorError: req.body.inspectorId ? false : true,
-			selectCasesError: selectedCases.length == 0 ? true : false,
+			caseListError: selectedCases.length == 0 ? 'Select case(s) to assign' : null,
 			selectAssignmentDateError: req.body.assignmentDate ? false : true
 		};
 
-		if (errors.selectInspectorError || errors.selectCasesError || errors.selectAssignmentDateError) {
+		if (errors.selectInspectorError || errors.caseListError || errors.selectAssignmentDateError) {
 			// Save errors to be displayed on home page
 			saveSelectedData(selectedCases, req);
 			addSessionData(req, 'errors', errors, 'persistence');
@@ -53,13 +53,14 @@ async function handleCases(selectedCases, service, req, res) {
 
 	if (alreadyAssignedCases.length > 0) {
 		// Save error to be displayed on home page
-		let assignedCasesError = 'Case';
-		for (const appeal of alreadyAssignedCases) {
-			assignedCasesError = assignedCasesError.concat(` ${appeal}`);
+		let caseListError = 'Select another case. The following cases are already assigned:';
+		for (let i = 0; i < alreadyAssignedCases.length; i++) {
+			const appeal = alreadyAssignedCases[i];
+			const errorText = i == alreadyAssignedCases.length - 1 ? ` ${appeal}` : ` ${appeal},`;
+			caseListError = caseListError.concat(errorText);
 		}
 
-		assignedCasesError = assignedCasesError.concat(' already assigned, select another case');
-		addSessionData(req, 'errors', { assignedCasesError }, 'persistence');
+		addSessionData(req, 'errors', { caseListError }, 'persistence');
 		saveSelectedData(selectedCases, req);
 	} else if (failedCaseReferences.length > 0) {
 		// Keep selected any failed cases then go to 500 page
