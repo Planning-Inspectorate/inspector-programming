@@ -161,7 +161,7 @@ export function buildViewHome(service) {
 		clearSessionData(
 			req,
 			'errors',
-			['selectInspectorError', 'selectCasesError', 'selectAssignmentDateError', 'assignedCasesError'],
+			['selectInspectorError', 'caseListError', 'selectAssignmentDateError'],
 			'persistence'
 		);
 		clearSessionData(req, 'success', ['successSummary'], 'persistence');

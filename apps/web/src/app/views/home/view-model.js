@@ -34,13 +34,13 @@ export function calendarViewModel(calendarStartDate, events, error) {
  */
 export function appealsViewModel(cases, req) {
 	// get errors output from /cases
-	const selectCasesError = readSessionData(req, 'errors', 'selectCasesError', false, 'persistence');
+	const caseListError = readSessionData(req, 'errors', 'caseListError', null, 'persistence');
 	const selectAssignmentDateError = readSessionData(req, 'errors', 'selectAssignmentDateError', false, 'persistence');
 
 	return {
 		cases: cases.map(toCaseViewModel),
 		assignmentDate: readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence'),
-		caseListError: selectCasesError ? 'Select case(s) to assign' : undefined,
+		caseListError,
 		assignmentDateError: selectAssignmentDateError ? 'Select an event date' : undefined
 	};
 }
