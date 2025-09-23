@@ -133,6 +133,27 @@ describe('controller.js', () => {
 			});
 		});
 
+		test('should render 500 template only failed case ids are returned', async () => {
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => {
+				throw new Error();
+			});
+			const service = mockService();
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2025-09-18' },
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
+			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
+			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
+				bodyCopy: 'Try again later. The requested cases were not assigned.'
+			});
+		});
+
 		test('should not update cases if no inspector is selected', async () => {
 			const service = mockService();
 			const req = { body: { selectedCases: ['1', '2', '3'], assignmentDate: new Date() }, session: {} };

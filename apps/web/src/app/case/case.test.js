@@ -22,7 +22,6 @@ mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 const mockGetLinkedCasesByParentCaseId = mock.fn();
 const mockGetCaseById = mock.fn();
 const mockDeleteCases = mock.fn();
-const mockGetCasesByIds = mock.fn();
 
 const mockService = {
 	logger: mockLogger,
@@ -30,8 +29,7 @@ const mockService = {
 	casesClient: {
 		getLinkedCasesByParentCaseId: mockGetLinkedCasesByParentCaseId,
 		getCaseById: mockGetCaseById,
-		deleteCases: mockDeleteCases,
-		getCasesByIds: mockGetCasesByIds
+		deleteCases: mockDeleteCases
 	}
 };
 
@@ -43,7 +41,6 @@ beforeEach(() => {
 	mockService.logger.warn.mock.resetCalls();
 	mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
 	mockCbosApiClient.patchAppeal.mock.resetCalls();
-	mockGetCasesByIds.mock.resetCalls();
 });
 
 describe('assignCasesToInspector', () => {
@@ -105,20 +102,17 @@ describe('assignCasesToInspector', () => {
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, ['1']);
 	});
 
-	test('should return failed case references from cache if unable to get latest cbos data', async () => {
+	test('should return only failed case ids if unable to get latest cbos data', async () => {
 		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => {
 			throw new Error();
 		});
-		const cases = [{ caseReference: '1', caseId: 1 }];
-		mockGetCasesByIds.mock.mockImplementationOnce(() => cases);
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences } = await assignCasesToInspector(
 			mockSession,
 			mockService,
 			'inspector id',
 			[1]
 		);
-		assert.strictEqual(mockGetCasesByIds.mock.callCount(), 1);
-		assert.deepStrictEqual(failedCaseReferences, ['1']);
+		assert.deepStrictEqual(failedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseIds, [1]);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
 	});
