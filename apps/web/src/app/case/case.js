@@ -35,11 +35,8 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 		// Get latest data from cbos
 		appeals = await cbosApiClient.fetchAppealDetails(caseIds);
 	} catch (error) {
-		// Get and return failed case data from cache
 		service.logger.error(error, `Failed to fetch case details for case details`);
-		const cases = await service.casesClient.getCasesByIds(caseIds);
-		const caseReferences = cases.map((item) => (item.caseReference ? item.caseReference : undefined));
-		return { failedCaseReferences: caseReferences, failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
+		return { failedCaseReferences: [], failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
 	}
 
 	const assignedCases = appeals.filter((appeal) => appeal.inspector);

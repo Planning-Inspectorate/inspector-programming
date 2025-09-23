@@ -62,7 +62,7 @@ async function handleCases(selectedCases, service, req, res) {
 
 		addSessionData(req, 'errors', { caseListError }, 'persistence');
 		saveSelectedData(selectedCases, req);
-	} else if (failedCaseReferences.length > 0) {
+	} else if (failedCaseIds.length > 0) {
 		// Keep selected any failed cases then go to 500 page
 		saveSelectedData(failedCaseIds, req);
 		return handleFailure(
@@ -120,7 +120,7 @@ function handleFailure(req, res, failedCases, selectedCaseIds, errorMessage) {
 	addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
 
 	let viewData = {};
-	if (failedCases.length < selectedCaseIds.length) {
+	if (failedCases.length != 0 && failedCases.length < selectedCaseIds.length) {
 		viewData = {
 			bodyCopy: 'Try again later. The following cases were not assigned.',
 			failedCases: failedCases
