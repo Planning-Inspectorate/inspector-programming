@@ -31,8 +31,6 @@ export interface CaseViewModel {
 	finalCommentsDate: Date | string;
 	linkedCases: number;
 	linkedCaseStatus: string | null;
-	caseReceivedDate: Date | null;
-	finalCommentsDate: Date;
 	selected: boolean | null;
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
@@ -44,6 +42,7 @@ export interface Filters {
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;
 	caseSpecialisms?: string[];
+	lpaRegion?: string[];
 }
 
 export interface FilterQuery {

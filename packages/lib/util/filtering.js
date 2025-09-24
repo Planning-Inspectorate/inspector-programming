@@ -48,6 +48,15 @@ export function filterCases(cases, filters) {
 		});
 	}
 
+	// Filter by LPA region
+	if (filters.lpaRegion) {
+		const regions = Array.isArray(filters.lpaRegion)
+			? filters.lpaRegion.map((r) => r.toLowerCase())
+			: [filters.lpaRegion.toLowerCase()];
+
+		cases = cases.filter((c) => c.lpaRegion && regions.some((region) => c.lpaRegion.toLowerCase().startsWith(region)));
+	}
+
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
 		if (!(c.caseAge >= +(cleanFilters.minimumAge || 0) && c.caseAge <= +(cleanFilters.maximumAge || 999))) return false;

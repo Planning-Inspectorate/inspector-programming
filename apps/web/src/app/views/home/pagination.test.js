@@ -1,5 +1,5 @@
 import { describe, test } from 'node:test';
-import { buildQueryString, createPaginationItems, paginationValues } from './pagination.js';
+import { buildQueryString, createPaginationItems, paginationValues, appendParam } from './pagination.js';
 import assert from 'assert';
 
 describe('pagination', () => {
@@ -129,6 +129,34 @@ describe('pagination', () => {
 			assert.strictEqual(items.length, 1);
 			assert.strictEqual(items[0].number, 1);
 			assert.strictEqual(items[0].current, true);
+		});
+	});
+	describe('appendParam', () => {
+		test('should append simple string value', () => {
+			const sp = new URLSearchParams();
+			appendParam(sp, 'sort', 'age');
+			assert.strictEqual(sp.toString(), 'sort=age');
+		});
+		test('should append numeric value', () => {
+			const sp = new URLSearchParams();
+			appendParam(sp, 'page', 3);
+			assert.strictEqual(sp.toString(), 'page=3');
+		});
+		test('should append empty string value', () => {
+			const sp = new URLSearchParams();
+			appendParam(sp, 'filter', '');
+			assert.strictEqual(sp.toString(), 'filter=');
+		});
+		test('should append multiple values for array', () => {
+			const sp = new URLSearchParams();
+			appendParam(sp, 'tags', ['a', 'b']);
+			assert.strictEqual(sp.toString(), 'tags=a&tags=b');
+		});
+		test('should skip undefined and null values', () => {
+			const sp = new URLSearchParams();
+			appendParam(sp, 'u', undefined);
+			appendParam(sp, 'n', null);
+			assert.strictEqual(sp.toString(), '');
 		});
 	});
 });

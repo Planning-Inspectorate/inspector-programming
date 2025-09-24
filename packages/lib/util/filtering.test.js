@@ -83,7 +83,40 @@ describe('filterCases', () => {
 		const filteredCases = filterCases(cases, filters);
 		assert.strictEqual(filteredCases.length, 2);
 	});
+	test('should filter cases by LPA region prefix (e.g., North)', () => {
+		const cases = [
+			{ lpaRegion: 'North', caseAge: 10 },
+			{ lpaRegion: 'North', caseAge: 20 },
+			{ lpaRegion: 'East', caseAge: 15 },
+			{ lpaRegion: 'West', caseAge: 30 },
+			{ lpaRegion: '', caseAge: 12 }
+		];
+		const filtered = filterCases(cases, { lpaRegion: ['North'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.ok(filtered.every((c) => c.lpaRegion?.startsWith('North')));
+	});
+	test('should filter cases by multiple LPA regions', () => {
+		const cases = [
+			{ lpaRegion: 'North', caseAge: 10 },
+			{ lpaRegion: 'East', caseAge: 20 },
+			{ lpaRegion: 'West', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { lpaRegion: ['East', 'West'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.deepStrictEqual(filtered.map((c) => c.lpaRegion).sort(), ['East', 'West']);
+	});
+	test('should exclude cases with missing region when lpaRegion filter is applied', () => {
+		const cases = [
+			{ lpaRegion: null, caseAge: 10 },
+			{ lpaRegion: undefined, caseAge: 20 },
+			{ lpaRegion: 'East', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { lpaRegion: ['East'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].lpaRegion, 'East');
+	});
 });
+
 describe('validateFilters', () => {
 	test('should return no errors if all filters are valid - age filters', () => {
 		const filters = { case: { minimumAge: 10, maximumAge: 30 } };
