@@ -32,6 +32,7 @@ module "function_integration" {
   function_node_version = var.apps_config.functions_node_version
   key_vault_id          = azurerm_key_vault.main.id
   app_settings = {
+    CBOS_API_URL          = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
     SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
   }
 }
