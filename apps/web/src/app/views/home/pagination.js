@@ -25,12 +25,30 @@ export function paginationValues(req, total, formData) {
  */
 export function buildQueryString(params, newPage) {
 	const updatedParams = { ...params, page: newPage };
-	const searchParams = new URLSearchParams(
-		Object.entries(updatedParams)
-			.filter(([, v]) => v !== undefined && v !== null)
-			.map(([k, v]) => [k, String(v)])
-	);
+	const searchParams = new URLSearchParams();
+	Object.entries(updatedParams).forEach(([key, value]) => {
+		if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+			Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+				appendParam(searchParams, `${key}[${nestedKey}]`, nestedValue);
+			});
+		} else {
+			appendParam(searchParams, key, value);
+		}
+	});
 	return '?' + searchParams.toString();
+}
+
+/**
+ * @param {URLSearchParams} searchParams
+ * @param {string} key
+ * @param {string | number | Array<string | number>} value
+ */
+export function appendParam(searchParams, key, value) {
+	if (Array.isArray(value)) {
+		value.forEach((v) => searchParams.append(key, v));
+	} else if (value !== undefined && value !== null) {
+		searchParams.append(key, value);
+	}
 }
 
 /**
