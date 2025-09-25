@@ -1,0 +1,70 @@
+{% from "govuk/components/fieldset/macro.njk" import govukFieldset %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "views/macros/checkbox-item.njk" import checkboxItem %}
+
+{% macro checkboxFilter(params) %}
+    {% set hasFieldset = true if params.fieldset else false %}
+    {% set idPrefix = params.id if params.id else params.name %}
+    {% set inputId = idPrefix + "-checkbox-filter-input" %}
+    {% set containerId = idPrefix + "-checkbox-filter-container" %}
+
+    {% set innerHtml %}
+        {{ govukInput({
+                label: {
+                    text: params.textBox.label
+                },
+                classes: "checkbox-filter-input",
+                id: inputId,
+                errorMessage: params.errorMessage
+            })
+        }}
+
+        <div class="govuk-checkboxes {% if params.classes %} {{ params.classes }}{% endif %}" data-module="govuk-checkboxes">
+            {% for item in params.items %}
+                {% if item %}
+                    {{ checkboxItem(params, item, loop.index) }}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endset %}
+
+    <div id="{{containerId}}"class="{{params.classes}}">
+        <div class="govuk-form-group {% if params.errorMessage %} govuk-form-group--error{% endif %} {% if params.formGroup.classes %} {{ params.formGroup.classes }}{% endif %}">
+            {% if hasFieldset %}
+                {{ govukFieldset({
+                    describedBy: describedBy,
+                    classes: params.fieldset.classes,
+                    attributes: params.fieldset.attributes,
+                    legend: params.fieldset.legend,
+                    html: innerHtml 
+                })}}
+            {% else %}
+                {{ innerHtml }}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.getElementById('{{ containerId }}');
+            const textBox = document.getElementById('{{ inputId }}');
+            const items = container.querySelectorAll('.govuk-checkboxes__item');
+
+            textBox.addEventListener('keyup', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                } else {
+                    const query = textBox.value.toLowerCase();
+                    items.forEach(function (item) {
+                        const label = item.querySelector('.govuk-label').textContent.toLowerCase();
+                        if (label.includes(query)) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+{% endmacro %}
