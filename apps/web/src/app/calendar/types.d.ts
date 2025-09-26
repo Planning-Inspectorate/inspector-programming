@@ -22,8 +22,8 @@ export interface CalendarEventInput {
 	};
 	location: {
 		address: {
-			street: string;
-			postalCode: string;
+			street: string | null;
+			postalCode: string | null;
 		};
 	};
 	extensions: [

@@ -60,6 +60,10 @@ export class WebService extends BaseService {
 		return this.#config.auth.disabled;
 	}
 
+	get disableOnlyLocalInspectors() {
+		return this.#config.inspectors.disableOnlyLocalInspectors;
+	}
+
 	get entraGroupIds() {
 		return this.#config.entra.groupIds;
 	}

@@ -50,6 +50,7 @@ export function loadConfig() {
 		ENTRA_GROUP_ID_INSPECTORS,
 		ENTRA_GROUP_ID_NATIONAL_TEAM,
 		ENTRA_GROUP_ID_TEAM_LEADS,
+		DISABLE_ONLY_LOCAL_INSPECTORS,
 		GIT_SHA,
 		GOV_NOTIFY_API_KEY,
 		GOV_NOTIFY_DISABLED,
@@ -89,6 +90,7 @@ export function loadConfig() {
 	const isProduction = NODE_ENV === 'production';
 
 	const authDisabled = AUTH_DISABLED === 'true' && !isProduction;
+	const disableOnlyLocalInspectors = DISABLE_ONLY_LOCAL_INSPECTORS === 'true' && !isProduction;
 	if (!authDisabled) {
 		const props = {
 			AUTH_GROUP_APPLICATION_ACCESS,
@@ -131,7 +133,8 @@ export function loadConfig() {
 			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
 		},
 		inspectors: {
-			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15)
+			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15),
+			disableOnlyLocalInspectors: disableOnlyLocalInspectors
 		},
 		cbos: {
 			apiUrl: CBOS_API_URL,

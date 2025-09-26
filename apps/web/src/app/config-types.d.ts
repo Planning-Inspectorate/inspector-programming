@@ -25,6 +25,7 @@ interface Config extends BaseConfig {
 	};
 	inspectors: {
 		inspectorsCacheTtl: number;
+		disableOnlyLocalInspectors: boolean;
 	};
 	cbos: {
 		apiUrl: string;

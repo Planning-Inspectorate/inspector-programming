@@ -26,4 +26,18 @@ export class CalendarClient {
 			}
 		});
 	}
+
+	/** @typedef {{division: string, events: {title: string, date: string, notes: string, bunting: true}[]}} BankHolidayJsonDivision */
+	/** @typedef {{'england-and-wales': BankHolidayJsonDivision, 'scotland': BankHolidayJsonDivision, 'northern-ireland': BankHolidayJsonDivision}} BankHolidayJson */
+
+	/**
+	 * Uses a .gov api to fetch a list of uk bank holidays
+	 * @returns {Promise<string[]>}
+	 */
+	async getEnglandWalesBankHolidays() {
+		const res = await fetch('https://www.gov.uk/bank-holidays.json');
+		/** @type {BankHolidayJson} */
+		const bankHolidayJson = await res.json();
+		return bankHolidayJson['england-and-wales'].events.map((e) => e.date);
+	}
 }
