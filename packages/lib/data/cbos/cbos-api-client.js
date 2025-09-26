@@ -52,8 +52,8 @@ export class CbosApiClient {
 
 			return { cases: mappedAppeals, caseReferences: filteredCaseReferences };
 		} catch (error) {
-			this.logger.error({ error: error }, '[CaseController] Error fetching case details');
-			throw new Error('Failed to fetch cases. Please try again later.');
+			this.logger.error({ error: error.message }, '[CaseController] Error fetching case details');
+			throw new Error(error.message);
 		}
 	}
 
