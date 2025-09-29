@@ -178,26 +178,126 @@ $font-family: arial, helvetica, sans-serif;
 	height: 30px;
 	font-size: 0.8rem;
 }
+
+.calendar-table th.date-cell {
+	border-left-style: none;
+	border-right-style: none;
+}
+
 .calendar-table th.time-column,
 .calendar-table td.time-column {
 	width: 2%;
 }
 
-.calendar-table th:not(.time-column),
-.calendar-table td:not(.time-column) {
-	width: 14%;
-}
-
 .calendar-table td.event {
 	background-color: lightblue;
+	border-left-style: none;
+	border-right-style: none;
 }
 
 .calendar-table td.calendar-cell {
 	background-color: #faf9f6;
+	border-left-style: none;
+	border-right-style: none;
 }
 
 .calendar-table td.calendar-cell-today {
 	background-color: white;
+	border-left-style: none;
+	border-right-style: none;
+}
+
+.calendar-table th.start-cell {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-color: white;
+}
+.calendar-table th.end-cell {
+	width: 2px !important;
+	border-left-style: none;
+	background-color: white;
+}
+
+.calendar-table td.status-free {
+	width: 2px !important;
+	border-color: #6e9fda !important;
+	background-color: white;
+	z-index: 1;
+}
+
+.calendar-table td.status-busy {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-color: #6e9fda;
+}
+
+.calendar-table td.status-oof {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-color: purple;
+}
+
+.calendar-table td.status-tentative {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-image: linear-gradient(
+		45deg,
+		#ffffff 25%,
+		#e0ffff 25%,
+		#e0ffff 50%,
+		#ffffff 50%,
+		#ffffff 75%,
+		#e0ffff 75%,
+		#e0ffff 100%
+	);
+	background-size: 5.66px 5.66px;
+}
+
+.calendar-table td.status {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-color: #faf9f6;
+}
+
+.calendar-table td.status-default {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-color: lightblue;
+}
+
+.calendar-table td.status-today {
+	width: 2px !important;
+	border-right-style: none;
+	border-bottom-style: none;
+	background-color: white;
+}
+
+.calendar-table td.end-cell {
+	width: 2px !important;
+	border-left-style: none;
+	border-right-style: none;
+	background-color: #faf9f6;
+}
+
+.calendar-table td.end-cell-today {
+	width: 2px !important;
+	border-left-style: none;
+	border-right-style: none;
+	background-color: white;
+}
+
+.calendar-table td:last-child {
+	border-right-style: solid;
+}
+
+.calendar-table tr:last-child td {
+	border-bottom-style: solid;
 }
 
 .nav-buttons {
