@@ -34,17 +34,26 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 
 	return events.map((event) => {
 		const startDateTime = new Date(event.start.dateTime);
-		const roundedStartMinutes = Math.floor(startDateTime.getMinutes() / 30) * 30;
-		startDateTime.setMinutes(roundedStartMinutes);
-
 		const endDateTime = new Date(event.end.dateTime);
-		const roundedEndMinutes = Math.ceil(endDateTime.getMinutes() / 30) * 30;
-		endDateTime.setMinutes(roundedEndMinutes);
+
+		if (event.isAllDay) {
+			// Set time to work hours
+			startDateTime.setHours(8, 0);
+			endDateTime.setHours(18, 0);
+		} else {
+			const roundedStartMinutes = Math.floor(startDateTime.getMinutes() / 30) * 30;
+			startDateTime.setMinutes(roundedStartMinutes);
+
+			const roundedEndMinutes = Math.ceil(endDateTime.getMinutes() / 30) * 30;
+			endDateTime.setMinutes(roundedEndMinutes);
+		}
 
 		return {
 			subject: event.subject,
 			startDateTime: startDateTime.toISOString(),
-			endDateTime: endDateTime.toISOString()
+			endDateTime: endDateTime.toISOString(),
+			isOutOfOffice: event.showAs == 'oof',
+			status: event.showAs ? event.showAs : ''
 		};
 	});
 }
@@ -121,7 +130,9 @@ export function generateCalendarGrid(rows, columns) {
 		Array.from({ length: rows }, () => ({
 			text: '',
 			isEvent: false,
-			isToday: false
+			isToday: false,
+			isOutOfOffice: false,
+			isBusy: false
 		}))
 	);
 }
@@ -166,6 +177,8 @@ export function generateCalendar(startDate, events) {
 				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
 					calendarGrid[i][dayIndex].text = i == startRow ? event.subject : '';
 					calendarGrid[i][dayIndex].isEvent = true;
+					calendarGrid[i][dayIndex].isOutOfOffice = event.isOutOfOffice;
+					calendarGrid[i][dayIndex].status = event.status;
 				}
 			}
 		});

@@ -21,7 +21,9 @@
             <tr>
                 <th class="time-column"></th>
                 {% for date in calendar.dates %}
-                    <th>{{date}}</th>
+                    <th class="start-cell"></th>
+                    <th class="date-cell">{{date}}</th>
+                    <th class="end-cell"></th>
                 {% endfor %}
             </tr>
         </thead>
@@ -31,11 +33,32 @@
                         <td class="time-column">{% if i % 2 == 0 %} {{calendar.times[i/2]}} {% endif %}</td>
                         {% for entry in calendar.grid[i] %}
                             {% if entry.isEvent %}
+                                {% if entry.status == "free" %}
+                                    <td class="status-free"></td>
+                                {% elif entry.status == "oof" %}
+                                    <td class="status-oof"></td>
+                                {% elif entry.status == "busy" %}
+                                    <td class="status-busy"></td>
+                                {% elif entry.status == "tentative" %}
+                                    <td class="status-tentative"></td>
+                                {% else %}
+                                    <td class="status-default"></td>
+                                {% endif %}
                                 <td class="event">{{entry.text}}</td>
+
+                                {% if entry.isToday %}
+                                    <td class="end-cell-today"></td>
+                                {% else %}
+                                    <td class="end-cell"></td>
+                                {% endif %}
                             {% elif entry.isToday %}
+                                <td class="status-today"></td>
                                 <td class="calendar-cell-today"></td>
+                                <td class="end-cell-today"></td>
                             {% else %}
+                                <td class="status"></td>
                                 <td class="calendar-cell"></td>
+                                <td class="end-cell"></td>
                             {% endif %}
                         {% endfor %}
                 </tr>
