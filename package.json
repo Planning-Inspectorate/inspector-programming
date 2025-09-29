@@ -54,7 +54,7 @@
     "redis": "^5.8.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^19.8.1",
     "@microsoft/microsoft-graph-types": "^2.40.0",
     "cookie-parser": "^1.4.7",
