@@ -189,6 +189,11 @@ $font-family: arial, helvetica, sans-serif;
 	width: 2%;
 }
 
+.calendar-table th:not(.time-column),
+.calendar-table td:not(.time-column) {
+	width: 14%;
+}
+
 .calendar-table td.event {
 	background-color: lightblue;
 	border-left-style: none;
