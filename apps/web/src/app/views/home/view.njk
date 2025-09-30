@@ -224,6 +224,7 @@
                             classes: "govuk-input",
                             type: "date",
                             value: appeals.assignmentDate,
+                            attributes: { min: appeals.assignmentDateMin },
                             errorMessage: {text: appeals.assignmentDateError} if appeals.assignmentDateError else null
                         }) }}
                     </div>

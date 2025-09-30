@@ -37,11 +37,16 @@ export function appealsViewModel(cases, req) {
 	const caseListError = readSessionData(req, 'errors', 'caseListError', null, 'persistence');
 	const selectAssignmentDateError = readSessionData(req, 'errors', 'selectAssignmentDateError', false, 'persistence');
 
+	// calculate min date (today) for input element
+	const today = new Date();
+	const assignmentDateMin = today.toISOString().split('T')[0];
+
 	return {
 		cases: cases.map(toCaseViewModel),
 		assignmentDate: readSessionData(req, 'caseListData', 'assignmentDate', null, 'persistence'),
 		caseListError,
-		assignmentDateError: selectAssignmentDateError ? 'Select an event date' : undefined
+		assignmentDateError: selectAssignmentDateError ? selectAssignmentDateError : undefined,
+		assignmentDateMin
 	};
 }
 

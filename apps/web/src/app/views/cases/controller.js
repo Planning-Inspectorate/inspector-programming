@@ -1,6 +1,7 @@
 import { addSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 import { generateCaseCalendarEvents } from '../../calendar/calendar.js';
+import { validateAssignmentDate } from './assignment-date-validation.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -19,10 +20,11 @@ export function buildPostCases(service) {
 				: [parseInt(req.body.selectedCases)];
 		}
 
+		const { error: assignmentDateError } = validateAssignmentDate(req.body.assignmentDate);
 		const errors = {
 			selectInspectorError: req.body.inspectorId ? false : true,
 			caseListError: selectedCases.length == 0 ? 'Select case(s) to assign' : null,
-			selectAssignmentDateError: req.body.assignmentDate ? false : true
+			selectAssignmentDateError: assignmentDateError
 		};
 
 		if (errors.selectInspectorError || errors.caseListError || errors.selectAssignmentDateError) {

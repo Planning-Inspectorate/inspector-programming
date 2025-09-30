@@ -15,9 +15,10 @@ export interface HomeViewModel extends PageViewModel {
 
 export interface AppealsViewModel {
 	cases: CaseViewModel[];
-	assignmentDate?: Date;
+	assignmentDate?: Date | string;
 	caseListError?: string;
 	assignmentDateError?: string;
+	assignmentDateMin?: string;
 }
 
 export interface CalendarViewModel {
