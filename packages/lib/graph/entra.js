@@ -56,9 +56,10 @@ export class EntraClient {
 
 	/**
 	 * @param {string} userId
+	 * @param {boolean} [fetchExtension]
 	 * @returns {Promise<import('./types').CalendarEvents>}
 	 */
-	async getUserCalendarEvents(userId) {
+	async getUserCalendarEvents(userId, fetchExtension = false) {
 		const startDate = new Date();
 		startDate.setHours(0, 0, 0, 0);
 		while (startDate.getDay() !== 1) {
@@ -69,21 +70,29 @@ export class EntraClient {
 		endDate.setHours(23, 59, 59, 999);
 		endDate.setDate(endDate.getDate() + 90);
 
-		return this.#client
-			.api(
-				`/users/${userId}/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}&&top=999`
-			)
+		let request = this.#client
+			.api(`/users/${userId}/calendarView`)
+			.query({
+				startDateTime: startDate.toISOString(),
+				endDateTime: endDate.toISOString()
+			})
+			.top(999)
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
-			.expand([`extensions($filter=id eq '${EXTENSION_ID}')`])
-			.header('Prefer', 'outlook.timezone="Europe/London"')
-			.get();
+			.header('Prefer', 'outlook.timezone="Europe/London"');
+
+		if (fetchExtension) {
+			// we don't fetch extensions by default as it seems to fail when using delegate permissions
+			request = request.expand([`extensions($filter=id eq '${EXTENSION_ID}')`]);
+		}
+
+		return request.get();
 	}
 
 	/**
 	 * Fetch all calendar events for a given Entra userID
 	 *
 	 * @param {string} userId
-	 * @param {{calendarEventsDayRange: number, calendarEventsFromDateOffset: number}} options // configuration of date range to fetch
+	 * @param {{calendarEventsDayRange: number, calendarEventsFromDateOffset: number, fetchExtension?: boolean}} options // configuration of date range to fetch
 	 * @returns {Promise<import('./types').CalendarEvent[]>}
 	 */
 	async listAllUserCalendarEvents(userId, options) {
@@ -93,12 +102,14 @@ export class EntraClient {
 		toDate.setUTCHours(0, 0, 0, 0);
 		fromDate.setUTCHours(23, 59, 59, 999);
 
-		const listEvents = this.#client
+		let listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity'])
-			.expand([`extensions($filter=id eq '${EXTENSION_ID}')`])
 			.top(PER_PAGE);
+		if (options.fetchExtension) {
+			listEvents = listEvents.expand([`extensions($filter=id eq '${EXTENSION_ID}')`]);
+		}
 
 		const events = [];
 		for (let i = 0; i < MAX_PAGES; i++) {
