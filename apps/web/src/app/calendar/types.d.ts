@@ -3,14 +3,17 @@ export interface Event {
 	startDateTime: string;
 	endDateTime: string;
 	status: string;
+	location: string;
+	address: string;
 }
 
 export interface CalendarEntry {
 	text: string;
 	isEvent: boolean;
 	isToday: boolean;
-	isOutOfOffice: boolean;
 	status: string;
+	location: string;
+	address: string;
 }
 
 export interface CalendarEventInput {

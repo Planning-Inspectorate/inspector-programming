@@ -77,7 +77,7 @@ export class EntraClient {
 				endDateTime: endDate.toISOString()
 			})
 			.top(999)
-			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'location'])
 			.header('Prefer', 'outlook.timezone="Europe/London"');
 
 		if (fetchExtension) {
