@@ -53,7 +53,8 @@ export function getCalendarEventsForEntraUsers(service) {
 					userChunk.map(async (user) => {
 						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, {
 							calendarEventsDayRange: calendarEventsDayRange,
-							calendarEventsFromDateOffset: calendarEventsFromDateOffset
+							calendarEventsFromDateOffset: calendarEventsFromDateOffset,
+							fetchExtension: true
 						});
 
 						//format returned events for PowerBI
