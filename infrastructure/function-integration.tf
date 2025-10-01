@@ -30,9 +30,15 @@ module "function_integration" {
 
   # settings
   function_node_version = var.apps_config.functions_node_version
-  key_vault_id          = azurerm_key_vault.main.id
   app_settings = {
     CBOS_API_URL          = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
     SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
   }
+}
+
+## RBAC for secrets
+resource "azurerm_role_assignment" "function_integration_secrets_user" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = module.function_integration.principal_id
 }
