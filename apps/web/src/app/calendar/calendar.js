@@ -67,7 +67,7 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 			endDateTime: endDateTime.toISOString(),
 			status: event.showAs ? event.showAs : '',
 			location: address == '' ? event.location.displayName : '',
-			address: address
+			address: address.trim()
 		};
 	});
 }
