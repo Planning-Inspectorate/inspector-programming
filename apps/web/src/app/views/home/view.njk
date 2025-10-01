@@ -61,6 +61,9 @@
                     type: "submit"
                 }) }}
             </div>
+            {{ compileFilterQueryFields(filters) }}
+            {{ compileSortPaginationQueryFields(filters) }}
+            <input type="hidden" name="page" value="{{ filters.query.page }}">
         </form>
         <div class="app-filter__content">
             <div class="app-filter__options">
