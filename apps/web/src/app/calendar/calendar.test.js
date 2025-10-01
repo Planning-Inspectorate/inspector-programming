@@ -38,6 +38,16 @@ describe('calendar', () => {
 					end: {
 						dateTime: '2025-08-20T16:00:00.000Z',
 						timeZone: 'Europe/London'
+					},
+					location: {
+						displayName: 'display name 1',
+						address: {
+							street: 'street 1',
+							city: 'city 1',
+							state: 'state 1',
+							countyOrRegion: 'country 1',
+							postalCode: 'post code 1'
+						}
 					}
 				},
 				{
@@ -49,6 +59,16 @@ describe('calendar', () => {
 					end: {
 						dateTime: '2025-08-20T15:50:00.000Z',
 						timeZone: 'Europe/London'
+					},
+					location: {
+						displayName: 'display name 2',
+						address: {
+							street: undefined,
+							city: undefined,
+							state: undefined,
+							countyOrRegion: undefined,
+							postalCode: undefined
+						}
 					}
 				},
 				{
@@ -60,6 +80,9 @@ describe('calendar', () => {
 					end: {
 						dateTime: '2025-08-20T16:30:00.000Z',
 						timeZone: 'Europe/London'
+					},
+					location: {
+						displayName: ''
 					}
 				}
 			]
@@ -69,21 +92,178 @@ describe('calendar', () => {
 			{
 				subject: 'Test 1',
 				startDateTime: '2025-08-20T15:00:00.000Z',
-				endDateTime: '2025-08-20T16:00:00.000Z'
+				endDateTime: '2025-08-20T16:00:00.000Z',
+				status: '',
+				location: '',
+				address: 'street 1 city 1 state 1 country 1 post code 1'
 			},
 			{
 				subject: 'Test 2',
 				startDateTime: '2025-08-20T15:00:00.000Z',
-				endDateTime: '2025-08-20T16:00:00.000Z'
+				endDateTime: '2025-08-20T16:00:00.000Z',
+				status: '',
+				location: 'display name 2',
+				address: ''
 			},
 			{
 				subject: 'Test 3',
 				startDateTime: '2025-08-20T15:30:00.000Z',
-				endDateTime: '2025-08-20T16:30:00.000Z'
+				endDateTime: '2025-08-20T16:30:00.000Z',
+				status: '',
+				location: '',
+				address: ''
 			}
 		];
 		const selectedInspector = 'inspector';
 
+		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
+		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
+		assert.deepStrictEqual(events, expectedEvents);
+	});
+
+	it('should confine all day event to work hours', async () => {
+		const startDate = new Date(2025, 7, 4, 7, 0, 0, 0).toUTCString();
+		const endDate = new Date(2025, 7, 4, 23, 0, 0, 0).toUTCString();
+		const expectedStartDate = new Date(2025, 7, 4, 8, 0, 0, 0).toISOString();
+		const expectedEndDate = new Date(2025, 7, 4, 18, 0, 0, 0).toISOString();
+
+		const entraEvents = {
+			value: [
+				{
+					subject: 'Test 1',
+					start: {
+						dateTime: startDate,
+						timeZone: 'Europe/London'
+					},
+					end: {
+						dateTime: endDate,
+						timeZone: 'Europe/London'
+					},
+					location: {
+						displayName: 'display name 1',
+						address: {
+							street: 'street 1',
+							city: 'city 1',
+							state: 'state 1',
+							countyOrRegion: 'country 1',
+							postalCode: 'post code 1'
+						}
+					},
+					isAllDay: true
+				}
+			]
+		};
+
+		const expectedEvents = [
+			{
+				subject: 'Test 1',
+				startDateTime: expectedStartDate,
+				endDateTime: expectedEndDate,
+				status: '',
+				location: '',
+				address: 'street 1 city 1 state 1 country 1 post code 1'
+			}
+		];
+
+		const selectedInspector = 'inspector';
+		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
+		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
+		assert.deepStrictEqual(events, expectedEvents);
+	});
+
+	it('should confine events that start before the work day to work hours', async () => {
+		const startDate = new Date(2025, 7, 4, 7, 0, 0, 0).toUTCString();
+		const endDate = new Date(2025, 7, 4, 9, 0, 0, 0).toUTCString();
+		const expectedStartDate = new Date(2025, 7, 4, 8, 0, 0, 0).toISOString();
+		const expectedEndDate = new Date(2025, 7, 4, 9, 0, 0, 0).toISOString();
+
+		const entraEvents = {
+			value: [
+				{
+					subject: 'Test 1',
+					start: {
+						dateTime: startDate,
+						timeZone: 'Europe/London'
+					},
+					end: {
+						dateTime: endDate,
+						timeZone: 'Europe/London'
+					},
+					location: {
+						displayName: 'display name 1',
+						address: {
+							street: 'street 1',
+							city: 'city 1',
+							state: 'state 1',
+							countyOrRegion: 'country 1',
+							postalCode: 'post code 1'
+						}
+					}
+				}
+			]
+		};
+
+		const expectedEvents = [
+			{
+				subject: 'Test 1',
+				startDateTime: expectedStartDate,
+				endDateTime: expectedEndDate,
+				status: '',
+				location: '',
+				address: 'street 1 city 1 state 1 country 1 post code 1'
+			}
+		];
+
+		const selectedInspector = 'inspector';
+		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
+		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
+		assert.deepStrictEqual(events, expectedEvents);
+	});
+
+	it('should confine events that end after the work day to work hours', async () => {
+		const startDate = new Date(2025, 7, 4, 15, 0, 0, 0).toUTCString();
+		const endDate = new Date(2025, 7, 4, 23, 0, 0, 0).toUTCString();
+		const expectedStartDate = new Date(2025, 7, 4, 15, 0, 0, 0).toISOString();
+		const expectedEndDate = new Date(2025, 7, 4, 18, 0, 0, 0).toISOString();
+
+		const entraEvents = {
+			value: [
+				{
+					subject: 'Test 1',
+					start: {
+						dateTime: startDate,
+						timeZone: 'Europe/London'
+					},
+					end: {
+						dateTime: endDate,
+						timeZone: 'Europe/London'
+					},
+					location: {
+						displayName: 'display name 1',
+						address: {
+							street: 'street 1',
+							city: 'city 1',
+							state: 'state 1',
+							countyOrRegion: 'country 1',
+							postalCode: 'post code 1'
+						}
+					}
+				}
+			]
+		};
+
+		const expectedEvents = [
+			{
+				subject: 'Test 1',
+				startDateTime: expectedStartDate,
+				endDateTime: expectedEndDate,
+				status: '',
+				location: '',
+				address: 'street 1 city 1 state 1 country 1 post code 1'
+			}
+		];
+
+		const selectedInspector = 'inspector';
 		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
 		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
 		assert.deepStrictEqual(events, expectedEvents);
@@ -134,14 +314,14 @@ describe('calendar', () => {
 	it('should generate calendar grid', () => {
 		const expectedCalendarGrid = [
 			[
-				{ text: '', isEvent: false, isToday: false },
-				{ text: '', isEvent: false, isToday: false },
-				{ text: '', isEvent: false, isToday: false }
+				{ text: '', isEvent: false, isToday: false, status: '', location: '', address: '' },
+				{ text: '', isEvent: false, isToday: false, status: '', location: '', address: '' },
+				{ text: '', isEvent: false, isToday: false, status: '', location: '', address: '' }
 			],
 			[
-				{ text: '', isEvent: false, isToday: false },
-				{ text: '', isEvent: false, isToday: false },
-				{ text: '', isEvent: false, isToday: false }
+				{ text: '', isEvent: false, isToday: false, status: '', location: '', address: '' },
+				{ text: '', isEvent: false, isToday: false, status: '', location: '', address: '' },
+				{ text: '', isEvent: false, isToday: false, status: '', location: '', address: '' }
 			]
 		];
 		const calendarGrid = generateCalendarGrid(3, 2);
@@ -162,7 +342,14 @@ describe('calendar', () => {
 
 		const calendar = generateCalendar(startDate, null);
 		for (let i = 0; i < 20; i++) {
-			assert.deepStrictEqual(calendar[i][dayIndex], { text: '', isEvent: false, isToday: true });
+			assert.deepStrictEqual(calendar[i][dayIndex], {
+				text: '',
+				isEvent: false,
+				isToday: true,
+				status: '',
+				location: '',
+				address: ''
+			});
 		}
 	});
 
@@ -171,22 +358,29 @@ describe('calendar', () => {
 			{
 				subject: 'Test 1',
 				startDateTime: '2025-08-04T09:00:00.000Z',
-				endDateTime: '2025-08-04T09:30:00.000Z'
+				endDateTime: '2025-08-04T09:30:00.000Z',
+				status: 'free',
+				location: 'location 1'
 			},
 			{
 				subject: 'Test 2',
 				startDateTime: '2025-08-05T10:30:00.000Z',
-				endDateTime: '2025-08-05T11:00:00.000Z'
+				endDateTime: '2025-08-05T11:00:00.000Z',
+				status: 'oof'
 			},
 			{
 				subject: 'Test 3',
 				startDateTime: '2025-08-06T12:00:00.000Z',
-				endDateTime: '2025-08-06T13:00:00.000Z'
+				endDateTime: '2025-08-06T13:00:00.000Z',
+				status: 'busy',
+				address: 'address 3'
 			},
 			{
 				subject: 'Test 4',
 				startDateTime: '2025-08-07T13:30:00.000Z',
-				endDateTime: '2025-08-07T14:30:00.000Z'
+				endDateTime: '2025-08-07T14:30:00.000Z',
+				status: 'tentative',
+				location: 'location 4'
 			},
 			{
 				subject: 'Test 5',
@@ -199,47 +393,54 @@ describe('calendar', () => {
 			{
 				row: 2,
 				day: 0,
-				event: { text: 'Test 1', isEvent: true, isToday: false }
+				event: { text: 'Test 1', isEvent: true, isToday: false, status: 'free', location: 'location 1', address: '' }
 			},
 			{
 				row: 5,
 				day: 1,
-				event: { text: 'Test 2', isEvent: true, isToday: false }
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
 			},
 			{
 				row: 8,
 				day: 2,
-				event: { text: 'Test 3', isEvent: true, isToday: false }
+				event: { text: 'Test 3', isEvent: true, isToday: false, status: 'busy', location: undefined, address: '' }
 			},
 			{
 				row: 9,
 				day: 2,
-				event: { text: '', isEvent: true, isToday: false }
+				event: { text: '', isEvent: true, isToday: false, status: 'busy', location: '', address: 'address 3' }
 			},
 			{
 				row: 11,
 				day: 3,
-				event: { text: 'Test 4', isEvent: true, isToday: false }
+				event: {
+					text: 'Test 4',
+					isEvent: true,
+					isToday: false,
+					status: 'tentative',
+					location: 'location 4',
+					address: ''
+				}
 			},
 			{
 				row: 12,
 				day: 3,
-				event: { text: '', isEvent: true, isToday: false }
+				event: { text: '', isEvent: true, isToday: false, status: 'tentative', location: '', address: undefined }
 			},
 			{
 				row: 14,
 				day: 4,
-				event: { text: 'Test 5', isEvent: true, isToday: false }
+				event: { text: 'Test 5', isEvent: true, isToday: false, status: undefined, location: undefined, address: '' }
 			},
 			{
 				row: 15,
 				day: 4,
-				event: { text: '', isEvent: true, isToday: false }
+				event: { text: '', isEvent: true, isToday: false, status: undefined, location: '', address: undefined }
 			},
 			{
 				row: 16,
 				day: 4,
-				event: { text: '', isEvent: true, isToday: false }
+				event: { text: '', isEvent: true, isToday: false, status: undefined, location: '', address: '' }
 			}
 		];
 
