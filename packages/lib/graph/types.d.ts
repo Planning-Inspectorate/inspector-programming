@@ -27,6 +27,7 @@ export interface CalendarEvent {
 	showAs?: string;
 	sensitivity: string;
 	extensions?: CalendarEventExtension[];
+	location: Location;
 }
 
 interface CalendarEventExtension {
@@ -34,6 +35,19 @@ interface CalendarEventExtension {
 	id: string;
 	caseReference?: string;
 	eventType?: string;
+}
+
+interface Location {
+	address: Address;
+	displayName: string;
+}
+
+interface Address {
+	city: string;
+	countyOrRegion: string;
+	postalCode: string;
+	state: string;
+	street: string;
 }
 
 interface AuthSession {

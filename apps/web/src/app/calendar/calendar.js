@@ -36,24 +36,38 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 		const startDateTime = new Date(event.start.dateTime);
 		const endDateTime = new Date(event.end.dateTime);
 
-		if (event.isAllDay) {
-			// Set time to work hours
+		if (startDateTime.getHours() < 8) {
 			startDateTime.setHours(8, 0);
-			endDateTime.setHours(18, 0);
 		} else {
 			const roundedStartMinutes = Math.floor(startDateTime.getMinutes() / 30) * 30;
 			startDateTime.setMinutes(roundedStartMinutes);
+		}
 
+		if (endDateTime.getHours() >= 18 || event.isAllDay) {
+			endDateTime.setHours(18, 0);
+		} else {
 			const roundedEndMinutes = Math.ceil(endDateTime.getMinutes() / 30) * 30;
 			endDateTime.setMinutes(roundedEndMinutes);
+		}
+
+		const minuteDifference = (endDateTime.getTime() - startDateTime.getTime()) / 1000 / 60;
+
+		let address = '';
+		if (event.location.address && minuteDifference > 30) {
+			if (event.location.address.street) address = address.concat(`${event.location.address.street} `);
+			if (event.location.address.city) address = address.concat(`${event.location.address.city} `);
+			if (event.location.address.state) address = address.concat(`${event.location.address.state} `);
+			if (event.location.address.countyOrRegion) address = address.concat(`${event.location.address.countyOrRegion} `);
+			if (event.location.address.postalCode) address = address.concat(`${event.location.address.postalCode}`);
 		}
 
 		return {
 			subject: event.subject,
 			startDateTime: startDateTime.toISOString(),
 			endDateTime: endDateTime.toISOString(),
-			isOutOfOffice: event.showAs == 'oof',
-			status: event.showAs ? event.showAs : ''
+			status: event.showAs ? event.showAs : '',
+			location: address == '' ? event.location.displayName : '',
+			address: address
 		};
 	});
 }
@@ -131,8 +145,9 @@ export function generateCalendarGrid(rows, columns) {
 			text: '',
 			isEvent: false,
 			isToday: false,
-			isOutOfOffice: false,
-			isBusy: false
+			status: '',
+			location: '',
+			address: ''
 		}))
 	);
 }
@@ -176,8 +191,9 @@ export function generateCalendar(startDate, events) {
 				const validStartRow = Math.max(0, startRow);
 				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
 					calendarGrid[i][dayIndex].text = i == startRow ? event.subject : '';
+					calendarGrid[i][dayIndex].location = i == startRow ? event.location : '';
+					calendarGrid[i][dayIndex].address = i == startRow + 1 ? event.address : '';
 					calendarGrid[i][dayIndex].isEvent = true;
-					calendarGrid[i][dayIndex].isOutOfOffice = event.isOutOfOffice;
 					calendarGrid[i][dayIndex].status = event.status;
 				}
 			}

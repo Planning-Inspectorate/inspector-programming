@@ -44,7 +44,15 @@
                                 {% else %}
                                     <td class="status-default"></td>
                                 {% endif %}
-                                <td class="event">{{entry.text}}</td>
+
+                                
+                                <td class="event">
+                                    {% if entry.text %}
+                                        <b>{{entry.text}}</b> {{entry.location}}
+                                    {% else %}
+                                        {{entry.address}}
+                                    {% endif %}
+                                </td>
 
                                 {% if entry.isToday %}
                                     <td class="end-cell-today"></td>
