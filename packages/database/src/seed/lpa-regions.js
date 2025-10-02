@@ -383,5 +383,13 @@ export const LPAS = Object.freeze([
 	{ lpaCode: 'H1840', LpaRegion: { connect: { id: LPA_REGION_IDS.WEST_3 } } },
 	{ lpaCode: 'U2370', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_1 } } },
 	{ lpaCode: 'R1845', LpaRegion: { connect: { id: LPA_REGION_IDS.WEST_4 } } },
-	{ lpaCode: 'C9499', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_2 } } }
+	{ lpaCode: 'C9499', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_2 } } },
+	// Test Regions from cbos test data
+	{ lpaCode: 'Q9999', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_1 } } },
+	{ lpaCode: 'BASI', LpaRegion: { connect: { id: LPA_REGION_IDS.EAST_1 } } },
+	{ lpaCode: 'WAVE', LpaRegion: { connect: { id: LPA_REGION_IDS.WEST_1 } } },
+	{ lpaCode: 'BRIS', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_2 } } },
+	{ lpaCode: 'DORS', LpaRegion: { connect: { id: LPA_REGION_IDS.EAST_2 } } },
+	{ lpaCode: 'WILT', LpaRegion: { connect: { id: LPA_REGION_IDS.WEST_2 } } },
+	{ lpaCode: 'MAID', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_3 } } }
 ]);
