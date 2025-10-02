@@ -30,8 +30,8 @@ describe('cbos-cases-impl', () => {
 		});
 		const appealsData = {
 			cases: [
-				{ caseReference: '1', caseId: 1 },
-				{ caseReference: '2', caseId: 2 }
+				{ caseReference: '1', caseId: 1, lpaCode: 'lpaCode1', childCaseReferences: [{ caseReference: '2' }] },
+				{ caseReference: '2', caseId: 2, lpaCode: 'lpaCode2', leadCaseReference: '1', childCaseReferences: [] }
 			],
 			caseReferences: ['1', '2']
 		};
@@ -43,13 +43,35 @@ describe('cbos-cases-impl', () => {
 		assert.strictEqual(service.dbClient.appealCase.upsert.mock.callCount(), 2);
 		assert.deepStrictEqual(service.dbClient.appealCase.upsert.mock.calls[0].arguments[0], {
 			where: { caseReference: '1' },
-			update: { caseId: 1 },
-			create: { caseReference: '1', caseId: 1 }
+			update: {
+				caseId: 1,
+				Lpa: { connect: { lpaCode: 'lpaCode1' } },
+				LeadCase: undefined,
+				ChildCases: { connect: [{ caseReference: '2' }] }
+			},
+			create: {
+				caseReference: '1',
+				caseId: 1,
+				Lpa: { connect: { lpaCode: 'lpaCode1' } },
+				LeadCase: undefined,
+				ChildCases: { connect: [{ caseReference: '2' }] }
+			}
 		});
 		assert.deepStrictEqual(service.dbClient.appealCase.upsert.mock.calls[1].arguments[0], {
 			where: { caseReference: '2' },
-			update: { caseId: 2 },
-			create: { caseReference: '2', caseId: 2 }
+			update: {
+				caseId: 2,
+				Lpa: { connect: { lpaCode: 'lpaCode2' } },
+				LeadCase: { connect: { caseReference: '1' } },
+				ChildCases: undefined
+			},
+			create: {
+				caseReference: '2',
+				caseId: 2,
+				Lpa: { connect: { lpaCode: 'lpaCode2' } },
+				LeadCase: { connect: { caseReference: '1' } },
+				ChildCases: undefined
+			}
 		});
 		assert.strictEqual(service.dbClient.appealCase.deleteMany.mock.callCount(), 1);
 		assert.deepStrictEqual(service.dbClient.appealCase.deleteMany.mock.calls[0].arguments[0], {

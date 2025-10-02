@@ -18,7 +18,8 @@ export function buildCbosFetchCases(service) {
 					const leadCase = appeal.leadCaseReference
 						? { connect: { caseReference: appeal.leadCaseReference } }
 						: undefined;
-					const childCases = appeal.childCaseReferences ? { connect: appeal.childCaseReferences } : undefined;
+					const childCases =
+						appeal.childCaseReferences.length > 0 ? { connect: appeal.childCaseReferences } : undefined;
 					return service.dbClient.appealCase.upsert({
 						where: { caseReference: appeal.caseReference },
 						update: {
