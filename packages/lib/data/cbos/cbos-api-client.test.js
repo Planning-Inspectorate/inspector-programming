@@ -167,8 +167,11 @@ test('appealToAppealCaseModel should maps parent appeal values correctly', async
 			finalCommentsDueDate: finalCommentsDueDate
 		},
 		isParentAppeal: true,
-		isChildAppeal: false
+		isChildAppeal: false,
+		linkedAppeals: [{ appealReference: 'linked reference 1' }]
 	};
+
+	const lpaData = [{ id: 'lpaId', name: 'planning department', lpaCode: 'lpaCode', email: 'lpa@email.com' }];
 
 	const appealCoordinates = {
 		results: [{ DPA: { LAT: 1.23, LNG: 4.56 } }]
@@ -193,17 +196,17 @@ test('appealToAppealCaseModel should maps parent appeal values correctly', async
 		siteAddressPostcode: 'postcode',
 		siteAddressLatitude: 1.23,
 		siteAddressLongitude: 4.56,
-		lpaCode: '',
+		lpaCode: 'lpaCode',
 		lpaName: 'planning department',
-		lpaRegion: 'region',
 		caseCreatedDate: createdAtDate,
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Parent',
-		leadCaseReference: undefined
+		leadCaseReference: undefined,
+		childCaseReferences: [{ caseReference: 'linked reference 1' }]
 	};
 
-	const mappedCase = await client.appealToAppealCaseModel(c);
+	const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
 	assert.deepStrictEqual(mappedCase, expectedCase);
 });
 
@@ -277,15 +280,17 @@ test('appealToAppealCaseModel should map child appeal values correctly', async (
 			postCode: 'postcode'
 		},
 		localPlanningDepartment: 'planning department',
-		lpaRegion: 'region',
 		createdAt: createdAtDate,
 		validAt: validAtDate,
 		appealTimetable: {
 			finalCommentsDueDate: finalCommentsDueDate
 		},
 		isParentAppeal: false,
-		isChildAppeal: true
+		isChildAppeal: true,
+		linkedAppeals: [{ appealReference: 'linked reference 1' }]
 	};
+
+	const lpaData = [{ id: 'lpaId', name: 'planning department', lpaCode: 'lpaCode', email: 'lpa@email.com' }];
 
 	const appealCoordinates = {
 		results: [{ DPA: { LAT: 1.23, LNG: 4.56 } }]
@@ -310,17 +315,17 @@ test('appealToAppealCaseModel should map child appeal values correctly', async (
 		siteAddressPostcode: 'postcode',
 		siteAddressLatitude: 1.23,
 		siteAddressLongitude: 4.56,
-		lpaCode: '',
+		lpaCode: 'lpaCode',
 		lpaName: 'planning department',
-		lpaRegion: 'region',
 		caseCreatedDate: createdAtDate,
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Child',
-		leadCaseReference: undefined
+		leadCaseReference: 'linked reference 1',
+		childCaseReferences: []
 	};
 
-	const mappedCase = await client.appealToAppealCaseModel(c);
+	const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
 	assert.deepStrictEqual(mappedCase, expectedCase);
 });
 
@@ -352,8 +357,11 @@ test('appealToAppealCaseModel should handle OS API error', async () => {
 			finalCommentsDueDate: finalCommentsDueDate
 		},
 		isParentAppeal: false,
-		isChildAppeal: true
+		isChildAppeal: true,
+		linkedAppeals: [{ appealReference: 'linked reference 1' }]
 	};
+
+	const lpaData = [{ id: 'lpaId', name: 'planning department', lpaCode: 'lpaCode', email: 'lpa@email.com' }];
 
 	mockOsApiClient.addressesForPostcode.mock.mockImplementationOnce(() => {
 		return Error();
@@ -376,17 +384,17 @@ test('appealToAppealCaseModel should handle OS API error', async () => {
 		siteAddressPostcode: 'postcode',
 		siteAddressLatitude: undefined,
 		siteAddressLongitude: undefined,
-		lpaCode: '',
+		lpaCode: 'lpaCode',
 		lpaName: 'planning department',
-		lpaRegion: 'region',
 		caseCreatedDate: createdAtDate,
 		caseValidDate: validAtDate,
 		finalCommentsDueDate: finalCommentsDueDate,
 		linkedCaseStatus: 'Child',
-		leadCaseReference: undefined
+		leadCaseReference: 'linked reference 1',
+		childCaseReferences: []
 	};
 
-	const mappedCase = await client.appealToAppealCaseModel(c);
+	const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
 	assert.deepStrictEqual(mappedCase, expectedCase);
 });
 
@@ -470,6 +478,10 @@ test('getUnassignedCases should return cases with valid appeal statuses', async 
 				appealStatus: APPEAL_CASE_STATUS.WITNESSES,
 				appealType: 'appealType'
 			})
+		},
+		{
+			ok: true,
+			json: async () => [{ id: 'lpaId', lpaName: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]
 		}
 	];
 	let call = 0;
@@ -509,6 +521,10 @@ test('getUnassignedCases should not return cases with invalid appeal statuses', 
 				itemCount: 7,
 				pageCount: 1
 			})
+		},
+		{
+			ok: true,
+			json: async () => [{ id: 'lpaId', lpaName: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]
 		}
 	];
 	let call = 0;
@@ -553,4 +569,38 @@ test('patchAppeal handles error when sending request', async () => {
 	assert.strictEqual(errorCalls[0].length, 2);
 	assert.strictEqual(errorCalls[0][0], `Failed to update appealID ${appealId} at ${url}:`);
 	assert.strictEqual(errorCalls[0][1], 'Mock Error');
+});
+
+test('fetchLpaData should return lpa data from cbos', async () => {
+	global.fetch = async () => ({
+		ok: true,
+		json: async () => [{ id: 'lpaId', name: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]
+	});
+	const lpaData = await client.fetchLpaData();
+	assert.deepStrictEqual(lpaData, [{ id: 'lpaId', name: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]);
+});
+
+test('fetchLpaData handles non 200 return', async () => {
+	global.fetch = async () => ({
+		ok: false,
+		status: 500
+	});
+	const url = `${cbosConfig.apiUrl}/appeals/local-planning-authorities`;
+	await assert.rejects(() => client.fetchLpaData());
+	assert.strictEqual(errorCalls[0].length, 1);
+	assert.strictEqual(
+		errorCalls[0][0],
+		`Error fetching local planning authorities from http://mock-api/appeals/local-planning-authorities: Failed to fetch local planning authorities from ${url}. Status: 500`
+	);
+});
+
+test('fetchLpaData handles error when sending request', async () => {
+	global.fetch = async () => {
+		throw new Error('Mock Error');
+	};
+
+	const url = `${cbosConfig.apiUrl}/appeals/local-planning-authorities`;
+	await assert.rejects(() => client.fetchLpaData());
+	assert.strictEqual(errorCalls[0].length, 1);
+	assert.strictEqual(errorCalls[0][0], `Error fetching local planning authorities from ${url}: Mock Error`);
 });

@@ -44,7 +44,7 @@ export class CbosApiClient {
 		try {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
 			const appealDetails = await this.fetchAppealDetails(appealIds);
-			const lpaData = await this.fetchLpaRegions();
+			const lpaData = await this.fetchLpaData();
 			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c, lpaData)));
 			const filteredCaseReferences = [];
 			for (const appeal of mappedAppeals) {
@@ -282,7 +282,7 @@ export class CbosApiClient {
 	 * Fetches latest lpa regions from cbos and updates database
 	 * @returns {Promise<import('../types').CbosLpaResponse[]>}
 	 */
-	async fetchLpaRegions() {
+	async fetchLpaData() {
 		const url = `${this.config.apiUrl}/appeals/local-planning-authorities`;
 
 		try {
