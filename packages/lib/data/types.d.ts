@@ -328,6 +328,13 @@ export interface CbosSingleAppealResponse {
 	completedStateList?: string[];
 }
 
+export interface CbosLpaResponse {
+	id: number;
+	name: string;
+	lpaCode: string;
+	email: string;
+}
+
 export interface AppealCaseModel {
 	caseId: string | number;
 	caseReference: string;
@@ -346,12 +353,14 @@ export interface AppealCaseModel {
 	siteAddressLongitude: Decimal | number | undefined;
 	lpaCode: string;
 	lpaName: string;
-	lpaRegion: string;
 	caseCreatedDate: string;
 	caseValidDate: string;
 	finalCommentsDueDate: Date | null;
 	linkedCaseStatus: string;
 	leadCaseReference: string | undefined;
+	childCaseReferences: {
+		caseReference: string;
+	}[];
 }
 
 export interface CbosAppealTypes {

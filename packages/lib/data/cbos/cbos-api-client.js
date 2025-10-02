@@ -37,14 +37,15 @@ export class CbosApiClient {
 
 	/**
 	 * Fetches and filters all unassigned cases
-	 * @returns {Promise<{ cases: Object[], caseReferences: string[] }>} An object containing the array of case view models.
+	 * @returns {Promise<{ cases: import('../types').AppealCaseModel[], caseReferences: string[] }>} An object containing the array of case view models.
 	 * @throws {Error} If fetching cases fails.
 	 */
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
 			const appealDetails = await this.fetchAppealDetails(appealIds);
-			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c)));
+			const lpaData = await this.fetchLpaRegions();
+			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c, lpaData)));
 			const filteredCaseReferences = [];
 			for (const appeal of mappedAppeals) {
 				filteredCaseReferences.push(appeal.caseReference);
@@ -60,18 +61,26 @@ export class CbosApiClient {
 	/**
 	 * Maps an appeal to appeal case for db
 	 * @param {import('../types').CbosSingleAppealResponse} c - The appeal case object.
+	 * @param {import('../types').CbosLpaResponse[]} lpaData
 	 * @returns {Promise<import('../types').AppealCaseModel>} The mapped view model object.
 	 */
-	async appealToAppealCaseModel(c) {
+	async appealToAppealCaseModel(c, lpaData) {
 		let linkedCaseStatus = '',
+			childCaseReferences = [],
 			leadCaseReference;
 
-		if (c.isParentAppeal) {
+		if (c.isParentAppeal && c.linkedAppeals) {
 			linkedCaseStatus = 'Parent';
-		} else if (c.isChildAppeal) {
+			for (let appeal of c.linkedAppeals) {
+				if (appeal.appealReference) childCaseReferences.push({ caseReference: appeal.appealReference });
+			}
+		} else if (c.isChildAppeal && c.linkedAppeals) {
 			linkedCaseStatus = 'Child';
-			// TODO - process c.linkedAppeals here
+			leadCaseReference = c.linkedAppeals[0].appealReference;
 		}
+
+		const lpa = lpaData.find((lpa) => lpa.name == c.localPlanningDepartment);
+		const lpaCode = lpa ? lpa.lpaCode : '';
 
 		const appealCoordinates = await this.getAppealCoordinates(c);
 
@@ -91,16 +100,16 @@ export class CbosApiClient {
 			siteAddressPostcode: c.appealSite?.postCode || '',
 			siteAddressLatitude: appealCoordinates?.latitude,
 			siteAddressLongitude: appealCoordinates?.longitude,
-			lpaCode: '', // TODO - fetch from /appeals/local-planning-authorities
+			lpaCode,
 			lpaName: c.localPlanningDepartment || '',
-			lpaRegion: c.lpaRegion || '',
 			caseCreatedDate: c.createdAt || '',
 			caseValidDate: c.validAt || '',
 			finalCommentsDueDate: c.appealTimetable?.finalCommentsDueDate
 				? new Date(c.appealTimetable.finalCommentsDueDate)
 				: null,
 			linkedCaseStatus,
-			leadCaseReference
+			leadCaseReference,
+			childCaseReferences
 			// appellantCostsAppliedFor
 			// lpaCostsAppliedFor
 			// inspectorId
@@ -264,6 +273,29 @@ export class CbosApiClient {
 		} catch (error) {
 			this.logger.error(
 				`Error fetching appeal types from ${url}: ${error instanceof Error ? error.message : String(error)}`
+			);
+			throw error;
+		}
+	}
+
+	/**
+	 * Fetches latest lpa regions from cbos and updates database
+	 * @returns {Promise<import('../types').CbosLpaResponse[]>}
+	 */
+	async fetchLpaRegions() {
+		const url = `${this.config.apiUrl}/appeals/local-planning-authorities`;
+
+		try {
+			const response = await this.fetchWithTimeout(url);
+
+			if (!response.ok) {
+				throw new Error(`Failed to fetch local planning authorities from ${url}. Status: ${response.status}`);
+			}
+
+			return response.json();
+		} catch (error) {
+			this.logger.error(
+				`Error fetching local planning authorities from ${url}: ${error instanceof Error ? error.message : String(error)}`
 			);
 			throw error;
 		}

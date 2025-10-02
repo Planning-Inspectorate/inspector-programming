@@ -14,13 +14,27 @@ export function buildCbosFetchCases(service) {
 
 			// Updates/creates cases within the inspector programming database
 			await service.dbClient.$transaction(
-				appealsData.cases.map((appeal) =>
-					service.dbClient.appealCase.upsert({
+				appealsData.cases.map((appeal) => {
+					const leadCase = appeal.leadCaseReference
+						? { connect: { caseReference: appeal.leadCaseReference } }
+						: undefined;
+					const childCases = appeal.childCaseReferences ? { connect: appeal.childCaseReferences } : undefined;
+					return service.dbClient.appealCase.upsert({
 						where: { caseReference: appeal.caseReference },
-						update: { ...omit(appeal, ['caseReference']) },
-						create: { ...appeal }
-					})
-				)
+						update: {
+							...omit(appeal, ['caseReference', 'leadCaseReference', 'lpaCode', 'childCaseReferences']),
+							Lpa: { connect: { lpaCode: appeal.lpaCode } },
+							LeadCase: leadCase,
+							ChildCases: childCases
+						},
+						create: {
+							...omit(appeal, ['leadCaseReference', 'lpaCode', 'childCaseReferences']),
+							Lpa: { connect: { lpaCode: appeal.lpaCode } },
+							LeadCase: leadCase,
+							ChildCases: childCases
+						}
+					});
+				})
 			);
 
 			// Delete any cases that are no longer in cbos
