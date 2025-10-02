@@ -49,7 +49,7 @@ export class CachedCasesClient {
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number, page: number }>}
 	 */
 	async getCases(filters, sort, page, pageSize) {
-		const allCases = await this.getAllCases();
+		const allCases = await this.getAllParentCases();
 
 		//filter
 		const filteredCases = filterCases(allCases, filters);
@@ -138,6 +138,11 @@ export class CachedCasesClient {
 	async getCasesByIds(caseIds) {
 		const cases = await this.getAllCases();
 		return cases.filter((item) => item.caseId && caseIds.includes(item.caseId));
+	}
+
+	async getAllParentCases() {
+		const cases = await this.getAllCases();
+		return cases.filter((item) => item.linkedCaseStatus != 'Child');
 	}
 
 	/**
