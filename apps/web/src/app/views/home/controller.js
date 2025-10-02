@@ -1,5 +1,5 @@
 import { getInspectorList } from '../../inspector/inspector.js';
-import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
+import { specialisms } from '../../specialism/specialism.js';
 import {
 	getNextWeekStartDate,
 	getPreviousWeekStartDate,
@@ -83,8 +83,6 @@ export function buildViewHome(service) {
 			title: 'Unassigned case list',
 			errorSummary: [...filterErrorList, ...sortingErrorList],
 			filters: {
-				allocationLevels,
-				caseTypes,
 				specialisms,
 				pagination: paginationDetails,
 				query: filterQuery,

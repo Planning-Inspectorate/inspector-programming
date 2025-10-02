@@ -47,10 +47,9 @@ export interface Filters {
 
 export interface FilterQuery {
 	case?: FilterCaseQuery;
-
 	limit?: number;
 	page?: number;
-	sort?: string | 'age' | 'distance' | 'hybrid';
+	sort?: string | 'age' | 'distance';
 	inspectorId?: string;
 }
 

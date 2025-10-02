@@ -43,7 +43,7 @@ export class CachedCasesClient {
 	 * Ideal entry point for fetching cases from the frontend
 	 *
 	 * @param {import('../types.js').Filters} filters
-	 * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+	 * @param {string} sort - The sort criteria, can be 'distance' or 'age'.
 	 * @param {number} page
 	 * @param {number} pageSize
 	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number, page: number }>}
@@ -59,10 +59,6 @@ export class CachedCasesClient {
 		switch (sort) {
 			case 'distance':
 				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(filters.inspectorCoordinates, a, b));
-				break;
-			case 'hybrid':
-				//WIP
-				sortedCases = filteredCases;
 				break;
 			default:
 				sortedCases = filteredCases.sort(sortCasesByAge);

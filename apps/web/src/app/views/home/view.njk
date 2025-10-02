@@ -125,28 +125,6 @@
                         open: true
                     }) }}
                     {{ govukDetails({
-                        summaryText: "Procedure",
-                        html: govukCheckboxes({
-                            idPrefix: "filters[caseProcedure]",
-                            name: "filters[caseProcedure]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more procedures",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: [
-                                { value: 'Written reps', text: 'Written representations' },
-                                { value: 'Hearing', text: 'Hearing' },
-                                { value: 'Inquiry', text: 'Inquiry' }
-                            ],
-                            values: filters.query.case.caseProcedure
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ govukDetails({
                         summaryText: "LPA region",
                         html: govukCheckboxes({
                             idPrefix: "filters[lpaRegion]",
@@ -164,24 +142,6 @@
                                 { value: 'West', text: 'West' }
                             ],
                             values: filters.query.case.lpaRegion
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ govukDetails({
-                        summaryText: "Case type",
-                        html: govukCheckboxes({
-                            idPrefix: "filters[caseType]",
-                            name: "filters[caseType]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more case types",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: filters.caseTypes,
-                            values: filters.query.case.caseType
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
@@ -207,25 +167,6 @@
                         classes: "custom-filter-dropdown",
                         open: true
                     }) }}     
-
-                    {{ govukDetails({
-                        summaryText: "Allocation list",
-                        html: govukCheckboxes({
-                            idPrefix: "filters[allocationLevel]",
-                            name: "filters[allocationLevel]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more allocation levels",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: filters.allocationLevels,
-                            values: filters.query.case.allocationLevel
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
                     {{ compileSortPaginationQueryFields(filters) }}
                     <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
                     <input type="hidden" name="page" value="{{ filters.query.page }}">
@@ -242,8 +183,7 @@
                     <span class="govuk-body" style="margin-right: 10px;">Sort by:</span>
                     {% set sorts = [
                         { label: "Age", value: "age" },
-                        { label: "Distance", value: "distance" },
-                        { label: "Hybrid", value: "hybrid" }
+                        { label: "Distance", value: "distance" }
                     ] %}
                     {% for s in sorts %}
                         <a data-sort="{{ s.value }}"

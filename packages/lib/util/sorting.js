@@ -2,7 +2,7 @@ import { distanceBetween } from './distances.js';
 
 /**
  * Any checks to apply before sorting will go here
- * @param {string} sort - The sort criteria, can be 'distance', 'hybrid', or 'age'.
+ * @param {string} sort - The sort criteria, can be 'distance' or 'age'.
  * @param {import('../data/types').InspectorViewModel | undefined} selectedInspector
  * @returns {{ text: string, href: string }[]}
  */

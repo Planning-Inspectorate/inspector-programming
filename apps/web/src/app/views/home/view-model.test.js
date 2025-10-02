@@ -152,8 +152,6 @@ describe('view-model', () => {
 				limit: '20',
 				sort: 'age',
 				inspectorId: '123',
-				'filters[allocationLevel]': ['level1', 'level2'],
-				'filters[caseProcedure]': ['procedure1'],
 				'filters[minimumAge]': '10',
 				'filters[maximumAge]': '50'
 			};
@@ -163,8 +161,6 @@ describe('view-model', () => {
 			assert.strictEqual(filterQuery.limit, 20);
 			assert.strictEqual(filterQuery.sort, 'age');
 			assert.strictEqual(filterQuery.inspectorId, '123');
-			assert.deepStrictEqual(filterQuery.case.allocationLevel, ['level1', 'level2']);
-			assert.deepStrictEqual(filterQuery.case.caseProcedure, ['procedure1']);
 			assert.strictEqual(filterQuery.case.minimumAge, '10');
 			assert.strictEqual(filterQuery.case.maximumAge, '50');
 		});
