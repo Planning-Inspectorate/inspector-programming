@@ -31,8 +31,6 @@ export interface CalendarViewModel {
 }
 
 export interface Filters {
-	allocationLevels: RadioOption[];
-	caseTypes: RadioOption[];
 	specialisms: RadioOption[];
 
 	pagination: Pagination;
@@ -48,10 +46,7 @@ export interface FilterErrors {
 }
 
 export interface FilterCaseQuery {
-	allocationLevel?: string[];
-	caseProcedure?: string[];
 	caseSpecialisms?: string[];
-	caseType?: string[];
 	lpaRegion?: string[];
 	minimumAge?: string;
 	maximumAge?: string;
