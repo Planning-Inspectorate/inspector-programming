@@ -79,6 +79,24 @@ describe('cached-cases-client', () => {
 			]);
 		});
 
+		it('should get all cases that are parent or stand alone cases', async () => {
+			const mockClient = {};
+			const mockCache = {
+				get: mock.fn(() => [
+					{ id: '1', linkedCaseStatus: 'Child' },
+					{ id: '2', linkedCaseStatus: 'Parent' },
+					{ id: '3', linkedCaseStatus: '' }
+				])
+			};
+			const cacheClient = new CachedCasesClient(mockClient, mockCache);
+			const linkedCases = await cacheClient.getAllParentCases();
+			assert.strictEqual(mockCache.get.mock.callCount(), 1);
+			assert.deepStrictEqual(linkedCases, [
+				{ id: '2', linkedCaseStatus: 'Parent' },
+				{ id: '3', linkedCaseStatus: '' }
+			]);
+		});
+
 		it('should remove cases from cache', async () => {
 			const mockClient = { deleteCases: mock.fn() };
 			const mockCache = {
