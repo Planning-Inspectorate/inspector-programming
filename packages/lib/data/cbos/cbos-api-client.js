@@ -43,8 +43,7 @@ export class CbosApiClient {
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
-			const appealDetails = await this.fetchAppealDetails(appealIds);
-			const lpaData = await this.fetchLpaData();
+			const [appealDetails, lpaData] = await Promise.all([this.fetchAppealDetails(appealIds), this.fetchLpaData()]);
 			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c, lpaData)));
 			const filteredCaseReferences = [];
 			for (const appeal of mappedAppeals) {
@@ -79,7 +78,7 @@ export class CbosApiClient {
 			leadCaseReference = c.linkedAppeals[0].appealReference;
 		}
 
-		const lpa = lpaData.find((lpa) => lpa.name == c.localPlanningDepartment);
+		const lpa = lpaData.find((lpa) => lpa.name === c.localPlanningDepartment);
 		const lpaCode = lpa ? lpa.lpaCode : '';
 
 		const appealCoordinates = await this.getAppealCoordinates(c);
