@@ -215,6 +215,114 @@ describe('events', () => {
 				}
 			]);
 		});
+		test('private events have a censored subject line', async (ctx) => {
+			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
+			mockService.entraConfig.calendarEventsDayRange = 3;
+			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+				switch (groupId) {
+					case 'groupA':
+						return [
+							{
+								id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+								displayName: 'test 1',
+								givenName: 'test',
+								surname: '1',
+								mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+							}
+						];
+					case 'groupB':
+						return [
+							{
+								id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+								displayName: 'test 2',
+								givenName: 'test',
+								surname: '2',
+								mail: 'inspector-programming-test-2@planninginspectorate.gov.uk'
+							}
+						];
+				}
+			});
+
+			mock.method(mockService.apiService.entraClient, 'listAllUserCalendarEvents', async (userId) => {
+				switch (userId) {
+					case 'd53dea42-369b-44aa-b3ca-a8537018b422':
+						return [
+							{
+								id: 'id1',
+								subject: 'Test Event 1',
+								start: { dateTime: dates.twoDaysAgo.toISOString() },
+								end: { dateTime: dates.oneDayAgo.toISOString() },
+								isAllDay: true,
+								showAs: 'oof',
+								sensitivity: 'private'
+							},
+							{
+								id: 'id2',
+								subject: 'Test Event 2',
+								start: { dateTime: dates.fourDaysAgo.toISOString() },
+								end: { dateTime: dates.oneDayAgo.toISOString() },
+								isAllDay: false,
+								showAs: 'busy',
+								sensitivity: 'normal'
+							}
+						];
+					case '7a0c62e2-182a-47a8-987a-26d0faa02876':
+						return [
+							{
+								id: 'id3',
+								subject: 'Test Event 3',
+								start: { dateTime: dates.threeDaysAgo.toISOString() },
+								end: { dateTime: dates.oneDayAgo.toISOString() },
+								isAllDay: false,
+								showAs: 'free',
+								sensitivity: 'normal'
+							}
+						];
+				}
+			});
+
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(await res.json(), [
+				{
+					id: 'id1',
+					userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
+					title: 'Private Event',
+					startDate: dates.twoDaysAgo.toISOString(),
+					endDate: dates.oneDayAgo.toISOString(),
+					isAllDay: true,
+					isOutOfOffice: true,
+					status: 'oof',
+					sensitivity: 'private',
+					systemEvent: false
+				},
+				{
+					id: 'id2',
+					userEmail: 'inspector-programming-test-1@planninginspectorate.gov.uk',
+					title: 'Test Event 2',
+					startDate: dates.fourDaysAgo.toISOString(),
+					endDate: dates.oneDayAgo.toISOString(),
+					isAllDay: false,
+					isOutOfOffice: false,
+					status: 'busy',
+					sensitivity: 'normal',
+					systemEvent: false
+				},
+				{
+					id: 'id3',
+					userEmail: 'inspector-programming-test-2@planninginspectorate.gov.uk',
+					title: 'Test Event 3',
+					startDate: dates.threeDaysAgo.toISOString(),
+					endDate: dates.oneDayAgo.toISOString(),
+					isAllDay: false,
+					isOutOfOffice: false,
+					status: 'free',
+					sensitivity: 'normal',
+					systemEvent: false
+				}
+			]);
+		});
 	});
 	test('returns events in the future if calendarEventsFromDateOffset is set', async (ctx) => {
 		mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
