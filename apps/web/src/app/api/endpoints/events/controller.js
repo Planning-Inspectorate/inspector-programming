@@ -121,7 +121,7 @@ function formatCalendarEvent(event, user) {
 	return {
 		id: event.id,
 		userEmail: user.email,
-		title: event.subject,
+		title: event.sensitivity === 'private' ? 'Private Event' : event.subject,
 		startDate: event.start?.dateTime || 'N/A',
 		endDate: event.end?.dateTime || 'N/A',
 		isAllDay: !!event.isAllDay,
