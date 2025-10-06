@@ -21,15 +21,13 @@ mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 
 const mockGetLinkedCasesByParentCaseId = mock.fn();
 const mockGetCaseById = mock.fn();
-const mockDeleteCases = mock.fn();
 
 const mockService = {
 	logger: mockLogger,
 	getCbosApiClientForSession: mockGetCbosApiClientForSession,
 	casesClient: {
 		getLinkedCasesByParentCaseId: mockGetLinkedCasesByParentCaseId,
-		getCaseById: mockGetCaseById,
-		deleteCases: mockDeleteCases
+		getCaseById: mockGetCaseById
 	}
 };
 
@@ -60,8 +58,6 @@ describe('assignCasesToInspector', () => {
 		);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 3);
-		assert.strictEqual(mockDeleteCases.mock.callCount(), 1);
-		assert.deepStrictEqual(mockDeleteCases.mock.calls[0].arguments[0], ['1', '2', '3']);
 		assert.deepStrictEqual(failedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseIds, []);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
