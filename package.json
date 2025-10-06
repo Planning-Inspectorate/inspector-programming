@@ -58,7 +58,7 @@
     "@commitlint/config-conventional": "^19.8.1",
     "@microsoft/microsoft-graph-types": "^2.40.0",
     "cookie-parser": "^1.4.7",
-    "eslint": "^9.35.0",
+    "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.0",
