@@ -121,13 +121,13 @@ export class CasesClient {
 
 	/**
 	 *
-	 * @param {string[]} caseReferences
+	 * @param {number[]} caseIds
 	 */
-	async deleteCases(caseReferences) {
+	async deleteCases(caseIds) {
 		await this.#client.appealCase.deleteMany({
 			where: {
-				caseReference: {
-					in: caseReferences
+				caseId: {
+					in: caseIds
 				}
 			}
 		});
