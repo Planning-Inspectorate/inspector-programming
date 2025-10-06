@@ -61,29 +61,59 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 				failedCaseIds.push(appeal.appealId);
 			}
 		}
-
-		service.casesClient.deleteCases(successfullCases);
+		if (successfullCases.length > 0) {
+			await service.casesClient.deleteCases(successfullCases);
+		}
 	}
 
 	return { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences };
 }
 
 /**
+ * @typedef {Object} CaseItem
+ * @property {string | number} caseId
+ * @property {string} caseReference
+ * @property {boolean} isParent
+ */
+
+/**
  * @param {number[]} caseIds
  * @param {import('#service').WebService} service
- * @returns {Promise<number[]>}
+ * @returns {Promise<{cases: CaseItem[], caseIds: number[]}>}
  */
 export async function getCaseAndLinkedCasesIds(caseIds, service) {
+	const casesById = new Map();
+
 	for (const caseId of caseIds) {
 		const appeal = await service.casesClient.getCaseById(caseId);
-		const caseReference = appeal.caseReference;
-		if (appeal && caseReference && appeal.linkedCaseStatus == 'Parent') {
-			const linkedCasesIds = await getLinkedCaseIdsOfParentId(caseReference, service);
-			caseIds = caseIds.concat(linkedCasesIds);
+		if (!appeal) continue;
+
+		if (!casesById.has(caseId)) {
+			casesById.set(caseId, {
+				caseId: appeal.caseId,
+				caseReference: appeal.caseReference,
+				isParent: true
+			});
+		}
+
+		if (appeal.linkedCaseStatus === 'Parent') {
+			const linkedCaseIds = await getLinkedCaseIdsOfParentId(appeal.caseReference, service);
+			for (const linkedCaseId of linkedCaseIds) {
+				if (casesById.has(linkedCaseId)) continue;
+				const linkedAppeal = await service.casesClient.getCaseById(linkedCaseId);
+				if (linkedAppeal) {
+					casesById.set(linkedCaseId, {
+						caseId: linkedAppeal.caseId,
+						caseReference: linkedAppeal.caseReference,
+						isParent: false
+					});
+				}
+			}
 		}
 	}
 
-	return caseIds;
+	const cases = Array.from(casesById.values());
+	return { cases, caseIds: [...casesById.keys()] };
 }
 
 /**

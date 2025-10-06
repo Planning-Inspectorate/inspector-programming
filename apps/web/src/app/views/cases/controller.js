@@ -46,12 +46,13 @@ export function buildPostCases(service) {
  * @param {import('express').Response} res
  */
 async function handleCases(selectedCases, service, req, res) {
-	const selectedCaseIds = await getCaseAndLinkedCasesIds(selectedCases, service);
-	const {
-		failedCaseReferences,
-		failedCaseIds,
-		alreadyAssignedCaseReferences: alreadyAssignedCases
-	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
+	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
+	const { failedCaseIds, alreadyAssignedCaseReferences: alreadyAssignedCases } = await assignCasesToInspector(
+		req.session,
+		service,
+		req.body.inspectorId,
+		selectedCaseIds
+	);
 
 	if (alreadyAssignedCases.length > 0) {
 		// Save error to be displayed on home page
@@ -65,14 +66,15 @@ async function handleCases(selectedCases, service, req, res) {
 		addSessionData(req, 'errors', { caseListError }, 'persistence');
 		saveSelectedData(selectedCases, req);
 	} else if (failedCaseIds.length > 0) {
-		// Keep selected any failed cases then go to 500 page
+		const failedCases = cases.filter((caseItem) => failedCaseIds.includes(caseItem.caseId));
+		// Keep selected any failed cases, then go to the failed-cases error page
 		saveSelectedData(failedCaseIds, req);
 		return handleFailure(
 			req,
 			res,
-			failedCaseReferences,
+			failedCases,
 			selectedCaseIds,
-			'Try again later. The requested cases were not assigned.'
+			'Try again later. None of the selected cases were assigned.'
 		);
 	} else {
 		try {
@@ -103,18 +105,48 @@ async function handleCases(selectedCases, service, req, res) {
 }
 
 /**
+ * @typedef {Object} failedCase
+ * @property {string | number} caseId
+ * @property {string} caseReference
+ * @property {boolean} isParent
+ */
+
+/**
  * handles a failure in the case assignment process where the user has no actionable fix
  * compiles the response to attach to the user session and renders the error view with the details of the failed cases
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * @param {(string|number|undefined)[]} failedCases
+ * @param {failedCase[] | (string|number|undefined)[]} failedCases
  * @param {number[]} selectedCaseIds
  * @param {string} errorMessage
  * @returns
  */
 function handleFailure(req, res, failedCases, selectedCaseIds, errorMessage) {
+	/** @type {string[]} */
+	const failedParentCaseRefs = [];
+	/** @type {string[]} */
+	const failedChildCaseRefs = [];
+	/** @type {string} */
+	const UNASSIGNED_CASES_MESSAGE =
+		'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:';
+	/** @type {boolean} */
+
+	const isArrayOfCaseIds = Array.isArray(failedCases) && ['number', 'string'].includes(typeof failedCases[0]);
+
+	if (!isArrayOfCaseIds) {
+		failedParentCaseRefs.push(
+			...failedCases.filter(({ isParent }) => isParent).map(({ caseReference }) => caseReference)
+		);
+		failedChildCaseRefs.push(
+			...failedCases.filter(({ isParent }) => !isParent).map(({ caseReference }) => caseReference)
+		);
+	}
+
+	/** @type {string[]} */
+	const failedCaseRefs = [...failedParentCaseRefs, ...failedChildCaseRefs];
+
 	const updateCasesResult = {
-		selectedCases: failedCases,
+		selectedCases: isArrayOfCaseIds ? failedCases : failedCaseRefs,
 		inspectorId: req.body.inspectorId,
 		assignmentDate: req.body.assignmentDate
 	};
@@ -122,10 +154,24 @@ function handleFailure(req, res, failedCases, selectedCaseIds, errorMessage) {
 	addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
 
 	let viewData = {};
-	if (failedCases.length != 0 && failedCases.length < selectedCaseIds.length) {
+
+	if (!failedParentCaseRefs.length && failedChildCaseRefs.length) {
 		viewData = {
-			bodyCopy: 'Try again later. The following cases were not assigned.',
-			failedCases: failedCases
+			bodyCopy: UNASSIGNED_CASES_MESSAGE,
+			failedCases: failedChildCaseRefs
+		};
+	} else if (failedParentCaseRefs.length && !failedChildCaseRefs.length) {
+		viewData = {
+			bodyCopy: UNASSIGNED_CASES_MESSAGE,
+			failedCases: failedParentCaseRefs
+		};
+	} else if (failedParentCaseRefs.length && failedChildCaseRefs.length) {
+		viewData = {
+			bodyCopy: 'Try again later. The following cases were not assigned:',
+			failedCases: failedParentCaseRefs,
+			linkedCasesNote:
+				'The following linked cases were also not assigned. The Inspector name must be added manually to the case in Manage appeals:',
+			linkedCases: failedChildCaseRefs
 		};
 	} else {
 		viewData = {
@@ -133,7 +179,7 @@ function handleFailure(req, res, failedCases, selectedCaseIds, errorMessage) {
 		};
 	}
 
-	return res.render('views/errors/500.njk', viewData);
+	return res.render('views/errors/failed-cases.njk', viewData);
 }
 
 /**
