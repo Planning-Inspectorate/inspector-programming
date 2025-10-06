@@ -1,0 +1,80 @@
+{% extends "views/layouts/main.njk" %}
+
+{% set pageTitle = titleCopy if titleCopy else 'Sorry, there is a problem with the service' %}
+
+{% block pageContent %}
+    <p class="govuk-body">{{ bodyCopy if bodyCopy else 'Try again later.' }}</p>
+    {% if failedCases %}
+        {% if failedCases.length > 5 %}
+            {% set column1Count = 5 %}
+        {% else %}
+            {% set column1Count = failedCases.length %}
+        {% endif %}
+
+        <div class="case-id-columns">
+            <div>
+                {% for i in range(column1Count)%}
+                    <p class="govuk-body">{{failedCases[i]}}</p>
+                {% endfor %}
+            </div>
+            <div>
+                {% for i in range (5, failedCases.length) %}
+                    <p class="govuk-body">{{failedCases[i]}}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {% if linkedCases %}
+        <p class="govuk-body">{{ linkedCasesNote }}</p>
+        {% if linkedCases.length > 5 %}
+            {% set column1Count = 5 %}
+        {% else %}
+            {% set column1Count = linkedCases.length %}
+        {% endif %}
+
+        <div class="case-id-columns">
+            <div>
+                {% for i in range(column1Count)%}
+                    <p class="govuk-body">{{linkedCases[i]}}</p>
+                {% endfor %}
+            </div>
+            <div>
+                {% for i in range (5, linkedCases.length) %}
+                    <p class="govuk-body">{{linkedCases[i]}}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {%- if not hideDefaultCta -%}
+        <p class="govuk-body">
+            Contact the <a href="https://intranet.planninginspectorate.gov.uk/task/report-it-problem/" class="govuk-link">Littlefish service desk</a> if the problem persists.
+        </p>
+    {%- endif -%}
+
+    <p class="govuk-body">
+        <a href="/" class="govuk-link">Back to case list</a>
+    </p>
+
+    {% if error and isDevelopment %}
+        <hr>
+        <h1 class="govuk-heading-m" style="color: #d4351c;">Error (only seen in dev mode):</h1>
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <div>{{ error }}</div>
+
+                {% if error.errors %}
+                    {% for err in error.errors %}
+                        <pre style="border: 1px solid #ddd; overflow: scroll">
+							{{ err.stack }}
+						</pre>
+                    {% endfor %}
+                {% else %}
+                    <pre style="border: 1px solid #ddd; overflow: scroll">
+						{{ error.stack }}
+					</pre>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -41,6 +41,7 @@ beforeEach(() => {
 	mockService.logger.warn.mock.resetCalls();
 	mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
 	mockCbosApiClient.patchAppeal.mock.resetCalls();
+	mockDeleteCases.mock.resetCalls();
 });
 
 describe('assignCasesToInspector', () => {
@@ -148,6 +149,98 @@ describe('assignCasesToInspector', () => {
 		assert.deepStrictEqual(failedCaseIds, [1]);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
 	});
+
+	test('assignCasesToInspector assigns parent and child together on full success', async () => {
+		const appealsDetailsList = [
+			{ appealId: 100, appealReference: 'PARENT_X' },
+			{ appealId: 101, appealReference: 'CHILD_X' }
+		];
+		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences } = await assignCasesToInspector(
+			mockSession,
+			mockService,
+			'inspector id',
+			[100, 101]
+		);
+		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 2);
+		assert.deepStrictEqual(failedCaseReferences, []);
+		assert.deepStrictEqual(failedCaseIds, []);
+		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
+		assert.strictEqual(mockDeleteCases.mock.callCount(), 1);
+		assert.deepStrictEqual(mockDeleteCases.mock.calls[0].arguments[0].sort(), ['PARENT_X', 'CHILD_X'].sort());
+	});
+
+	test('should delete only successful parent when child case fails (partial success scenario)', async () => {
+		const appealsDetailsList = [
+			{ appealId: 1, appealReference: 'PARENT' },
+			{ appealId: 2, appealReference: 'CHILD' }
+		];
+		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.patchAppeal.mock.mockImplementation((id) => {
+			if (id === 2) throw new Error('child failure');
+			return undefined;
+		});
+		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences } = await assignCasesToInspector(
+			mockSession,
+			mockService,
+			'inspector id',
+			[1, 2]
+		);
+		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
+		assert.deepStrictEqual(failedCaseReferences, ['CHILD']);
+		assert.deepStrictEqual(failedCaseIds, [2]);
+		assert.strictEqual(mockDeleteCases.mock.callCount(), 1, 'parent case should be deleted');
+		assert.deepStrictEqual(mockDeleteCases.mock.calls[0].arguments[0], ['PARENT']);
+	});
+
+	test('should not delete parent when both parent and child fail (both failures scenario)', async () => {
+		const appealsDetailsList = [
+			{ appealId: 10, appealReference: 'PARENT_FAIL' },
+			{ appealId: 11, appealReference: 'CHILD_FAIL' }
+		];
+		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.patchAppeal.mock.mockImplementation(() => {
+			throw new Error('failure');
+		});
+		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences } = await assignCasesToInspector(
+			mockSession,
+			mockService,
+			'inspector id',
+			[10, 11]
+		);
+		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
+		assert.deepStrictEqual(failedCaseReferences.sort(), ['CHILD_FAIL', 'PARENT_FAIL'].sort());
+		assert.deepStrictEqual(failedCaseIds.sort(), [10, 11].sort());
+		assert.strictEqual(mockDeleteCases.mock.callCount(), 0, 'no deletions when all fail');
+	});
+
+	test('should delete only successful parent group in mixed success/failure scenario', async () => {
+		const appealsDetailsList = [
+			{ appealId: 21, appealReference: 'PARENT_A' },
+			{ appealId: 22, appealReference: 'CHILD_A' },
+			{ appealId: 23, appealReference: 'PARENT_B' },
+			{ appealId: 24, appealReference: 'CHILD_B' }
+		];
+		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.patchAppeal.mock.mockImplementation((id) => {
+			if (id === 23 || id === 24) {
+				throw new Error('group B failure');
+			}
+			return undefined;
+		});
+
+		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences } = await assignCasesToInspector(
+			mockSession,
+			mockService,
+			'inspector id',
+			[21, 22, 23, 24]
+		);
+		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
+		assert.deepStrictEqual(failedCaseReferences.sort(), ['PARENT_B', 'CHILD_B'].sort());
+		assert.deepStrictEqual(failedCaseIds.sort(), [23, 24].sort());
+		assert.strictEqual(mockDeleteCases.mock.callCount(), 1, 'only successful group deleted');
+		assert.deepStrictEqual(mockDeleteCases.mock.calls[0].arguments[0].sort(), ['PARENT_A', 'CHILD_A'].sort());
+	});
 });
 
 describe('getLinkedCaseIdsOfParentId', () => {
@@ -168,18 +261,22 @@ describe('getCaseAndLinkedCasesIds', () => {
 		const linkedCases = [{ caseId: 2 }, { caseId: 3 }, { caseId: 4 }];
 		const expectedCaseIds = [1, 2, 3, 4];
 		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
-		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
-		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
+		mockGetCaseById.mock.mockImplementation((id) => {
+			if (id === 1) return appeal;
+			if ([2, 3, 4].includes(id)) return { caseReference: String(id), caseId: id, linkedCaseStatus: 'Child' };
+			return undefined;
+		});
+		const { caseIds: casesIdsList } = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
-		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
-		assert.deepStrictEqual(casesIdsList, expectedCaseIds);
+		assert.strictEqual(mockGetCaseById.mock.callCount(), 4);
+		assert.deepStrictEqual(casesIdsList.sort(), expectedCaseIds.sort());
 	});
 
 	test('should not add linked if linked case status is child', async () => {
 		const caseIds = [1];
 		const appeal = { caseReference: '1', caseId: 1, linkedCaseStatus: 'Child' };
 		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
-		const casesIdsList = await getCaseAndLinkedCasesIds(caseIds, mockService);
+		const { caseIds: casesIdsList } = await getCaseAndLinkedCasesIds(caseIds, mockService);
 		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 0);
 		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
 		assert.deepStrictEqual(casesIdsList, caseIds);

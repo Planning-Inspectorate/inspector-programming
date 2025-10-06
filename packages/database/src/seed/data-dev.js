@@ -402,6 +402,9 @@ function generateLinkedCases(appeals, variations, now) {
 	for (const leadIndex of selectedLeadIndices) {
 		const leadCaseReference = appeals[leadIndex].caseReference;
 
+		// mark the existing appeal as a parent case
+		appeals[leadIndex].linkedCaseStatus = 'Parent';
+
 		for (let j = 0; j < 2; j++) {
 			const childIndex = appeals.length + linkedCases.length + 1;
 			const paddedIndex = String(childIndex).padStart(5, '0');

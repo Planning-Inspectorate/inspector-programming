@@ -140,10 +140,11 @@ describe('controller.js', () => {
 			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
-			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
-			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
-				bodyCopy: 'Try again later. The requested cases were not assigned.'
-			});
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
+			assert.strictEqual(
+				res.render.mock.calls[0].arguments[1].bodyCopy,
+				'Try again later. None of the selected cases were assigned.'
+			);
 		});
 
 		test('should render 500 template when update to cbos fails on some cases', async () => {
@@ -166,11 +167,11 @@ describe('controller.js', () => {
 			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 2);
 			assert.strictEqual(res.render.mock.callCount(), 1);
-			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
-			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
-				bodyCopy: 'Try again later. The following cases were not assigned.',
-				failedCases: ['1']
-			});
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
+			assert.strictEqual(
+				res.render.mock.calls[0].arguments[1].bodyCopy,
+				'Try again later. None of the selected cases were assigned.'
+			);
 		});
 
 		test('should render 500 template only failed case ids are returned', async () => {
@@ -188,10 +189,12 @@ describe('controller.js', () => {
 			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
 			assert.strictEqual(res.render.mock.callCount(), 1);
-			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
-			assert.deepStrictEqual(res.render.mock.calls[0].arguments[1], {
-				bodyCopy: 'Try again later. The requested cases were not assigned.'
-			});
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
+			// Fetch failure also yields the generic message
+			assert.strictEqual(
+				res.render.mock.calls[0].arguments[1].bodyCopy,
+				'Try again later. None of the selected cases were assigned.'
+			);
 		});
 
 		test('should not update cases if no inspector is selected', async () => {
