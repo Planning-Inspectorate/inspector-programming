@@ -407,8 +407,8 @@ function generateLinkedCases(appeals, variations, now) {
 
 		for (let j = 0; j < 2; j++) {
 			const childIndex = appeals.length + linkedCases.length + 1;
-			const paddedIndex = String(childIndex).padStart(5, '0');
-			const reference = `69${paddedIndex}`;
+			const paddedIndex = String(childIndex).padStart(6, '0');
+			const reference = `6${paddedIndex}`;
 			const location = mockLocations[childIndex % mockLocations.length];
 			const valid = addWeeks(now, -Math.floor(childIndex / 2));
 			const created = addDays(valid, -crypto.randomInt(5));

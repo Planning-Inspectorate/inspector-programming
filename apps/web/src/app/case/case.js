@@ -45,13 +45,11 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 	const failedCaseIds = [];
 
 	if (alreadyAssignedCaseReferences.length == 0) {
-		let successfullCases = [];
 		for (let appeal of appeals) {
 			try {
 				if (!appeal.appealId) throw new Error('appealId is undefined');
 				if (!appeal.appealReference) throw new Error('appealReference is undefined');
 				await cbosApiClient.patchAppeal(appeal.appealId, appealPatchData);
-				successfullCases.push(appeal.appealReference);
 			} catch (error) {
 				service.logger.error(
 					error,
@@ -60,9 +58,6 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 				failedCaseReferences.push(appeal.appealReference);
 				failedCaseIds.push(appeal.appealId);
 			}
-		}
-		if (successfullCases.length > 0) {
-			await service.casesClient.deleteCases(successfullCases);
 		}
 	}
 
