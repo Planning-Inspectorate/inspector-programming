@@ -147,18 +147,16 @@ export class CachedCasesClient {
 
 	/**
 	 *
-	 * @param {string[]} caseReferences
+	 * @param {number[]} caseIds
 	 */
-	async deleteCases(caseReferences) {
-		this.#client.deleteCases(caseReferences);
+	async deleteCases(caseIds) {
+		this.#client.deleteCases(caseIds);
 
 		const key = CACHE_PREFIX + 'getAllCases';
 		let cases = this.#cache.get(key);
 
 		if (cases) {
-			cases = cases.filter(
-				(/** @type {{ caseReference: string; }} */ appeal) => !caseReferences.includes(appeal.caseReference)
-			);
+			cases = cases.filter((/** @type {{ caseId: number; }} */ appeal) => !caseIds.includes(appeal.caseId));
 			this.#cache.set(key, cases);
 		}
 	}

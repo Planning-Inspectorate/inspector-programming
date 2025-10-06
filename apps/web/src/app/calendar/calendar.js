@@ -326,7 +326,7 @@ function matchTimingRuleToCase(timingRules, fullCase) {
 	const found = fullCase
 		? timingRules.find(
 				(r) =>
-					r.caseProcedure === fullCase.caseProcedure &&
+					r.caseProcedure.toLowerCase() === fullCase.caseProcedure?.toLowerCase() &&
 					r.allocationLevel === fullCase.caseLevel &&
 					r.caseType === fullCase.caseType
 			)
