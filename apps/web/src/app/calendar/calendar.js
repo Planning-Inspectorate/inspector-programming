@@ -500,7 +500,7 @@ function stageLookup(stageString, timingRule) {
  * helper function that returns a calendar event json object from an object containing event info
  * @param {{subject: string, startTime: string, endTime: string, streetAddress: string|null, postcode: string|null}} event
  * @param {{caseReference?: string, eventType?: string}} extensionProps - extensions have no fixed schema - extension properties are optional and are omitted if not provided
- * @returns {import('./types').CalendarEventInput}
+ * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput}
  */
 function buildEventJson(event, extensionProps) {
 	return {
@@ -526,4 +526,26 @@ function buildEventJson(event, extensionProps) {
 			}
 		]
 	};
+}
+
+/**
+ *
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').InitEntraClient} initEntraClient
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} events
+ * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
+ * @param {string} inspectorId
+ * @param {import('pino').Logger} logger
+ */
+export async function submitCalendarEvents(initEntraClient, events, authSession, inspectorId, logger) {
+	const client = initEntraClient(authSession);
+
+	if (!client) {
+		logger.warn('Skipping calendar, no Entra Client');
+	}
+
+	try {
+		await client?.createCalendarEvents(events, inspectorId);
+	} catch (error) {
+		throw new Error(`Error creating adding calendar events to outlook: ${error}`);
+	}
 }
