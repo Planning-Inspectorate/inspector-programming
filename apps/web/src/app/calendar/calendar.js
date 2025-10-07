@@ -244,8 +244,8 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 	bankHolidays = bankHolidays?.length
 		? bankHolidays.filter((holiday) => {
 				const [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
-				pastLimit.setDate(pastLimit.getUTCDate() - 10);
-				futureLimit.setDate(futureLimit.getUTCDate() + 60);
+				pastLimit.setDate(pastLimit.getDate() - 10);
+				futureLimit.setDate(futureLimit.getDate() + 60);
 				return holidayDate > pastLimit && holidayDate < futureLimit;
 			})
 		: [];
@@ -304,14 +304,14 @@ function compileBankHolidays(bankHolidays) {
 function getStageStartDate(stage, assignment, inspectorEvents) {
 	let startDate = new Date(assignment);
 	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		startDate.setUTCDate(startDate.getUTCDate() - 1);
+		startDate.setDate(startDate.getDate() - 1);
 		return startDate;
 	}
 
 	inspectorEvents.sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime));
 
 	startDate = new Date(inspectorEvents[0].startTime);
-	startDate.setUTCDate(startDate.getUTCDate() + 1);
+	startDate.setDate(startDate.getDate() + 1);
 
 	return startDate;
 }
@@ -428,9 +428,9 @@ function splitLongEvents(eventLength) {
  */
 function offsetEventByOne(stage, assignment) {
 	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		assignment.setDate(assignment.getUTCDate() - 1);
+		assignment.setDate(assignment.getDate() - 1);
 	} else {
-		assignment.setDate(assignment.getUTCDate() + 1);
+		assignment.setDate(assignment.getDate() + 1);
 	}
 }
 
@@ -444,14 +444,14 @@ function offsetEventByOne(stage, assignment) {
  */
 function allocateCalendarEventTime(assignment, inspectorEvents, eventLength) {
 	const assignmentDate = new Date(assignment);
-	assignmentDate.setUTCHours(9, 0, 0, 0);
+	assignmentDate.setHours(9, 0, 0, 0);
 	const assignmentEnd = new Date(assignmentDate);
-	assignmentEnd.setUTCHours(assignmentDate.getUTCHours() + eventLength);
+	assignmentEnd.setHours(assignmentDate.getHours() + eventLength);
 
 	//check provisionally allocated slot against other events in inspector calendar and re-allocate as required
 	while (eventOverlaps(assignmentDate, assignmentEnd, inspectorEvents)) {
-		assignmentDate.setUTCHours(assignmentDate.getUTCHours() + 1);
-		assignmentEnd.setUTCHours(assignmentEnd.getUTCHours() + 1);
+		assignmentDate.setHours(assignmentDate.getHours() + 1);
+		assignmentEnd.setHours(assignmentEnd.getHours() + 1);
 	}
 
 	return { startTime: assignmentDate, endTime: assignmentEnd };
@@ -500,18 +500,18 @@ function stageLookup(stageString, timingRule) {
  * helper function that returns a calendar event json object from an object containing event info
  * @param {{subject: string, startTime: string, endTime: string, streetAddress: string|null, postcode: string|null}} event
  * @param {{caseReference?: string, eventType?: string}} extensionProps - extensions have no fixed schema - extension properties are optional and are omitted if not provided
- * @returns {import('./types').CalendarEventInput}
+ * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput}
  */
 function buildEventJson(event, extensionProps) {
 	return {
 		subject: event.subject,
 		start: {
 			dateTime: event.startTime,
-			timeZone: 'UTC'
+			timeZone: 'GMT Standard Time'
 		},
 		end: {
 			dateTime: event.endTime,
-			timeZone: 'UTC'
+			timeZone: 'GMT Standard Time'
 		},
 		location: {
 			address: {
@@ -526,4 +526,26 @@ function buildEventJson(event, extensionProps) {
 			}
 		]
 	};
+}
+
+/**
+ *
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').InitEntraClient} initEntraClient
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} events
+ * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
+ * @param {string} inspectorId
+ * @param {import('pino').Logger} logger
+ */
+export async function submitCalendarEvents(initEntraClient, events, authSession, inspectorId, logger) {
+	const client = initEntraClient(authSession);
+
+	if (!client) {
+		logger.warn('Skipping calendar, no Entra Client');
+	}
+
+	try {
+		await client?.createCalendarEvents(events, inspectorId);
+	} catch (error) {
+		throw new Error(`Error creating adding calendar events to outlook: ${error}`);
+	}
 }

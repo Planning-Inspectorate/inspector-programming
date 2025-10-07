@@ -1,6 +1,6 @@
 import { addSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
-import { generateCaseCalendarEvents } from '../../calendar/calendar.js';
+import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
 
 /**
@@ -80,7 +80,8 @@ async function handleCases(selectedCases, service, req, res) {
 		try {
 			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
 			service.logger.info('Calendar events created: ' + eventsToAdd.length); //placeholder
-			service.casesClient.deleteCases(selectedCaseIds);
+			await submitCalendarEvents(service.entraClient, eventsToAdd, req.session, req.body.inspectorId, service.logger);
+			await service.casesClient.deleteCases(selectedCaseIds);
 		} catch (/** @type {any} */ err) {
 			service.logger.error(err, `Failed to generate case calendar events for inspector ${req.body.inspectorId}`);
 			return handleFailure(

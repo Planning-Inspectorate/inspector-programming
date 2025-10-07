@@ -130,6 +130,15 @@ export class EntraClient {
 	}
 
 	/**
+	 * Create calendar event in outlooks
+	 * @param {import('./types').CalendarEventInput} event
+	 * @param {string} userId
+	 */
+	async createCalendarEvent(event, userId) {
+		await this.#client.api(`users/${userId}/calendar/events`).post(event);
+	}
+
+	/**
 	 * Get a skip token out of an '@odata.nextLink' value
 	 *
 	 * @param {string} link
