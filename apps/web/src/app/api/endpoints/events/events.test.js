@@ -16,12 +16,14 @@ let dates;
 beforeEach(() => {
 	//set up service
 	mockService = {
-		logger: mockLogger(),
 		apiService: {
+			logger: mockLogger(),
 			entraClient: {
 				listAllGroupMembers: mock.fn(),
 				listAllUserCalendarEvents: mock.fn()
-			}
+			},
+			isFetchingEvents: false,
+			fetchingEventsPromise: null
 		},
 		entraConfig: {
 			groupIds: {
@@ -73,6 +75,7 @@ describe('events', () => {
 			const res = await server.get('/');
 			assert.strictEqual(res.status, 404);
 			assert.strictEqual(await res.text(), 'No users found in Entra groups');
+			assert.strictEqual(mockService.apiService.isFetchingEvents, false);
 		});
 		test('returns 400 if calendarEventsDayRange config is malformed', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
@@ -106,6 +109,7 @@ describe('events', () => {
 			const res = await server.get('/');
 			assert.strictEqual(res.status, 400);
 			assert.strictEqual(await res.text(), 'Invalid calendar events day range configuration');
+			assert.strictEqual(mockService.apiService.isFetchingEvents, false);
 		});
 		test('returns a list of events that occur in each users calendar in the given groups', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
@@ -214,6 +218,45 @@ describe('events', () => {
 					systemEvent: false
 				}
 			]);
+			assert.strictEqual(mockService.apiService.isFetchingEvents, false);
+		});
+		test('handles errors', async (ctx) => {
+			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';
+			mockService.entraConfig.calendarEventsDayRange = 3;
+			mock.method(mockService.apiService.entraClient, 'listAllGroupMembers', async (groupId) => {
+				switch (groupId) {
+					case 'groupA':
+						return [
+							{
+								id: 'd53dea42-369b-44aa-b3ca-a8537018b422',
+								displayName: 'test 1',
+								givenName: 'test',
+								surname: '1',
+								mail: 'inspector-programming-test-1@planninginspectorate.gov.uk'
+							}
+						];
+					case 'groupB':
+						return [
+							{
+								id: '7a0c62e2-182a-47a8-987a-26d0faa02876',
+								displayName: 'test 2',
+								givenName: 'test',
+								surname: '2',
+								mail: 'inspector-programming-test-2@planninginspectorate.gov.uk'
+							}
+						];
+				}
+			});
+
+			mock.method(mockService.apiService.entraClient, 'listAllUserCalendarEvents', async () => {
+				throw new Error('uh oh');
+			});
+
+			const server = await newServer(ctx);
+			const res = await server.get('/');
+			assert.strictEqual(res.status, 500);
+			assert.strictEqual(mockService.apiService.logger.error.mock.callCount(), 1);
+			assert.strictEqual(mockService.apiService.isFetchingEvents, false);
 		});
 		test('private events have a censored subject line', async (ctx) => {
 			mockService.entraConfig.groupIds.inspectorGroups = 'groupA,groupB';

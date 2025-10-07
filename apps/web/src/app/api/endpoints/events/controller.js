@@ -23,13 +23,15 @@ export function createRoutes(service) {
  * Mainly intended for use in PowerBI reporting
  */
 export function getCalendarEventsForEntraUsers(service) {
-	const { logger, apiService } = service;
+	const { apiService } = service;
+	const logger = apiService.logger;
 	return async (req, res) => {
 		try {
 			const { inspectorGroups } = service.entraConfig.groupIds;
 			const usersInGroups = await getUsersInEntraGroups(apiService, inspectorGroups);
 
 			if (!usersInGroups.length) {
+				logger.error('No users found in Entra groups');
 				res.status(404).send('No users found in Entra groups');
 				return;
 			}
@@ -42,40 +44,72 @@ export function getCalendarEventsForEntraUsers(service) {
 			//should not be able to use endpoint without valid config: fetch far too many events otherwise
 			const { calendarEventsDayRange, calendarEventsFromDateOffset } = service.entraConfig;
 			if (!+calendarEventsDayRange) {
+				logger.error(
+					{ calendarEventsDayRange, calendarEventsFromDateOffset },
+					'invalid calendar events day range configuration'
+				);
 				res.status(400).send('Invalid calendar events day range configuration');
 				return;
 			}
 
-			//chunk users into groups of 5 to avoid overwhelming the API with requests
-			const chunkedUsers = chunkArray(usersInGroups, 5);
-			for (const userChunk of chunkedUsers) {
-				const chunkEvents = await Promise.all(
-					userChunk.map(async (user) => {
-						const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, {
-							calendarEventsDayRange: calendarEventsDayRange,
-							calendarEventsFromDateOffset: calendarEventsFromDateOffset,
-							fetchExtension: true
-						});
-
-						//format returned events for PowerBI
-						//startDate and endDate are in UTC timezone
-						const formattedEvents = [];
-						for (const event of usersEvents || []) {
-							formattedEvents.push(formatCalendarEvent(event, user));
-						}
-						return formattedEvents;
-					})
-				);
-				calendarEvents.push(...chunkEvents);
+			// NOTE
+			// this would not work if running multiple instances/scaling
+			// only works for a single instance
+			// could save this value in Redis instead so it is shared, but then the promise would have to be a poll
+			//
+			// this is to avoid MailboxConcurrency limit errors
+			if (service.apiService.isFetchingEvents) {
+				logger.info('already fetching calendar events');
+				const events = await service.apiService.fetchingEventsPromise;
+				res.status(200).send(events);
+				return;
 			}
 
-			res.status(200).send(calendarEvents.flat());
-			return;
+			/**
+			 * @returns {Promise<import('./types').CalendarEvent[]>}
+			 */
+			async function fetchAllEvents() {
+				//chunk users into groups of 5 to avoid overwhelming the API with requests
+				const chunkedUsers = chunkArray(usersInGroups, 5);
+				for (const userChunk of chunkedUsers) {
+					const chunkEvents = await Promise.all(
+						userChunk.map(async (user) => {
+							const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, {
+								calendarEventsDayRange: calendarEventsDayRange,
+								calendarEventsFromDateOffset: calendarEventsFromDateOffset,
+								fetchExtension: true
+							});
+
+							//format returned events for PowerBI
+							//startDate and endDate are in UTC timezone
+							const formattedEvents = [];
+							for (const event of usersEvents || []) {
+								formattedEvents.push(formatCalendarEvent(event, user));
+							}
+							return formattedEvents;
+						})
+					);
+					calendarEvents.push(...chunkEvents);
+				}
+				return calendarEvents.flat();
+			}
+
+			logger.info('fetching calendar events');
+			service.apiService.isFetchingEvents = true;
+			// save the promise for other requests to wait on
+			service.apiService.fetchingEventsPromise = fetchAllEvents();
+
+			const events = await service.apiService.fetchingEventsPromise;
+			service.apiService.isFetchingEvents = false;
+			logger.info('fetched calendar events');
+
+			res.status(200).send(events);
 		} catch (err) {
-			logger.error({ err }, `API /events error`);
+			logger.error({ err }, `/events error`);
 			res.status(500).send('A server error occurred');
 		} finally {
-			logger.info('API /events endpoint');
+			// ensure we set to false for future requests to try again
+			service.apiService.isFetchingEvents = false;
 		}
 	};
 }
