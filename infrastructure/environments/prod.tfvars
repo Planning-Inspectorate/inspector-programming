@@ -48,7 +48,7 @@ apps_config = {
   }
 
   logging = {
-    level = "warn"
+    level = "info"
   }
 
   redis = {
