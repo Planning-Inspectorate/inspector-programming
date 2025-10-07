@@ -577,14 +577,14 @@ describe('calendar', () => {
 			requiredStages(res[0], res[1], res[2], res[3]);
 
 			//check correct time allocation
-			assert.strictEqual(res[0].start.dateTime, '2025-10-07T09:00:00.000Z'); //prep
-			assert.strictEqual(res[0].end.dateTime, '2025-10-07T11:00:00.000Z');
-			assert.strictEqual(res[1].start.dateTime, '2025-10-08T09:00:00.000Z'); //siteVisit
-			assert.strictEqual(res[1].end.dateTime, '2025-10-08T12:00:00.000Z');
-			assert.strictEqual(res[2].start.dateTime, '2025-10-09T09:00:00.000Z'); //report
-			assert.strictEqual(res[2].end.dateTime, '2025-10-09T11:00:00.000Z');
-			assert.strictEqual(res[3].start.dateTime, '2025-10-10T09:00:00.000Z'); //costs
-			assert.strictEqual(res[3].end.dateTime, '2025-10-10T10:00:00.000Z');
+			assert.strictEqual(res[0].start.dateTime, new Date(2025, 9, 7, 9).toISOString()); //prep
+			assert.strictEqual(res[0].end.dateTime, new Date(2025, 9, 7, 11).toISOString());
+			assert.strictEqual(res[1].start.dateTime, new Date(2025, 9, 8, 9).toISOString()); //siteVisit
+			assert.strictEqual(res[1].end.dateTime, new Date(2025, 9, 8, 12).toISOString());
+			assert.strictEqual(res[2].start.dateTime, new Date(2025, 9, 9, 9).toISOString()); //report
+			assert.strictEqual(res[2].end.dateTime, new Date(2025, 9, 9, 11).toISOString());
+			assert.strictEqual(res[3].start.dateTime, new Date(2025, 9, 10, 9).toISOString()); //costs
+			assert.strictEqual(res[3].end.dateTime, new Date(2025, 9, 10, 10).toISOString());
 		});
 		it('multiple cases should yield multiple sets of json objects', async () => {
 			const service = mockService();
@@ -647,14 +647,14 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assert.strictEqual(res[0].start.dateTime, '2025-09-19T09:00:00.000Z'); //prep
-				assert.strictEqual(res[0].end.dateTime, '2025-09-19T11:00:00.000Z');
-				assert.strictEqual(res[1].start.dateTime, '2025-09-22T09:00:00.000Z'); //siteVisit
-				assert.strictEqual(res[1].end.dateTime, '2025-09-22T12:00:00.000Z');
-				assert.strictEqual(res[2].start.dateTime, '2025-09-23T09:00:00.000Z'); //report
-				assert.strictEqual(res[2].end.dateTime, '2025-09-23T11:00:00.000Z');
-				assert.strictEqual(res[3].start.dateTime, '2025-09-24T09:00:00.000Z'); //costs
-				assert.strictEqual(res[3].end.dateTime, '2025-09-24T10:00:00.000Z');
+				assert.strictEqual(res[0].start.dateTime, new Date(2025, 8, 19, 9).toISOString()); //prep
+				assert.strictEqual(res[0].end.dateTime, new Date(2025, 8, 19, 11).toISOString());
+				assert.strictEqual(res[1].start.dateTime, new Date(2025, 8, 22, 9).toISOString()); //siteVisit
+				assert.strictEqual(res[1].end.dateTime, new Date(2025, 8, 22, 12).toISOString());
+				assert.strictEqual(res[2].start.dateTime, new Date(2025, 8, 23, 9).toISOString()); //report
+				assert.strictEqual(res[2].end.dateTime, new Date(2025, 8, 23, 11).toISOString());
+				assert.strictEqual(res[3].start.dateTime, new Date(2025, 8, 24, 9).toISOString()); //costs
+				assert.strictEqual(res[3].end.dateTime, new Date(2025, 8, 24, 10).toISOString());
 			});
 			it('setting the assignment date to a Sunday will generate the prep event on the prior Friday and increment all other days by 1', async () => {
 				const service = mockService();
@@ -667,14 +667,14 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assert.strictEqual(res[0].start.dateTime, '2025-09-19T09:00:00.000Z'); //prep
-				assert.strictEqual(res[0].end.dateTime, '2025-09-19T11:00:00.000Z');
-				assert.strictEqual(res[1].start.dateTime, '2025-09-22T09:00:00.000Z'); //siteVisit
-				assert.strictEqual(res[1].end.dateTime, '2025-09-22T12:00:00.000Z');
-				assert.strictEqual(res[2].start.dateTime, '2025-09-23T09:00:00.000Z'); //report
-				assert.strictEqual(res[2].end.dateTime, '2025-09-23T11:00:00.000Z');
-				assert.strictEqual(res[3].start.dateTime, '2025-09-24T09:00:00.000Z'); //costs
-				assert.strictEqual(res[3].end.dateTime, '2025-09-24T10:00:00.000Z');
+				assert.strictEqual(res[0].start.dateTime, new Date(2025, 8, 19, 9).toISOString()); //prep
+				assert.strictEqual(res[0].end.dateTime, new Date(2025, 8, 19, 11).toISOString());
+				assert.strictEqual(res[1].start.dateTime, new Date(2025, 8, 22, 9).toISOString()); //siteVisit
+				assert.strictEqual(res[1].end.dateTime, new Date(2025, 8, 22, 12).toISOString());
+				assert.strictEqual(res[2].start.dateTime, new Date(2025, 8, 23, 9).toISOString()); //report
+				assert.strictEqual(res[2].end.dateTime, new Date(2025, 8, 23, 11).toISOString());
+				assert.strictEqual(res[3].start.dateTime, new Date(2025, 8, 24, 9).toISOString()); //costs
+				assert.strictEqual(res[3].end.dateTime, new Date(2025, 8, 24, 10).toISOString());
 			});
 			it('setting the assignment date to a Saturday will generate the prep event on the prior Friday and increment all other days by 2', async () => {
 				const service = mockService();
@@ -687,14 +687,14 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assert.strictEqual(res[0].start.dateTime, '2025-09-19T09:00:00.000Z'); //prep
-				assert.strictEqual(res[0].end.dateTime, '2025-09-19T11:00:00.000Z');
-				assert.strictEqual(res[1].start.dateTime, '2025-09-22T09:00:00.000Z'); //siteVisit
-				assert.strictEqual(res[1].end.dateTime, '2025-09-22T12:00:00.000Z');
-				assert.strictEqual(res[2].start.dateTime, '2025-09-23T09:00:00.000Z'); //report
-				assert.strictEqual(res[2].end.dateTime, '2025-09-23T11:00:00.000Z');
-				assert.strictEqual(res[3].start.dateTime, '2025-09-24T09:00:00.000Z'); //costs
-				assert.strictEqual(res[3].end.dateTime, '2025-09-24T10:00:00.000Z');
+				assert.strictEqual(res[0].start.dateTime, new Date(2025, 8, 19, 9).toISOString()); //prep
+				assert.strictEqual(res[0].end.dateTime, new Date(2025, 8, 19, 11).toISOString());
+				assert.strictEqual(res[1].start.dateTime, new Date(2025, 8, 22, 9).toISOString()); //siteVisit
+				assert.strictEqual(res[1].end.dateTime, new Date(2025, 8, 22, 12).toISOString());
+				assert.strictEqual(res[2].start.dateTime, new Date(2025, 8, 23, 9).toISOString()); //report
+				assert.strictEqual(res[2].end.dateTime, new Date(2025, 8, 23, 11).toISOString());
+				assert.strictEqual(res[3].start.dateTime, new Date(2025, 8, 24, 9).toISOString()); //costs
+				assert.strictEqual(res[3].end.dateTime, new Date(2025, 8, 24, 10).toISOString());
 			});
 			it('setting the assignment date to a Friday will offload report and costs stages onto the next week', async () => {
 				const service = mockService();
@@ -707,14 +707,14 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assert.strictEqual(res[0].start.dateTime, '2025-09-18T09:00:00.000Z'); //prep
-				assert.strictEqual(res[0].end.dateTime, '2025-09-18T11:00:00.000Z');
-				assert.strictEqual(res[1].start.dateTime, '2025-09-19T09:00:00.000Z'); //siteVisit
-				assert.strictEqual(res[1].end.dateTime, '2025-09-19T12:00:00.000Z');
-				assert.strictEqual(res[2].start.dateTime, '2025-09-22T09:00:00.000Z'); //report
-				assert.strictEqual(res[2].end.dateTime, '2025-09-22T11:00:00.000Z');
-				assert.strictEqual(res[3].start.dateTime, '2025-09-23T09:00:00.000Z'); //costs
-				assert.strictEqual(res[3].end.dateTime, '2025-09-23T10:00:00.000Z');
+				assert.strictEqual(res[0].start.dateTime, new Date(2025, 8, 18, 9).toISOString()); //prep
+				assert.strictEqual(res[0].end.dateTime, new Date(2025, 8, 18, 11).toISOString());
+				assert.strictEqual(res[1].start.dateTime, new Date(2025, 8, 19, 9).toISOString()); //siteVisit
+				assert.strictEqual(res[1].end.dateTime, new Date(2025, 8, 19, 12).toISOString());
+				assert.strictEqual(res[2].start.dateTime, new Date(2025, 8, 22, 9).toISOString()); //report
+				assert.strictEqual(res[2].end.dateTime, new Date(2025, 8, 22, 11).toISOString());
+				assert.strictEqual(res[3].start.dateTime, new Date(2025, 8, 23, 9).toISOString()); //costs
+				assert.strictEqual(res[3].end.dateTime, new Date(2025, 8, 23, 10).toISOString());
 			});
 			it('setting the assignment date to a Thursday will offload costs stage onto the next week', async () => {
 				const service = mockService();
@@ -727,14 +727,14 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assert.strictEqual(res[0].start.dateTime, '2025-09-17T09:00:00.000Z'); //prep
-				assert.strictEqual(res[0].end.dateTime, '2025-09-17T11:00:00.000Z');
-				assert.strictEqual(res[1].start.dateTime, '2025-09-18T09:00:00.000Z'); //siteVisit
-				assert.strictEqual(res[1].end.dateTime, '2025-09-18T12:00:00.000Z');
-				assert.strictEqual(res[2].start.dateTime, '2025-09-19T09:00:00.000Z'); //report
-				assert.strictEqual(res[2].end.dateTime, '2025-09-19T11:00:00.000Z');
-				assert.strictEqual(res[3].start.dateTime, '2025-09-22T09:00:00.000Z'); //costs
-				assert.strictEqual(res[3].end.dateTime, '2025-09-22T10:00:00.000Z');
+				assert.strictEqual(res[0].start.dateTime, new Date(2025, 8, 17, 9).toISOString()); //prep
+				assert.strictEqual(res[0].end.dateTime, new Date(2025, 8, 17, 11).toISOString());
+				assert.strictEqual(res[1].start.dateTime, new Date(2025, 8, 18, 9).toISOString()); //siteVisit
+				assert.strictEqual(res[1].end.dateTime, new Date(2025, 8, 18, 12).toISOString());
+				assert.strictEqual(res[2].start.dateTime, new Date(2025, 8, 19, 9).toISOString()); //report
+				assert.strictEqual(res[2].end.dateTime, new Date(2025, 8, 19, 11).toISOString());
+				assert.strictEqual(res[3].start.dateTime, new Date(2025, 8, 22, 9).toISOString()); //costs
+				assert.strictEqual(res[3].end.dateTime, new Date(2025, 8, 22, 10).toISOString());
 			});
 			it('bank holidays should be accounted for when allocating events', async () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
@@ -749,14 +749,14 @@ describe('calendar', () => {
 				requiredProps(case1.report);
 				requiredStages(case1.prep, case1.siteVisit, case1.report, case1.costs);
 
-				assert.strictEqual(case1.prep.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(case1.prep.end.dateTime, '2025-09-24T11:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.end.dateTime, '2025-09-25T12:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(case1.report.end.dateTime, '2025-09-26T11:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-09-30T09:00:00.000Z');
-				assert.strictEqual(case1.costs.end.dateTime, '2025-09-30T10:00:00.000Z');
+				assert.strictEqual(case1.prep.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(case1.prep.end.dateTime, new Date(2025, 8, 24, 11).toISOString());
+				assert.strictEqual(case1.siteVisit.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(case1.siteVisit.end.dateTime, new Date(2025, 8, 25, 12).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 8, 26, 11).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 8, 30, 9).toISOString());
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 8, 30, 10).toISOString());
 			});
 			it('bank holidays should be accounted for when allocating events for multiple cases', async () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
@@ -772,30 +772,30 @@ describe('calendar', () => {
 					{ prep: res[2], siteVisit: res[5], report: res[8], costs: res[11] }
 				];
 
-				assert.strictEqual(case1.prep.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(case1.prep.end.dateTime, '2025-09-25T11:00:00.000Z');
-				assert.strictEqual(case2.prep.start.dateTime, '2025-09-25T11:00:00.000Z');
-				assert.strictEqual(case2.prep.end.dateTime, '2025-09-25T13:00:00.000Z');
-				assert.strictEqual(case3.prep.start.dateTime, '2025-09-25T13:00:00.000Z');
-				assert.strictEqual(case3.prep.end.dateTime, '2025-09-25T15:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.end.dateTime, '2025-09-26T12:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.start.dateTime, '2025-09-26T12:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.end.dateTime, '2025-09-26T15:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.start.dateTime, '2025-09-30T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.end.dateTime, '2025-09-30T12:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-10-01T09:00:00.000Z');
-				assert.strictEqual(case1.report.end.dateTime, '2025-10-01T11:00:00.000Z');
-				assert.strictEqual(case2.report.start.dateTime, '2025-10-01T11:00:00.000Z');
-				assert.strictEqual(case2.report.end.dateTime, '2025-10-01T13:00:00.000Z');
-				assert.strictEqual(case3.report.start.dateTime, '2025-10-01T13:00:00.000Z');
-				assert.strictEqual(case3.report.end.dateTime, '2025-10-01T15:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-10-02T09:00:00.000Z');
-				assert.strictEqual(case1.costs.end.dateTime, '2025-10-02T10:00:00.000Z');
-				assert.strictEqual(case2.costs.start.dateTime, '2025-10-02T10:00:00.000Z');
-				assert.strictEqual(case2.costs.end.dateTime, '2025-10-02T11:00:00.000Z');
-				assert.strictEqual(case3.costs.start.dateTime, '2025-10-02T11:00:00.000Z');
-				assert.strictEqual(case3.costs.end.dateTime, '2025-10-02T12:00:00.000Z');
+				assert.strictEqual(case1.prep.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(case1.prep.end.dateTime, new Date(2025, 8, 25, 11).toISOString());
+				assert.strictEqual(case2.prep.start.dateTime, new Date(2025, 8, 25, 11).toISOString());
+				assert.strictEqual(case2.prep.end.dateTime, new Date(2025, 8, 25, 13).toISOString());
+				assert.strictEqual(case3.prep.start.dateTime, new Date(2025, 8, 25, 13).toISOString());
+				assert.strictEqual(case3.prep.end.dateTime, new Date(2025, 8, 25, 15).toISOString());
+				assert.strictEqual(case1.siteVisit.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(case1.siteVisit.end.dateTime, new Date(2025, 8, 26, 12).toISOString());
+				assert.strictEqual(case2.siteVisit.start.dateTime, new Date(2025, 8, 26, 12).toISOString());
+				assert.strictEqual(case2.siteVisit.end.dateTime, new Date(2025, 8, 26, 15).toISOString());
+				assert.strictEqual(case3.siteVisit.start.dateTime, new Date(2025, 8, 30, 9).toISOString());
+				assert.strictEqual(case3.siteVisit.end.dateTime, new Date(2025, 8, 30, 12).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 9, 1, 9).toISOString());
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 9, 1, 11).toISOString());
+				assert.strictEqual(case2.report.start.dateTime, new Date(2025, 9, 1, 11).toISOString());
+				assert.strictEqual(case2.report.end.dateTime, new Date(2025, 9, 1, 13).toISOString());
+				assert.strictEqual(case3.report.start.dateTime, new Date(2025, 9, 1, 13).toISOString());
+				assert.strictEqual(case3.report.end.dateTime, new Date(2025, 9, 1, 15).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 9, 2, 9).toISOString());
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 9, 2, 10).toISOString());
+				assert.strictEqual(case2.costs.start.dateTime, new Date(2025, 9, 2, 10).toISOString());
+				assert.strictEqual(case2.costs.end.dateTime, new Date(2025, 9, 2, 11).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 9, 2, 11).toISOString());
+				assert.strictEqual(case3.costs.end.dateTime, new Date(2025, 9, 2, 12).toISOString());
 			});
 		});
 		describe('allocating events with respect to existing events', () => {
@@ -826,34 +826,34 @@ describe('calendar', () => {
 				requiredStages(case3.prep, case3.siteVisit, case3.report, case3.costs);
 
 				//case1
-				assert.strictEqual(case1.prep.start.dateTime, '2025-09-23T09:00:00.000Z'); //prep
-				assert.strictEqual(case1.prep.end.dateTime, '2025-09-23T11:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.start.dateTime, '2025-09-24T09:00:00.000Z'); //siteVisit
-				assert.strictEqual(case1.siteVisit.end.dateTime, '2025-09-24T11:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-09-25T09:00:00.000Z'); //report
-				assert.strictEqual(case1.report.end.dateTime, '2025-09-25T10:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-09-26T09:00:00.000Z'); //costs
-				assert.strictEqual(case1.costs.end.dateTime, '2025-09-26T10:00:00.000Z');
+				assert.strictEqual(case1.prep.start.dateTime, new Date(2025, 8, 23, 9).toISOString()); //prep
+				assert.strictEqual(case1.prep.end.dateTime, new Date(2025, 8, 23, 11).toISOString());
+				assert.strictEqual(case1.siteVisit.start.dateTime, new Date(2025, 8, 24, 9).toISOString()); //siteVisit
+				assert.strictEqual(case1.siteVisit.end.dateTime, new Date(2025, 8, 24, 11).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 8, 25, 9).toISOString()); //report
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 8, 25, 10).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 8, 26, 9).toISOString()); //costs
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 8, 26, 10).toISOString());
 
 				//case2 should come straight after case1
-				assert.strictEqual(case2.prep.start.dateTime, '2025-09-23T11:00:00.000Z'); //prep
-				assert.strictEqual(case2.prep.end.dateTime, '2025-09-23T13:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.start.dateTime, '2025-09-24T11:00:00.000Z'); //siteVisit
-				assert.strictEqual(case2.siteVisit.end.dateTime, '2025-09-24T13:00:00.000Z');
-				assert.strictEqual(case2.report.start.dateTime, '2025-09-25T10:00:00.000Z'); //report
-				assert.strictEqual(case2.report.end.dateTime, '2025-09-25T11:00:00.000Z');
-				assert.strictEqual(case2.costs.start.dateTime, '2025-09-26T10:00:00.000Z'); //costs
-				assert.strictEqual(case2.costs.end.dateTime, '2025-09-26T11:00:00.000Z');
+				assert.strictEqual(case2.prep.start.dateTime, new Date(2025, 8, 23, 11).toISOString()); //prep
+				assert.strictEqual(case2.prep.end.dateTime, new Date(2025, 8, 23, 13).toISOString());
+				assert.strictEqual(case2.siteVisit.start.dateTime, new Date(2025, 8, 24, 11).toISOString()); //siteVisit
+				assert.strictEqual(case2.siteVisit.end.dateTime, new Date(2025, 8, 24, 13).toISOString());
+				assert.strictEqual(case2.report.start.dateTime, new Date(2025, 8, 25, 10).toISOString()); //report
+				assert.strictEqual(case2.report.end.dateTime, new Date(2025, 8, 25, 11).toISOString());
+				assert.strictEqual(case2.costs.start.dateTime, new Date(2025, 8, 26, 10).toISOString()); //costs
+				assert.strictEqual(case2.costs.end.dateTime, new Date(2025, 8, 26, 11).toISOString());
 
 				//case3 should come straight after case2
-				assert.strictEqual(case3.prep.start.dateTime, '2025-09-23T13:00:00.000Z'); //prep
-				assert.strictEqual(case3.prep.end.dateTime, '2025-09-23T15:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.start.dateTime, '2025-09-24T13:00:00.000Z'); //siteVisit
-				assert.strictEqual(case3.siteVisit.end.dateTime, '2025-09-24T15:00:00.000Z');
-				assert.strictEqual(case3.report.start.dateTime, '2025-09-25T11:00:00.000Z'); //report
-				assert.strictEqual(case3.report.end.dateTime, '2025-09-25T12:00:00.000Z');
-				assert.strictEqual(case3.costs.start.dateTime, '2025-09-26T11:00:00.000Z'); //costs
-				assert.strictEqual(case3.costs.end.dateTime, '2025-09-26T12:00:00.000Z');
+				assert.strictEqual(case3.prep.start.dateTime, new Date(2025, 8, 23, 13).toISOString()); //prep
+				assert.strictEqual(case3.prep.end.dateTime, new Date(2025, 8, 23, 15).toISOString());
+				assert.strictEqual(case3.siteVisit.start.dateTime, new Date(2025, 8, 24, 13).toISOString()); //siteVisit
+				assert.strictEqual(case3.siteVisit.end.dateTime, new Date(2025, 8, 24, 15).toISOString());
+				assert.strictEqual(case3.report.start.dateTime, new Date(2025, 8, 25, 11).toISOString()); //report
+				assert.strictEqual(case3.report.end.dateTime, new Date(2025, 8, 25, 12).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 26, 11).toISOString()); //costs
+				assert.strictEqual(case3.costs.end.dateTime, new Date(2025, 8, 26, 12).toISOString());
 			});
 		});
 		describe('manipulating larger event allocations', () => {
@@ -880,16 +880,16 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assert.strictEqual(caseEvents.prep.start.dateTime, '2025-09-23T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep.end.dateTime, '2025-09-23T13:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit1.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit1.end.dateTime, '2025-09-24T17:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit2.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit2.end.dateTime, '2025-09-25T13:00:00.000Z');
-				assert.strictEqual(caseEvents.report.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report.end.dateTime, '2025-09-26T12:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.start.dateTime, '2025-09-29T09:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.end.dateTime, '2025-09-29T11:00:00.000Z');
+				assert.strictEqual(caseEvents.prep.start.dateTime, new Date(2025, 8, 23, 9).toISOString());
+				assert.strictEqual(caseEvents.prep.end.dateTime, new Date(2025, 8, 23, 13).toISOString());
+				assert.strictEqual(caseEvents.siteVisit1.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit1.end.dateTime, new Date(2025, 8, 24, 17).toISOString());
+				assert.strictEqual(caseEvents.siteVisit2.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit2.end.dateTime, new Date(2025, 8, 25, 13).toISOString());
+				assert.strictEqual(caseEvents.report.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(caseEvents.report.end.dateTime, new Date(2025, 8, 26, 12).toISOString());
+				assert.strictEqual(caseEvents.costs.start.dateTime, new Date(2025, 8, 29, 9).toISOString());
+				assert.strictEqual(caseEvents.costs.end.dateTime, new Date(2025, 8, 29, 11).toISOString());
 			});
 			it('report timing rules over 8 hours will be split into chunks of 8 hours and logged individually', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -914,16 +914,16 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assert.strictEqual(caseEvents.prep.start.dateTime, '2025-09-23T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep.end.dateTime, '2025-09-23T13:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit.end.dateTime, '2025-09-24T15:00:00.000Z');
-				assert.strictEqual(caseEvents.report1.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report1.end.dateTime, '2025-09-25T17:00:00.000Z');
-				assert.strictEqual(caseEvents.report2.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report2.end.dateTime, '2025-09-26T15:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.start.dateTime, '2025-09-29T09:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.end.dateTime, '2025-09-29T11:00:00.000Z');
+				assert.strictEqual(caseEvents.prep.start.dateTime, new Date(2025, 8, 23, 9).toISOString());
+				assert.strictEqual(caseEvents.prep.end.dateTime, new Date(2025, 8, 23, 13).toISOString());
+				assert.strictEqual(caseEvents.siteVisit.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit.end.dateTime, new Date(2025, 8, 24, 15).toISOString());
+				assert.strictEqual(caseEvents.report1.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(caseEvents.report1.end.dateTime, new Date(2025, 8, 25, 17).toISOString());
+				assert.strictEqual(caseEvents.report2.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(caseEvents.report2.end.dateTime, new Date(2025, 8, 26, 15).toISOString());
+				assert.strictEqual(caseEvents.costs.start.dateTime, new Date(2025, 8, 29, 9).toISOString());
+				assert.strictEqual(caseEvents.costs.end.dateTime, new Date(2025, 8, 29, 11).toISOString());
 			});
 			it('prep timing rules over 8 hours will be split into chunks of 8 hours and logged individually, moving backwards from assignment date as required', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -948,16 +948,16 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assert.strictEqual(caseEvents.prep1.start.dateTime, '2025-09-23T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep1.end.dateTime, '2025-09-23T17:00:00.000Z');
-				assert.strictEqual(caseEvents.prep2.start.dateTime, '2025-09-22T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep2.end.dateTime, '2025-09-22T11:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit.end.dateTime, '2025-09-24T12:00:00.000Z');
-				assert.strictEqual(caseEvents.report.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report.end.dateTime, '2025-09-25T11:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.end.dateTime, '2025-09-26T11:00:00.000Z');
+				assert.strictEqual(caseEvents.prep1.start.dateTime, new Date(2025, 8, 23, 9).toISOString());
+				assert.strictEqual(caseEvents.prep1.end.dateTime, new Date(2025, 8, 23, 17).toISOString());
+				assert.strictEqual(caseEvents.prep2.start.dateTime, new Date(2025, 8, 22, 9).toISOString());
+				assert.strictEqual(caseEvents.prep2.end.dateTime, new Date(2025, 8, 22, 11).toISOString());
+				assert.strictEqual(caseEvents.siteVisit.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit.end.dateTime, new Date(2025, 8, 24, 12).toISOString());
+				assert.strictEqual(caseEvents.report.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(caseEvents.report.end.dateTime, new Date(2025, 8, 25, 11).toISOString());
+				assert.strictEqual(caseEvents.costs.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(caseEvents.costs.end.dateTime, new Date(2025, 8, 26, 11).toISOString());
 			});
 			it('costs timing rules over 8 hours will be split into chunks of 8 hours. Split events also respect weekends', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -982,16 +982,16 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assert.strictEqual(caseEvents.prep.start.dateTime, '2025-09-23T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep.end.dateTime, '2025-09-23T11:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit.end.dateTime, '2025-09-24T12:00:00.000Z');
-				assert.strictEqual(caseEvents.report.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report.end.dateTime, '2025-09-25T11:00:00.000Z');
-				assert.strictEqual(caseEvents.costs1.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(caseEvents.costs1.end.dateTime, '2025-09-26T17:00:00.000Z');
-				assert.strictEqual(caseEvents.costs2.start.dateTime, '2025-09-29T09:00:00.000Z');
-				assert.strictEqual(caseEvents.costs2.end.dateTime, '2025-09-29T17:00:00.000Z');
+				assert.strictEqual(caseEvents.prep.start.dateTime, new Date(2025, 8, 23, 9).toISOString());
+				assert.strictEqual(caseEvents.prep.end.dateTime, new Date(2025, 8, 23, 11).toISOString());
+				assert.strictEqual(caseEvents.siteVisit.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit.end.dateTime, new Date(2025, 8, 24, 12).toISOString());
+				assert.strictEqual(caseEvents.report.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(caseEvents.report.end.dateTime, new Date(2025, 8, 25, 11).toISOString());
+				assert.strictEqual(caseEvents.costs1.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(caseEvents.costs1.end.dateTime, new Date(2025, 8, 26, 17).toISOString());
+				assert.strictEqual(caseEvents.costs2.start.dateTime, new Date(2025, 8, 29, 9).toISOString());
+				assert.strictEqual(caseEvents.costs2.end.dateTime, new Date(2025, 8, 29, 17).toISOString());
 			});
 			it('handle multiple split events going in both directions, respecting weekends', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1028,20 +1028,20 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 7);
 
-				assert.strictEqual(caseEvents.prep1.start.dateTime, '2025-09-23T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep1.end.dateTime, '2025-09-23T17:00:00.000Z');
-				assert.strictEqual(caseEvents.prep2.start.dateTime, '2025-09-22T09:00:00.000Z');
-				assert.strictEqual(caseEvents.prep2.end.dateTime, '2025-09-22T13:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit1.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit1.end.dateTime, '2025-09-24T17:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit2.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(caseEvents.siteVisit2.end.dateTime, '2025-09-25T13:00:00.000Z');
-				assert.strictEqual(caseEvents.report1.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report1.end.dateTime, '2025-09-26T17:00:00.000Z');
-				assert.strictEqual(caseEvents.report2.start.dateTime, '2025-09-29T09:00:00.000Z');
-				assert.strictEqual(caseEvents.report2.end.dateTime, '2025-09-29T11:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.start.dateTime, '2025-09-30T09:00:00.000Z');
-				assert.strictEqual(caseEvents.costs.end.dateTime, '2025-09-30T11:00:00.000Z');
+				assert.strictEqual(caseEvents.prep1.start.dateTime, new Date(2025, 8, 23, 9).toISOString());
+				assert.strictEqual(caseEvents.prep1.end.dateTime, new Date(2025, 8, 23, 17).toISOString());
+				assert.strictEqual(caseEvents.prep2.start.dateTime, new Date(2025, 8, 22, 9).toISOString());
+				assert.strictEqual(caseEvents.prep2.end.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(caseEvents.siteVisit1.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit1.end.dateTime, new Date(2025, 8, 24, 17).toISOString());
+				assert.strictEqual(caseEvents.siteVisit2.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(caseEvents.siteVisit2.end.dateTime, new Date(2025, 8, 25, 13).toISOString());
+				assert.strictEqual(caseEvents.report1.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(caseEvents.report1.end.dateTime, new Date(2025, 8, 26, 17).toISOString());
+				assert.strictEqual(caseEvents.report2.start.dateTime, new Date(2025, 8, 29, 9).toISOString());
+				assert.strictEqual(caseEvents.report2.end.dateTime, new Date(2025, 8, 29, 11).toISOString());
+				assert.strictEqual(caseEvents.costs.start.dateTime, new Date(2025, 8, 30, 9).toISOString());
+				assert.strictEqual(caseEvents.costs.end.dateTime, new Date(2025, 8, 30, 11).toISOString());
 			});
 			it('handle multiple cases with split events', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1076,36 +1076,43 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 15);
 
-				assert.strictEqual(case1.prep.start.dateTime, '2025-09-09T09:00:00.000Z');
-				assert.strictEqual(case1.prep.end.dateTime, '2025-09-09T13:00:00.000Z');
-				assert.strictEqual(case2.prep.start.dateTime, '2025-09-09T13:00:00.000Z');
-				assert.strictEqual(case2.prep.end.dateTime, '2025-09-09T17:00:00.000Z');
-				assert.strictEqual(case3.prep.start.dateTime, '2025-09-08T09:00:00.000Z');
-				assert.strictEqual(case3.prep.end.dateTime, '2025-09-08T13:00:00.000Z');
-				assert.strictEqual(case1.siteVisit1.start.dateTime, '2025-09-10T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit1.end.dateTime, '2025-09-10T17:00:00.000Z');
-				assert.strictEqual(case1.siteVisit2.start.dateTime, '2025-09-11T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit2.end.dateTime, '2025-09-11T13:00:00.000Z');
-				assert.strictEqual(case2.siteVisit1.start.dateTime, '2025-09-12T09:00:00.000Z');
-				assert.strictEqual(case2.siteVisit1.end.dateTime, '2025-09-12T17:00:00.000Z');
-				assert.strictEqual(case2.siteVisit2.start.dateTime, '2025-09-15T09:00:00.000Z'); // technically could be put on 11th but much safer to not look backwards when assigning split cases
-				assert.strictEqual(case2.siteVisit2.end.dateTime, '2025-09-15T13:00:00.000Z');
-				assert.strictEqual(case3.siteVisit1.start.dateTime, '2025-09-16T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit1.end.dateTime, '2025-09-16T17:00:00.000Z');
-				assert.strictEqual(case3.siteVisit2.start.dateTime, '2025-09-17T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit2.end.dateTime, '2025-09-17T13:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-09-18T09:00:00.000Z');
-				assert.strictEqual(case1.report.end.dateTime, '2025-09-18T13:00:00.000Z');
-				assert.strictEqual(case2.report.start.dateTime, '2025-09-18T13:00:00.000Z');
-				assert.strictEqual(case2.report.end.dateTime, '2025-09-18T17:00:00.000Z');
-				assert.strictEqual(case3.report.start.dateTime, '2025-09-19T09:00:00.000Z');
-				assert.strictEqual(case3.report.end.dateTime, '2025-09-19T13:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-09-22T09:00:00.000Z');
-				assert.strictEqual(case1.costs.end.dateTime, '2025-09-22T11:00:00.000Z');
-				assert.strictEqual(case2.costs.start.dateTime, '2025-09-22T11:00:00.000Z');
-				assert.strictEqual(case2.costs.end.dateTime, '2025-09-22T13:00:00.000Z');
-				assert.strictEqual(case3.costs.start.dateTime, '2025-09-22T13:00:00.000Z');
-				assert.strictEqual(case3.costs.end.dateTime, '2025-09-22T15:00:00.000Z');
+				assert.strictEqual(case1.prep.start.dateTime, new Date(2025, 8, 9, 9).toISOString());
+				assert.strictEqual(case1.prep.end.dateTime, new Date(2025, 8, 9, 13).toISOString());
+				assert.strictEqual(case2.prep.start.dateTime, new Date(2025, 8, 9, 13).toISOString());
+				assert.strictEqual(case2.prep.end.dateTime, new Date(2025, 8, 9, 17).toISOString());
+				assert.strictEqual(case3.prep.start.dateTime, new Date(2025, 8, 8, 9).toISOString());
+				assert.strictEqual(case3.prep.end.dateTime, new Date(2025, 8, 8, 13).toISOString());
+				assert.strictEqual(case1.siteVisit1.start.dateTime, new Date(2025, 8, 10, 9).toISOString());
+				assert.strictEqual(case1.siteVisit1.end.dateTime, new Date(2025, 8, 10, 17).toISOString());
+				assert.strictEqual(case1.siteVisit2.start.dateTime, new Date(2025, 8, 11, 9).toISOString());
+				assert.strictEqual(case1.siteVisit2.end.dateTime, new Date(2025, 8, 11, 13).toISOString());
+				assert.strictEqual(case2.siteVisit1.start.dateTime, new Date(2025, 8, 12, 9).toISOString());
+				assert.strictEqual(case2.siteVisit1.end.dateTime, new Date(2025, 8, 12, 17).toISOString());
+				assert.strictEqual(case2.siteVisit2.start.dateTime, new Date(2025, 8, 15, 9).toISOString()); // technically could be put on 11th but much safer to not look backwards when assigning split cases
+				assert.strictEqual(case2.siteVisit2.end.dateTime, new Date(2025, 8, 15, 13).toISOString());
+				assert.strictEqual(case3.siteVisit1.start.dateTime, new Date(2025, 8, 16, 9).toISOString());
+				assert.strictEqual(case3.siteVisit1.end.dateTime, new Date(2025, 8, 16, 17).toISOString());
+				assert.strictEqual(case3.siteVisit2.start.dateTime, new Date(2025, 8, 17, 9).toISOString());
+				assert.strictEqual(case3.siteVisit2.end.dateTime, new Date(2025, 8, 17, 13).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 8, 18, 9).toISOString());
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 8, 18, 13).toISOString());
+				assert.strictEqual(case2.report.start.dateTime, new Date(2025, 8, 18, 13).toISOString());
+				assert.strictEqual(case2.report.end.dateTime, new Date(2025, 8, 18, 17).toISOString());
+				assert.strictEqual(case3.report.start.dateTime, new Date(2025, 8, 19, 9).toISOString());
+				assert.strictEqual(case3.report.end.dateTime, new Date(2025, 8, 19, 13).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 8, 22, 9).toISOString());
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 8, 22, 11).toISOString());
+				assert.strictEqual(case2.costs.start.dateTime, new Date(2025, 8, 22, 11).toISOString());
+				assert.strictEqual(case2.costs.end.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 22, 13).toISOString());
+				assert.strictEqual(case3.costs.end.dateTime, new Date(2025, 8, 22, 15).toISOString());
 			});
 			it('handle multiple cases with split prep events', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1141,36 +1148,36 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 15);
 
-				assert.strictEqual(case1.prep1.start.dateTime, '2025-09-09T09:00:00.000Z'); //prep events go backwards because case1 assigned first, then case2
-				assert.strictEqual(case1.prep1.end.dateTime, '2025-09-09T17:00:00.000Z');
-				assert.strictEqual(case1.prep2.start.dateTime, '2025-09-08T09:00:00.000Z');
-				assert.strictEqual(case1.prep2.end.dateTime, '2025-09-08T13:00:00.000Z');
-				assert.strictEqual(case2.prep1.start.dateTime, '2025-09-05T09:00:00.000Z');
-				assert.strictEqual(case2.prep1.end.dateTime, '2025-09-05T17:00:00.000Z');
-				assert.strictEqual(case2.prep2.start.dateTime, '2025-09-04T09:00:00.000Z');
-				assert.strictEqual(case2.prep2.end.dateTime, '2025-09-04T13:00:00.000Z');
-				assert.strictEqual(case3.prep1.start.dateTime, '2025-09-03T09:00:00.000Z');
-				assert.strictEqual(case3.prep1.end.dateTime, '2025-09-03T17:00:00.000Z');
-				assert.strictEqual(case3.prep2.start.dateTime, '2025-09-02T09:00:00.000Z');
-				assert.strictEqual(case3.prep2.end.dateTime, '2025-09-02T13:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.start.dateTime, '2025-09-10T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.end.dateTime, '2025-09-10T13:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.start.dateTime, '2025-09-10T13:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.end.dateTime, '2025-09-10T17:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.start.dateTime, '2025-09-11T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.end.dateTime, '2025-09-11T13:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-09-12T09:00:00.000Z');
-				assert.strictEqual(case1.report.end.dateTime, '2025-09-12T13:00:00.000Z');
-				assert.strictEqual(case2.report.start.dateTime, '2025-09-12T13:00:00.000Z');
-				assert.strictEqual(case2.report.end.dateTime, '2025-09-12T17:00:00.000Z');
-				assert.strictEqual(case3.report.start.dateTime, '2025-09-15T09:00:00.000Z');
-				assert.strictEqual(case3.report.end.dateTime, '2025-09-15T13:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-09-16T09:00:00.000Z');
-				assert.strictEqual(case1.costs.end.dateTime, '2025-09-16T11:00:00.000Z');
-				assert.strictEqual(case2.costs.start.dateTime, '2025-09-16T11:00:00.000Z');
-				assert.strictEqual(case2.costs.end.dateTime, '2025-09-16T13:00:00.000Z');
-				assert.strictEqual(case3.costs.start.dateTime, '2025-09-16T13:00:00.000Z');
-				assert.strictEqual(case3.costs.end.dateTime, '2025-09-16T15:00:00.000Z');
+				assert.strictEqual(case1.prep1.start.dateTime, new Date(2025, 8, 9, 9).toISOString()); //prep events go backwards because case1 assigned first, then case2
+				assert.strictEqual(case1.prep1.end.dateTime, new Date(2025, 8, 9, 17).toISOString());
+				assert.strictEqual(case1.prep2.start.dateTime, new Date(2025, 8, 8, 9).toISOString());
+				assert.strictEqual(case1.prep2.end.dateTime, new Date(2025, 8, 8, 13).toISOString());
+				assert.strictEqual(case2.prep1.start.dateTime, new Date(2025, 8, 5, 9).toISOString());
+				assert.strictEqual(case2.prep1.end.dateTime, new Date(2025, 8, 5, 17).toISOString());
+				assert.strictEqual(case2.prep2.start.dateTime, new Date(2025, 8, 4, 9).toISOString());
+				assert.strictEqual(case2.prep2.end.dateTime, new Date(2025, 8, 4, 13).toISOString());
+				assert.strictEqual(case3.prep1.start.dateTime, new Date(2025, 8, 3, 9).toISOString());
+				assert.strictEqual(case3.prep1.end.dateTime, new Date(2025, 8, 3, 17).toISOString());
+				assert.strictEqual(case3.prep2.start.dateTime, new Date(2025, 8, 2, 9).toISOString());
+				assert.strictEqual(case3.prep2.end.dateTime, new Date(2025, 8, 2, 13).toISOString());
+				assert.strictEqual(case1.siteVisit.start.dateTime, new Date(2025, 8, 10, 9).toISOString());
+				assert.strictEqual(case1.siteVisit.end.dateTime, new Date(2025, 8, 10, 13).toISOString());
+				assert.strictEqual(case2.siteVisit.start.dateTime, new Date(2025, 8, 10, 13).toISOString());
+				assert.strictEqual(case2.siteVisit.end.dateTime, new Date(2025, 8, 10, 17).toISOString());
+				assert.strictEqual(case3.siteVisit.start.dateTime, new Date(2025, 8, 11, 9).toISOString());
+				assert.strictEqual(case3.siteVisit.end.dateTime, new Date(2025, 8, 11, 13).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 8, 12, 9).toISOString());
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 8, 12, 13).toISOString());
+				assert.strictEqual(case2.report.start.dateTime, new Date(2025, 8, 12, 13).toISOString());
+				assert.strictEqual(case2.report.end.dateTime, new Date(2025, 8, 12, 17).toISOString());
+				assert.strictEqual(case3.report.start.dateTime, new Date(2025, 8, 15, 9).toISOString());
+				assert.strictEqual(case3.report.end.dateTime, new Date(2025, 8, 15, 13).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 8, 16, 9).toISOString());
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 8, 16, 11).toISOString());
+				assert.strictEqual(case2.costs.start.dateTime, new Date(2025, 8, 16, 11).toISOString());
+				assert.strictEqual(case2.costs.end.dateTime, new Date(2025, 8, 16, 13).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 16, 13).toISOString());
+				assert.strictEqual(case3.costs.end.dateTime, new Date(2025, 8, 16, 15).toISOString());
 			});
 			it('handle multiple events that overrun the 8 hour daily limit and straddle the weekend', async () => {
 				const service = mockService();
@@ -1190,46 +1197,46 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 20);
 
-				assert.strictEqual(case1.prep.start.dateTime, '2025-09-09T09:00:00.000Z');
-				assert.strictEqual(case1.prep.end.dateTime, '2025-09-09T11:00:00.000Z');
-				assert.strictEqual(case2.prep.start.dateTime, '2025-09-09T11:00:00.000Z');
-				assert.strictEqual(case2.prep.end.dateTime, '2025-09-09T13:00:00.000Z');
-				assert.strictEqual(case3.prep.start.dateTime, '2025-09-09T13:00:00.000Z');
-				assert.strictEqual(case3.prep.end.dateTime, '2025-09-09T15:00:00.000Z');
-				assert.strictEqual(case4.prep.start.dateTime, '2025-09-09T15:00:00.000Z');
-				assert.strictEqual(case4.prep.end.dateTime, '2025-09-09T17:00:00.000Z');
-				assert.strictEqual(case5.prep.start.dateTime, '2025-09-08T09:00:00.000Z');
-				assert.strictEqual(case5.prep.end.dateTime, '2025-09-08T11:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.start.dateTime, '2025-09-10T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit.end.dateTime, '2025-09-10T12:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.start.dateTime, '2025-09-10T12:00:00.000Z');
-				assert.strictEqual(case2.siteVisit.end.dateTime, '2025-09-10T15:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.start.dateTime, '2025-09-11T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit.end.dateTime, '2025-09-11T12:00:00.000Z');
-				assert.strictEqual(case4.siteVisit.start.dateTime, '2025-09-11T12:00:00.000Z');
-				assert.strictEqual(case4.siteVisit.end.dateTime, '2025-09-11T15:00:00.000Z');
-				assert.strictEqual(case5.siteVisit.start.dateTime, '2025-09-12T09:00:00.000Z');
-				assert.strictEqual(case5.siteVisit.end.dateTime, '2025-09-12T12:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-09-15T09:00:00.000Z');
-				assert.strictEqual(case1.report.end.dateTime, '2025-09-15T11:00:00.000Z');
-				assert.strictEqual(case2.report.start.dateTime, '2025-09-15T11:00:00.000Z');
-				assert.strictEqual(case2.report.end.dateTime, '2025-09-15T13:00:00.000Z');
-				assert.strictEqual(case3.report.start.dateTime, '2025-09-15T13:00:00.000Z');
-				assert.strictEqual(case3.report.end.dateTime, '2025-09-15T15:00:00.000Z');
-				assert.strictEqual(case4.report.start.dateTime, '2025-09-15T15:00:00.000Z');
-				assert.strictEqual(case4.report.end.dateTime, '2025-09-15T17:00:00.000Z');
-				assert.strictEqual(case5.report.start.dateTime, '2025-09-16T09:00:00.000Z');
-				assert.strictEqual(case5.report.end.dateTime, '2025-09-16T11:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-09-17T09:00:00.000Z');
-				assert.strictEqual(case1.costs.end.dateTime, '2025-09-17T10:00:00.000Z');
-				assert.strictEqual(case2.costs.start.dateTime, '2025-09-17T10:00:00.000Z');
-				assert.strictEqual(case2.costs.end.dateTime, '2025-09-17T11:00:00.000Z');
-				assert.strictEqual(case3.costs.start.dateTime, '2025-09-17T11:00:00.000Z');
-				assert.strictEqual(case3.costs.end.dateTime, '2025-09-17T12:00:00.000Z');
-				assert.strictEqual(case4.costs.start.dateTime, '2025-09-17T12:00:00.000Z');
-				assert.strictEqual(case4.costs.end.dateTime, '2025-09-17T13:00:00.000Z');
-				assert.strictEqual(case5.costs.start.dateTime, '2025-09-17T13:00:00.000Z');
-				assert.strictEqual(case5.costs.end.dateTime, '2025-09-17T14:00:00.000Z');
+				assert.strictEqual(case1.prep.start.dateTime, new Date(2025, 8, 9, 9).toISOString());
+				assert.strictEqual(case1.prep.end.dateTime, new Date(2025, 8, 9, 11).toISOString());
+				assert.strictEqual(case2.prep.start.dateTime, new Date(2025, 8, 9, 11).toISOString());
+				assert.strictEqual(case2.prep.end.dateTime, new Date(2025, 8, 9, 13).toISOString());
+				assert.strictEqual(case3.prep.start.dateTime, new Date(2025, 8, 9, 13).toISOString());
+				assert.strictEqual(case3.prep.end.dateTime, new Date(2025, 8, 9, 15).toISOString());
+				assert.strictEqual(case4.prep.start.dateTime, new Date(2025, 8, 9, 15).toISOString());
+				assert.strictEqual(case4.prep.end.dateTime, new Date(2025, 8, 9, 17).toISOString());
+				assert.strictEqual(case5.prep.start.dateTime, new Date(2025, 8, 8, 9).toISOString());
+				assert.strictEqual(case5.prep.end.dateTime, new Date(2025, 8, 8, 11).toISOString());
+				assert.strictEqual(case1.siteVisit.start.dateTime, new Date(2025, 8, 10, 9).toISOString());
+				assert.strictEqual(case1.siteVisit.end.dateTime, new Date(2025, 8, 10, 12).toISOString());
+				assert.strictEqual(case2.siteVisit.start.dateTime, new Date(2025, 8, 10, 12).toISOString());
+				assert.strictEqual(case2.siteVisit.end.dateTime, new Date(2025, 8, 10, 15).toISOString());
+				assert.strictEqual(case3.siteVisit.start.dateTime, new Date(2025, 8, 11, 9).toISOString());
+				assert.strictEqual(case3.siteVisit.end.dateTime, new Date(2025, 8, 11, 12).toISOString());
+				assert.strictEqual(case4.siteVisit.start.dateTime, new Date(2025, 8, 11, 12).toISOString());
+				assert.strictEqual(case4.siteVisit.end.dateTime, new Date(2025, 8, 11, 15).toISOString());
+				assert.strictEqual(case5.siteVisit.start.dateTime, new Date(2025, 8, 12, 9).toISOString());
+				assert.strictEqual(case5.siteVisit.end.dateTime, new Date(2025, 8, 12, 12).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 8, 15, 9).toISOString());
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 8, 15, 11).toISOString());
+				assert.strictEqual(case2.report.start.dateTime, new Date(2025, 8, 15, 11).toISOString());
+				assert.strictEqual(case2.report.end.dateTime, new Date(2025, 8, 15, 13).toISOString());
+				assert.strictEqual(case3.report.start.dateTime, new Date(2025, 8, 15, 13).toISOString());
+				assert.strictEqual(case3.report.end.dateTime, new Date(2025, 8, 15, 15).toISOString());
+				assert.strictEqual(case4.report.start.dateTime, new Date(2025, 8, 15, 15).toISOString());
+				assert.strictEqual(case4.report.end.dateTime, new Date(2025, 8, 15, 17).toISOString());
+				assert.strictEqual(case5.report.start.dateTime, new Date(2025, 8, 16, 9).toISOString());
+				assert.strictEqual(case5.report.end.dateTime, new Date(2025, 8, 16, 11).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 8, 17, 9).toISOString());
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 8, 17, 10).toISOString());
+				assert.strictEqual(case2.costs.start.dateTime, new Date(2025, 8, 17, 10).toISOString());
+				assert.strictEqual(case2.costs.end.dateTime, new Date(2025, 8, 17, 11).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 8, 17, 11).toISOString());
+				assert.strictEqual(case3.costs.end.dateTime, new Date(2025, 8, 17, 12).toISOString());
+				assert.strictEqual(case4.costs.start.dateTime, new Date(2025, 8, 17, 12).toISOString());
+				assert.strictEqual(case4.costs.end.dateTime, new Date(2025, 8, 17, 13).toISOString());
+				assert.strictEqual(case5.costs.start.dateTime, new Date(2025, 8, 17, 13).toISOString());
+				assert.strictEqual(case5.costs.end.dateTime, new Date(2025, 8, 17, 14).toISOString());
 			});
 			it('assignments should wrap onto the next month elegantly', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1254,36 +1261,36 @@ describe('calendar', () => {
 					{ prep: res[2], siteVisit1: res[7], siteVisit2: res[8], report: res[11], costs: res[14] }
 				];
 
-				assert.strictEqual(case1.prep.start.dateTime, '2025-09-25T09:00:00.000Z');
-				assert.strictEqual(case1.prep.end.dateTime, '2025-09-25T13:00:00.000Z');
-				assert.strictEqual(case2.prep.start.dateTime, '2025-09-25T13:00:00.000Z');
-				assert.strictEqual(case2.prep.end.dateTime, '2025-09-25T17:00:00.000Z');
-				assert.strictEqual(case3.prep.start.dateTime, '2025-09-24T09:00:00.000Z');
-				assert.strictEqual(case3.prep.end.dateTime, '2025-09-24T13:00:00.000Z');
-				assert.strictEqual(case1.siteVisit1.start.dateTime, '2025-09-26T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit1.end.dateTime, '2025-09-26T17:00:00.000Z');
-				assert.strictEqual(case1.siteVisit2.start.dateTime, '2025-09-29T09:00:00.000Z');
-				assert.strictEqual(case1.siteVisit2.end.dateTime, '2025-09-29T11:00:00.000Z');
-				assert.strictEqual(case2.siteVisit1.start.dateTime, '2025-09-30T09:00:00.000Z');
-				assert.strictEqual(case2.siteVisit1.end.dateTime, '2025-09-30T17:00:00.000Z');
-				assert.strictEqual(case2.siteVisit2.start.dateTime, '2025-10-01T09:00:00.000Z');
-				assert.strictEqual(case2.siteVisit2.end.dateTime, '2025-10-01T11:00:00.000Z');
-				assert.strictEqual(case3.siteVisit1.start.dateTime, '2025-10-02T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit1.end.dateTime, '2025-10-02T17:00:00.000Z');
-				assert.strictEqual(case3.siteVisit2.start.dateTime, '2025-10-03T09:00:00.000Z');
-				assert.strictEqual(case3.siteVisit2.end.dateTime, '2025-10-03T11:00:00.000Z');
-				assert.strictEqual(case1.report.start.dateTime, '2025-10-06T09:00:00.000Z');
-				assert.strictEqual(case1.report.end.dateTime, '2025-10-06T14:00:00.000Z');
-				assert.strictEqual(case2.report.start.dateTime, '2025-10-07T09:00:00.000Z');
-				assert.strictEqual(case2.report.end.dateTime, '2025-10-07T14:00:00.000Z');
-				assert.strictEqual(case3.report.start.dateTime, '2025-10-08T09:00:00.000Z');
-				assert.strictEqual(case3.report.end.dateTime, '2025-10-08T14:00:00.000Z');
-				assert.strictEqual(case1.costs.start.dateTime, '2025-10-09T09:00:00.000Z');
-				assert.strictEqual(case1.costs.end.dateTime, '2025-10-09T10:00:00.000Z');
-				assert.strictEqual(case2.costs.start.dateTime, '2025-10-09T10:00:00.000Z');
-				assert.strictEqual(case2.costs.end.dateTime, '2025-10-09T11:00:00.000Z');
-				assert.strictEqual(case3.costs.start.dateTime, '2025-10-09T11:00:00.000Z');
-				assert.strictEqual(case3.costs.end.dateTime, '2025-10-09T12:00:00.000Z');
+				assert.strictEqual(case1.prep.start.dateTime, new Date(2025, 8, 25, 9).toISOString());
+				assert.strictEqual(case1.prep.end.dateTime, new Date(2025, 8, 25, 13).toISOString());
+				assert.strictEqual(case2.prep.start.dateTime, new Date(2025, 8, 25, 13).toISOString());
+				assert.strictEqual(case2.prep.end.dateTime, new Date(2025, 8, 25, 17).toISOString());
+				assert.strictEqual(case3.prep.start.dateTime, new Date(2025, 8, 24, 9).toISOString());
+				assert.strictEqual(case3.prep.end.dateTime, new Date(2025, 8, 24, 13).toISOString());
+				assert.strictEqual(case1.siteVisit1.start.dateTime, new Date(2025, 8, 26, 9).toISOString());
+				assert.strictEqual(case1.siteVisit1.end.dateTime, new Date(2025, 8, 26, 17).toISOString());
+				assert.strictEqual(case1.siteVisit2.start.dateTime, new Date(2025, 8, 29, 9).toISOString());
+				assert.strictEqual(case1.siteVisit2.end.dateTime, new Date(2025, 8, 29, 11).toISOString());
+				assert.strictEqual(case2.siteVisit1.start.dateTime, new Date(2025, 8, 30, 9).toISOString());
+				assert.strictEqual(case2.siteVisit1.end.dateTime, new Date(2025, 8, 30, 17).toISOString());
+				assert.strictEqual(case2.siteVisit2.start.dateTime, new Date(2025, 9, 1, 9).toISOString());
+				assert.strictEqual(case2.siteVisit2.end.dateTime, new Date(2025, 9, 1, 11).toISOString());
+				assert.strictEqual(case3.siteVisit1.start.dateTime, new Date(2025, 9, 2, 9).toISOString());
+				assert.strictEqual(case3.siteVisit1.end.dateTime, new Date(2025, 9, 2, 17).toISOString());
+				assert.strictEqual(case3.siteVisit2.start.dateTime, new Date(2025, 9, 3, 9).toISOString());
+				assert.strictEqual(case3.siteVisit2.end.dateTime, new Date(2025, 9, 3, 11).toISOString());
+				assert.strictEqual(case1.report.start.dateTime, new Date(2025, 9, 6, 9).toISOString());
+				assert.strictEqual(case1.report.end.dateTime, new Date(2025, 9, 6, 14).toISOString());
+				assert.strictEqual(case2.report.start.dateTime, new Date(2025, 9, 7, 9).toISOString());
+				assert.strictEqual(case2.report.end.dateTime, new Date(2025, 9, 7, 14).toISOString());
+				assert.strictEqual(case3.report.start.dateTime, new Date(2025, 9, 8, 9).toISOString());
+				assert.strictEqual(case3.report.end.dateTime, new Date(2025, 9, 8, 14).toISOString());
+				assert.strictEqual(case1.costs.start.dateTime, new Date(2025, 9, 9, 9).toISOString());
+				assert.strictEqual(case1.costs.end.dateTime, new Date(2025, 9, 9, 10).toISOString());
+				assert.strictEqual(case2.costs.start.dateTime, new Date(2025, 9, 9, 10).toISOString());
+				assert.strictEqual(case2.costs.end.dateTime, new Date(2025, 9, 9, 11).toISOString());
+				assert.strictEqual(case3.costs.start.dateTime, new Date(2025, 9, 9, 11).toISOString());
+				assert.strictEqual(case3.costs.end.dateTime, new Date(2025, 9, 9, 12).toISOString());
 			});
 		});
 		describe('missing stages', () => {
