@@ -23,7 +23,8 @@ describe('controller.js', () => {
 			fetchAppealDetails: mock.fn()
 		};
 		const mockEntraClientInstance = {
-			listAllUserCalendarEvents: mock.fn()
+			listAllUserCalendarEvents: mock.fn(),
+			createCalendarEvents: mock.fn()
 		};
 		const mockGetCbosApiClientForSession = mock.fn();
 		const mockCalendarClient = {
