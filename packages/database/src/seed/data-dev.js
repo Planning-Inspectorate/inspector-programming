@@ -423,6 +423,7 @@ function generateLinkedCases(appeals, variations, now) {
 				caseCreatedDate: created,
 				caseValidDate: valid,
 				finalCommentsDueDate: finalCommentsDue,
+				linkedCaseStatus: 'Child',
 				Specialisms: generateCaseSpecialisms(),
 				Events: generateCaseEvents(reference, valid)
 			});
