@@ -1,6 +1,7 @@
-import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
+import { addDays, addHours, addWeeks, format, subDays, subWeeks, setHours } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
+import { fromZonedTime } from 'date-fns-tz';
 
 const timeZoneName = 'Europe/London';
 const timeZone = tz(timeZoneName);
@@ -227,10 +228,10 @@ export function getNextWeekStartDate(currentStartDate) {
  * @param {import('#service').WebService} service
  * @param {string} assignmentDate
  * @param {number[]} caseIds
- * @returns {Promise<import('./types').CalendarEventInput[]>}
+ * @returns {Promise<import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]>}
  */
 export async function generateCaseCalendarEvents(service, assignmentDate, caseIds) {
-	/** @type {import('./types').CalendarEventInput[]} */
+	/** @type {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} */
 	const allEvents = [];
 	/** @type {import('./types').BookedEventTimeslot[]} */
 	const inspectorEvents = [];
@@ -243,9 +244,13 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 	//filter down the number of bank holiday dates if we dont expect to have to check them when allocating times for our events
 	bankHolidays = bankHolidays?.length
 		? bankHolidays.filter((holiday) => {
-				const [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
-				pastLimit.setDate(pastLimit.getDate() - 10);
-				futureLimit.setDate(futureLimit.getDate() + 60);
+				let [holidayDate, pastLimit, futureLimit] = [
+					new Date(holiday),
+					new Date(assignmentDate),
+					new Date(assignmentDate)
+				];
+				pastLimit = subDays(pastLimit, 10, { in: timeZone });
+				futureLimit = addDays(futureLimit, 60, { in: timeZone });
 				return holidayDate > pastLimit && holidayDate < futureLimit;
 			})
 		: [];
@@ -287,9 +292,9 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 function compileBankHolidays(bankHolidays) {
 	const bankHolidayTimes = bankHolidays.map((holidayString) => {
 		const baseDate = new Date(holidayString);
-		const [start, end] = [new Date(baseDate), new Date(baseDate)];
-		start.setUTCHours(0, 0, 0, 0);
-		end.setUTCHours(23, 59, 59, 999);
+		let [start, end] = [new Date(baseDate), new Date(baseDate)];
+		start = setHours(start, 0, { in: timeZone });
+		end = setHours(end, 23, { in: timeZone });
 		return { startTime: start, endTime: end };
 	});
 	return bankHolidayTimes;
@@ -304,16 +309,13 @@ function compileBankHolidays(bankHolidays) {
 function getStageStartDate(stage, assignment, inspectorEvents) {
 	let startDate = new Date(assignment);
 	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		startDate.setDate(startDate.getDate() - 1);
-		return startDate;
+		return subDays(startDate, 1, { in: timeZone });
 	}
 
-	inspectorEvents.sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime));
+	inspectorEvents.sort((a, b) => +fromZonedTime(b.startTime, timeZoneName) - +fromZonedTime(a.startTime, timeZoneName));
+	startDate = fromZonedTime(inspectorEvents[0].startTime, timeZoneName);
 
-	startDate = new Date(inspectorEvents[0].startTime);
-	startDate.setDate(startDate.getDate() + 1);
-
-	return startDate;
+	return addDays(startDate, 1, { in: timeZone });
 }
 
 /**
@@ -342,10 +344,10 @@ function matchTimingRuleToCase(timingRules, fullCase) {
  * @param {Date} assignment
  * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
  * @param {import('./types').BookedEventTimeslot[]} bankHolidayEvents
- * @returns {import('./types').CalendarEventInput[]}
+ * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]}
  */
 function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents, bankHolidayEvents) {
-	/** @type {import('./types').CalendarEventInput[]} */
+	/** @type {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} */
 	const events = [];
 
 	//check if stage needs to be split into multiple events due to length
@@ -356,7 +358,7 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
 			!eventFitsIntoDay([...inspectorEvents, ...bankHolidayEvents], assignment, time) ||
 			[0, 6].includes(assignment.getDay())
 		) {
-			offsetEventByOne(stage, assignment);
+			assignment = offsetEventByOne(stage, assignment);
 		}
 
 		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
@@ -388,15 +390,27 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
  */
 function eventFitsIntoDay(inspectorEvents, assignmentDate, eventLength) {
 	const clone = new Date(assignmentDate);
-	const eventsThatDay = inspectorEvents.filter(
-		(e) => clone.toISOString().slice(0, 10) === e.startTime.toISOString().slice(0, 10)
-	);
+	const eventsThatDay = inspectorEvents.filter((e) => isSameDay(clone, e.startTime));
 	let hoursThatDay = eventLength;
 	eventsThatDay.forEach((e) => {
 		const diffHours = (+e.endTime - +e.startTime) / (1000 * 60 * 60);
 		hoursThatDay += diffHours;
 	});
 	return hoursThatDay <= 8;
+}
+
+/**
+ *
+ * @param {Date} date1
+ * @param {Date} date2
+ * @returns {boolean}
+ */
+function isSameDay(date1, date2) {
+	return (
+		date1.getFullYear() === date2.getFullYear() &&
+		date1.getMonth() === date2.getMonth() &&
+		date1.getDate() === date2.getDate()
+	);
 }
 
 /**
@@ -425,13 +439,12 @@ function splitLongEvents(eventLength) {
  * prep events move backwards, all others move forwards
  * @param {string} stage
  * @param {Date} assignment
+ * @returns {Date}
  */
 function offsetEventByOne(stage, assignment) {
-	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		assignment.setDate(assignment.getDate() - 1);
-	} else {
-		assignment.setDate(assignment.getDate() + 1);
-	}
+	return stage === CALENDAR_EVENT_STAGES.PREP
+		? subDays(assignment, 1, { in: timeZone })
+		: addDays(assignment, 1, { in: timeZone });
 }
 
 /**
@@ -443,15 +456,14 @@ function offsetEventByOne(stage, assignment) {
  * @returns {import('./types').BookedEventTimeslot}
  */
 function allocateCalendarEventTime(assignment, inspectorEvents, eventLength) {
-	const assignmentDate = new Date(assignment);
-	assignmentDate.setHours(9, 0, 0, 0);
-	const assignmentEnd = new Date(assignmentDate);
-	assignmentEnd.setHours(assignmentDate.getHours() + eventLength);
+	let assignmentDate = fromZonedTime(assignment, timeZoneName);
+	assignmentDate = setHours(assignmentDate, 9, { in: timeZone });
+	let assignmentEnd = setHours(assignmentDate, 9 + eventLength, { in: timeZone });
 
 	//check provisionally allocated slot against other events in inspector calendar and re-allocate as required
 	while (eventOverlaps(assignmentDate, assignmentEnd, inspectorEvents)) {
-		assignmentDate.setHours(assignmentDate.getHours() + 1);
-		assignmentEnd.setHours(assignmentEnd.getHours() + 1);
+		assignmentDate = addHours(assignmentDate, 1, { in: timeZone });
+		assignmentEnd = addHours(assignmentEnd, 1, { in: timeZone });
 	}
 
 	return { startTime: assignmentDate, endTime: assignmentEnd };
@@ -539,13 +551,14 @@ function buildEventJson(event, extensionProps) {
 export async function submitCalendarEvents(initEntraClient, events, authSession, inspectorId, logger) {
 	const client = initEntraClient(authSession);
 
-	if (!client) {
-		logger.warn('Skipping calendar, no Entra Client');
-	}
-
 	try {
-		await client?.createCalendarEvents(events, inspectorId);
+		if (!client) {
+			throw new Error(`No entra client initialised`);
+		}
+
+		await client.createCalendarEvents(events, inspectorId);
 	} catch (error) {
+		logger.error(`Error creating adding calendar events to outlook: ${error}`);
 		throw new Error(`Error creating adding calendar events to outlook: ${error}`);
 	}
 }
