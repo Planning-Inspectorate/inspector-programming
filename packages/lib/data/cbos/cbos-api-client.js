@@ -107,8 +107,8 @@ export class CbosApiClient {
 			siteAddressLongitude: appealCoordinates?.longitude,
 			lpaCode,
 			lpaName: c.localPlanningDepartment || '',
-			caseCreatedDate: c.createdAt || '',
-			caseValidDate: c.validAt || '',
+			caseCreatedDate: c.createdAt ? new Date(c.createdAt) : null,
+			caseValidDate: c.validAt ? new Date(c.validAt) : null,
 			finalCommentsDueDate: c.appealTimetable?.finalCommentsDueDate
 				? new Date(c.appealTimetable.finalCommentsDueDate)
 				: null,

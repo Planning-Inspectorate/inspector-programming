@@ -357,8 +357,8 @@ export interface AppealCaseModel {
 	siteAddressLongitude: Decimal | number | undefined;
 	lpaCode: string;
 	lpaName: string;
-	caseCreatedDate: string;
-	caseValidDate: string;
+	caseCreatedDate: Date | null;
+	caseValidDate: Date | null;
 	finalCommentsDueDate: Date | null;
 	linkedCaseStatus: string;
 	leadCaseReference: string | undefined;
