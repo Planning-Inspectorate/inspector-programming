@@ -301,12 +301,13 @@ describe('EntraClient', () => {
 							subject: 'System Event with Extension',
 							start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
 							end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' },
-							extensions: [
+							singleValueExtendedProperties: [
 								{
-									extensionName: 'Microsoft.OutlookServices.OpenTypeExtension',
-									id: `Microsoft.OutlookServices.OpenTypeExtension.${EXTENSION_ID}`,
-									caseReference: '6900216',
-									eventType: 'HEARING'
+									id: EXTENSION_ID,
+									value: JSON.stringify({
+										caseReference: '6900216',
+										eventType: 'HEARING'
+									})
 								}
 							]
 						},
@@ -331,15 +332,15 @@ describe('EntraClient', () => {
 			// Check event with extension
 			const systemEvent = events.find((e) => e.id === 'id1');
 			assert.ok(systemEvent);
-			assert.ok(Array.isArray(systemEvent.extensions));
-			assert.strictEqual(systemEvent.extensions.length, 1);
-			assert.strictEqual(systemEvent.extensions[0].caseReference, '6900216');
-			assert.strictEqual(systemEvent.extensions[0].eventType, 'HEARING');
+			assert.ok(Array.isArray(systemEvent.singleValueExtendedProperties));
+			assert.strictEqual(systemEvent.singleValueExtendedProperties.length, 1);
+			assert.match(systemEvent.singleValueExtendedProperties[0].value, /6900216/);
+			assert.match(systemEvent.singleValueExtendedProperties[0].value, /HEARING/);
 
 			// Check event without extension
 			const regularEvent = events.find((e) => e.id === 'id2');
 			assert.ok(regularEvent);
-			assert.strictEqual(regularEvent.extensions, undefined);
+			assert.strictEqual(regularEvent.singleValueExtendedProperties, undefined);
 		});
 	});
 

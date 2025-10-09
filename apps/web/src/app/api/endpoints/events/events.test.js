@@ -501,11 +501,13 @@ describe('events', () => {
 				isAllDay: false,
 				showAs: 'busy',
 				sensitivity: 'normal',
-				extensions: [
+				singleValueExtendedProperties: [
 					{
-						id: `Microsoft.OutlookServices.OpenTypeExtension.${EXTENSION_ID}`,
-						caseReference: 'CASE-123',
-						eventType: 'HEARING'
+						id: EXTENSION_ID,
+						value: JSON.stringify({
+							caseReference: 'CASE-123',
+							eventType: 'HEARING'
+						})
 					}
 				]
 			}

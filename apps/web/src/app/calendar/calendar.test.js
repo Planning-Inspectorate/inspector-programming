@@ -10,6 +10,7 @@ import {
 	getWeekStartDate,
 	generateCaseCalendarEvents
 } from './calendar.js';
+import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 
 const mockSession = {};
 
@@ -604,15 +605,14 @@ describe('calendar', () => {
 			requiredStages(case2.prep, case2.siteVisit, case2.report, case2.costs);
 			requiredStages(case3.prep, case3.siteVisit, case3.report, case3.costs);
 
-			assert.ok(Object.prototype.hasOwnProperty.call(res[0], 'extensions'));
+			assert.ok(Object.prototype.hasOwnProperty.call(res[0], 'singleValueExtendedProperties'));
 		});
 		it('calendar event extensions should only submit those that are provided', async () => {
 			const service = mockService();
 			const res = await generateCaseCalendarEvents(service, '2025-10-10', [1]);
 			assert.strictEqual(res.length, 4);
-			assert.strictEqual(res[0].extensions[0]['@odata.type'], 'microsoft.graph.openTypeExtension');
-			assert.strictEqual(res[0].extensions[0].extensionName, 'uk.gov.planninginspectorate.programming');
-			assert.ok(Object.prototype.hasOwnProperty.call(res[0].extensions[0], 'eventType'));
+			assert.strictEqual(res[0].singleValueExtendedProperties[0].id, EXTENSION_ID);
+			assert.ok(Object.prototype.hasOwnProperty.call(res[0].singleValueExtendedProperties[0], 'value'));
 		});
 		describe('error cases', () => {
 			it('no case details found for caseId should error', async () => {
