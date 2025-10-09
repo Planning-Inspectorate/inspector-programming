@@ -8,7 +8,8 @@ import {
 	generateWeekTitle,
 	getSimplifiedEvents,
 	getWeekStartDate,
-	generateCaseCalendarEvents
+	generateCaseCalendarEvents,
+	submitCalendarEvents
 } from './calendar.js';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 
@@ -20,11 +21,17 @@ const mockLogger = {
 };
 
 const mockEntraClient = {
-	getUserCalendarEvents: mock.fn()
+	getUserCalendarEvents: mock.fn(),
+	createCalendarEvents: mock.fn()
 };
 
 const mockInitEntraClient = mock.fn();
 mockInitEntraClient.mock.mockImplementation(() => mockEntraClient);
+
+beforeEach(() => {
+	mockLogger.error.mock.resetCalls();
+	mockEntraClient.createCalendarEvents.mock.resetCalls();
+});
 
 describe('calendar', () => {
 	it('should get a list of simplified events', async () => {
@@ -1313,6 +1320,39 @@ describe('calendar', () => {
 				requiredProps(caseEvents.prep);
 				assert.strictEqual(res.length, 3);
 			});
+		});
+	});
+
+	describe('submitCalendarEvents', () => {
+		it('should be able to create calendar events without error', async () => {
+			await submitCalendarEvents(mockInitEntraClient, ['event'], mockSession, 'inspectorId', mockLogger);
+			assert.strictEqual(mockLogger.error.mock.callCount(), 0);
+			assert.strictEqual(mockEntraClient.createCalendarEvents.mock.callCount(), 1);
+			assert.deepStrictEqual(mockEntraClient.createCalendarEvents.mock.calls[0].arguments[0], ['event']);
+			assert.strictEqual(mockEntraClient.createCalendarEvents.mock.calls[0].arguments[1], 'inspectorId');
+		});
+
+		it('should error if unable to initialise entra client', async () => {
+			mockInitEntraClient.mock.mockImplementationOnce(() => null);
+			await assert.rejects(submitCalendarEvents(mockInitEntraClient, [], mockSession, 'inspectorId', mockLogger));
+
+			const expectedErrorMessage =
+				'Error creating adding calendar events to outlook: Error: No entra client initialised';
+			assert.strictEqual(mockEntraClient.createCalendarEvents.mock.callCount(), 0);
+			assert.strictEqual(mockLogger.error.mock.callCount(), 1);
+			assert.strictEqual(mockLogger.error.mock.calls[0].arguments[0], expectedErrorMessage);
+		});
+
+		it('should error if unable to create calendar events', async () => {
+			mockEntraClient.createCalendarEvents.mock.mockImplementationOnce(() => {
+				throw new Error('Entra error');
+			});
+			await assert.rejects(submitCalendarEvents(mockInitEntraClient, [], mockSession, 'inspectorId', mockLogger));
+
+			const expectedErrorMessage = 'Error creating adding calendar events to outlook: Error: Entra error';
+			assert.strictEqual(mockEntraClient.createCalendarEvents.mock.callCount(), 1);
+			assert.strictEqual(mockLogger.error.mock.callCount(), 1);
+			assert.strictEqual(mockLogger.error.mock.calls[0].arguments[0], expectedErrorMessage);
 		});
 	});
 });

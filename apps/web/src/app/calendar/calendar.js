@@ -539,13 +539,14 @@ function buildEventJson(event, extensionProps) {
 export async function submitCalendarEvents(initEntraClient, events, authSession, inspectorId, logger) {
 	const client = initEntraClient(authSession);
 
-	if (!client) {
-		logger.warn('Skipping calendar, no Entra Client');
-	}
-
 	try {
-		await client?.createCalendarEvents(events, inspectorId);
+		if (!client) {
+			throw new Error(`No entra client initialised`);
+		}
+
+		await client.createCalendarEvents(events, inspectorId);
 	} catch (error) {
+		logger.error(`Error creating adding calendar events to outlook: ${error}`);
 		throw new Error(`Error creating adding calendar events to outlook: ${error}`);
 	}
 }

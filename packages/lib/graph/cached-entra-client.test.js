@@ -72,5 +72,92 @@ describe('cached-entra-client', () => {
 			const events = await cacheClient.getUserCalendarEvents('userId');
 			assert.deepStrictEqual(events.value, expectedEvents.value);
 		});
+		it('should create multiple calendar events', async () => {
+			const cacheMock = {};
+			const clientMock = {
+				createCalendarEvent: mock.fn()
+			};
+			const cacheClient = new CachedEntraClient(clientMock, cacheMock);
+			const userId = 'userID';
+
+			/**
+			 * @type {[{
+			 *   '@odata.type': string,
+			 *   extensionName: string,
+			 *   caseReference?: string,
+			 *   eventType?: string
+			 * }]}
+			 */
+			const event1Extension = [
+				{
+					'@odata.type': 'type1',
+					extensionName: 'extension1',
+					caseReference: 'caseRef1',
+					eventType: 'eventType1'
+				}
+			];
+
+			/**
+			 * @type {[{
+			 *   '@odata.type': string,
+			 *   extensionName: string,
+			 *   caseReference?: string,
+			 *   eventType?: string
+			 * }]}
+			 */
+			const event2Extension = [
+				{
+					'@odata.type': 'type2',
+					extensionName: 'extension2',
+					caseReference: 'caseRef2',
+					eventType: 'eventType2'
+				}
+			];
+
+			const event1 = {
+				subject: 'subject1',
+				start: {
+					dateTime: 'start1',
+					timeZone: 'timezone1'
+				},
+				end: {
+					dateTime: 'end1',
+					timeZone: 'timezone1'
+				},
+				location: {
+					address: {
+						street: 'street 1',
+						postalCode: 'postcode 1'
+					}
+				},
+				extensions: event1Extension
+			};
+
+			const event2 = {
+				subject: 'subject2',
+				start: {
+					dateTime: 'start2',
+					timeZone: 'timezone2'
+				},
+				end: {
+					dateTime: 'end2',
+					timeZone: 'timezone2'
+				},
+				location: {
+					address: {
+						street: 'street 2',
+						postalCode: 'postcode 2'
+					}
+				},
+				extensions: event2Extension
+			};
+
+			await cacheClient.createCalendarEvents([event1, event2], userId);
+			assert.strictEqual(clientMock.createCalendarEvent.mock.callCount(), 2);
+			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[0].arguments[0], event1);
+			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[0].arguments[1], userId);
+			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[1].arguments[0], event2);
+			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[1].arguments[1], userId);
+		});
 	});
 });
