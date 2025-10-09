@@ -1,4 +1,4 @@
-import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
+import { addDays, addHours, addWeeks, format, subDays, subWeeks } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 
@@ -243,9 +243,9 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 	//filter down the number of bank holiday dates if we dont expect to have to check them when allocating times for our events
 	bankHolidays = bankHolidays?.length
 		? bankHolidays.filter((holiday) => {
-				const [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
-				pastLimit.setDate(pastLimit.getDate() - 10);
-				futureLimit.setDate(futureLimit.getDate() + 60);
+				let [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
+				pastLimit = subDays(pastLimit, 10);
+				futureLimit = addDays(futureLimit, 60);
 				return holidayDate > pastLimit && holidayDate < futureLimit;
 			})
 		: [];
@@ -304,16 +304,13 @@ function compileBankHolidays(bankHolidays) {
 function getStageStartDate(stage, assignment, inspectorEvents) {
 	let startDate = new Date(assignment);
 	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		startDate.setDate(startDate.getDate() - 1);
-		return startDate;
+		return subDays(startDate, 1);
 	}
 
 	inspectorEvents.sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime));
-
 	startDate = new Date(inspectorEvents[0].startTime);
-	startDate.setDate(startDate.getDate() + 1);
 
-	return startDate;
+	return addDays(startDate, 1);
 }
 
 /**
@@ -356,7 +353,7 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
 			!eventFitsIntoDay([...inspectorEvents, ...bankHolidayEvents], assignment, time) ||
 			[0, 6].includes(assignment.getDay())
 		) {
-			offsetEventByOne(stage, assignment);
+			assignment = offsetEventByOne(stage, assignment);
 		}
 
 		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
@@ -425,13 +422,10 @@ function splitLongEvents(eventLength) {
  * prep events move backwards, all others move forwards
  * @param {string} stage
  * @param {Date} assignment
+ * @returns {Date}
  */
 function offsetEventByOne(stage, assignment) {
-	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		assignment.setDate(assignment.getDate() - 1);
-	} else {
-		assignment.setDate(assignment.getDate() + 1);
-	}
+	return stage === CALENDAR_EVENT_STAGES.PREP ? subDays(assignment, 1) : addDays(assignment, 1);
 }
 
 /**
@@ -443,15 +437,15 @@ function offsetEventByOne(stage, assignment) {
  * @returns {import('./types').BookedEventTimeslot}
  */
 function allocateCalendarEventTime(assignment, inspectorEvents, eventLength) {
-	const assignmentDate = new Date(assignment);
+	let assignmentDate = new Date(assignment);
 	assignmentDate.setHours(9, 0, 0, 0);
-	const assignmentEnd = new Date(assignmentDate);
-	assignmentEnd.setHours(assignmentDate.getHours() + eventLength);
+	let assignmentEnd = new Date(assignmentDate);
+	assignmentEnd = addHours(assignmentEnd, eventLength);
 
 	//check provisionally allocated slot against other events in inspector calendar and re-allocate as required
 	while (eventOverlaps(assignmentDate, assignmentEnd, inspectorEvents)) {
-		assignmentDate.setHours(assignmentDate.getHours() + 1);
-		assignmentEnd.setHours(assignmentEnd.getHours() + 1);
+		assignmentDate = addHours(assignmentDate, 1);
+		assignmentEnd = addHours(assignmentEnd, 1);
 	}
 
 	return { startTime: assignmentDate, endTime: assignmentEnd };
