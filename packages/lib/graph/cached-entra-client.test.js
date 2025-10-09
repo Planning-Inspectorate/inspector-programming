@@ -80,40 +80,6 @@ describe('cached-entra-client', () => {
 			const cacheClient = new CachedEntraClient(clientMock, cacheMock);
 			const userId = 'userID';
 
-			/**
-			 * @type {[{
-			 *   '@odata.type': string,
-			 *   extensionName: string,
-			 *   caseReference?: string,
-			 *   eventType?: string
-			 * }]}
-			 */
-			const event1Extension = [
-				{
-					'@odata.type': 'type1',
-					extensionName: 'extension1',
-					caseReference: 'caseRef1',
-					eventType: 'eventType1'
-				}
-			];
-
-			/**
-			 * @type {[{
-			 *   '@odata.type': string,
-			 *   extensionName: string,
-			 *   caseReference?: string,
-			 *   eventType?: string
-			 * }]}
-			 */
-			const event2Extension = [
-				{
-					'@odata.type': 'type2',
-					extensionName: 'extension2',
-					caseReference: 'caseRef2',
-					eventType: 'eventType2'
-				}
-			];
-
 			const event1 = {
 				subject: 'subject1',
 				start: {
@@ -129,8 +95,7 @@ describe('cached-entra-client', () => {
 						street: 'street 1',
 						postalCode: 'postcode 1'
 					}
-				},
-				extensions: event1Extension
+				}
 			};
 
 			const event2 = {
@@ -148,8 +113,7 @@ describe('cached-entra-client', () => {
 						street: 'street 2',
 						postalCode: 'postcode 2'
 					}
-				},
-				extensions: event2Extension
+				}
 			};
 
 			await cacheClient.createCalendarEvents([event1, event2], userId);
