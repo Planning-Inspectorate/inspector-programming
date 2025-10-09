@@ -4,7 +4,9 @@ const PER_PAGE = 500; // max 999 per page
 const MAX_PAGES = 10; // max 5000 entries
 
 // Extension id
-export const EXTENSION_ID = 'uk.gov.planninginspectorate.programming';
+// singleValueExtendedProperty ID for inspector programming extension data
+// GUID is "PS_PUBLIC_STRINGS" - https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/commonly-used-property-sets
+export const EXTENSION_ID = 'String {00020329-0000-0000-c000-000000000046} Name InspectorProgramming';
 
 // odata reference properties and values
 export const ODATA = Object.freeze({
@@ -82,7 +84,7 @@ export class EntraClient {
 
 		if (fetchExtension) {
 			// we don't fetch extensions by default as it seems to fail when using delegate permissions
-			request = request.expand([`extensions($filter=id eq '${EXTENSION_ID}')`]);
+			request = request.expand([`singleValueExtendedProperties($filter=id eq '${EXTENSION_ID}')`]);
 		}
 
 		return request.get();
@@ -108,7 +110,7 @@ export class EntraClient {
 			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity'])
 			.top(PER_PAGE);
 		if (options.fetchExtension) {
-			listEvents = listEvents.expand([`extensions($filter=id eq '${EXTENSION_ID}')`]);
+			listEvents = listEvents.expand([`singleValueExtendedProperties($filter=id eq '${EXTENSION_ID}')`]);
 		}
 
 		const events = [];

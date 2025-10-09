@@ -1,5 +1,6 @@
 import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
 import { tz } from '@date-fns/tz';
+import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 
 const timeZoneName = 'Europe/London';
 const timeZone = tz(timeZoneName);
@@ -518,11 +519,10 @@ function buildEventJson(event, extensionProps) {
 				postalCode: event.postcode
 			}
 		},
-		extensions: [
+		singleValueExtendedProperties: [
 			{
-				'@odata.type': 'microsoft.graph.openTypeExtension',
-				extensionName: 'uk.gov.planninginspectorate.programming',
-				...extensionProps
+				id: EXTENSION_ID,
+				value: JSON.stringify(extensionProps)
 			}
 		]
 	};

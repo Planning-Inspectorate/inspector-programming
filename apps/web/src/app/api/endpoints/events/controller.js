@@ -144,12 +144,17 @@ function formatCalendarEvent(event, user) {
 	let caseReference;
 	/** @type {string} */
 	let eventType;
-	if (Array.isArray(event.extensions)) {
-		const ext = event.extensions.find((e) => e.id === `Microsoft.OutlookServices.OpenTypeExtension.${EXTENSION_ID}`);
+	if (Array.isArray(event.singleValueExtendedProperties)) {
+		const ext = event.singleValueExtendedProperties.find((e) => e.id === EXTENSION_ID);
 		if (ext) {
-			systemEvent = !!ext;
-			if (typeof ext.caseReference === 'string') caseReference = ext.caseReference;
-			if (typeof ext.eventType === 'string') eventType = ext.eventType;
+			systemEvent = true;
+			try {
+				const extValues = JSON.parse(ext.value);
+				if (typeof extValues.caseReference === 'string') caseReference = extValues.caseReference;
+				if (typeof extValues.eventType === 'string') eventType = extValues.eventType;
+			} catch {
+				// ignore JSON parsing errors
+			}
 		}
 	}
 	return {

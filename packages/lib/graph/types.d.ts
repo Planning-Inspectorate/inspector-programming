@@ -26,15 +26,13 @@ export interface CalendarEvent {
 	isAllDay?: boolean;
 	showAs?: string;
 	sensitivity: string;
-	extensions?: CalendarEventExtension[];
+	singleValueExtendedProperties?: singleValueExtendedProperty[];
 	location: Location;
 }
 
-interface CalendarEventExtension {
-	extensionName: string;
+interface singleValueExtendedProperty {
 	id: string;
-	caseReference?: string;
-	eventType?: string;
+	value: string;
 }
 
 interface Location {

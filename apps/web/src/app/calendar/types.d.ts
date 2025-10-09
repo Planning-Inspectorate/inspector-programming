@@ -32,12 +32,10 @@ export interface CalendarEventInput {
 			postalCode: string | null;
 		};
 	};
-	extensions: [
+	singleValueExtendedProperties?: [
 		{
-			'@odata.type': string;
-			extensionName: string;
-			caseReference?: string;
-			eventType?: string;
+			id: string;
+			value: string; // JSON string of caseReference, eventType
 		}
 	];
 }
