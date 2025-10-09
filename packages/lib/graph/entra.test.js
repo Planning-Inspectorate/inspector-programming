@@ -25,7 +25,8 @@ describe('EntraClient', () => {
 				return this;
 			},
 			skipToken: mock.fn(() => this),
-			get: mock.fn(() => ({ value: [] }))
+			get: mock.fn(() => ({ value: [] })),
+			post: mock.fn()
 		};
 	};
 
@@ -374,5 +375,33 @@ describe('EntraClient', () => {
 				assert.strictEqual(token, test.token);
 			});
 		}
+	});
+
+	describe('createCalendarEvent', () => {
+		it('should create events via api', async () => {
+			const client = mockClient();
+			const entra = new EntraClient(client);
+
+			const event1 = {
+				subject: 'subject1',
+				start: {
+					dateTime: 'start1',
+					timeZone: 'timezone1'
+				},
+				end: {
+					dateTime: 'end1',
+					timeZone: 'timezone1'
+				},
+				location: {
+					address: {
+						street: 'street 1',
+						postalCode: 'postcode 1'
+					}
+				}
+			};
+
+			await entra.createCalendarEvent(event1, 'userId');
+			assert.deepStrictEqual(client.post.mock.calls[0].arguments[0], event1);
+		});
 	});
 });

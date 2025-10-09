@@ -44,7 +44,13 @@ export class CbosApiClient {
 		try {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
 			const [appealDetails, lpaData] = await Promise.all([this.fetchAppealDetails(appealIds), this.fetchLpaData()]);
-			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c, lpaData)));
+
+			// Remove Parent cases with invalid statuses
+			const filteredData = appealDetails.filter(
+				(item) =>
+					item.isChildAppeal || (item.appealStatus && READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus))
+			);
+			const mappedAppeals = await Promise.all(filteredData.map((c) => this.appealToAppealCaseModel(c, lpaData)));
 			const filteredCaseReferences = [];
 			for (const appeal of mappedAppeals) {
 				filteredCaseReferences.push(appeal.caseReference);
@@ -101,8 +107,8 @@ export class CbosApiClient {
 			siteAddressLongitude: appealCoordinates?.longitude,
 			lpaCode,
 			lpaName: c.localPlanningDepartment || '',
-			caseCreatedDate: c.createdAt || '',
-			caseValidDate: c.validAt || '',
+			caseCreatedDate: c.createdAt ? new Date(c.createdAt) : null,
+			caseValidDate: c.validAt ? new Date(c.validAt) : null,
 			finalCommentsDueDate: c.appealTimetable?.finalCommentsDueDate
 				? new Date(c.appealTimetable.finalCommentsDueDate)
 				: null,
@@ -196,12 +202,7 @@ export class CbosApiClient {
 				const data = await response.json();
 				const maxPageNumber = data.pageCount;
 
-				const filteredData = data.items?.filter(
-					/** @param {{ appealStatus: string }} item */
-					(item) => READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus)
-				);
-
-				for (let item of filteredData) {
+				for (let item of data.items) {
 					appealIds.push(item.appealId);
 				}
 
