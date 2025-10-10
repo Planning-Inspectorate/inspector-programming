@@ -1,4 +1,4 @@
-import { Prisma } from '@pins/inspector-programming-database/src/client';
+import { DatabaseConfig } from '@pins/inspector-programming-lib/app/config-types';
 
 interface Config {
 	cbos: {
@@ -7,7 +7,7 @@ interface Config {
 		appealTypesCachettl: number;
 		fetchCasesSchedule: string;
 	};
-	database: Prisma.PrismaClientOptions;
+	database: DatabaseConfig;
 	NODE_ENV: string;
 	logLevel: string;
 	osApi: {

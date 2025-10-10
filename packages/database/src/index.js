@@ -1,9 +1,10 @@
 import { PrismaClient } from '@pins/inspector-programming-database/src/client/index.js';
+import { PrismaMssql } from '@prisma/adapter-mssql';
 
-/** @typedef {import('@pins/inspector-programming-database/src/client').Prisma.PrismaClientOptions} prismaConfig */
+/** @typedef {{connectionString?: string}} dbConfig */
 
 /**
- * @param {{database: prismaConfig, NODE_ENV: string}} config
+ * @param {{database: dbConfig, NODE_ENV: string}} config
  * @param {import('pino').Logger} logger
  * @returns {import('@pins/inspector-programming-database/src/client').PrismaClient}
  */
@@ -14,33 +15,40 @@ export function initDatabaseClient(config, logger) {
 		prismaLogger = logger;
 	}
 
-	return newDatabaseClient(config.database, prismaLogger);
+	if (!config.database.connectionString) {
+		throw new Error('database connectionString is required');
+	}
+
+	return newDatabaseClient(config.database.connectionString, prismaLogger);
 }
 /**
- * @param {prismaConfig} prismaConfig
+ * @param {string} connectionString
  * @param {import('pino').Logger} [logger]
  * @returns {import('@pins/inspector-programming-database/src/client').PrismaClient}
  */
-export function newDatabaseClient(prismaConfig, logger) {
-	prismaConfig.log = [
-		{
-			emit: 'event',
-			level: 'query'
-		},
-		{
-			emit: 'event',
-			level: 'error'
-		},
-		{
-			emit: 'event',
-			level: 'info'
-		},
-		{
-			emit: 'event',
-			level: 'warn'
-		}
-	];
-	const prisma = new PrismaClient(prismaConfig);
+export function newDatabaseClient(connectionString, logger) {
+	const adapter = new PrismaMssql(connectionString);
+	const prisma = new PrismaClient({
+		adapter,
+		log: [
+			{
+				emit: 'event',
+				level: 'query'
+			},
+			{
+				emit: 'event',
+				level: 'error'
+			},
+			{
+				emit: 'event',
+				level: 'info'
+			},
+			{
+				emit: 'event',
+				level: 'warn'
+			}
+		]
+	});
 
 	if (logger) {
 		/** @param {import('@pins/inspector-programming-database/src/client').Prisma.QueryEvent} e */

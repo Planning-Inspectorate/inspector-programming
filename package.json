@@ -33,6 +33,7 @@
     "@faker-js/faker": "^10.0.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@planning-inspectorate/data-model": "^1.18.1",
+    "@prisma/adapter-mssql": "^6.17.0",
     "@prisma/client": "^6.17.0",
     "accessible-autocomplete": "^3.0.1",
     "body-parser": "^2.2.0",

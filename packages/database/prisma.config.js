@@ -3,7 +3,7 @@ import path from 'node:path';
 import dotenv from 'dotenv';
 
 // load configuration from .env file into process.env
-dotenv.config();
+dotenv.config({ quiet: true });
 
 export default defineConfig({
 	schema: path.join('src', 'schema.prisma'),

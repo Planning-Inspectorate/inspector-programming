@@ -139,7 +139,7 @@ export function loadConfig() {
 			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL || 1440
 		},
 		database: {
-			datasourceUrl: SQL_CONNECTION_STRING
+			connectionString: SQL_CONNECTION_STRING
 		},
 		entra: {
 			// in minutes
