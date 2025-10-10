@@ -1,6 +1,7 @@
-import { addDays, addHours, addWeeks, format, subDays, subWeeks } from 'date-fns';
+import { addDays, addHours, addWeeks, format, subDays, subWeeks, setHours } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
+import { fromZonedTime } from 'date-fns-tz';
 
 const timeZoneName = 'Europe/London';
 const timeZone = tz(timeZoneName);
@@ -244,8 +245,8 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 	bankHolidays = bankHolidays?.length
 		? bankHolidays.filter((holiday) => {
 				let [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
-				pastLimit = subDays(pastLimit, 10);
-				futureLimit = addDays(futureLimit, 60);
+				pastLimit = subDays(pastLimit, 10, { in: timeZone });
+				futureLimit = addDays(futureLimit, 60, { in: timeZone });
 				return holidayDate > pastLimit && holidayDate < futureLimit;
 			})
 		: [];
@@ -302,15 +303,15 @@ function compileBankHolidays(bankHolidays) {
  * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
  */
 function getStageStartDate(stage, assignment, inspectorEvents) {
-	let startDate = new Date(assignment);
+	let startDate = fromZonedTime(assignment, timeZoneName);
 	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		return subDays(startDate, 1);
+		return subDays(startDate, 1, { in: timeZone });
 	}
 
-	inspectorEvents.sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime));
-	startDate = new Date(inspectorEvents[0].startTime);
+	inspectorEvents.sort((a, b) => +fromZonedTime(b.startTime, timeZoneName) - +fromZonedTime(a.startTime, timeZoneName));
+	startDate = fromZonedTime(inspectorEvents[0].startTime, timeZoneName);
 
-	return addDays(startDate, 1);
+	return addDays(startDate, 1, { in: timeZone });
 }
 
 /**
@@ -384,7 +385,7 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
  * @returns {boolean}
  */
 function eventFitsIntoDay(inspectorEvents, assignmentDate, eventLength) {
-	const clone = new Date(assignmentDate);
+	const clone = fromZonedTime(assignmentDate, timeZoneName);
 	const eventsThatDay = inspectorEvents.filter(
 		(e) => clone.toISOString().slice(0, 10) === e.startTime.toISOString().slice(0, 10)
 	);
@@ -425,7 +426,9 @@ function splitLongEvents(eventLength) {
  * @returns {Date}
  */
 function offsetEventByOne(stage, assignment) {
-	return stage === CALENDAR_EVENT_STAGES.PREP ? subDays(assignment, 1) : addDays(assignment, 1);
+	return stage === CALENDAR_EVENT_STAGES.PREP
+		? subDays(assignment, 1, { in: timeZone })
+		: addDays(assignment, 1, { in: timeZone });
 }
 
 /**
@@ -437,15 +440,15 @@ function offsetEventByOne(stage, assignment) {
  * @returns {import('./types').BookedEventTimeslot}
  */
 function allocateCalendarEventTime(assignment, inspectorEvents, eventLength) {
-	let assignmentDate = new Date(assignment);
-	assignmentDate.setHours(9, 0, 0, 0);
-	let assignmentEnd = new Date(assignmentDate);
-	assignmentEnd = addHours(assignmentEnd, eventLength);
+	let assignmentDate = fromZonedTime(assignment, timeZoneName);
+	assignmentDate = setHours(assignmentDate, 9, { in: timeZone });
+	let assignmentEnd = fromZonedTime(assignmentDate, timeZoneName);
+	assignmentEnd = addHours(assignmentEnd, eventLength, { in: timeZone });
 
 	//check provisionally allocated slot against other events in inspector calendar and re-allocate as required
 	while (eventOverlaps(assignmentDate, assignmentEnd, inspectorEvents)) {
-		assignmentDate = addHours(assignmentDate, 1);
-		assignmentEnd = addHours(assignmentEnd, 1);
+		assignmentDate = addHours(assignmentDate, 1, { in: timeZone });
+		assignmentEnd = addHours(assignmentEnd, 1, { in: timeZone });
 	}
 
 	return { startTime: assignmentDate, endTime: assignmentEnd };
