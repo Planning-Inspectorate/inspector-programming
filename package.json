@@ -9,7 +9,11 @@
     "apps/*",
     "packages/*"
   ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
+    "check-types": "npx tsc",
     "commitlint": "commitlint --from=$(git cherry origin/main | head -n 1 | cut -c 3-)",
     "db-migrate-dev": "npm run migrate-dev --workspace @pins/inspector-programming-database",
     "db-reset-dev": "npm run reset-dev --workspace @pins/inspector-programming-database",
@@ -58,6 +62,10 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@microsoft/microsoft-graph-types": "^2.43.1",
+    "@types/express": "^5.0.3",
+    "@types/express-session": "^1.18.2",
+    "@types/node": "^24.7.1",
+    "@types/nunjucks": "^3.2.6",
     "cookie-parser": "^1.4.7",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
@@ -67,10 +75,11 @@
     "prettier": "^3.6.2",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^6.17.1",
-    "sass": "^1.92.1"
+    "sass": "^1.92.1",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js,ts}": [
       "eslint --fix"
     ],
     "*.{js,ts,json,md,prisma,yml,yaml,scss}": [
