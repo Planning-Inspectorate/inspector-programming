@@ -100,12 +100,12 @@ describe('cached-cases-client', () => {
 		it('should remove cases from cache', async () => {
 			const mockClient = { deleteCases: mock.fn() };
 			const mockCache = {
-				get: mock.fn(() => [{ caseReference: '1' }, { caseReference: '2' }, { caseReference: '3' }]),
+				get: mock.fn(() => [{ caseId: 1 }, { caseId: 2 }, { caseId: 3 }]),
 				set: mock.fn()
 			};
 			const cacheClient = new CachedCasesClient(mockClient, mockCache);
-			await cacheClient.deleteCases(['1', '3']);
-			assert.deepStrictEqual(mockCache.set.mock.calls[0].arguments[1], [{ caseReference: '2' }]);
+			await cacheClient.deleteCases([1, 3]);
+			assert.deepStrictEqual(mockCache.set.mock.calls[0].arguments[1], [{ caseId: 2 }]);
 		});
 
 		describe('determinePage', () => {

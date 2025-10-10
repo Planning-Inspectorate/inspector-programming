@@ -299,9 +299,9 @@ describe('CasesClient', () => {
 			}
 		};
 		const casesClient = new CasesClient(mockClient);
-		casesClient.deleteCases(['1']);
+		casesClient.deleteCases([1]);
 		assert.deepStrictEqual(mockClient.appealCase.deleteMany.mock.calls[0].arguments[0], {
-			where: { caseReference: { in: ['1'] } }
+			where: { caseId: { in: [1] } }
 		});
 	});
 });

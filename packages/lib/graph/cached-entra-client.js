@@ -94,4 +94,13 @@ export class CachedEntraClient {
 		this.#cache.set(key, members);
 		return members;
 	}
+
+	/**
+	 *
+	 * @param {import('./types').CalendarEventInput[]} events
+	 * @param {string} userId
+	 */
+	async createCalendarEvents(events, userId) {
+		await Promise.all(events.map((event) => this.#client.createCalendarEvent(event, userId)));
+	}
 }

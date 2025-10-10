@@ -93,7 +93,11 @@ export interface CbosSingleAppealResponse {
 		organisationName?: any;
 		phoneNumber?: any;
 	};
-	allocationDetails?: any;
+	allocationDetails?: {
+		level: string;
+		band: number;
+		specialisms: string[];
+	};
 	/** @example 118 */
 	appealId?: number;
 	/** @example "6000118" */
@@ -343,7 +347,7 @@ export interface AppealCaseModel {
 	caseProcedure: string;
 	originalDevelopmentDescription: string;
 	allocationLevel: string;
-	allocationBand: string;
+	allocationBand: number | undefined;
 	siteAddressLine1: string;
 	siteAddressLine2: string;
 	siteAddressTown: string;
@@ -353,8 +357,8 @@ export interface AppealCaseModel {
 	siteAddressLongitude: Decimal | number | undefined;
 	lpaCode: string;
 	lpaName: string;
-	caseCreatedDate: string;
-	caseValidDate: string;
+	caseCreatedDate: Date | null;
+	caseValidDate: Date | null;
 	finalCommentsDueDate: Date | null;
 	linkedCaseStatus: string;
 	leadCaseReference: string | undefined;

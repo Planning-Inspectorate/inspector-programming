@@ -391,5 +391,8 @@ export const LPAS = Object.freeze([
 	{ lpaCode: 'BRIS', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_2 } } },
 	{ lpaCode: 'DORS', LpaRegion: { connect: { id: LPA_REGION_IDS.EAST_2 } } },
 	{ lpaCode: 'WILT', LpaRegion: { connect: { id: LPA_REGION_IDS.WEST_2 } } },
-	{ lpaCode: 'MAID', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_3 } } }
+	{ lpaCode: 'MAID', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_3 } } },
+	{ lpaCode: 'BARN', LpaRegion: { connect: { id: LPA_REGION_IDS.EAST_3 } } },
+	{ lpaCode: 'WORT', LpaRegion: { connect: { id: LPA_REGION_IDS.WEST_3 } } },
+	{ lpaCode: 'Q1111', LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_4 } } }
 ]);

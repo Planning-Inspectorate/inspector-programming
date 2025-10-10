@@ -1,6 +1,7 @@
-import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
+import { addDays, addHours, addWeeks, format, subDays, subWeeks, setHours } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
+import { fromZonedTime } from 'date-fns-tz';
 
 const timeZoneName = 'Europe/London';
 const timeZone = tz(timeZoneName);
@@ -243,9 +244,9 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 	//filter down the number of bank holiday dates if we dont expect to have to check them when allocating times for our events
 	bankHolidays = bankHolidays?.length
 		? bankHolidays.filter((holiday) => {
-				const [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
-				pastLimit.setDate(pastLimit.getUTCDate() - 10);
-				futureLimit.setDate(futureLimit.getUTCDate() + 60);
+				let [holidayDate, pastLimit, futureLimit] = [new Date(holiday), new Date(assignment), new Date(assignment)];
+				pastLimit = subDays(pastLimit, 10, { in: timeZone });
+				futureLimit = addDays(futureLimit, 60, { in: timeZone });
 				return holidayDate > pastLimit && holidayDate < futureLimit;
 			})
 		: [];
@@ -302,18 +303,15 @@ function compileBankHolidays(bankHolidays) {
  * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
  */
 function getStageStartDate(stage, assignment, inspectorEvents) {
-	let startDate = new Date(assignment);
+	let startDate = fromZonedTime(assignment, timeZoneName);
 	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		startDate.setUTCDate(startDate.getUTCDate() - 1);
-		return startDate;
+		return subDays(startDate, 1, { in: timeZone });
 	}
 
-	inspectorEvents.sort((a, b) => +new Date(b.startTime) - +new Date(a.startTime));
+	inspectorEvents.sort((a, b) => +fromZonedTime(b.startTime, timeZoneName) - +fromZonedTime(a.startTime, timeZoneName));
+	startDate = fromZonedTime(inspectorEvents[0].startTime, timeZoneName);
 
-	startDate = new Date(inspectorEvents[0].startTime);
-	startDate.setUTCDate(startDate.getUTCDate() + 1);
-
-	return startDate;
+	return addDays(startDate, 1, { in: timeZone });
 }
 
 /**
@@ -326,7 +324,7 @@ function matchTimingRuleToCase(timingRules, fullCase) {
 	const found = fullCase
 		? timingRules.find(
 				(r) =>
-					r.caseProcedure === fullCase.caseProcedure &&
+					r.caseProcedure.toLowerCase() === fullCase.caseProcedure?.toLowerCase() &&
 					r.allocationLevel === fullCase.caseLevel &&
 					r.caseType === fullCase.caseType
 			)
@@ -356,7 +354,7 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
 			!eventFitsIntoDay([...inspectorEvents, ...bankHolidayEvents], assignment, time) ||
 			[0, 6].includes(assignment.getDay())
 		) {
-			offsetEventByOne(stage, assignment);
+			assignment = offsetEventByOne(stage, assignment);
 		}
 
 		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
@@ -387,7 +385,7 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
  * @returns {boolean}
  */
 function eventFitsIntoDay(inspectorEvents, assignmentDate, eventLength) {
-	const clone = new Date(assignmentDate);
+	const clone = fromZonedTime(assignmentDate, timeZoneName);
 	const eventsThatDay = inspectorEvents.filter(
 		(e) => clone.toISOString().slice(0, 10) === e.startTime.toISOString().slice(0, 10)
 	);
@@ -425,13 +423,12 @@ function splitLongEvents(eventLength) {
  * prep events move backwards, all others move forwards
  * @param {string} stage
  * @param {Date} assignment
+ * @returns {Date}
  */
 function offsetEventByOne(stage, assignment) {
-	if (stage === CALENDAR_EVENT_STAGES.PREP) {
-		assignment.setDate(assignment.getUTCDate() - 1);
-	} else {
-		assignment.setDate(assignment.getUTCDate() + 1);
-	}
+	return stage === CALENDAR_EVENT_STAGES.PREP
+		? subDays(assignment, 1, { in: timeZone })
+		: addDays(assignment, 1, { in: timeZone });
 }
 
 /**
@@ -443,15 +440,15 @@ function offsetEventByOne(stage, assignment) {
  * @returns {import('./types').BookedEventTimeslot}
  */
 function allocateCalendarEventTime(assignment, inspectorEvents, eventLength) {
-	const assignmentDate = new Date(assignment);
-	assignmentDate.setUTCHours(9, 0, 0, 0);
-	const assignmentEnd = new Date(assignmentDate);
-	assignmentEnd.setUTCHours(assignmentDate.getUTCHours() + eventLength);
+	let assignmentDate = fromZonedTime(assignment, timeZoneName);
+	assignmentDate = setHours(assignmentDate, 9, { in: timeZone });
+	let assignmentEnd = fromZonedTime(assignmentDate, timeZoneName);
+	assignmentEnd = addHours(assignmentEnd, eventLength, { in: timeZone });
 
 	//check provisionally allocated slot against other events in inspector calendar and re-allocate as required
 	while (eventOverlaps(assignmentDate, assignmentEnd, inspectorEvents)) {
-		assignmentDate.setUTCHours(assignmentDate.getUTCHours() + 1);
-		assignmentEnd.setUTCHours(assignmentEnd.getUTCHours() + 1);
+		assignmentDate = addHours(assignmentDate, 1, { in: timeZone });
+		assignmentEnd = addHours(assignmentEnd, 1, { in: timeZone });
 	}
 
 	return { startTime: assignmentDate, endTime: assignmentEnd };
@@ -500,18 +497,18 @@ function stageLookup(stageString, timingRule) {
  * helper function that returns a calendar event json object from an object containing event info
  * @param {{subject: string, startTime: string, endTime: string, streetAddress: string|null, postcode: string|null}} event
  * @param {{caseReference?: string, eventType?: string}} extensionProps - extensions have no fixed schema - extension properties are optional and are omitted if not provided
- * @returns {import('./types').CalendarEventInput}
+ * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput}
  */
 function buildEventJson(event, extensionProps) {
 	return {
 		subject: event.subject,
 		start: {
 			dateTime: event.startTime,
-			timeZone: 'UTC'
+			timeZone: 'GMT Standard Time'
 		},
 		end: {
 			dateTime: event.endTime,
-			timeZone: 'UTC'
+			timeZone: 'GMT Standard Time'
 		},
 		location: {
 			address: {
@@ -526,4 +523,27 @@ function buildEventJson(event, extensionProps) {
 			}
 		]
 	};
+}
+
+/**
+ *
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').InitEntraClient} initEntraClient
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} events
+ * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
+ * @param {string} inspectorId
+ * @param {import('pino').Logger} logger
+ */
+export async function submitCalendarEvents(initEntraClient, events, authSession, inspectorId, logger) {
+	const client = initEntraClient(authSession);
+
+	try {
+		if (!client) {
+			throw new Error(`No entra client initialised`);
+		}
+
+		await client.createCalendarEvents(events, inspectorId);
+	} catch (error) {
+		logger.error(`Error creating adding calendar events to outlook: ${error}`);
+		throw new Error(`Error creating adding calendar events to outlook: ${error}`);
+	}
 }
