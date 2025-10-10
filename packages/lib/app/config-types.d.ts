@@ -1,11 +1,13 @@
-import { Prisma } from '@pins/inspector-programming-database/src/client';
+export interface DatabaseConfig {
+	connectionString?: string;
+}
 
 interface BaseConfig {
 	appHostname: string;
 	cacheControl: {
 		maxAge: string;
 	};
-	database: Prisma.PrismaClientOptions;
+	database: DatabaseConfig;
 	gitSha?: string;
 	httpPort: number;
 	logLevel: string;
