@@ -80,6 +80,7 @@ async function handleCases(selectedCases, service, req, res) {
 		try {
 			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
 			service.logger.info('Calendar events created: ' + eventsToAdd.length); //placeholder
+			service.casesClient.deleteCases(selectedCaseIds);
 		} catch (/** @type {any} */ err) {
 			service.logger.error(err, `Failed to generate case calendar events for inspector ${req.body.inspectorId}`);
 			return handleFailure(
