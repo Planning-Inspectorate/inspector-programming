@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "func start",
+    "prepare-package": "node src/package.ts",
     "test": "node --test"
   },
   "private": true,
@@ -14,5 +15,11 @@
     "@pins/inspector-programming-database": "^0.0.0",
     "@pins/inspector-programming-lib": "^0.0.0",
     "dotenv": "*"
+  },
+  "imports": {
+    "#pins/inspector-programming-lib": "packages/inspector-programming-lib",
+    "#pins/inspector-programming-lib/*": "packages/inspector-programming-lib/*",
+    "#pins/inspector-programming-database": "packages/inspector-programming-database",
+    "#pins/inspector-programming-database/*": "packages/inspector-programming-database/*"
   }
 }
