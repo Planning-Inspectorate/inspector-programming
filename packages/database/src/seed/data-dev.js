@@ -12,7 +12,7 @@ import { caseSpecialismIds, inspectorSpecialismIds } from './data-dev-guids.js';
 import { generateCaseEvents } from './data-dev-events.js';
 
 /**
- * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput}
+ * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput}
  */
 const mockAppeal = {
 	caseReference: '6900001',
@@ -32,7 +32,7 @@ const mockAppeal = {
 };
 
 /**
- * @returns {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]}
+ * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]}
  */
 function generateAppeals() {
 	const now = new Date();
@@ -112,7 +112,7 @@ function nextSpecialismId() {
 }
 
 function generateCaseSpecialisms() {
-	/** @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseSpecialismCreateNestedManyWithoutAppealCaseInput} */
+	/** @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseSpecialismCreateNestedManyWithoutAppealCaseInput} */
 	const specialisms = { connectOrCreate: [] };
 	const randomPercent = crypto.randomInt(100);
 	// not the same IDs each time, or the same specialisms per case
@@ -135,7 +135,7 @@ function generateCaseSpecialisms() {
 }
 
 /**
- * @type {import('@pins/inspector-programming-database/src/client').Prisma.InspectorUncheckedCreateInput[]}
+ * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.InspectorUncheckedCreateInput[]}
  */
 const inspectors = [
 	{
@@ -324,7 +324,7 @@ const inspectors = [
 ];
 
 /**
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  */
 export async function seedDev(dbClient) {
 	const appeals = generateAppeals();
@@ -367,8 +367,8 @@ export async function seedDev(dbClient) {
 
 /**
  * Set a proportion of appeals to valid `lpaCode` values from the `Lpa` table.
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
- * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]} appeals
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]} appeals
  * @param {number} ratio
  */
 async function assignAppealLpaCodes(dbClient, appeals, ratio = 1) {
@@ -395,10 +395,10 @@ async function assignAppealLpaCodes(dbClient, appeals, ratio = 1) {
 /**
  * Generate linked (child) cases for a randomly selected 50% of the supplied appeals.
  * Each selected appeal becomes a lead case with 2 child cases.
- * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]} appeals
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]} appeals
  * @param {object[]} variations
  * @param {Date} now
- * @returns {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseCreateInput[]}
+ * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]}
  */
 function generateLinkedCases(appeals, variations, now) {
 	const linkedCases = [];

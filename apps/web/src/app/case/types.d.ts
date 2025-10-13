@@ -3,7 +3,7 @@ import {
 	AppealCaseSpecialism,
 	AppealEvent,
 	Inspector
-} from '@pins/inspector-programming-database/src/client';
+} from '@pins/inspector-programming-database/src/client/client.ts';
 import { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
 import { PageViewModel } from '#util/types';
 import { MapViewModel } from '../views/home/types';

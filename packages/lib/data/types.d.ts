@@ -1,7 +1,7 @@
 import { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/src/schemas.d.ts';
 import { Event } from '@microsoft/microsoft-graph-types';
-import { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client';
-import { Inspector } from '@pins/inspector-programming-database/src/client';
+import { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client/client.ts';
+import { Inspector } from '@pins/inspector-programming-database/src/client/client.ts';
 import { Decimal } from '@pins/inspector-programming-database/src/client/runtime/library';
 
 export type AppealCase = AppealHASCase | AppealS78Case;

@@ -3,7 +3,7 @@ import { calendarEventTimingIds } from './data-static-guids.js';
 import { LPA_REGIONS, LPAS, LPA_REGION_NAMES } from './lpa-regions.js';
 
 /**
- * @type {import('@pins/inspector-programming-database/src/client').Prisma.CalendarEventTimingCreateInput[]}
+ * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingCreateInput[]}
  */
 const calendarEventTimings = [
 	{
@@ -450,7 +450,7 @@ const calendarEventTimings = [
 ];
 
 /**
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  */
 export async function seedStaticData(dbClient) {
 	await seedCalendarEventTimings(dbClient);
@@ -459,7 +459,7 @@ export async function seedStaticData(dbClient) {
 }
 
 /**
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  */
 async function seedCalendarEventTimings(dbClient) {
 	console.log('seeding', calendarEventTimings.length, 'calendar event timing rules');
@@ -474,7 +474,7 @@ async function seedCalendarEventTimings(dbClient) {
 
 /**
  * Seed Region names and Regions explicitly, then upsert LPAs by connecting to known Region IDs.
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  */
 async function seedLpaRegionsAndLpas(dbClient) {
 	for (const region of LPA_REGIONS) {

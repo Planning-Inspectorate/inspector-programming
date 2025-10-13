@@ -1,5 +1,5 @@
 /**
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} db
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} db
  * @param {string} caseReference
  * @returns {Promise<import('./types').CaseWithEventsAndSpecialisms | null>}
  */

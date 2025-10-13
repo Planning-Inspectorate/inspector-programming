@@ -26,7 +26,7 @@ const eventStatuses = Object.values(APPEAL_EVENT_STATUS);
  * @returns {Prisma.AppealEventCreateNestedManyWithoutAppealCaseInput}
  */
 export function generateCaseEvents(reference, valid) {
-	/** @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealEventCreateNestedManyWithoutAppealCaseInput} */
+	/** @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealEventCreateNestedManyWithoutAppealCaseInput} */
 	const events = { connectOrCreate: [] };
 	const randomPercent = crypto.randomInt(100);
 

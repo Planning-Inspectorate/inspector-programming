@@ -320,9 +320,9 @@ function getStageStartDate(stage, assignment, inspectorEvents) {
 
 /**
  * matches a timing rule to a given case
- * @param {import('@pins/inspector-programming-database/src/client').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }>[]} timingRules
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }>[]} timingRules
  * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel} fullCase
- * @returns {import('@pins/inspector-programming-database/src/client').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }> | undefined}
+ * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }> | undefined}
  */
 function matchTimingRuleToCase(timingRules, fullCase) {
 	const found = fullCase
@@ -490,7 +490,7 @@ function eventOverlaps(prospectiveStartTime, prospectiveEndTime, bookedTimeslots
 /**
  * stops jsdoc complaining about using a string to index the timingRule object
  * @param {string} stageString
- * @param {import('@pins/inspector-programming-database/src/client').CalendarEventTiming} timingRule
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').CalendarEventTiming} timingRule
  * @returns {number | null}
  */
 function stageLookup(stageString, timingRule) {

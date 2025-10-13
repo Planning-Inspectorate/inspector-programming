@@ -30,7 +30,7 @@ const REGION_CONNECTION = Object.freeze({
 });
 
 /**
- * @type {import('@pins/inspector-programming-database/src/client').Prisma.LpaRegionCreateInput[]}
+ * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.LpaRegionCreateInput[]}
  */
 export const LPA_REGIONS = Object.freeze([
 	{ id: LPA_REGION_IDS.NORTH_1, LpaRegionName: REGION_CONNECTION.NORTH, number: 1 },

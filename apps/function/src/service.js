@@ -17,7 +17,7 @@ export class FunctionService {
 	 */
 	logger;
 	/**
-	 * @type {import('@pins/inspector-programming-database/src/client').PrismaClient}
+	 * @type {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient}
 	 */
 	dbClient;
 

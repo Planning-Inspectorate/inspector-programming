@@ -5,11 +5,11 @@
  * @module InspectorClient
  */
 export class InspectorClient {
-	/** @type {import('@pins/inspector-programming-database/src/client').PrismaClient} */
+	/** @type {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} */
 	#client;
 
 	/**
-	 * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+	 * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
 	 */
 	constructor(dbClient) {
 		this.#client = dbClient;
@@ -18,7 +18,7 @@ export class InspectorClient {
 	/**
 	 *
 	 * @param {string|undefined} entraId
-	 * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector|null>}
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').Inspector|null>}
 	 */
 	async getInspectorDetails(entraId) {
 		if (!entraId) {
@@ -34,7 +34,7 @@ export class InspectorClient {
 
 	/**
 	 * Fetches a list of all inspectors in database
-	 * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector[]>}
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').Inspector[]>}
 	 */
 	async getAllInspectors() {
 		return this.#client.inspector.findMany({ include: { Specialisms: true } });

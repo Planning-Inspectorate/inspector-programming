@@ -9,7 +9,7 @@ const CACHE_PREFIX = 'cases_';
  */
 
 /**
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  * @param {MapCache} cache
  * @returns {CachedCasesClient}
  */
@@ -103,7 +103,7 @@ export class CachedCasesClient {
 	}
 
 	/**
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
+	 * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {

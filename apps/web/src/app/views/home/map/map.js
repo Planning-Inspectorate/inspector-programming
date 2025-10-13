@@ -10,7 +10,7 @@ const UNSELECT_CASE_ACTION = 'Unselect Case';
  * Initialise the OS map
  * @param {string} apiKey
  * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} pins
- * @param {import('@pins/inspector-programming-database/src/client').Inspector} [inspector]
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Inspector} [inspector]
  */
 function initialiseMap(apiKey, pins, inspector) {
 	require([
