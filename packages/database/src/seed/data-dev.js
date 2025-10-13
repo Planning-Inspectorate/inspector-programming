@@ -329,6 +329,16 @@ const inspectors = [
 export async function seedDev(dbClient) {
 	const appeals = generateAppeals();
 
+	console.log('removing non generated appeals');
+	const caseReferences = appeals.map((appeal) => appeal.caseReference);
+	await dbClient.appealCase.deleteMany({
+		where: {
+			caseReference: {
+				notIn: caseReferences
+			}
+		}
+	});
+
 	// assign valid LPA codes to all appeals
 	await assignAppealLpaCodes(dbClient, appeals);
 
