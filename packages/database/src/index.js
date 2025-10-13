@@ -1,4 +1,4 @@
-import { PrismaClient } from '@pins/inspector-programming-database/src/client/index.js';
+import { PrismaClient } from '@pins/inspector-programming-database/src/client/client.ts';
 import { PrismaMssql } from '@prisma/adapter-mssql';
 
 /** @typedef {{connectionString?: string}} dbConfig */
@@ -6,7 +6,7 @@ import { PrismaMssql } from '@prisma/adapter-mssql';
 /**
  * @param {{database: dbConfig, NODE_ENV: string}} config
  * @param {import('pino').Logger} logger
- * @returns {import('@pins/inspector-programming-database/src/client').PrismaClient}
+ * @returns {import('@pins/inspector-programming-database/src/client/client.js').PrismaClient}
  */
 export function initDatabaseClient(config, logger) {
 	let prismaLogger;
@@ -24,7 +24,7 @@ export function initDatabaseClient(config, logger) {
 /**
  * @param {string} connectionString
  * @param {import('pino').Logger} [logger]
- * @returns {import('@pins/inspector-programming-database/src/client').PrismaClient}
+ * @returns {import('@pins/inspector-programming-database/src/client/client.js').PrismaClient}
  */
 export function newDatabaseClient(connectionString, logger) {
 	const adapter = new PrismaMssql(connectionString);
@@ -51,20 +51,18 @@ export function newDatabaseClient(connectionString, logger) {
 	});
 
 	if (logger) {
-		/** @param {import('@pins/inspector-programming-database/src/client').Prisma.QueryEvent} e */
+		/** @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.QueryEvent} e */
 		const logQuery = (e) => {
-			logger.debug('Query: ' + e.query);
-			logger.debug('Params: ' + e.params);
-			logger.debug('Duration: ' + e.duration + 'ms');
+			logger.debug({ query: e.query, params: e.params, duration: e.duration }, 'query');
 		};
 
-		/** @param {import('@pins/inspector-programming-database/src/client').Prisma.LogEvent} e */
+		/** @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.LogEvent} e */
 		const logError = (e) => logger.error({ e }, 'Prisma error');
 
-		/** @param {import('@pins/inspector-programming-database/src/client').Prisma.LogEvent} e */
+		/** @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.LogEvent} e */
 		const logInfo = (e) => logger.debug({ e });
 
-		/** @param {import('@pins/inspector-programming-database/src/client').Prisma.LogEvent} e */
+		/** @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.LogEvent} e */
 		const logWarn = (e) => logger.warn({ e });
 
 		prisma.$on('query', logQuery);

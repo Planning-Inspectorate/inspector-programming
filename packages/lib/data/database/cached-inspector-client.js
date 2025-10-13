@@ -7,7 +7,7 @@ const CACHE_PREFIX = 'inspectors_';
  */
 
 /**
- * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  * @param {MapCache} cache
  * @returns {CachedInspectorClient}
  */
@@ -38,7 +38,7 @@ export class CachedInspectorClient {
 	/**
 	 *
 	 * @param {string|undefined} entraId
-	 * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector|null>}
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').Inspector|null>}
 	 */
 	async getInspectorDetails(entraId) {
 		return this.#client.getInspectorDetails(entraId);
@@ -46,7 +46,7 @@ export class CachedInspectorClient {
 
 	/**
 	 *
-	 * @returns {Promise<import('@pins/inspector-programming-database/src/client').Inspector[]>}
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').Inspector[]>}
 	 */
 	async getAllInspectors() {
 		const key = CACHE_PREFIX + 'getAllInspectors';

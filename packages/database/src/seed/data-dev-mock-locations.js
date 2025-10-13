@@ -1,6 +1,6 @@
 /**
  * Generated with `packages/lib/os/gen-mock-locations.js`
- * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseUpdateInput[]}
+ * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseUpdateInput[]}
  */
 export const mockLocations = [
 	{

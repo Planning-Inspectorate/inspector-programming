@@ -4,12 +4,12 @@
  * @module CasesClient
  */
 export class CasesClient {
-	/** @type {import('@pins/inspector-programming-database/src/client').PrismaClient} */
+	/** @type {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} */
 	#client;
 
 	/**
 	 *
-	 * @param {import('@pins/inspector-programming-database/src/client').PrismaClient} dbClient
+	 * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
 	 */
 	constructor(dbClient) {
 		this.#client = dbClient;
@@ -42,7 +42,7 @@ export class CasesClient {
 
 	/**
 	 * Maps a case object to a view model for UI consumption.
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
+	 * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
@@ -72,7 +72,7 @@ export class CasesClient {
 
 	/**
 	 * Returns the case references of the linked cases (both child and lead).
-	 * @param {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
+	 * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseGetPayload<{ include: { ChildCases: true, Specialisms: true } }>} c
 	 * @returns {string[]}
 	 */
 	getLinkedCaseReferences(c) {

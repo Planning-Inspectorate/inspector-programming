@@ -34,7 +34,7 @@ async function run() {
 	const os = new OsApiClient(process.env.OS_API_KEY);
 
 	/**
-	 * @type {import('@pins/inspector-programming-database/src/client').Prisma.AppealCaseUpdateInput[]}
+	 * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseUpdateInput[]}
 	 */
 	const locations = [];
 

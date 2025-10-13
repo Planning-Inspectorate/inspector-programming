@@ -16,7 +16,7 @@ export class BaseService {
 	 */
 	logger;
 	/**
-	 * @type {import('@pins/inspector-programming-database/src/client').PrismaClient}
+	 * @type {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient}
 	 */
 	dbClient;
 	/**
@@ -42,7 +42,7 @@ export class BaseService {
 	/**
 	 * Alias of dbClient
 	 *
-	 * @returns {import('@pins/inspector-programming-database/src/client').PrismaClient}
+	 * @returns {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient}
 	 */
 	get db() {
 		return this.dbClient;

@@ -1,4 +1,4 @@
-import { Prisma } from '@pins/inspector-programming-database/src/client/index.js';
+import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
 
 /**
  * @param {string} [id]
