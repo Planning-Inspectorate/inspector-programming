@@ -10,15 +10,16 @@ export function caseToViewModel(caseClient, c) {
 	if (!c) {
 		return caseClient.caseToViewModel(c);
 	}
+	const caseToViewModel = caseClient.caseToViewModel(c);
 	const hasSpecialisms = Array.isArray(c.Specialisms) && c.Specialisms.length > 0;
 	const hasEvents = Array.isArray(c.Events) && c.Events.length > 0;
 	return {
-		...caseClient.caseToViewModel(c),
+		...caseToViewModel,
 		siteAddress: c.siteAddressLine1,
 		specialismList: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		appealStartDate: hasEvents ? formatDateForDisplay(c.Events[0].eventStartDateTime, { format: 'dd/MM/yyyy' }) : '',
 		caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		eventType: hasEvents ? c.Events[0].eventType : 'No events',
-		caseAgeColor: getCaseColor(c.caseAge)
+		caseAgeColor: getCaseColor(caseToViewModel.caseAge)
 	};
 }
