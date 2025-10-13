@@ -105,9 +105,7 @@ describe('controller.js', () => {
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.errorSummary.length, 1);
 			assert.strictEqual(args.appeals?.cases?.length, 10);
-			assert.deepStrictEqual(args.errorSummary, [
-				{ text: 'An inspector must be selected before sorting by distance.', href: '#inspectors' }
-			]);
+			assert.deepStrictEqual(args.errorSummary, [{ text: 'Select an inspector', href: '#inspectors' }]);
 			//ensure cases sorted by age by default
 			assert.deepStrictEqual(
 				args.appeals.cases.map((c) => c.id),
