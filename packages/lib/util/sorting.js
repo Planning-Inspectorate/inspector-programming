@@ -9,8 +9,7 @@ import { distanceBetween } from './distances.js';
 export function validateSorts(sort, selectedInspector) {
 	const errors = [];
 	if (sort === 'distance') {
-		if (!selectedInspector)
-			errors.push({ text: 'An inspector must be selected before sorting by distance.', href: `#inspectors` });
+		if (!selectedInspector) errors.push({ text: 'Select an inspector', href: `#inspectors` });
 	}
 	return errors;
 }
