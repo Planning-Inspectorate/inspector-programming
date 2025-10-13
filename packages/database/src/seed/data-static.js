@@ -147,34 +147,6 @@ const calendarEventTimings = [
 				{
 					where: {
 						caseType_caseProcedure_allocationLevel: {
-							caseType: APPEAL_CASE_TYPE.H, //advertisement
-							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
-							allocationLevel: APPEAL_ALLOCATION_LEVEL.H
-						}
-					},
-					create: {
-						caseType: APPEAL_CASE_TYPE.H,
-						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
-						allocationLevel: APPEAL_ALLOCATION_LEVEL.H
-					}
-				},
-				{
-					where: {
-						caseType_caseProcedure_allocationLevel: {
-							caseType: APPEAL_CASE_TYPE.ZA, //CAS Adverts
-							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
-							allocationLevel: APPEAL_ALLOCATION_LEVEL.H
-						}
-					},
-					create: {
-						caseType: APPEAL_CASE_TYPE.ZA,
-						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
-						allocationLevel: APPEAL_ALLOCATION_LEVEL.H
-					}
-				},
-				{
-					where: {
-						caseType_caseProcedure_allocationLevel: {
 							caseType: APPEAL_CASE_TYPE.ZP, //CAS Planning
 							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
 							allocationLevel: APPEAL_ALLOCATION_LEVEL.H
@@ -182,6 +154,20 @@ const calendarEventTimings = [
 					},
 					create: {
 						caseType: APPEAL_CASE_TYPE.ZP,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.H
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.ZA, //CAS Advert
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.H
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.ZA,
 						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
 						allocationLevel: APPEAL_ALLOCATION_LEVEL.H
 					}
@@ -316,6 +302,140 @@ const calendarEventTimings = [
 					},
 					create: {
 						caseType: APPEAL_CASE_TYPE.W,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.E
+					}
+				}
+			]
+		},
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 12,
+		costsTime: 4
+	},
+	{
+		id: calendarEventTimingIds[5],
+		CalendarEventTimingRules: {
+			connectOrCreate: [
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y, //Listed building
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.F
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.F
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y,
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.G
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.G
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y,
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.H
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.H
+					}
+				}
+			]
+		},
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 8,
+		costsTime: 4
+	},
+	{
+		id: calendarEventTimingIds[6],
+		CalendarEventTimingRules: {
+			connectOrCreate: [
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y, //Listed building
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.A
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.A
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y,
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.B
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.B
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y,
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.C
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.C
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y,
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.D
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
+						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+						allocationLevel: APPEAL_ALLOCATION_LEVEL.D
+					}
+				},
+				{
+					where: {
+						caseType_caseProcedure_allocationLevel: {
+							caseType: APPEAL_CASE_TYPE.Y,
+							caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+							allocationLevel: APPEAL_ALLOCATION_LEVEL.E
+						}
+					},
+					create: {
+						caseType: APPEAL_CASE_TYPE.Y,
 						caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
 						allocationLevel: APPEAL_ALLOCATION_LEVEL.E
 					}
