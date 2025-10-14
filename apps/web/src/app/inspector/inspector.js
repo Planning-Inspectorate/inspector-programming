@@ -111,3 +111,25 @@ function mapToInspector(groupMember) {
 		emailAddress: groupMember.mail || ''
 	};
 }
+
+/**
+ * sends an email using GovUK Notify client to the inspector that the cases have been assigned to
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {number[]} caseIds
+ * @returns {Promise<void>}
+ */
+export async function notifyInspectorOfAssignedCases(service, inspectorId, assignmentDate, caseIds) {
+	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
+	if (!(inspector?.email && inspector?.firstName)) throw new Error('Could not retrieve inspector email and name');
+
+	const options = {
+		inspectorName: `${inspector.firstName} ${inspector?.lastName}`,
+		assignmentDate: assignmentDate,
+		selectedCases: caseIds.join(', '),
+		cbosLink: service.notifyConfig.cbosLink
+	};
+	if (!service.notifyClient) throw new Error('Notify client not configured');
+	await service.notifyClient.sendAssignedCaseEmail(inspector.email, options);
+}

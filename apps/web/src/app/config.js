@@ -57,6 +57,7 @@ export function loadConfig() {
 		GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER,
 		GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE,
 		GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE_PROGRAMME_OFFICER,
+		CBOS_URL,
 		LOG_LEVEL,
 		NODE_ENV,
 		OS_API_KEY,
@@ -162,6 +163,7 @@ export function loadConfig() {
 		notify: {
 			apiKey: GOV_NOTIFY_API_KEY,
 			disabled: GOV_NOTIFY_DISABLED === 'true',
+			cbosLink: CBOS_URL,
 			templateIds: {
 				assignedCase: GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE,
 				assignedCaseProgrammeOfficer: GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER,

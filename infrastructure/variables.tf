@@ -40,6 +40,7 @@ variable "apps_config" {
     cbos = object({
       api_app_name = string
       api_app_rg   = string
+      cbos_url     = string
     })
 
     functions_node_version = number

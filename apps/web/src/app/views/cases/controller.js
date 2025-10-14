@@ -2,6 +2,7 @@ import { addSessionData } from '@pins/inspector-programming-lib/util/session.js'
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
+import { notifyInspectorOfAssignedCases } from '../../inspector/inspector.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -69,13 +70,7 @@ async function handleCases(selectedCases, service, req, res) {
 		const failedCases = cases.filter((caseItem) => failedCaseIds.includes(caseItem.caseId));
 		// Keep selected any failed cases, then go to the failed-cases error page
 		saveSelectedData(failedCaseIds, req);
-		return handleFailure(
-			req,
-			res,
-			failedCases,
-			selectedCaseIds,
-			'Try again later. None of the selected cases were assigned.'
-		);
+		return handleFailure(req, res, failedCases, 'Try again later. None of the selected cases were assigned.');
 	} else {
 		try {
 			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
@@ -88,17 +83,27 @@ async function handleCases(selectedCases, service, req, res) {
 				req,
 				res,
 				selectedCases,
-				selectedCases,
 				'An error occurred when generating case calendar events. Please try again later.'
 			);
 		}
 
-		const success = {
-			successSummary: {
-				heading: 'Cases have been assigned',
-				body: 'Cases have been removed from the unassigned case list'
-			}
+		const successSummary = {
+			heading: 'Cases have been assigned',
+			body: 'Cases have been removed from the unassigned case list'
 		};
+
+		//send notification emails to inspector
+		try {
+			await notifyInspectorOfAssignedCases(service, req.body.inspectorId, req.body.assignmentDate, selectedCaseIds);
+		} catch (/** @type {any} */ err) {
+			service.logger.warn(
+				err,
+				`Failed to send email notification to inspector ${req.body.inspectorId} after case assignment`
+			);
+			successSummary.heading = 'Cases have been assigned but there was a problem with sending an email notification';
+		}
+
+		const success = { successSummary };
 
 		addSessionData(req, 'success', success, 'persistence');
 	}
@@ -119,11 +124,10 @@ async function handleCases(selectedCases, service, req, res) {
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * @param {failedCase[] | (string|number|undefined)[]} failedCases
- * @param {number[]} selectedCaseIds
  * @param {string} errorMessage
  * @returns
  */
-function handleFailure(req, res, failedCases, selectedCaseIds, errorMessage) {
+function handleFailure(req, res, failedCases, errorMessage) {
 	/** @type {string[]} */
 	const failedParentCaseRefs = [];
 	/** @type {string[]} */

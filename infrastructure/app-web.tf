@@ -55,6 +55,7 @@ module "app_web" {
 
     # cbos
     CBOS_API_URL = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
+    CBOS_URL     = var.apps_config.cbos.cbos_url
 
     # Entra groups
     API_INSPECTOR_ENTRA_GROUPS   = join(",", var.apps_config.auth.groups.api_inspector_groups)

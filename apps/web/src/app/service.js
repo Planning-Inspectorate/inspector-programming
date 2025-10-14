@@ -56,6 +56,10 @@ export class WebService extends BaseService {
 		return this.#config.entra;
 	}
 
+	get notifyConfig() {
+		return this.#config.notify;
+	}
+
 	get authDisabled() {
 		return this.#config.auth.disabled;
 	}

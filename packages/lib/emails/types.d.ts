@@ -1,6 +1,7 @@
 export interface NotifyConfig {
 	disabled: boolean;
 	apiKey: string;
+	cbosLink: string;
 	templateIds: TemplateIds;
 }
 
