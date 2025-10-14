@@ -28,7 +28,7 @@ export class FunctionService {
 		this.#config = config;
 		const logger = initLogger(config);
 		this.logger = logger;
-		this.dbClient = newDatabaseClient(config.database);
+		this.dbClient = newDatabaseClient(config.database.connectionString);
 		const osApiClient = new OsApiClient(config.osApi.key);
 		this.cbosClient = new CbosApiClient(config.cbos, osApiClient, logger);
 	}
