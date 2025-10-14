@@ -32,6 +32,7 @@ apps_config = {
   cbos = {
     api_app_name = "pins-app-appeals-bo-api-test"
     api_app_rg   = "pins-rg-appeals-bo-test"
+    cbos_url     = "https://back-office-appeals-test.planninginspectorate.gov.uk/"
   }
 
   functions_node_version = 22
