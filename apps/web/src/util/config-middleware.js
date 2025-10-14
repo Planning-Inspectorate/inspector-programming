@@ -5,7 +5,7 @@
 export function addLocalsConfiguration() {
 	return (req, res, next) => {
 		res.locals.config = {
-			headerTitle: 'App 2 Service'
+			headerTitle: 'Programme appeals'
 		};
 		next();
 	};
