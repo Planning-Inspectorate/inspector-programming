@@ -132,4 +132,21 @@ export class CasesClient {
 			}
 		});
 	}
+
+	/**
+	 * Returns when the latest cases update was
+	 *
+	 * @returns {Promise<Date|null>}
+	 */
+	async lastCasesUpdate() {
+		const latestPoll = await this.#client.appealCasePollStatus.findFirst({
+			orderBy: {
+				lastPollAt: 'desc'
+			}
+		});
+		if (latestPoll) {
+			return latestPoll.lastPollAt;
+		}
+		return null;
+	}
 }

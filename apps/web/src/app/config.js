@@ -129,7 +129,8 @@ export function loadConfig() {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'
 		},
 		cases: {
-			casesCacheTtl: parseInt(CASES_CACHE_TTL || 15)
+			// default to one day, since the cache is invalidated when updates are fetched from C-BOS
+			casesCacheTtl: parseInt(CASES_CACHE_TTL || 60 * 24)
 		},
 		inspectors: {
 			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15)

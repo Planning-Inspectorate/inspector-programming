@@ -78,12 +78,15 @@ export class CachedCasesClient {
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
 	async getAllCases() {
+		const shouldTryCache = await this.shouldTryCache();
 		const key = CACHE_PREFIX + 'getAllCases';
-		let cases = this.#cache.get(key);
-		if (cases) {
-			return cases;
+		if (shouldTryCache) {
+			const cases = this.#cache.get(key);
+			if (cases) {
+				return cases;
+			}
 		}
-		cases = await this.#client.getAllCases();
+		const cases = await this.#client.getAllCases();
 		this.#cache.set(key, cases);
 		return cases;
 	}
@@ -150,7 +153,7 @@ export class CachedCasesClient {
 	 * @param {number[]} caseIds
 	 */
 	async deleteCases(caseIds) {
-		this.#client.deleteCases(caseIds);
+		await this.#client.deleteCases(caseIds);
 
 		const key = CACHE_PREFIX + 'getAllCases';
 		let cases = this.#cache.get(key);
@@ -159,5 +162,20 @@ export class CachedCasesClient {
 			cases = cases.filter((/** @type {{ caseId: number; }} */ appeal) => !caseIds.includes(appeal.caseId));
 			this.#cache.set(key, cases);
 		}
+	}
+
+	/**
+	 * Returns whether to use the cache value or fetch a new value, based on the latest database update
+	 * @returns {Promise<boolean>}
+	 */
+	async shouldTryCache() {
+		const latestPoll = await this.#client.lastCasesUpdate();
+		if (!latestPoll) {
+			return true; // no updates, so use cache
+		}
+		const oldestEntry = new Date();
+		oldestEntry.setTime(oldestEntry.getTime() - this.#cache.cacheTtlMs);
+		// if latest poll is before the oldest entry, then we can use the cache
+		return latestPoll < oldestEntry;
 	}
 }

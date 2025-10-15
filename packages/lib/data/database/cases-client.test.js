@@ -293,15 +293,49 @@ describe('CasesClient', () => {
 		});
 	});
 	describe('deleteCases', () => {
-		const mockClient = {
-			appealCase: {
-				deleteMany: mock.fn()
-			}
-		};
-		const casesClient = new CasesClient(mockClient);
-		casesClient.deleteCases([1]);
-		assert.deepStrictEqual(mockClient.appealCase.deleteMany.mock.calls[0].arguments[0], {
-			where: { caseId: { in: [1] } }
+		it('should call deleteCases', async () => {
+			const mockClient = {
+				appealCase: {
+					deleteMany: mock.fn()
+				}
+			};
+			const casesClient = new CasesClient(mockClient);
+			await casesClient.deleteCases([1]);
+			assert.deepStrictEqual(mockClient.appealCase.deleteMany.mock.calls[0].arguments[0], {
+				where: { caseId: { in: [1] } }
+			});
+		});
+	});
+	describe('lastCasesUpdate', () => {
+		it('should return the latest update Date', async (ctx) => {
+			const now = new Date('2025-01-30T00:00:00.000Z');
+			ctx.mock.timers.enable({ apis: ['Date'], now });
+			const mockClient = {
+				appealCasePollStatus: {
+					findFirst: mock.fn(() => {
+						return {
+							lastPollAt: new Date()
+						};
+					})
+				}
+			};
+			const casesClient = new CasesClient(mockClient);
+			const lastUpdate = await casesClient.lastCasesUpdate();
+			assert.strictEqual(lastUpdate.toISOString(), now.toISOString());
+		});
+		it('should return null if no values', async (ctx) => {
+			const now = new Date('2025-01-30T00:00:00.000Z');
+			ctx.mock.timers.enable({ apis: ['Date'], now });
+			const mockClient = {
+				appealCasePollStatus: {
+					findFirst: mock.fn(() => {
+						return undefined;
+					})
+				}
+			};
+			const casesClient = new CasesClient(mockClient);
+			const lastUpdate = await casesClient.lastCasesUpdate();
+			assert.strictEqual(lastUpdate, null);
 		});
 	});
 });

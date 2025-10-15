@@ -29,6 +29,8 @@ export class WebService extends BaseService {
 
 		this.apiService = new ApiService(this);
 
+		// not safe for use across instances - assumes a single instance
+		// to support multiple-instances would need to use Redis or similar
 		const casesCache = new MapCache(config.cases.casesCacheTtl);
 		this.casesClient = buildInitCasesClient(this.dbClient, casesCache);
 

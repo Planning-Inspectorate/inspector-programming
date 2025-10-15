@@ -17,6 +17,10 @@ export class MapCache {
 		this.#ttl = ttlMinutes * 60 * 1000; // to ms
 	}
 
+	get cacheTtlMs() {
+		return this.#ttl;
+	}
+
 	/**
 	 * @param {string} id
 	 * @returns {undefined|*}
