@@ -16,7 +16,9 @@ describe('cached-cases-client', () => {
 	});
 	describe('CachedCasesClient', () => {
 		it('should return cached entry if present', async () => {
-			const mockClient = {};
+			const mockClient = {
+				lastCasesUpdate: mock.fn()
+			};
 			const mockCache = {
 				get: mock.fn(() => [1, 2, 3])
 			};
@@ -26,7 +28,10 @@ describe('cached-cases-client', () => {
 			assert.deepStrictEqual(cases, [1, 2, 3]);
 		});
 		it('should fetch new value if no cache value', async () => {
-			const mockClient = { getAllCases: mock.fn(() => [3, 4, 5]) };
+			const mockClient = {
+				lastCasesUpdate: mock.fn(),
+				getAllCases: mock.fn(() => [3, 4, 5])
+			};
 			const mockCache = {
 				get: mock.fn(),
 				set: mock.fn()
@@ -40,7 +45,9 @@ describe('cached-cases-client', () => {
 		});
 
 		it('should return case by case id', async () => {
-			const mockClient = {};
+			const mockClient = {
+				lastCasesUpdate: mock.fn()
+			};
 			const mockCache = {
 				get: mock.fn(() => [{ caseId: 1 }, { caseId: 2 }, { caseId: 3 }])
 			};
@@ -51,7 +58,9 @@ describe('cached-cases-client', () => {
 		});
 
 		it('should return cases by case ids', async () => {
-			const mockClient = {};
+			const mockClient = {
+				lastCasesUpdate: mock.fn()
+			};
 			const mockCache = {
 				get: mock.fn(() => [{ caseId: 1 }, { caseId: 2 }, { caseId: 3 }])
 			};
@@ -62,7 +71,9 @@ describe('cached-cases-client', () => {
 		});
 
 		it('should return linked cases by lead case reference', async () => {
-			const mockClient = {};
+			const mockClient = {
+				lastCasesUpdate: mock.fn()
+			};
 			const mockCache = {
 				get: mock.fn(() => [
 					{ id: '1', leadCaseReference: 'A' },
@@ -80,7 +91,9 @@ describe('cached-cases-client', () => {
 		});
 
 		it('should get all cases that are parent or stand alone cases', async () => {
-			const mockClient = {};
+			const mockClient = {
+				lastCasesUpdate: mock.fn()
+			};
 			const mockCache = {
 				get: mock.fn(() => [
 					{ id: '1', linkedCaseStatus: 'Child' },
@@ -106,6 +119,72 @@ describe('cached-cases-client', () => {
 			const cacheClient = new CachedCasesClient(mockClient, mockCache);
 			await cacheClient.deleteCases([1, 3]);
 			assert.deepStrictEqual(mockCache.set.mock.calls[0].arguments[1], [{ caseId: 2 }]);
+		});
+
+		describe('use of cache', () => {
+			const cacheTtl = 5 * 60 * 1000; // 5 minutes
+			const newMockCache = () => {
+				return {
+					get: mock.fn(() => [1, 2, 3]),
+					set: mock.fn(),
+					get cacheTtlMs() {
+						return cacheTtl;
+					}
+				};
+			};
+			describe('shouldTryCache', () => {
+				it('should return true if no recent updates', async (ctx) => {
+					const now = new Date('2025-01-30T00:00:00.000Z');
+					ctx.mock.timers.enable({ apis: ['Date'], now });
+					const mockClient = {
+						lastCasesUpdate: mock.fn(() => new Date('2025-01-29T00:00:00.000Z'))
+					};
+					const mockCache = newMockCache();
+					const cacheClient = new CachedCasesClient(mockClient, mockCache);
+					const shouldTryCache = await cacheClient.shouldTryCache();
+					assert.deepStrictEqual(shouldTryCache, true);
+				});
+
+				it('should fetch false if recent updates', async (ctx) => {
+					const now = new Date('2025-01-30T00:05:00.000Z');
+					ctx.mock.timers.enable({ apis: ['Date'], now });
+					const mockClient = {
+						lastCasesUpdate: mock.fn(() => new Date('2025-01-30T00:00:00.000Z'))
+					};
+					const mockCache = newMockCache();
+					const cacheClient = new CachedCasesClient(mockClient, mockCache);
+					const shouldTryCache = await cacheClient.shouldTryCache();
+					assert.deepStrictEqual(shouldTryCache, false);
+				});
+			});
+			it('should return cached entry if no recent updates', async (ctx) => {
+				const now = new Date('2025-01-30T00:00:00.000Z');
+				ctx.mock.timers.enable({ apis: ['Date'], now });
+				const mockClient = {
+					lastCasesUpdate: mock.fn(() => new Date('2025-01-29T00:00:00.000Z'))
+				};
+				const mockCache = newMockCache();
+				const cacheClient = new CachedCasesClient(mockClient, mockCache);
+				const cases = await cacheClient.getAllCases();
+				assert.strictEqual(mockCache.get.mock.callCount(), 1);
+				assert.deepStrictEqual(cases, [1, 2, 3]);
+			});
+
+			it('should fetch new values if recent updates', async (ctx) => {
+				const now = new Date('2025-01-30T00:05:00.000Z');
+				ctx.mock.timers.enable({ apis: ['Date'], now });
+				const mockClient = {
+					lastCasesUpdate: mock.fn(() => new Date('2025-01-30T00:00:00.000Z')),
+					getAllCases: mock.fn(() => [5, 6, 7])
+				};
+				const mockCache = newMockCache();
+				const cacheClient = new CachedCasesClient(mockClient, mockCache);
+				const cases = await cacheClient.getAllCases();
+				assert.strictEqual(mockCache.get.mock.callCount(), 0);
+				assert.strictEqual(mockCache.set.mock.callCount(), 1);
+				assert.strictEqual(mockClient.getAllCases.mock.callCount(), 1);
+				assert.deepStrictEqual(cases, [5, 6, 7]);
+			});
 		});
 
 		describe('determinePage', () => {
