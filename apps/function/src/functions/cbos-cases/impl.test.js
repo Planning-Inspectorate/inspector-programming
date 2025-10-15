@@ -3,18 +3,27 @@ import { buildCbosFetchCases } from './impl.js';
 import assert from 'node:assert';
 
 describe('cbos-cases-impl', () => {
+	const mockUpsert = mock.fn();
+	const mockUpdate = mock.fn();
+	const mockUpdateMany = mock.fn();
+	const mockDeleteMany = mock.fn();
+	const mockCreate = mock.fn();
 	const service = {
 		dbClient: {
-			$transaction: mock.fn(),
-			appealCase: {
-				upsert: mock.fn(),
-				deleteMany: mock.fn(),
-				update: mock.fn(),
-				updateMany: mock.fn()
-			},
-			appealCasePollStatus: {
-				create: mock.fn()
-			}
+			$transaction: mock.fn(async (callback) => {
+				const mockTx = {
+					appealCase: {
+						upsert: mockUpsert,
+						update: mockUpdate,
+						updateMany: mockUpdateMany,
+						deleteMany: mockDeleteMany
+					},
+					appealCasePollStatus: {
+						create: mockCreate
+					}
+				};
+				return await callback(mockTx);
+			})
 		},
 		cbosClient: {
 			getUnassignedCases: mock.fn()
@@ -41,9 +50,9 @@ describe('cbos-cases-impl', () => {
 		const handler = buildCbosFetchCases(service);
 		await handler({}, { log: console.log });
 		assert.strictEqual(service.cbosClient.getUnassignedCases.mock.callCount(), 1);
-		assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 2);
-		assert.strictEqual(service.dbClient.appealCase.upsert.mock.callCount(), 2);
-		assert.deepStrictEqual(service.dbClient.appealCase.upsert.mock.calls[0].arguments[0], {
+		assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 1);
+		assert.strictEqual(mockUpsert.mock.callCount(), 2);
+		assert.deepStrictEqual(mockUpsert.mock.calls[0].arguments[0], {
 			where: { caseReference: '1' },
 			update: {
 				caseId: 1,
@@ -55,7 +64,7 @@ describe('cbos-cases-impl', () => {
 				Lpa: { connect: { lpaCode: 'lpaCode1' } }
 			}
 		});
-		assert.deepStrictEqual(service.dbClient.appealCase.upsert.mock.calls[1].arguments[0], {
+		assert.deepStrictEqual(mockUpsert.mock.calls[1].arguments[0], {
 			where: { caseReference: '2' },
 			update: {
 				caseId: 2,
@@ -67,15 +76,15 @@ describe('cbos-cases-impl', () => {
 				Lpa: { connect: { lpaCode: 'lpaCode2' } }
 			}
 		});
-		assert.strictEqual(service.dbClient.appealCase.update.mock.callCount(), 1);
-		assert.deepStrictEqual(service.dbClient.appealCase.update.mock.calls[0].arguments[0], {
+		assert.strictEqual(mockUpdate.mock.callCount(), 1);
+		assert.deepStrictEqual(mockUpdate.mock.calls[0].arguments[0], {
 			where: { caseReference: '2' },
 			data: {
 				LeadCase: { connect: { caseReference: '1' } }
 			}
 		});
-		assert.strictEqual(service.dbClient.appealCase.updateMany.mock.callCount(), 1);
-		assert.deepStrictEqual(service.dbClient.appealCase.updateMany.mock.calls[0].arguments[0], {
+		assert.strictEqual(mockUpdateMany.mock.callCount(), 1);
+		assert.deepStrictEqual(mockUpdateMany.mock.calls[0].arguments[0], {
 			where: {
 				leadCaseReference: {
 					notIn: ['1', '2']
@@ -85,12 +94,12 @@ describe('cbos-cases-impl', () => {
 				leadCaseReference: null
 			}
 		});
-		assert.strictEqual(service.dbClient.appealCase.deleteMany.mock.callCount(), 1);
-		assert.deepStrictEqual(service.dbClient.appealCase.deleteMany.mock.calls[0].arguments[0], {
+		assert.strictEqual(mockDeleteMany.mock.callCount(), 1);
+		assert.deepStrictEqual(mockDeleteMany.mock.calls[0].arguments[0], {
 			where: { caseReference: { notIn: ['1', '2'] } }
 		});
-		assert.strictEqual(service.dbClient.appealCasePollStatus.create.mock.callCount(), 1);
-		assert.deepStrictEqual(service.dbClient.appealCasePollStatus.create.mock.calls[0].arguments[0], {
+		assert.strictEqual(mockCreate.mock.callCount(), 1);
+		assert.deepStrictEqual(mockCreate.mock.calls[0].arguments[0], {
 			data: { lastPollAt: new Date(), casesFetched: 2 }
 		});
 	});
