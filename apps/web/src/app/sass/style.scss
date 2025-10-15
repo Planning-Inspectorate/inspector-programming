@@ -323,8 +323,8 @@ $font-family: arial, helvetica, sans-serif;
 	display: none;
 }
 
-.flatpickr-calendar .arrowDown {
-	transform: rotate(180deg);
+.flatpickr-calendar .arrowDown::after * {
+	transform: rotate(180deg) !important;
 }
 
 .nav-buttons button {
