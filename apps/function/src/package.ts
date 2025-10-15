@@ -21,7 +21,7 @@ interface Replacement {
  * and also runs this script to replace imports.
  */
 async function replaceLocalPackages() {
-	const files = await getFiles(path.join(__dirname));
+	const files = await getFiles(path.join(__dirname)); // function folder
 
 	const srcFiles = files.filter(isSourceFile);
 	for (const srcFile of srcFiles) {

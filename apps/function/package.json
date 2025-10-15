@@ -17,9 +17,8 @@
     "dotenv": "*"
   },
   "imports": {
-    "#pins/inspector-programming-lib": "packages/inspector-programming-lib",
-    "#pins/inspector-programming-lib/*": "packages/inspector-programming-lib/*",
-    "#pins/inspector-programming-database": "packages/inspector-programming-database",
-    "#pins/inspector-programming-database/*": "packages/inspector-programming-database/*"
+    "#pins/inspector-programming-lib/*": "./src/packages/inspector-programming-lib/*",
+    "#pins/inspector-programming-database": "./src/packages/inspector-programming-database/src/index.js",
+    "#pins/inspector-programming-database/*": "./src/packages/inspector-programming-database/*"
   }
 }
