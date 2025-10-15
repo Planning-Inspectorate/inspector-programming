@@ -9,34 +9,50 @@ export function buildCbosFetchCases(service) {
 		try {
 			context.log('fetching cases from CBOS');
 
-			// Fetchs and filters unassigned cases from cbos
+			// Fetches and filters unassigned cases from cbos
 			const appealsData = await service.cbosClient.getUnassignedCases();
 
 			// Updates/creates cases within the inspector programming database
 			await service.dbClient.$transaction(
 				appealsData.cases.map((appeal) => {
-					const leadCase = appeal.leadCaseReference
-						? { connect: { caseReference: appeal.leadCaseReference } }
-						: undefined;
-					const childCases =
-						appeal.childCaseReferences.length > 0 ? { connect: appeal.childCaseReferences } : undefined;
 					return service.dbClient.appealCase.upsert({
 						where: { caseReference: appeal.caseReference },
 						update: {
 							...omit(appeal, ['caseReference', 'leadCaseReference', 'lpaCode', 'childCaseReferences']),
-							Lpa: { connect: { lpaCode: appeal.lpaCode } },
-							LeadCase: leadCase,
-							ChildCases: childCases
+							Lpa: { connect: { lpaCode: appeal.lpaCode } }
 						},
 						create: {
 							...omit(appeal, ['leadCaseReference', 'lpaCode', 'childCaseReferences']),
-							Lpa: { connect: { lpaCode: appeal.lpaCode } },
-							LeadCase: leadCase,
-							ChildCases: childCases
+							Lpa: { connect: { lpaCode: appeal.lpaCode } }
 						}
 					});
 				})
 			);
+
+			// Add links between cases
+			const childCases = appealsData.cases.filter((appeal) => appeal.leadCaseReference);
+			await service.dbClient.$transaction(
+				childCases.map((appeal) => {
+					return service.dbClient.appealCase.update({
+						where: { caseReference: appeal.caseReference },
+						data: {
+							LeadCase: { connect: { caseReference: appeal.leadCaseReference } }
+						}
+					});
+				})
+			);
+
+			// Remove any old links from cases to be deleted
+			await service.dbClient.appealCase.updateMany({
+				where: {
+					leadCaseReference: {
+						notIn: appealsData.caseReferences
+					}
+				},
+				data: {
+					leadCaseReference: null
+				}
+			});
 
 			// Delete any cases that are no longer in cbos
 			await service.dbClient.appealCase.deleteMany({
@@ -47,7 +63,7 @@ export function buildCbosFetchCases(service) {
 				}
 			});
 
-			// Create record of latest successfull update
+			// Create record of latest successful update
 			await service.dbClient.appealCasePollStatus.create({
 				data: {
 					lastPollAt: new Date(),
@@ -58,7 +74,7 @@ export function buildCbosFetchCases(service) {
 			context.log('cases fetched');
 		} catch (error) {
 			context.log('Error during case fetch:', error.message);
-			throw new Error('Error during case fetch');
+			throw new Error(`Error during case fetch: ${error.message}`);
 		} finally {
 			context.log('timer object:', timer);
 		}
