@@ -8,7 +8,9 @@ describe('cbos-cases-impl', () => {
 			$transaction: mock.fn(),
 			appealCase: {
 				upsert: mock.fn(),
-				deleteMany: mock.fn()
+				deleteMany: mock.fn(),
+				update: mock.fn(),
+				updateMany: mock.fn()
 			},
 			appealCasePollStatus: {
 				create: mock.fn()
@@ -39,38 +41,48 @@ describe('cbos-cases-impl', () => {
 		const handler = buildCbosFetchCases(service);
 		await handler({}, { log: console.log });
 		assert.strictEqual(service.cbosClient.getUnassignedCases.mock.callCount(), 1);
-		assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 1);
+		assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 2);
 		assert.strictEqual(service.dbClient.appealCase.upsert.mock.callCount(), 2);
 		assert.deepStrictEqual(service.dbClient.appealCase.upsert.mock.calls[0].arguments[0], {
 			where: { caseReference: '1' },
 			update: {
 				caseId: 1,
-				Lpa: { connect: { lpaCode: 'lpaCode1' } },
-				LeadCase: undefined,
-				ChildCases: { connect: [{ caseReference: '2' }] }
+				Lpa: { connect: { lpaCode: 'lpaCode1' } }
 			},
 			create: {
 				caseReference: '1',
 				caseId: 1,
-				Lpa: { connect: { lpaCode: 'lpaCode1' } },
-				LeadCase: undefined,
-				ChildCases: { connect: [{ caseReference: '2' }] }
+				Lpa: { connect: { lpaCode: 'lpaCode1' } }
 			}
 		});
 		assert.deepStrictEqual(service.dbClient.appealCase.upsert.mock.calls[1].arguments[0], {
 			where: { caseReference: '2' },
 			update: {
 				caseId: 2,
-				Lpa: { connect: { lpaCode: 'lpaCode2' } },
-				LeadCase: { connect: { caseReference: '1' } },
-				ChildCases: undefined
+				Lpa: { connect: { lpaCode: 'lpaCode2' } }
 			},
 			create: {
 				caseReference: '2',
 				caseId: 2,
-				Lpa: { connect: { lpaCode: 'lpaCode2' } },
-				LeadCase: { connect: { caseReference: '1' } },
-				ChildCases: undefined
+				Lpa: { connect: { lpaCode: 'lpaCode2' } }
+			}
+		});
+		assert.strictEqual(service.dbClient.appealCase.update.mock.callCount(), 1);
+		assert.deepStrictEqual(service.dbClient.appealCase.update.mock.calls[0].arguments[0], {
+			where: { caseReference: '2' },
+			data: {
+				LeadCase: { connect: { caseReference: '1' } }
+			}
+		});
+		assert.strictEqual(service.dbClient.appealCase.updateMany.mock.callCount(), 1);
+		assert.deepStrictEqual(service.dbClient.appealCase.updateMany.mock.calls[0].arguments[0], {
+			where: {
+				leadCaseReference: {
+					notIn: ['1', '2']
+				}
+			},
+			data: {
+				leadCaseReference: null
 			}
 		});
 		assert.strictEqual(service.dbClient.appealCase.deleteMany.mock.callCount(), 1);
