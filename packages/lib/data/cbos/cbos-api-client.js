@@ -235,7 +235,7 @@ export class CbosApiClient {
 	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetails(appealIds) {
-		const limit = pLimit(5); // Limit to 5 concurrent requests
+		const limit = pLimit(1); // Limit to 1 request at a time
 		const detailPromises = appealIds.map((appealId) =>
 			limit(async () => {
 				await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay by 1 second
