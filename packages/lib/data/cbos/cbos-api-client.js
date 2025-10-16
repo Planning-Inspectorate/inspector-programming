@@ -43,7 +43,8 @@ export class CbosApiClient {
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
-			const [appealDetails, lpaData] = await Promise.all([this.fetchAppealDetails(appealIds), this.fetchLpaData()]);
+			const appealDetails = await this.fetchAppealDetails(appealIds);
+			const lpaData = await this.fetchLpaData();
 
 			// Remove Parent cases with invalid statuses
 			const filteredData = appealDetails.filter(
@@ -234,17 +235,19 @@ export class CbosApiClient {
 	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetails(appealIds) {
-		const detailPromises = appealIds.map(async (appealId) => {
+		const appealsDetails = [];
+		for (const appealId of appealIds) {
 			const url = `${this.config.apiUrl}/appeals/${appealId}`;
 			const response = await this.fetchWithTimeout(url);
 
 			if (!response.ok) {
 				throw new Error(`Failed to fetch details for appealId ${appealId}. Status: ${response.status}`);
 			}
-			return await response.json();
-		});
+			const data = await response.json();
+			appealsDetails.push(data);
+		}
 
-		return await Promise.all(detailPromises); // Will throw if any promise rejects
+		return appealsDetails;
 	}
 
 	/**
