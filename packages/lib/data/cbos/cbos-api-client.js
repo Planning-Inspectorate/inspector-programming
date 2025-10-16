@@ -246,6 +246,7 @@ export class CbosApiClient {
 	 */
 	async fetchAppealDetails(appealIds) {
 		const appealsDetails = [];
+		let count = 0;
 		for (const appealId of appealIds) {
 			const url = `${this.config.apiUrl}/appeals/${appealId}`;
 			const response = await this.fetchWithTimeout(url);
@@ -255,6 +256,12 @@ export class CbosApiClient {
 			}
 			const data = await response.json();
 			appealsDetails.push(data);
+
+			count++;
+			if (count > 10) {
+				await sleep(250);
+				count = 0;
+			}
 		}
 
 		return appealsDetails;
@@ -355,4 +362,8 @@ export class CbosApiClient {
 			throw error;
 		}
 	}
+}
+
+async function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
