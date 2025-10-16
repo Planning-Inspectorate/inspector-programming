@@ -1,5 +1,6 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import pLimit from 'p-limit';
 
 const READY_TO_ASSIGN_APPEAL_STATUSES = [
 	APPEAL_CASE_STATUS.READY_TO_START,
@@ -234,15 +235,19 @@ export class CbosApiClient {
 	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetails(appealIds) {
-		const detailPromises = appealIds.map(async (appealId) => {
-			const url = `${this.config.apiUrl}/appeals/${appealId}`;
-			const response = await this.fetchWithTimeout(url);
+		const limit = pLimit(5); // Limit to 5 concurrent requests
+		const detailPromises = appealIds.map((appealId) =>
+			limit(async () => {
+				await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay by 1 second
+				const url = `${this.config.apiUrl}/appeals/${appealId}`;
+				const response = await this.fetchWithTimeout(url);
 
-			if (!response.ok) {
-				throw new Error(`Failed to fetch details for appealId ${appealId}. Status: ${response.status}`);
-			}
-			return await response.json();
-		});
+				if (!response.ok) {
+					throw new Error(`Failed to fetch details for appealId ${appealId}. Status: ${response.status}`);
+				}
+				return await response.json();
+			})
+		);
 
 		return await Promise.all(detailPromises); // Will throw if any promise rejects
 	}
