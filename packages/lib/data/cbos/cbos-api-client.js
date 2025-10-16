@@ -258,8 +258,8 @@ export class CbosApiClient {
 			appealsDetails.push(data);
 
 			count++;
-			if (count > 10) {
-				await sleep(250);
+			if (count > 3) {
+				await sleep(100);
 				count = 0;
 			}
 		}
