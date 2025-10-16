@@ -18,11 +18,11 @@ const READY_TO_ASSIGN_APPEAL_STATUSES = [
  * @module CbosApiClient
  */
 export class CbosApiClient {
+	#contextLogger;
 	/**
 	 * Creates an instance of CbosApiClient.
 	 * @param {Object} cbosConfig - Configuration object for the API client.
 	 * @param {string} cbosConfig.apiUrl - Base URL for the CBOS API.
-	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
 	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
 	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
 	 * @param {import('packages/lib/os/os-api-client').OsApiClient} osApiClient - Client for OS API
@@ -35,6 +35,10 @@ export class CbosApiClient {
 		this.osApiClient = osApiClient;
 	}
 
+	set contextLogger(value) {
+		this.#contextLogger = value;
+	}
+
 	/**
 	 * Fetches and filters all unassigned cases
 	 * @returns {Promise<{ cases: import('../types').AppealCaseModel[], caseReferences: string[] }>} An object containing the array of case view models.
@@ -42,9 +46,13 @@ export class CbosApiClient {
 	 */
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
+			this.#contextLogger?.log('getting appeal IDs');
 			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
+			this.#contextLogger?.log('got appeal ids', appealIds.length, appealIds);
 			const appealDetails = await this.fetchAppealDetails(appealIds);
+			this.#contextLogger?.log('getting LPAs');
 			const lpaData = await this.fetchLpaData();
+			this.#contextLogger?.log('got LPAs', lpaData.length);
 
 			// Remove Parent cases with invalid statuses
 			const filteredData = appealDetails.filter(
@@ -165,6 +173,7 @@ export class CbosApiClient {
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+		this.#contextLogger?.log('fetch', url, defaultHeaders);
 		try {
 			const response = await fetch(url, {
 				method: 'GET',
@@ -176,6 +185,7 @@ export class CbosApiClient {
 		} catch (error) {
 			clearTimeout(timeoutId);
 			if (error instanceof Error && error.name === 'AbortError') {
+				this.#contextLogger?.log('fetch timeout!', url, defaultHeaders);
 				throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
 			}
 			throw error;

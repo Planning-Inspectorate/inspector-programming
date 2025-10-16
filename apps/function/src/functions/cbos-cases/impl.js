@@ -6,6 +6,7 @@ const omit = (obj, keys) => Object.fromEntries(Object.entries(obj).filter(([k]) 
  */
 export function buildCbosFetchCases(service) {
 	return async (timer, context) => {
+		service.cbosClient.contextLogger = context;
 		try {
 			context.log('fetching cases from CBOS');
 
@@ -81,6 +82,7 @@ export function buildCbosFetchCases(service) {
 			throw new Error(`Error during case fetch: ${error.message}`);
 		} finally {
 			context.log('timer object:', timer);
+			service.cbosClient.contextLogger = undefined;
 		}
 	};
 }
