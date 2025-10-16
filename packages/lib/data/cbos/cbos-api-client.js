@@ -214,6 +214,9 @@ export class CbosApiClient {
 				const maxPageNumber = data.pageCount;
 
 				for (let item of data.items) {
+					if (!item.appealReference?.match(/^6[0-9]{6}$/)) {
+						continue; // skip generated appeals
+					}
 					appealIds.push(item.appealId);
 				}
 
