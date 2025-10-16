@@ -262,7 +262,7 @@ export class CbosApiClient {
 
 			count++;
 			if (count > 3) {
-				await sleep(100);
+				await sleep(250);
 				count = 0;
 			}
 		}
