@@ -13,20 +13,25 @@ export function buildCbosFetchCases(service) {
 			// Fetches and filters unassigned cases from cbos
 			const appealsData = await service.cbosClient.getUnassignedCases();
 
+			context.log(`fetched ${appealsData.caseReferences.length} cases, adding to database.`);
+			if (appealsData.failedCaseReferences.length > 0) {
+				context.error(
+					`failed to fetch ${appealsData.failedCaseReferences.length} cases: ${appealsData.failedCaseReferences.join(',')}`
+				);
+			}
+
 			await service.dbClient.$transaction(async ($tx) => {
 				// Updates/creates cases within the inspector programming database
 				await Promise.all(
 					appealsData.cases.map((appeal) => {
+						const data = {
+							...omit(appeal, ['leadCaseReference', 'lpaCode', 'childCaseReferences']),
+							Lpa: { connect: { lpaCode: appeal.lpaCode } }
+						};
 						return $tx.appealCase.upsert({
 							where: { caseReference: appeal.caseReference },
-							update: {
-								...omit(appeal, ['caseReference', 'leadCaseReference', 'lpaCode', 'childCaseReferences']),
-								Lpa: { connect: { lpaCode: appeal.lpaCode } }
-							},
-							create: {
-								...omit(appeal, ['leadCaseReference', 'lpaCode', 'childCaseReferences']),
-								Lpa: { connect: { lpaCode: appeal.lpaCode } }
-							}
+							update: omit(data, ['caseReference']),
+							create: data
 						});
 					})
 				);
@@ -46,11 +51,17 @@ export function buildCbosFetchCases(service) {
 					})
 				);
 
+				const caseReferences = [
+					...appealsData.caseReferences,
+					// don't delete or unlink case references which failed to fetch
+					...appealsData.failedCaseReferences
+				];
+
 				// Remove any old links from cases to be deleted
 				await $tx.appealCase.updateMany({
 					where: {
 						leadCaseReference: {
-							notIn: appealsData.caseReferences
+							notIn: caseReferences
 						}
 					},
 					data: {
@@ -62,7 +73,7 @@ export function buildCbosFetchCases(service) {
 				await $tx.appealCase.deleteMany({
 					where: {
 						caseReference: {
-							notIn: appealsData.caseReferences
+							notIn: caseReferences
 						}
 					}
 				});
@@ -76,7 +87,7 @@ export function buildCbosFetchCases(service) {
 				});
 			});
 
-			context.log('cases fetched');
+			context.log('cases added to database');
 		} catch (error) {
 			context.log('Error during case fetch:', error.message);
 			throw new Error(`Error during case fetch: ${error.message}`);

@@ -41,31 +41,30 @@ export class CbosApiClient {
 
 	/**
 	 * Fetches and filters all unassigned cases
-	 * @returns {Promise<{ cases: import('../types').AppealCaseModel[], caseReferences: string[] }>} An object containing the array of case view models.
+	 * @returns {Promise<{ cases: import('../types').AppealCaseModel[], caseReferences: string[], failedCaseReferences: string[] }>} An object containing the array of case view models.
 	 * @throws {Error} If fetching cases fails.
 	 */
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
 			this.#contextLogger?.log('getting appeal IDs');
-			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
-			this.#contextLogger?.log('got appeal ids', appealIds.length, appealIds);
-			const appealDetails = await this.fetchAppealDetails(appealIds);
+			const appealReferences = await this.fetchAppealReferences({ pageNumber, pageSize, fetchAll });
+			this.#contextLogger?.log('got appeal ids', appealReferences.length);
+			const appealDetails = await this.fetchAppealDetails(appealReferences);
 			this.#contextLogger?.log('getting LPAs');
 			const lpaData = await this.fetchLpaData();
 			this.#contextLogger?.log('got LPAs', lpaData.length);
 
 			// Remove Parent cases with invalid statuses
-			const filteredData = appealDetails.filter(
+			const filteredData = appealDetails.details.filter(
 				(item) =>
 					item.isChildAppeal || (item.appealStatus && READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus))
 			);
 			const mappedAppeals = await Promise.all(filteredData.map((c) => this.appealToAppealCaseModel(c, lpaData)));
-			const filteredCaseReferences = [];
-			for (const appeal of mappedAppeals) {
-				filteredCaseReferences.push(appeal.caseReference);
-			}
-
-			return { cases: mappedAppeals, caseReferences: filteredCaseReferences };
+			const filteredCaseReferences = mappedAppeals.map((a) => a.caseReference);
+			const failedCaseReferences = Object.keys(appealDetails.failures).map(
+				(id) => appealReferences.find((a) => a.id === id)?.reference
+			);
+			return { cases: mappedAppeals, caseReferences: filteredCaseReferences, failedCaseReferences };
 		} catch (error) {
 			this.logger.error({ error: error.message }, '[CaseController] Error fetching case details');
 			throw new Error(error.message);
@@ -194,14 +193,12 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch appeal IDs for a given Azure AD user.
-	 * @returns {Promise<number[]>} Promise resolving to an array of appeal IDs.
+	 * @returns {Promise<{id: string, reference: string}[]>} Promise resolving to an array of appeal IDs.
 	 * @throws {Error} If fetching appeal IDs fails.
 	 */
-	async fetchAppealIds({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
+	async fetchAppealReferences({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
 		try {
-			/**
-			 * @type {number[]}
-			 */
+			/** @type {{id: string, reference: string}[]} */
 			let appealIds = [];
 			let continueToFetch = true;
 			while (continueToFetch) {
@@ -217,7 +214,7 @@ export class CbosApiClient {
 					if (!item.appealReference?.match(/^6[0-9]{6}$/)) {
 						continue; // skip generated appeals
 					}
-					appealIds.push(item.appealId);
+					appealIds.push({ id: item.appealId, reference: item.appealReference });
 				}
 
 				if (fetchAll && pageNumber < maxPageNumber) {
@@ -243,22 +240,26 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch details for each appeal ID in parallel.
-	 * @param {number[]} appealIds - Array of appeal IDs.
-	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.
+	 * @param {string[]} appealIds - Array of appeal IDs.
+	 * @returns {Promise<{details: import("../types").CbosSingleAppealResponse[], failures: Record<string, string>}>} Promise resolving to an array of appeal detail objects.
 	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetails(appealIds) {
-		const appealsDetails = [];
+		const appealsDetails = {
+			details: [],
+			failures: {}
+		};
 		let count = 0;
 		for (const appealId of appealIds) {
 			const url = `${this.config.apiUrl}/appeals/${appealId}`;
 			const response = await this.fetchWithTimeout(url);
 
 			if (!response.ok) {
-				throw new Error(`Failed to fetch details for appealId ${appealId}. Status: ${response.status}`);
+				appealsDetails.failures[appealId] = response.status;
+				continue;
 			}
 			const data = await response.json();
-			appealsDetails.push(data);
+			appealsDetails.details.push(data);
 
 			count++;
 			if (count > 3) {

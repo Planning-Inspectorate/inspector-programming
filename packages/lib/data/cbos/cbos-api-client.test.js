@@ -80,6 +80,27 @@ test('fetchAppealIds returns all appeal IDs', async () => {
 	assert.deepStrictEqual(ids, ['6000084', '6000083']);
 });
 
+test('fetchAppealIds filters out generated appeals', async () => {
+	const responses = [
+		{
+			ok: true,
+			json: async () => ({
+				items: [
+					{ appealId: '6000084', appealReference: '6000084', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
+					{ appealId: '6000083', appealReference: '6000083', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
+					{ appealId: '6000082', appealReference: 'dsfsdfsdf', appealStatus: APPEAL_CASE_STATUS.READY_TO_START }
+				],
+				itemCount: 3,
+				pageCount: 1
+			})
+		}
+	];
+	let call = 0;
+	global.fetch = async () => responses[call++];
+	const ids = await client.fetchAppealIds({ fetchAll: true });
+	assert.deepStrictEqual(ids, ['6000084', '6000083']);
+});
+
 test('fetchAppealIds throws on error', async () => {
 	global.fetch = async () => ({ ok: false, status: 500 });
 	await assert.rejects(() => client.fetchAppealIds(), /Failed to fetch appeal IDs/);

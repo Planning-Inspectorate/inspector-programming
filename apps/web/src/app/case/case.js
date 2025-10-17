@@ -33,7 +33,12 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 
 	try {
 		// Get latest data from cbos
-		appeals = await cbosApiClient.fetchAppealDetails(caseIds);
+		const res = await cbosApiClient.fetchAppealDetails(caseIds);
+		if (Object.keys(res.failures).length > 0) {
+			service.logger.error(`${Object.keys(res.failures).join(',')} cases failed to fetch`);
+			return { failedCaseReferences: [], failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
+		}
+		appeals = res.details;
 	} catch (error) {
 		service.logger.error(error, `Failed to fetch case details for case details`);
 		return { failedCaseReferences: [], failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
@@ -44,7 +49,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 	const failedCaseReferences = [];
 	const failedCaseIds = [];
 
-	if (alreadyAssignedCaseReferences.length == 0) {
+	if (alreadyAssignedCaseReferences.length === 0) {
 		for (let appeal of appeals) {
 			try {
 				if (!appeal.appealId) throw new Error('appealId is undefined');
