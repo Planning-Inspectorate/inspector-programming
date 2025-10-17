@@ -49,7 +49,7 @@ export class CbosApiClient {
 			this.#contextLogger?.log('getting appeal IDs');
 			const appealReferences = await this.fetchAppealReferences({ pageNumber, pageSize, fetchAll });
 			this.#contextLogger?.log('got appeal ids', appealReferences.length);
-			const appealDetails = await this.fetchAppealDetails(appealReferences);
+			const appealDetails = await this.fetchAppealDetails(appealReferences.map((r) => r.id));
 			this.#contextLogger?.log('getting LPAs');
 			const lpaData = await this.fetchLpaData();
 			this.#contextLogger?.log('got LPAs', lpaData.length);
@@ -252,14 +252,18 @@ export class CbosApiClient {
 		let count = 0;
 		for (const appealId of appealIds) {
 			const url = `${this.config.apiUrl}/appeals/${appealId}`;
-			const response = await this.fetchWithTimeout(url);
+			try {
+				const response = await this.fetchWithTimeout(url);
 
-			if (!response.ok) {
-				appealsDetails.failures[appealId] = response.status;
-				continue;
+				if (!response.ok) {
+					appealsDetails.failures[appealId] = response.status;
+					continue;
+				}
+				const data = await response.json();
+				appealsDetails.details.push(data);
+			} catch (error) {
+				appealsDetails.failures[appealId] = error?.message;
 			}
-			const data = await response.json();
-			appealsDetails.details.push(data);
 
 			count++;
 			if (count > 3) {
