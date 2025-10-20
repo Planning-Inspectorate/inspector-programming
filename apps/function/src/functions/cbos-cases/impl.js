@@ -22,6 +22,7 @@ export function buildCbosFetchCases(service) {
 
 			await service.dbClient.$transaction(async ($tx) => {
 				// Updates/creates cases within the inspector programming database
+				context.log('upsert all cases');
 				await Promise.all(
 					appealsData.cases.map((appeal) => {
 						const data = {
@@ -39,6 +40,10 @@ export function buildCbosFetchCases(service) {
 				// Add links between cases (if parent case is not pulled from cbos, case will still be marked as child in linkedCaseStatus)
 				const childCases = appealsData.cases.filter(
 					(appeal) => appeal.leadCaseReference && appealsData.caseReferences.includes(appeal.leadCaseReference)
+				);
+				context.log(
+					'link lead cases',
+					childCases.map((childCase) => childCase.caseReference)
 				);
 				await Promise.all(
 					childCases.map((appeal) => {
@@ -58,6 +63,7 @@ export function buildCbosFetchCases(service) {
 				];
 
 				// Remove any old links from cases to be deleted
+				context.log('unlink old lead cases');
 				await $tx.appealCase.updateMany({
 					where: {
 						leadCaseReference: {
@@ -70,6 +76,7 @@ export function buildCbosFetchCases(service) {
 				});
 
 				// Delete any cases that are no longer in cbos
+				context.log('delete old cases');
 				await $tx.appealCase.deleteMany({
 					where: {
 						caseReference: {
@@ -79,6 +86,7 @@ export function buildCbosFetchCases(service) {
 				});
 
 				// Create record of latest successful update
+				context.log('update poll status');
 				await $tx.appealCasePollStatus.create({
 					data: {
 						lastPollAt: new Date(),
