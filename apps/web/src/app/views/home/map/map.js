@@ -5,6 +5,7 @@
 const serviceUrl = 'https://api.os.uk/maps/vector/v1/vts';
 const SELECT_CASE_ACTION = 'Select Case';
 const UNSELECT_CASE_ACTION = 'Unselect Case';
+const CLUSTER_RADIUS = '300px';
 
 /**
  * Initialise the OS map
@@ -18,11 +19,12 @@ function initialiseMap(apiKey, pins, inspector) {
 		'esri/views/MapView',
 		'esri/Graphic',
 		'esri/layers/VectorTileLayer',
+		'esri/layers/FeatureLayer',
 		'esri/geometry/Point',
 		'esri/geometry/Circle',
 		'esri/config',
 		'esri/core/reactiveUtils'
-	], function (Map, MapView, Graphic, VectorTileLayer, Point, Circle, esriConfig, reactiveUtils) {
+	], function (Map, MapView, Graphic, VectorTileLayer, FeatureLayer, Point, Circle, esriConfig, reactiveUtils) {
 		esriConfig.request.interceptors.push({
 			urls: serviceUrl,
 			before: function (params) {
@@ -33,6 +35,8 @@ function initialiseMap(apiKey, pins, inspector) {
 		});
 
 		const graphics = [];
+
+		const selectedCaseReferences = new Set();
 
 		/**
 		 * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel} caseData
@@ -45,6 +49,7 @@ function initialiseMap(apiKey, pins, inspector) {
 				x: caseData.siteAddressLongitude,
 				y: caseData.siteAddressLatitude
 			});
+
 			const markerSymbol = {
 				type: 'simple-marker',
 				color: '#' + (caseData.caseAgeColor || '00703c'),
@@ -53,35 +58,16 @@ function initialiseMap(apiKey, pins, inspector) {
 					width: 1
 				}
 			};
+
+			const attributes = {
+				...caseData,
+				caseAge: Number(caseData.caseAge || 0)
+			};
+
 			const graphic = new Graphic({
 				geometry: point,
 				symbol: markerSymbol,
-				attributes: caseData,
-				popupTemplate: {
-					title: 'Case ' + caseData.caseReference,
-					content: [
-						{
-							type: 'fields',
-							fieldInfos: [
-								{ fieldName: 'caseAge', label: 'Case age' },
-								{ fieldName: 'lpaName', label: 'LPA name' },
-								{ fieldName: 'caseStatus', label: 'Case status' },
-								{ fieldName: 'siteAddressPostcode', label: 'Site postcode' },
-								{ fieldName: 'specialismList', label: 'Case specialism' },
-								{ fieldName: 'caseType', label: 'Appeal type' },
-								{ fieldName: 'caseProcedure', label: 'Procedure' },
-								{ fieldName: 'caseLevel', label: 'Allocation level' }
-							]
-						}
-					],
-					actions: [
-						{
-							id: `toggle-select-case-${caseData.caseReference}`,
-							icon: 'check-circle',
-							title: SELECT_CASE_ACTION
-						}
-					]
-				}
+				attributes
 			});
 			graphics.push(graphic);
 		}
@@ -198,7 +184,139 @@ function initialiseMap(apiKey, pins, inspector) {
 			}
 		});
 
-		for (const graphic of graphics) {
+		// Separate case and inspector graphics
+		const caseGraphics = graphics.filter((g) => g.attributes?.caseReference);
+		const otherGraphics = graphics.filter((g) => !g.attributes?.caseReference); // inspector, circles, etc.
+
+		const uniqueValueInfos = pins.map((p) => ({
+			value: p.caseId,
+			symbol: {
+				type: 'simple-marker',
+				color: '#' + (p.caseAgeColor || '00703c'),
+				outline: { color: '#fff', width: 1 }
+			}
+		}));
+
+		const caseLayer = new FeatureLayer({
+			source: caseGraphics,
+			objectIdField: 'caseReference',
+			geometryType: 'point',
+			fields: [
+				{ name: 'caseReference', type: 'string' },
+				{ name: 'caseAgeColor', type: 'string' },
+				{ name: 'caseAge', type: 'integer' },
+				{ name: 'lpaName', type: 'string' },
+				{ name: 'caseStatus', type: 'string' },
+				{ name: 'siteAddressPostcode', type: 'string' },
+				{ name: 'specialismList', type: 'string' },
+				{ name: 'caseType', type: 'string' },
+				{ name: 'caseProcedure', type: 'string' },
+				{ name: 'caseLevel', type: 'string' },
+				{ name: 'caseId', type: 'string' }
+			],
+			featureReduction: {
+				type: 'cluster',
+				clusterRadius: CLUSTER_RADIUS,
+				clusterMinSize: '30px',
+				clusterMaxSize: '60px',
+				labelingInfo: [
+					{
+						deconflictionStrategy: 'none',
+						labelExpressionInfo: { expression: "Text($feature.cluster_count, '#,###')" },
+						symbol: {
+							type: 'text',
+							color: 'white',
+							font: { weight: 'bold', size: 14 }
+						},
+						labelPlacement: 'center-center'
+					}
+				],
+				popupTemplate: {
+					title: 'Cluster with {cluster_count} cases',
+					content: 'Zoom in to see individual case markers.'
+				},
+				fields: [
+					{
+						name: 'cluster_oldest_case_age',
+						statisticType: 'max',
+						onStatisticField: 'caseAge'
+					}
+				]
+			},
+			renderer: {
+				type: 'unique-value',
+				field: 'caseId',
+				uniqueValueInfos
+			},
+			popupTemplate: {
+				title: 'Case {caseReference}',
+				content: [
+					{
+						type: 'fields',
+						fieldInfos: [
+							{ fieldName: 'caseAge', label: 'Case age' },
+							{ fieldName: 'lpaName', label: 'LPA name' },
+							{ fieldName: 'caseStatus', label: 'Case status' },
+							{ fieldName: 'siteAddressPostcode', label: 'Site postcode' },
+							{ fieldName: 'specialismList', label: 'Case specialism' },
+							{ fieldName: 'caseType', label: 'Appeal type' },
+							{ fieldName: 'caseProcedure', label: 'Procedure' },
+							{ fieldName: 'caseLevel', label: 'Allocation level' },
+							{ fieldName: 'caseId', label: 'Case ID', visible: false }
+						]
+					}
+				],
+				actions: [
+					{
+						id: 'toggle-select-case',
+						icon: 'check-circle',
+						title: SELECT_CASE_ACTION
+					}
+				]
+			}
+		});
+
+		view.map.add(caseLayer);
+
+		reactiveUtils.watch(
+			() => view.popup.selectedFeature,
+			(feature) => {
+				const action = caseLayer.popupTemplate.actions.items[0];
+				const selected = !feature || selectedCaseReferences.has(feature.attributes.caseReference);
+				action.title = selected ? UNSELECT_CASE_ACTION : SELECT_CASE_ACTION;
+				action.icon = selected ? 'check-circle-f' : 'check-circle';
+			}
+		);
+
+		view.whenLayerView(caseLayer).then((layerView) => {
+			reactiveUtils.watch(
+				() => layerView.graphics,
+				(graphics) => {
+					graphics.forEach((g) => {
+						if (g.attributes?.cluster_count && Array.isArray(g.attributes.cluster_feature_ids)) {
+							const ids = g.attributes.cluster_feature_ids;
+							let oldest = null;
+							for (const id of ids) {
+								const pin = pins.find((p) => p.caseReference === id);
+								if (pin) {
+									if (!oldest || Number(pin.caseAge || 0) > Number(oldest.caseAge || 0)) {
+										oldest = pin;
+									}
+								}
+							}
+							if (oldest) {
+								const desiredColor = '#' + (oldest.caseAgeColor || '00703c');
+								const sym = g.symbol.clone();
+								sym.color = desiredColor;
+								g.symbol = sym;
+							}
+						}
+					});
+				}
+			);
+		});
+
+		for (const graphic of otherGraphics) {
 			view.graphics.add(graphic);
 		}
 
@@ -207,13 +325,22 @@ function initialiseMap(apiKey, pins, inspector) {
 			'trigger-action',
 			(event) => {
 				if (event.action.title === SELECT_CASE_ACTION || event.action.title === UNSELECT_CASE_ACTION) {
-					const selectedCase = event.action.id.replace('toggle-select-case-', '');
-					console.log(event.action.title, selectedCase);
+					const selectedCaseReference = view.popup.selectedFeature.attributes.caseReference;
+					const selectedCase = pins.find(({ caseReference }) => caseReference === selectedCaseReference);
+					const { caseId, caseReference, selected } = selectedCase;
+					if (!selected && !selectedCaseReferences.has(caseReference)) {
+						selectedCaseReferences.add(caseReference);
+					} else {
+						selectedCaseReferences.delete(caseReference);
+					}
+
+					console.log(event.action.title, caseId);
+
 					document.dispatchEvent(
 						new CustomEvent('caseStateChange', {
 							detail: {
-								caseId: selectedCase,
-								selected: !pins.find(({ caseReference: caseId }) => caseId === selectedCase).selected
+								caseId: caseId,
+								selected: !selected
 							}
 						})
 					);
@@ -224,19 +351,23 @@ function initialiseMap(apiKey, pins, inspector) {
 		// keep the list of 'pins' in sync with any selection changes
 		// do it with a listener so it also works if cases are selected on the table
 		document.addEventListener('caseStateChange', function (event) {
-			const graphic = view.graphics.find((graphic) => graphic.attributes?.caseId === event.detail.caseId);
-
+			const { selected, caseId } = event.detail;
+			const graphic = caseGraphics.find((graphic) => graphic.attributes?.caseId === caseId);
 			if (graphic) {
-				const caseData = pins.find(({ caseReference: caseId }) => caseId === event.detail.caseId);
-				caseData.selected = event.detail.selected;
+				const caseData = pins.find((pin) => pin.caseId === caseId);
+				caseData.selected = selected;
 				console.debug('caseStateChange, syncing map state', caseData.caseReference, caseData.selected);
 
-				graphic.popupTemplate.actions.items[0].title = event.detail.selected
-					? UNSELECT_CASE_ACTION
-					: SELECT_CASE_ACTION;
-				graphic.popupTemplate.actions.items[0].icon = event.detail.selected ? 'check-circle-f' : 'check-circle';
-				graphic.symbol.outline.color.setColor(event.detail.selected ? '#000000' : '#ffffff');
-				graphic.symbol = graphic.symbol.clone(); // force render
+				const action = graphic.layer.popupTemplate.actions.items[0];
+				action.title = selected ? UNSELECT_CASE_ACTION : SELECT_CASE_ACTION;
+				action.icon = selected ? 'check-circle-f' : 'check-circle';
+
+				caseLayer.renderer = caseLayer.renderer.clone();
+				caseLayer.renderer.uniqueValueInfos.forEach((info) => {
+					if (info.value === caseId) {
+						info.symbol.outline.color = selected ? '#000000' : '#ffffff';
+					}
+				});
 			}
 		});
 	});
