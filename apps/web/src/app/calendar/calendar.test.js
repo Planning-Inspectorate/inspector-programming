@@ -458,7 +458,7 @@ describe('calendar', () => {
 		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0);
 		const calendar = generateCalendar(startDate, events);
 
-		const timezoneOffset = -Math.floor(new Date().getTimezoneOffset() / 30);
+		const timezoneOffset = -Math.floor(startDate.getTimezoneOffset() / 30);
 
 		expectedCalendarData.forEach((item) => {
 			assert.deepStrictEqual(calendar[item.row + timezoneOffset][item.day], item.event);
