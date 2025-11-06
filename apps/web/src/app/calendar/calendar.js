@@ -20,18 +20,19 @@ export const CALENDAR_EVENT_STAGES = {
  * @param {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel} selectedInspector
  * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
  * @param {import('pino').Logger} logger
+ * @param {Date} startDate
+ * @param {Date} endDate
  * @returns {Promise<import("./types").Event[]>}
  */
 
-export async function getSimplifiedEvents(initEntraClient, selectedInspector, authSession, logger) {
+export async function getSimplifiedEvents(initEntraClient, selectedInspector, authSession, logger, startDate, endDate) {
 	const client = initEntraClient(authSession);
-
 	if (!client) {
 		logger.warn('Skipping calendar, no Entra Client');
 		return [];
 	}
 
-	const eventsResponse = await client.getUserCalendarEvents(selectedInspector.id);
+	const eventsResponse = await client.getUserCalendarEvents(selectedInspector.id, false, startDate, endDate);
 	const events = Array.isArray(eventsResponse.value) ? eventsResponse.value : [];
 
 	return events.map((event) => {
