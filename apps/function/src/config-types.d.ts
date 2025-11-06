@@ -13,4 +13,10 @@ interface Config {
 	osApi: {
 		key: string;
 	};
+	serviceBus: {
+		inspector: {
+			topic: string;
+			subscription: string;
+		};
+	};
 }

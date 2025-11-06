@@ -20,6 +20,8 @@ export class FunctionService {
 	 * @type {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient}
 	 */
 	dbClient;
+	/** @type {import('@pins/inspector-programming-lib/os/os-api-client.js').OsApiClient} */
+	osApiClient;
 
 	/**
 	 * @param {import('./config-types.js').Config} config
@@ -30,10 +32,14 @@ export class FunctionService {
 		this.logger = logger;
 		this.dbClient = newDatabaseClient(config.database.connectionString);
 		const osApiClient = new OsApiClient(config.osApi.key);
+		this.osApiClient = osApiClient;
 		this.cbosClient = new CbosApiClient(config.cbos, osApiClient, logger);
 	}
 
 	get cbosFetchCasesSchedule() {
 		return this.#config.cbos.fetchCasesSchedule;
+	}
+	get inspectorServiceBusConfig() {
+		return this.#config.serviceBus.inspector;
 	}
 }
