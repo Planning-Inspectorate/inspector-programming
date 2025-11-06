@@ -1,22 +1,14 @@
 import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import {
-	generateCalendar,
-	generateDatesList,
-	generateTimeList,
-	generateWeekTitle,
-	getWeekStartDate
-} from '../../calendar/calendar.js';
+import { generateCalendar, generateDatesList, generateTimeList, generateWeekTitle } from '../../calendar/calendar.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 
 /**
- * @param {string} [calendarStartDate]
+ * @param {Date} currentStartDate
  * @param {import("../../calendar/types.js").Event[]} [events]
  * @param {string} [error]
  * @returns {import('./types.js').CalendarViewModel}
  */
-export function calendarViewModel(calendarStartDate, events, error) {
-	const currentStartDate = calendarStartDate ? new Date(calendarStartDate.toString()) : getWeekStartDate(new Date());
-
+export function calendarViewModel(currentStartDate, events, error) {
 	return {
 		currentStartDate,
 		dates: generateDatesList(currentStartDate),

@@ -125,6 +125,52 @@ describe('EntraClient', () => {
 			assert.strictEqual(client.get.mock.callCount(), 1);
 			assert.strictEqual(calendarEvents.value.length, 1);
 		});
+
+		it('should use provided startDate and endDate', async () => {
+			const client = mockClient();
+			client.query = mock.fn(() => client);
+			client.get.mock.mockImplementation(() => ({ value: [] }));
+
+			const entra = new EntraClient(client);
+			const startDate = new Date('2025-11-04T00:00:00.000Z');
+			const endDate = new Date('2025-11-11T23:59:59.999Z');
+
+			await entra.getUserCalendarEvents('userId', false, startDate, endDate);
+
+			const queryParams = client.query.mock.calls[0].arguments[0];
+			assert.strictEqual(queryParams.startDateTime, startDate.toISOString());
+			assert.strictEqual(queryParams.endDateTime, endDate.toISOString());
+		});
+
+		it('should calculate default 7 day range when no dates provided', async (ctx) => {
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-10-02T12:00:00Z')
+			});
+
+			const client = mockClient();
+			client.query = mock.fn(() => client);
+			client.get.mock.mockImplementation(() => ({ value: [] }));
+			const entra = new EntraClient(client);
+			await entra.getUserCalendarEvents('userId');
+			const queryParams = client.query.mock.calls[0].arguments[0];
+			const start = new Date(queryParams.startDateTime);
+			const end = new Date(queryParams.endDateTime);
+			const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+			assert.strictEqual(start.getDay(), 1);
+			assert.strictEqual(daysDiff, 6);
+		});
+
+		it('should calculate endDate when only startDate provided', async () => {
+			const client = mockClient();
+			client.query = mock.fn(() => client);
+			client.get.mock.mockImplementation(() => ({ value: [] }));
+			const entra = new EntraClient(client);
+			const startDate = new Date('2025-11-04T00:00:00.000Z');
+			await entra.getUserCalendarEvents('userId', false, startDate, null);
+			const queryParams = client.query.mock.calls[0].arguments[0];
+			assert.strictEqual(queryParams.endDateTime, '2025-11-10T23:59:59.999Z');
+		});
 	});
 	describe('listAllUserCalendarEvents', () => {
 		it('should return a list of events', async () => {

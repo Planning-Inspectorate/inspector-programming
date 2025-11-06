@@ -18,8 +18,9 @@ describe('view-model', () => {
 				now: new Date('2023-10-04T12:00:00Z')
 			});
 			const events = [];
-			const viewModel = calendarViewModel('2023-10-02', events);
-			assert.strictEqual(viewModel.currentStartDate.getTime(), new Date('2023-10-02').getTime());
+			const startDate = new Date('2023-10-02');
+			const viewModel = calendarViewModel(startDate, events);
+			assert.strictEqual(viewModel.currentStartDate.getTime(), startDate.getTime());
 			assert.strictEqual(viewModel.dates.length, 7);
 			assert.strictEqual(viewModel.times.length, 10);
 			assert.strictEqual(viewModel.grid.length, 20);
@@ -30,18 +31,23 @@ describe('view-model', () => {
 			assert.strictEqual(viewModel.weekTitle, '02 - 08 October, 2023');
 			assert.strictEqual(viewModel.error, undefined);
 		});
-		test('should fallback to start-of-week if no start date passed in', (ctx) => {
+		test('should use the provided date directly without recalculation', (ctx) => {
 			ctx.mock.timers.enable({
 				apis: ['Date'],
-				now: new Date('2023-12-06T12:00:00Z') // pick a GMT date as it fails in BST otherwise. TODO: fix!
+				now: new Date('2023-12-06T12:00:00Z')
 			});
 			const events = [];
-			const viewModel = calendarViewModel(undefined, events);
-			assert.strictEqual(viewModel.currentStartDate.getTime(), new Date('2023-12-04T00:00:00Z').getTime());
+			const startDate = new Date('2023-12-04T00:00:00Z');
+			const viewModel = calendarViewModel(startDate, events);
+			assert.strictEqual(viewModel.currentStartDate.getTime(), startDate.getTime());
+			assert.strictEqual(viewModel.dates.length, 7);
+			assert.strictEqual(viewModel.times.length, 10);
+			assert.strictEqual(viewModel.error, undefined);
 		});
 		test('should include error if provided', () => {
 			const events = [];
-			const viewModel = calendarViewModel(undefined, events, 'some error');
+			const startDate = new Date('2023-10-02');
+			const viewModel = calendarViewModel(startDate, events, 'some error');
 			assert.strictEqual(viewModel.error, 'some error');
 		});
 	});

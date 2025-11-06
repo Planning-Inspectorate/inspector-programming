@@ -99,6 +99,9 @@ export function buildViewHome(service) {
 			},
 			successSummary
 		};
+		const currentWeekStart = req.query.calendarStartDate
+			? new Date(req.query.calendarStartDate.toString())
+			: getWeekStartDate(new Date());
 
 		/**
 		 * @type {import("../../calendar/types.js").Event[]}
@@ -108,7 +111,19 @@ export function buildViewHome(service) {
 
 		if (selectedInspector) {
 			try {
-				calendarEvents = await getSimplifiedEvents(service.entraClient, selectedInspector, req.session, service.logger);
+				const weekStartDate = new Date(currentWeekStart);
+				const weekEndDate = new Date(currentWeekStart);
+				weekEndDate.setDate(weekEndDate.getDate() + 6);
+				weekEndDate.setHours(23, 59, 59, 999);
+
+				calendarEvents = await getSimplifiedEvents(
+					service.entraClient,
+					selectedInspector,
+					req.session,
+					service.logger,
+					weekStartDate,
+					weekEndDate
+				);
 			} catch (error) {
 				service.logger.error(error, 'Failed to fetch calendar events');
 				calendarError = 'Contact Inspector to ensure this calendar is shared with you';
@@ -149,7 +164,7 @@ export function buildViewHome(service) {
 			});
 		}
 
-		viewModel.calendar = calendarViewModel(req.query.calendarStartDate, calendarEvents, calendarError);
+		viewModel.calendar = calendarViewModel(currentWeekStart, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');

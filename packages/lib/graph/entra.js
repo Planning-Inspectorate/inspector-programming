@@ -60,17 +60,22 @@ export class EntraClient {
 	 * @param {string} userId
 	 * @param {boolean} [fetchExtension]
 	 * @returns {Promise<import('./types').CalendarEvents>}
+	 * @param {Date | null} [startDate]
+	 * @param {Date | null} [endDate]
 	 */
-	async getUserCalendarEvents(userId, fetchExtension = false) {
-		const startDate = new Date();
-		startDate.setHours(0, 0, 0, 0);
-		while (startDate.getDay() !== 1) {
-			startDate.setDate(startDate.getDate() - 1);
+	async getUserCalendarEvents(userId, fetchExtension = false, startDate = null, endDate = null) {
+		if (!startDate) {
+			startDate = new Date();
+			startDate.setHours(0, 0, 0, 0);
+			while (startDate.getDay() !== 1) {
+				startDate.setDate(startDate.getDate() - 1);
+			}
 		}
-
-		const endDate = new Date();
-		endDate.setHours(23, 59, 59, 999);
-		endDate.setDate(endDate.getDate() + 90);
+		if (!endDate) {
+			endDate = new Date(startDate);
+			endDate.setDate(endDate.getDate() + 6);
+			endDate.setHours(23, 59, 59, 999);
+		}
 
 		let request = this.#client
 			.api(`/users/${userId}/calendarView`)

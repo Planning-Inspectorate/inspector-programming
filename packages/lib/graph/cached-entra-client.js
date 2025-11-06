@@ -71,10 +71,12 @@ export class CachedEntraClient {
 	 *
 	 * @param {string} userId
 	 * @param {boolean} [fetchExtension]
+	 * @param {Date} [startDate]
+	 * @param {Date} [endDate]
 	 * @returns {Promise<import('./types').CalendarEvents>}
 	 */
-	async getUserCalendarEvents(userId, fetchExtension) {
-		return this.#client.getUserCalendarEvents(userId, fetchExtension);
+	async getUserCalendarEvents(userId, fetchExtension, startDate, endDate) {
+		return this.#client.getUserCalendarEvents(userId, fetchExtension, startDate, endDate);
 	}
 
 	/**
