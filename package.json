@@ -40,6 +40,7 @@
     "@prisma/adapter-mssql": "^6.19.0",
     "@prisma/client": "^6.19.0",
     "accessible-autocomplete": "^3.0.1",
+    "ajv": "^8.17.1",
     "body-parser": "^2.2.0",
     "connect-redis": "^9.0.0",
     "date-fns": "^4.1.0",
