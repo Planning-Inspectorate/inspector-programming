@@ -115,8 +115,8 @@ export function buildViewHome(service) {
 				const weekEndDate = new Date(currentWeekStart);
 				weekEndDate.setDate(weekEndDate.getDate() + 6);
 				weekEndDate.setHours(23, 59, 59, 999);
-
-				calendarEvents = await getSimplifiedEvents(
+				const getEventsFunction = service.getSimplifiedEvents || getSimplifiedEvents;
+				calendarEvents = await getEventsFunction(
 					service.entraClient,
 					selectedInspector,
 					req.session,
