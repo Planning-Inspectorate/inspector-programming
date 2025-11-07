@@ -27,9 +27,19 @@ describe('controller.js', () => {
 				inspectorClient: {
 					getInspectorDetails: mock.fn(),
 					getAllInspectors: mock.fn()
-				}
+				},
+				osMapsApiKey: 'test-api-key',
+				getSimplifiedEvents: mock.fn(async () => [])
 			};
 		};
+		const setupInspectorTest = (service, inspectorData) => {
+			entraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [
+				{ id: inspectorData.id, name: inspectorData.name }
+			]);
+			service.inspectorClient.getAllInspectors.mock.mockImplementationOnce(() => [{ id: inspectorData.id }]);
+			service.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspectorData);
+		};
+
 		test('should get all cases', async () => {
 			const service = mockService();
 			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
@@ -136,7 +146,380 @@ describe('controller.js', () => {
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.appeals?.cases?.length, 10);
 		});
+
+		test('should mark cases as selected based on session data', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [
+					{ caseId: 101, id: 1 },
+					{ caseId: 102, id: 2 },
+					{ caseId: 103, id: 3 }
+				],
+				total: 3
+			}));
+			const req = {
+				url: '/',
+				query: {},
+				session: {
+					persistence: {
+						caseListData: {
+							selectedCases: ['101', '103']
+						}
+					}
+				}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.appeals?.cases?.length, 3);
+			assert.strictEqual(args.appeals.cases[0].selected, true);
+			assert.strictEqual(args.appeals.cases[1].selected, undefined);
+			assert.strictEqual(args.appeals.cases[2].selected, true);
+		});
+
+		test('should show error when on inspector tab without inspector selected', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/?currentTab=inspector',
+				query: { currentTab: 'inspector' },
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.errorSummary.length, 1);
+			assert.deepStrictEqual(args.errorSummary, [{ text: 'Select an inspector', href: '#inspectors' }]);
+		});
+
+		test('should show error when on calendar tab without inspector selected', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/?currentTab=calendar',
+				query: { currentTab: 'calendar' },
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.errorSummary.length, 1);
+			assert.deepStrictEqual(args.errorSummary, [{ text: 'Select an inspector', href: '#inspectors' }]);
+		});
+
+		test('should show error when selectInspectorError in session', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/',
+				query: {},
+				session: {
+					persistence: {
+						errors: {
+							selectInspectorError: true
+						}
+					}
+				}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.errorSummary.length, 1);
+			assert.deepStrictEqual(args.errorSummary, [{ text: 'Select an inspector', href: '#inspectors' }]);
+		});
+
+		test('should add assigned cases error to error summary', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/',
+				query: {},
+				session: {
+					persistence: {
+						errors: {
+							assignedCasesError: 'Failed to assign cases'
+						}
+					}
+				}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.errorSummary.length, 1);
+			assert.deepStrictEqual(args.errorSummary, [{ text: 'Failed to assign cases', href: '' }]);
+		});
+
+		test('should add assignment date error to error summary', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/',
+				query: {},
+				session: {
+					persistence: {
+						errors: {
+							selectAssignmentDateError: 'Please select a valid assignment date'
+						}
+					}
+				}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			const assignmentDateErrors = args.errorSummary.filter((e) => e.href === '#assignment-date');
+			assert.strictEqual(assignmentDateErrors.length, 1);
+			assert.strictEqual(assignmentDateErrors[0].text, 'Please select a valid assignment date');
+		});
+
+		test('should add case list error to error summary', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/',
+				query: {},
+				session: {
+					persistence: {
+						errors: {
+							caseListError: 'You must select at least one case'
+						}
+					}
+				}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			const caseListErrors = args.errorSummary.filter((e) => e.href === '#caseListError');
+			assert.strictEqual(caseListErrors.length, 1);
+			assert.strictEqual(caseListErrors[0].text, 'You must select at least one case');
+		});
+
+		test('should attempt to fetch calendar events when inspector is selected', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				latitude: 51.4508591,
+				longitude: -2.5828931
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/?inspectorId=inspector-id',
+				query: { inspectorId: 'inspector-id' },
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.ok(args.calendar);
+		});
+
+		test('should fetch calendar events with custom calendar start date', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-123',
+				latitude: 51.4508591,
+				longitude: -2.5828931
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/?inspectorId=inspector-id&calendarStartDate=Mon Jan 01 2024 00:00:00',
+				query: {
+					inspectorId: 'inspector-id',
+					calendarStartDate: 'Mon Jan 01 2024 00:00:00'
+				},
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.ok(args.calendar);
+		});
+
+		test('should fetch calendar events on calendar tab', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-123',
+				latitude: 51.4508591,
+				longitude: -2.5828931
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			const req = {
+				url: '/?inspectorId=inspector-id&currentTab=calendar',
+				query: {
+					inspectorId: 'inspector-id',
+					currentTab: 'calendar'
+				},
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.ok(args.calendar);
+		});
+
+		test('should handle calendar error and add to error summary when on calendar tab', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-123',
+				latitude: 51.4508591,
+				longitude: -2.5828931
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			service.getSimplifiedEvents.mock.mockImplementationOnce(async () => {
+				throw new Error('Calendar fetch failed');
+			});
+			const req = {
+				url: '/?inspectorId=inspector-id&currentTab=calendar',
+				query: {
+					inspectorId: 'inspector-id',
+					currentTab: 'calendar'
+				},
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.ok(args.calendar);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const calendarErrors = args.errorSummary.filter((e) => e.href === '#calendarError');
+			assert.strictEqual(calendarErrors.length, 1);
+			assert.strictEqual(calendarErrors[0].text, 'Contact Inspector to ensure this calendar is shared with you');
+			assert.strictEqual(service.logger.error.mock.callCount(), 1);
+		});
+
+		test('should handle calendar error but not add to error summary when not on calendar tab', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-123',
+				latitude: 51.4508591,
+				longitude: -2.5828931
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			service.getSimplifiedEvents.mock.mockImplementationOnce(async () => {
+				throw new Error('Calendar fetch failed');
+			});
+			const req = {
+				url: '/?inspectorId=inspector-id',
+				query: {
+					inspectorId: 'inspector-id'
+				},
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.ok(args.calendar);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const calendarErrors = args.errorSummary.filter((e) => e.href === '#calendarError');
+			assert.strictEqual(calendarErrors.length, 0);
+			assert.strictEqual(service.logger.error.mock.callCount(), 1);
+		});
+
+		test('should set calendar error message when getSimplifiedEvents fails', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-123',
+				latitude: 51.4508591,
+				longitude: -2.5828931
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			service.getSimplifiedEvents.mock.mockImplementationOnce(async () => {
+				throw new Error('Calendar fetch failed');
+			});
+			const req = {
+				url: '/?inspectorId=inspector-id',
+				query: {
+					inspectorId: 'inspector-id'
+				},
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.ok(args.calendar);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			assert.strictEqual(args.calendar.error, 'Contact Inspector to ensure this calendar is shared with you');
+		});
 	});
+
 	describe('buildPostHome', () => {
 		const mockService = () => {
 			return {
@@ -231,6 +614,21 @@ describe('controller.js', () => {
 				),
 				true
 			);
+		});
+
+		test('should redirect to inspector page when action is view', async () => {
+			const service = mockService();
+			const req = {
+				body: {
+					action: 'view',
+					inspectorId: 'test-inspector-id'
+				}
+			};
+			const res = { redirect: mock.fn() };
+			const controller = buildPostHome(service);
+			await controller(req, res);
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/inspector/test-inspector-id');
 		});
 	});
 });
