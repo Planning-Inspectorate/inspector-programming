@@ -1,11 +1,6 @@
 import { getInspectorList } from '../../inspector/inspector.js';
 import { specialisms } from '../../specialism/specialism.js';
-import {
-	getNextWeekStartDate,
-	getPreviousWeekStartDate,
-	getSimplifiedEvents,
-	getWeekStartDate
-} from '../../calendar/calendar.js';
+import { getNextWeekStartDate, getPreviousWeekStartDate, getWeekStartDate } from '../../calendar/calendar.js';
 import { validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
 import { addSessionData, clearSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
@@ -14,9 +9,10 @@ import { paginationValues } from './pagination.js';
 
 /**
  * @param {import('#service').WebService} service
+ * @param {Function} [getEventsFunction] Optional. Used for testing to inject a custom getSimplifiedEvents function.
  * @returns {import('express').Handler}
  */
-export function buildViewHome(service) {
+export function buildViewHome(service, getEventsFunction) {
 	return async (req, res) => {
 		const inspectors = await getInspectorList(service, req.session);
 		const inspectorId = req.query.inspectorId
@@ -115,8 +111,8 @@ export function buildViewHome(service) {
 				const weekEndDate = new Date(currentWeekStart);
 				weekEndDate.setDate(weekEndDate.getDate() + 6);
 				weekEndDate.setHours(23, 59, 59, 999);
-				const getEventsFunction = service.getSimplifiedEvents || getSimplifiedEvents;
-				calendarEvents = await getEventsFunction(
+				const eventsFn = getEventsFunction || service.getSimplifiedEvents;
+				calendarEvents = await eventsFn(
 					service.entraClient,
 					selectedInspector,
 					req.session,

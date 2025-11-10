@@ -40,6 +40,22 @@ describe('controller.js', () => {
 			service.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspectorData);
 		};
 
+		function setupInspectorCalendarTest(service, overrides = {}) {
+			const inspectorData = {
+				id: 'inspector-id',
+				name: 'Test Inspector',
+				entraId: 'entra-123',
+				latitude: 51.4508591,
+				longitude: -2.5828931,
+				...overrides
+			};
+			setupInspectorTest(service, inspectorData);
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+			return inspectorData;
+		}
 		test('should get all cases', async () => {
 			const service = mockService();
 			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
@@ -48,7 +64,7 @@ describe('controller.js', () => {
 			}));
 			const req = { url: '/', query: {}, session: {} };
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
@@ -81,7 +97,7 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.deepStrictEqual(service.casesClient.getCases.mock.calls[0].arguments[0], {
@@ -108,7 +124,7 @@ describe('controller.js', () => {
 			};
 
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
@@ -137,7 +153,7 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.deepStrictEqual(service.casesClient.getCases.mock.calls[0].arguments[0], {});
@@ -169,7 +185,7 @@ describe('controller.js', () => {
 				}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -191,7 +207,7 @@ describe('controller.js', () => {
 				session: {}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -211,7 +227,7 @@ describe('controller.js', () => {
 				session: {}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -237,7 +253,7 @@ describe('controller.js', () => {
 				}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -263,7 +279,7 @@ describe('controller.js', () => {
 				}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -289,7 +305,7 @@ describe('controller.js', () => {
 				}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -316,7 +332,7 @@ describe('controller.js', () => {
 				}
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -325,7 +341,12 @@ describe('controller.js', () => {
 			assert.strictEqual(caseListErrors[0].text, 'You must select at least one case');
 		});
 
-		test('should attempt to fetch calendar events when inspector is selected', async () => {
+		test('should attempt to fetch calendar events when inspector is selected', async (ctx) => {
+			const mockDate = new Date('2025-11-10T12:00:00Z');
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: mockDate
+			});
 			const service = mockService();
 			const inspectorData = {
 				id: 'inspector-id',
@@ -344,57 +365,61 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.ok(args.calendar);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
+			const inspector = callArgs[1];
+			const weekStartDate = callArgs[4];
+			const weekEndDate = callArgs[5];
+			assert.strictEqual(inspector.id, 'inspector-id');
+			const { expectedStart, expectedEnd } = calculateExpectedWeekDates(mockDate);
+			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
+			assert.strictEqual(weekEndDate.getTime(), expectedEnd.getTime());
 		});
 
 		test('should fetch calendar events with custom calendar start date', async () => {
 			const service = mockService();
-			const inspectorData = {
-				id: 'inspector-id',
-				name: 'Test Inspector',
-				entraId: 'entra-123',
-				latitude: 51.4508591,
-				longitude: -2.5828931
-			};
-			setupInspectorTest(service, inspectorData);
-			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
-				cases: [],
-				total: 0
-			}));
+			setupInspectorCalendarTest(service);
+			const customStartDate = 'Mon Jan 01 2024 00:00:00';
 			const req = {
-				url: '/?inspectorId=inspector-id&calendarStartDate=Mon Jan 01 2024 00:00:00',
+				url: `/?inspectorId=inspector-id&calendarStartDate=${customStartDate}`,
 				query: {
 					inspectorId: 'inspector-id',
-					calendarStartDate: 'Mon Jan 01 2024 00:00:00'
+					calendarStartDate: customStartDate
 				},
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.ok(args.calendar);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
+			const inspector = callArgs[1];
+			const weekStartDate = callArgs[4];
+			const weekEndDate = callArgs[5];
+			assert.strictEqual(inspector.id, 'inspector-id');
+			assert.strictEqual(weekStartDate.getTime(), new Date(customStartDate).getTime());
+			const expectedEndDate = new Date(customStartDate);
+			expectedEndDate.setDate(expectedEndDate.getDate() + 6);
+			expectedEndDate.setHours(23, 59, 59, 999);
+			assert.strictEqual(weekEndDate.getTime(), expectedEndDate.getTime());
 		});
 
-		test('should fetch calendar events on calendar tab', async () => {
+		test('should fetch calendar events on calendar tab', async (ctx) => {
+			const mockDate = new Date('2025-11-10T12:00:00Z');
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: mockDate
+			});
 			const service = mockService();
-			const inspectorData = {
-				id: 'inspector-id',
-				name: 'Test Inspector',
-				entraId: 'entra-123',
-				latitude: 51.4508591,
-				longitude: -2.5828931
-			};
-			setupInspectorTest(service, inspectorData);
-			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
-				cases: [],
-				total: 0
-			}));
+			setupInspectorCalendarTest(service);
 			const req = {
 				url: '/?inspectorId=inspector-id&currentTab=calendar',
 				query: {
@@ -404,27 +429,25 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.ok(args.calendar);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
+			const inspector = callArgs[1];
+			const weekStartDate = callArgs[4];
+			const weekEndDate = callArgs[5];
+			assert.strictEqual(inspector.id, 'inspector-id');
+			const { expectedStart, expectedEnd } = calculateExpectedWeekDates(mockDate);
+			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
+			assert.strictEqual(weekEndDate.getTime(), expectedEnd.getTime());
 		});
 
 		test('should handle calendar error and add to error summary when on calendar tab', async () => {
 			const service = mockService();
-			const inspectorData = {
-				id: 'inspector-id',
-				name: 'Test Inspector',
-				entraId: 'entra-123',
-				latitude: 51.4508591,
-				longitude: -2.5828931
-			};
-			setupInspectorTest(service, inspectorData);
-			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
-				cases: [],
-				total: 0
-			}));
+			setupInspectorCalendarTest(service);
 			service.getSimplifiedEvents.mock.mockImplementationOnce(async () => {
 				throw new Error('Calendar fetch failed');
 			});
@@ -437,7 +460,7 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -451,18 +474,7 @@ describe('controller.js', () => {
 
 		test('should handle calendar error but not add to error summary when not on calendar tab', async () => {
 			const service = mockService();
-			const inspectorData = {
-				id: 'inspector-id',
-				name: 'Test Inspector',
-				entraId: 'entra-123',
-				latitude: 51.4508591,
-				longitude: -2.5828931
-			};
-			setupInspectorTest(service, inspectorData);
-			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
-				cases: [],
-				total: 0
-			}));
+			setupInspectorCalendarTest(service);
 			service.getSimplifiedEvents.mock.mockImplementationOnce(async () => {
 				throw new Error('Calendar fetch failed');
 			});
@@ -474,7 +486,7 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
@@ -487,18 +499,7 @@ describe('controller.js', () => {
 
 		test('should set calendar error message when getSimplifiedEvents fails', async () => {
 			const service = mockService();
-			const inspectorData = {
-				id: 'inspector-id',
-				name: 'Test Inspector',
-				entraId: 'entra-123',
-				latitude: 51.4508591,
-				longitude: -2.5828931
-			};
-			setupInspectorTest(service, inspectorData);
-			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
-				cases: [],
-				total: 0
-			}));
+			setupInspectorCalendarTest(service);
 			service.getSimplifiedEvents.mock.mockImplementationOnce(async () => {
 				throw new Error('Calendar fetch failed');
 			});
@@ -510,13 +511,40 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service);
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.ok(args.calendar);
 			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
 			assert.strictEqual(args.calendar.error, 'Contact Inspector to ensure this calendar is shared with you');
+		});
+
+		test('should calculate weekEndDate as 6 days after weekStartDate with end-of-day time', async () => {
+			const service = mockService();
+			setupInspectorCalendarTest(service);
+			const customStartDate = 'Mon Jan 15 2024 00:00:00';
+			const req = {
+				url: `/?inspectorId=inspector-id&calendarStartDate=${customStartDate}`,
+				query: {
+					inspectorId: 'inspector-id',
+					calendarStartDate: customStartDate
+				},
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
+			await controller(req, res);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
+			const weekStartDate = callArgs[4];
+			const weekEndDate = callArgs[5];
+			const daysDifference = Math.floor((weekEndDate.getTime() - weekStartDate.getTime()) / (1000 * 60 * 60 * 24));
+			assert.strictEqual(daysDifference, 6);
+			assert.strictEqual(weekEndDate.getHours(), 23);
+			assert.strictEqual(weekEndDate.getMinutes(), 59);
+			assert.strictEqual(weekEndDate.getSeconds(), 59);
+			assert.strictEqual(weekEndDate.getMilliseconds(), 999);
 		});
 	});
 
@@ -640,4 +668,21 @@ function convertDateToDateTimeString(date) {
 	const timeZone = 'Europe/London';
 	const convertedDate = toZonedTime(date, timeZone);
 	return format(convertedDate, 'EEE MMM dd yyyy HH:mm:ss', { timeZone });
+}
+
+/**
+ * Calculate expected week dates for assertions
+ * @param {Date} currentDate - The mocked current date
+ * @returns {{expectedStart: Date, expectedEnd: Date}}
+ */
+function calculateExpectedWeekDates(currentDate) {
+	let expectedStart = new Date(currentDate);
+	expectedStart.setHours(0, 0, 0, 0);
+	while (expectedStart.getDay() !== 1) {
+		expectedStart.setDate(expectedStart.getDate() - 1);
+	}
+	const expectedEnd = new Date(expectedStart);
+	expectedEnd.setDate(expectedEnd.getDate() + 6);
+	expectedEnd.setHours(23, 59, 59, 999);
+	return { expectedStart, expectedEnd };
 }
