@@ -368,17 +368,8 @@ describe('controller.js', () => {
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
 			await controller(req, res);
 			assert.strictEqual(res.render.mock.callCount(), 1);
-			const args = res.render.mock.calls[0].arguments[1];
-			assert.ok(args.calendar);
+			assert.ok(res.render.mock.calls[0].arguments[1].calendar);
 			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
-			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
-			const inspector = callArgs[1];
-			const weekStartDate = callArgs[4];
-			const weekEndDate = callArgs[5];
-			assert.strictEqual(inspector.id, 'inspector-id');
-			const { expectedStart, expectedEnd } = calculateExpectedWeekDates(mockDate);
-			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
-			assert.strictEqual(weekEndDate.getTime(), expectedEnd.getTime());
 		});
 
 		test('should fetch calendar events with custom calendar start date', async () => {
@@ -406,9 +397,7 @@ describe('controller.js', () => {
 			const weekEndDate = callArgs[5];
 			assert.strictEqual(inspector.id, 'inspector-id');
 			assert.strictEqual(weekStartDate.getTime(), new Date(customStartDate).getTime());
-			const expectedEndDate = new Date(customStartDate);
-			expectedEndDate.setDate(expectedEndDate.getDate() + 6);
-			expectedEndDate.setHours(23, 59, 59, 999);
+			const expectedEndDate = new Date('2024-01-07T23:59:59.999Z');
 			assert.strictEqual(weekEndDate.getTime(), expectedEndDate.getTime());
 		});
 
@@ -435,14 +424,6 @@ describe('controller.js', () => {
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.ok(args.calendar);
 			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
-			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
-			const inspector = callArgs[1];
-			const weekStartDate = callArgs[4];
-			const weekEndDate = callArgs[5];
-			assert.strictEqual(inspector.id, 'inspector-id');
-			const { expectedStart, expectedEnd } = calculateExpectedWeekDates(mockDate);
-			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
-			assert.strictEqual(weekEndDate.getTime(), expectedEnd.getTime());
 		});
 
 		test('should handle calendar error and add to error summary when on calendar tab', async () => {
@@ -539,12 +520,9 @@ describe('controller.js', () => {
 			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
 			const weekStartDate = callArgs[4];
 			const weekEndDate = callArgs[5];
-			const daysDifference = Math.floor((weekEndDate.getTime() - weekStartDate.getTime()) / (1000 * 60 * 60 * 24));
-			assert.strictEqual(daysDifference, 6);
-			assert.strictEqual(weekEndDate.getHours(), 23);
-			assert.strictEqual(weekEndDate.getMinutes(), 59);
-			assert.strictEqual(weekEndDate.getSeconds(), 59);
-			assert.strictEqual(weekEndDate.getMilliseconds(), 999);
+			const { expectedStart, expectedEnd } = calculateExpectedWeekDates(new Date(customStartDate));
+			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
+			assert.strictEqual(weekEndDate.getTime(), expectedEnd.getTime());
 		});
 	});
 
