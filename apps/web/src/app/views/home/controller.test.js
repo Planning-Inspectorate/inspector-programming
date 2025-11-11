@@ -64,7 +64,7 @@ describe('controller.js', () => {
 			}));
 			const req = { url: '/', query: {}, session: {} };
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service, service.getSimplifiedEvents);
+			const controller = buildViewHome(service);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
@@ -97,7 +97,7 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service, service.getSimplifiedEvents);
+			const controller = buildViewHome(service);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.deepStrictEqual(service.casesClient.getCases.mock.calls[0].arguments[0], {
@@ -124,7 +124,7 @@ describe('controller.js', () => {
 			};
 
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service, service.getSimplifiedEvents);
+			const controller = buildViewHome(service);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.callCount(), 1);
@@ -153,7 +153,7 @@ describe('controller.js', () => {
 				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
 			};
 			const res = { render: mock.fn() };
-			const controller = buildViewHome(service, service.getSimplifiedEvents);
+			const controller = buildViewHome(service);
 			await controller(req, res);
 			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
 			assert.deepStrictEqual(service.casesClient.getCases.mock.calls[0].arguments[0], {});
@@ -523,6 +523,29 @@ describe('controller.js', () => {
 			const { expectedStart, expectedEnd } = calculateExpectedWeekDates(new Date(customStartDate));
 			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
 			assert.strictEqual(weekEndDate.getTime(), expectedEnd.getTime());
+		});
+
+		test('should use current week start date as default when calendarStartDate is not provided', async (ctx) => {
+			const mockDate = new Date('2025-11-13T12:00:00Z');
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: mockDate
+			});
+			const service = mockService();
+			setupInspectorCalendarTest(service);
+			const req = {
+				url: '/?inspectorId=inspector-id',
+				query: { inspectorId: 'inspector-id' },
+				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service, service.getSimplifiedEvents);
+			await controller(req, res);
+			assert.strictEqual(service.getSimplifiedEvents.mock.callCount(), 1);
+			const callArgs = service.getSimplifiedEvents.mock.calls[0].arguments;
+			const weekStartDate = callArgs[4];
+			const { expectedStart } = calculateExpectedWeekDates(mockDate);
+			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
 		});
 	});
 
