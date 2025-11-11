@@ -104,8 +104,7 @@ resource "azurerm_key_vault_secret" "sql_app_connection_string" {
     [
       "sqlserver://${azurerm_mssql_server.primary.fully_qualified_domain_name}",
       "database=${azurerm_mssql_database.primary.name}",
-      "user=${random_id.sql_app_username.b64_url}",
-      "password=${random_password.sql_app_password.result}",
+      "authentication=DefaultAzureCredential",
       "trustServerCertificate=false"
     ]
   )
