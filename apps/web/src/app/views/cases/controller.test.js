@@ -5,12 +5,18 @@ import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.
 
 describe('controller.js', () => {
 	describe('buildPostCases', () => {
+		const mockLoggerInstance = mockLogger();
+
 		beforeEach(() => {
 			mockGetCbosApiClientForSession.mock.resetCalls();
 			mockCbosApiClient.patchAppeal.mock.resetCalls();
 			mockCasesClient.getCaseById.mock.resetCalls();
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
+			mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
+			Object.values(mockLoggerInstance).forEach((mockFn) => {
+				if (mockFn && mockFn.mock) mockFn.mock.resetCalls();
+			});
 		});
 		//mock clients
 		const mockCasesClient = {
@@ -33,7 +39,7 @@ describe('controller.js', () => {
 		};
 		const mockService = () => {
 			return {
-				logger: mockLogger(),
+				logger: mockLoggerInstance,
 				getCbosApiClientForSession: mockGetCbosApiClientForSession,
 				casesClient: mockCasesClient,
 				calendarClient: mockCalendarClient,
@@ -237,21 +243,50 @@ describe('controller.js', () => {
 			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
 		});
 
-		test('should not update case if inspector already assigned', async () => {
-			const appealsDetailsList = [{ appealId: 1, appealReference: '1', inspector: 'inspectorId' }];
+		test('should render duplicate assignment error page if inspector already assigned', async () => {
+			const appealsDetailsList = [{ appealId: 1, appealReference: 'APP/2024/001', inspector: 'inspectorId' }];
 			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
 				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
 				session: {}
 			};
-			const res = { redirect: mock.fn() };
+			const res = { render: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
 			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
+			assert.strictEqual(mockCbosApiClient.fetchAppealDetails.mock.callCount(), 1);
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
-			assert.strictEqual(res.redirect.mock.callCount(), 1);
-			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/duplicate-assignment.njk');
+			const templateData = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(templateData.bodyCopy, 'The following case has already been assigned in Manage appeals:');
+			assert.deepStrictEqual(templateData.failedCases, ['APP/2024/001']);
+			assert.strictEqual(templateData.inspectorId, 'inspectorId');
+			assert.strictEqual(service.logger.error.mock.callCount(), 1);
+			const logCall = service.logger.error.mock.calls[0];
+			assert.strictEqual(logCall.arguments[0], 'Duplicate assignment attempt detected');
+			assert.strictEqual(logCall.arguments[1].totalDuplicates, 1);
+		});
+
+		test('should render duplicate assignment error page for multiple already assigned cases', async () => {
+			const appealsDetailsList = [
+				{ appealId: 1, appealReference: 'APP/2024/001', inspector: 'inspectorId' },
+				{ appealId: 2, appealReference: 'APP/2024/002', inspector: 'anotherId' }
+			];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			const service = mockService();
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const templateData = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(templateData.bodyCopy, 'The following cases have already been assigned in Manage appeals:');
+			assert.deepStrictEqual(templateData.failedCases, ['APP/2024/001', 'APP/2024/002']);
 		});
 	});
 });
