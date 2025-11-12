@@ -56,16 +56,29 @@ async function handleCases(selectedCases, service, req, res) {
 	);
 
 	if (alreadyAssignedCases.length > 0) {
-		// Save error to be displayed on home page
-		let caseListError = 'Select another case. The following cases are already assigned:';
-		for (let i = 0; i < alreadyAssignedCases.length; i++) {
-			const appeal = alreadyAssignedCases[i];
-			const errorText = i == alreadyAssignedCases.length - 1 ? ` ${appeal}` : ` ${appeal},`;
-			caseListError = caseListError.concat(errorText);
-		}
+		// Log duplicate assignment attempt for audit trail
+		service.logger.error('Duplicate assignment attempt detected', {
+			user: req.session?.account?.name || 'unknown',
+			duplicateCases: alreadyAssignedCases,
+			inspectorId: req.body.inspectorId,
+			assignmentDate: req.body.assignmentDate,
+			timestamp: new Date().toISOString(),
+			totalAttempted: selectedCases.length,
+			totalDuplicates: alreadyAssignedCases.length
+		});
 
-		addSessionData(req, 'errors', { caseListError }, 'persistence');
+		// Save selected data for "Back" button to restore state
 		saveSelectedData(selectedCases, req);
+		const bodyCopy =
+			alreadyAssignedCases.length === 1
+				? 'The following case has already been assigned in Manage appeals:'
+				: 'The following cases have already been assigned in Manage appeals:';
+
+		return res.render('views/errors/duplicate-assignment.njk', {
+			bodyCopy,
+			failedCases: alreadyAssignedCases,
+			inspectorId: req.body.inspectorId
+		});
 	} else if (failedCaseIds.length > 0) {
 		const failedCases = cases.filter((caseItem) => failedCaseIds.includes(caseItem.caseId));
 		// Keep selected any failed cases, then go to the failed-cases error page
