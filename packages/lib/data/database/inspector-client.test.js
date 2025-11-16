@@ -36,4 +36,30 @@ describe('InspectorClient', () => {
 			assert.deepEqual(args?.include, { Specialisms: true });
 		});
 	});
+
+	describe('getInspectorCaseSpecialism', () => {
+		it('should fetch inspector case specialisms with correct select fields', async () => {
+			const mockData = [
+				{ inspectorSpecialismNormalized: 'highways', caseSpecialism: 'Highways' },
+				{ inspectorSpecialismNormalized: 'heritage', caseSpecialism: 'Heritage' }
+			];
+
+			const mockDb = {
+				inspectorCaseSpecialism: {
+					findMany: mock.fn(() => mockData)
+				}
+			};
+
+			const client = new InspectorClient(mockDb);
+			const result = await client.getInspectorCaseSpecialism();
+
+			assert.equal(mockDb.inspectorCaseSpecialism.findMany.mock.callCount(), 1);
+			const args = mockDb.inspectorCaseSpecialism.findMany.mock.calls[0].arguments[0];
+			assert.deepEqual(args?.select, {
+				inspectorSpecialismNormalized: true,
+				caseSpecialism: true
+			});
+			assert.deepEqual(result, mockData);
+		});
+	});
 });
