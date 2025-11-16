@@ -4,6 +4,12 @@ import assert from 'assert';
 import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
 import { format, toZonedTime } from 'date-fns-tz';
 
+// Shared default session
+const defaultSession = {
+	account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+	persistence: { lastRequest: { inspectorId: 'inspector-id', sort: 'age' } }
+};
+
 describe('controller.js', () => {
 	describe('buildViewHome', () => {
 		const entraClient = {
@@ -26,7 +32,8 @@ describe('controller.js', () => {
 				},
 				inspectorClient: {
 					getInspectorDetails: mock.fn(),
-					getAllInspectors: mock.fn()
+					getAllInspectors: mock.fn(),
+					getInspectorCaseSpecialism: mock.fn(() => [])
 				},
 				osMapsApiKey: 'test-api-key',
 				getSimplifiedEvents: mock.fn(async () => [])
@@ -94,7 +101,7 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
@@ -150,7 +157,7 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
@@ -362,7 +369,7 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -382,7 +389,7 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					calendarStartDate: customStartDate
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -415,7 +422,7 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					currentTab: 'calendar'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -438,7 +445,7 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					currentTab: 'calendar'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -464,7 +471,7 @@ describe('controller.js', () => {
 				query: {
 					inspectorId: 'inspector-id'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -489,7 +496,7 @@ describe('controller.js', () => {
 				query: {
 					inspectorId: 'inspector-id'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -511,7 +518,7 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					calendarStartDate: customStartDate
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -536,7 +543,7 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: defaultSession
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -546,6 +553,181 @@ describe('controller.js', () => {
 			const weekStartDate = callArgs[4];
 			const { expectedStart } = calculateExpectedWeekDates(mockDate);
 			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
+		});
+
+		test('should load error page when failed to retrieve the case specialism mapping associated with inspector', async () => {
+			const service = mockService();
+			service.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => {
+				throw new Error('Failed to retrieve the case specialism mapping associated with inspector');
+			});
+
+			const req = {
+				originalUrl: '/?inspectorId=new-inspector',
+				url: '/?inspectorId=new-inspector',
+				query: { inspectorId: 'new-inspector' },
+				session: defaultSession
+			};
+
+			const res = { render: mock.fn(), redirect: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.ok(service.logger.error.mock.callCount() >= 1);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
+		});
+
+		test('should persist inspectorId in session and NOT clear it at the end of request', async () => {
+			const service = mockService();
+
+			const req = {
+				url: '/?inspectorId=inspector-id',
+				query: { inspectorId: 'inspector-id' },
+				session: defaultSession
+			};
+			const res = { render: mock.fn() };
+
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			assert.strictEqual(req.session.persistence.lastRequest.inspectorId, 'inspector-id');
+		});
+
+		test('should not redirect when inspector has not changed', async () => {
+			const service = mockService();
+			const inspectorId = 'same-inspector-id';
+
+			const req = {
+				url: `/?inspectorId=${inspectorId}`,
+				query: { inspectorId: inspectorId },
+				session: {
+					persistence: {
+						lastRequest: { inspectorId: inspectorId },
+						mappingFailedId: inspectorId
+					}
+				}
+			};
+			const res = { render: mock.fn(), redirect: mock.fn() };
+
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.strictEqual(res.redirect.mock.callCount(), 0);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+		});
+
+		test('should redirect when inspector changes and inspector–case specialisms map', async () => {
+			const service = mockService();
+			const inspectorData = {
+				id: 'new-inspector',
+				name: 'New Inspector',
+				entraId: 'entra-xyz',
+				Specialisms: [{ name: 'Gypsy' }, { name: 'Natural heritage' }, { name: 'Water' }]
+			};
+
+			setupInspectorTest(service, inspectorData);
+
+			service.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => [
+				{ inspectorSpecialismNormalized: 'gypsy', caseSpecialism: 'Gypsy' },
+				{ inspectorSpecialismNormalized: 'natural heritage', caseSpecialism: 'Natural heritage' },
+				{ inspectorSpecialismNormalized: 'water', caseSpecialism: 'Water' }
+			]);
+
+			const req = {
+				url: '/?inspectorId=new-inspector',
+				query: { inspectorId: 'new-inspector' },
+				session: {
+					account: {
+						idTokenClaims: { groups: ['inspectors-group-id'] },
+						localAccountId: 'inspector-id'
+					},
+					persistence: {
+						lastRequest: { inspectorId: 'old-inspector', sort: 'age' }
+					}
+				}
+			};
+
+			const res = { render: mock.fn(), redirect: mock.fn() };
+
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.callCount(), 0);
+			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 0);
+
+			const redirectUrl = res.redirect.mock.calls[0].arguments[0];
+
+			assert.ok(redirectUrl.startsWith('/?'));
+			assert.ok(redirectUrl.includes('inspectorId=new-inspector'));
+			assert.ok(redirectUrl.includes('filters%5BcaseSpecialisms%5D=Gypsy'));
+			assert.ok(redirectUrl.includes('filters%5BcaseSpecialisms%5D=Natural+heritage'));
+			assert.ok(redirectUrl.includes('filters%5BcaseSpecialisms%5D=Water'));
+		});
+
+		test('should check if session data is saved correctly', async () => {
+			const service = {
+				entraGroupIds: {
+					inspectors: 'inspectors-group-id'
+				},
+				entraClient() {
+					return {
+						listAllGroupMembers: mock.fn(() => [])
+					};
+				},
+				casesClient: {
+					getCases: mock.fn(() => ({ cases: [], total: 0, page: 1 }))
+				},
+				inspectorClient: {
+					getInspectorDetails: mock.fn(() => ({ id: 'inspector-id' })),
+					getAllInspectors: mock.fn(() => [{ id: 'inspector-id' }]),
+					getInspectorCaseSpecialism: mock.fn(() => [])
+				}
+			};
+
+			const req = {
+				url: '/?inspectorId=inspector-id&sort=age',
+				query: { inspectorId: 'inspector-id', sort: 'age' },
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: {
+						lastRequest: { inspectorId: 'inspector-id', sort: 'age' },
+						caseListData: {
+							selectedCases: ['1', '2'],
+							assignmentDate: '2025-01-01'
+						},
+						errors: {
+							selectInspectorError: true,
+							selectAssignmentDateError: '2025-01-15'
+						},
+						success: {
+							successSummary: 'Success message'
+						}
+					}
+				}
+			};
+
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.strictEqual(res.render.mock.callCount(), 1);
+
+			// lastRequest should be updated with current sort and inspectorId
+			assert.strictEqual(req.session.persistence.lastRequest.inspectorId, 'inspector-id');
+			assert.strictEqual(req.session.persistence.lastRequest.sort, 'age');
+
+			// cleared session values
+			const persistence = req.session.persistence;
+			assert.strictEqual(persistence.caseListData?.selectedCases, undefined);
+			assert.strictEqual(persistence.caseListData?.inspectorId, undefined);
+			assert.strictEqual(persistence.caseListData?.assignmentDate, undefined);
+
+			assert.strictEqual(persistence.errors?.selectInspectorError, undefined);
+			assert.strictEqual(persistence.errors?.selectAssignmentDateError, undefined);
+
+			assert.strictEqual(persistence.success?.successSummary, undefined);
 		});
 	});
 

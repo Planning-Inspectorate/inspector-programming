@@ -58,4 +58,19 @@ export class CachedInspectorClient {
 		this.#cache.set(key, inspectors);
 		return inspectors;
 	}
+
+	/**
+	 * Fetch inspector case specialisms from the database.
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').InspectorCaseSpecialism[]>}
+	 */
+	async getInspectorCaseSpecialism() {
+		const key = CACHE_PREFIX + 'getInspectorCaseSpecialism';
+		let inspectorCaseSpecialisms = this.#cache.get(key);
+		if (inspectorCaseSpecialisms) {
+			return inspectorCaseSpecialisms;
+		}
+		inspectorCaseSpecialisms = await this.#client.getInspectorCaseSpecialism();
+		this.#cache.set(key, inspectorCaseSpecialisms);
+		return inspectorCaseSpecialisms;
+	}
 }

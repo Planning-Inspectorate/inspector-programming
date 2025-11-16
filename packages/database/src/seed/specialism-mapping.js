@@ -1,0 +1,21 @@
+export const INSPECTOR_TO_CASE_SPECIALISM_MAP = Object.freeze({
+	Access: 'Access',
+	Advertisements: 'Advertisements',
+	Airports: 'Transport',
+	'Appearance Design': 'Appearance design',
+	Enforcement: 'Enforcement',
+	'General Allocation': 'General allocation',
+	Gypsy: 'Gypsy',
+	'High Hedges': 'High hedges',
+	'Historic Heritage': 'Historic Heritage',
+	'Housing Orders': 'Housing orders',
+	'Listed Building Enforcement Notices': 'Listed building and enforcement',
+	'Renewable Energy/Wind Farms': 'Renewable energy/wind farms',
+	'Rights of Way': 'Rights of way',
+	'Roads and traffic': 'Roads and traffics',
+	Shopping: 'Shopping',
+	'Tree Preservation orders': 'Tree Preservation orders',
+	'Waste Water Treatment Plants': 'Water',
+	Waste: 'Waste',
+	Water: 'Water'
+});

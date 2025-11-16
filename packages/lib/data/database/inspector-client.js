@@ -39,4 +39,17 @@ export class InspectorClient {
 	async getAllInspectors() {
 		return this.#client.inspector.findMany({ include: { Specialisms: true } });
 	}
+
+	/**
+	 * Fetch inspector case specialisms from the database.
+	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').InspectorCaseSpecialism[]>}
+	 */
+	async getInspectorCaseSpecialism() {
+		return this.#client.inspectorCaseSpecialism.findMany({
+			select: {
+				inspectorSpecialismNormalized: true,
+				caseSpecialism: true
+			}
+		});
+	}
 }

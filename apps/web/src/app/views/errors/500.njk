@@ -36,7 +36,7 @@
 	{%- endif -%}
 
 	<p class="govuk-body">
-		<a href="/" class="govuk-link">Back to case list</a>
+		<a href="/{% if queryParams %}?{{ queryParams }}{% endif %}" class="govuk-link">Back to case list</a>
 	</p>
 
 	{% if error and isDevelopment %}
