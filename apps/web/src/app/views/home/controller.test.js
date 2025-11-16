@@ -26,7 +26,8 @@ describe('controller.js', () => {
 				},
 				inspectorClient: {
 					getInspectorDetails: mock.fn(),
-					getAllInspectors: mock.fn()
+					getAllInspectors: mock.fn(),
+					getInspectorCaseSpecialism: mock.fn(() => [])
 				},
 				osMapsApiKey: 'test-api-key',
 				getSimplifiedEvents: mock.fn(async () => [])
@@ -94,7 +95,10 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
@@ -150,7 +154,10 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service);
@@ -362,7 +369,10 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -382,7 +392,10 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					calendarStartDate: customStartDate
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -415,7 +428,10 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					currentTab: 'calendar'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -438,7 +454,10 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					currentTab: 'calendar'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -464,7 +483,10 @@ describe('controller.js', () => {
 				query: {
 					inspectorId: 'inspector-id'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -489,7 +511,10 @@ describe('controller.js', () => {
 				query: {
 					inspectorId: 'inspector-id'
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -511,7 +536,10 @@ describe('controller.js', () => {
 					inspectorId: 'inspector-id',
 					calendarStartDate: customStartDate
 				},
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -536,7 +564,10 @@ describe('controller.js', () => {
 			const req = {
 				url: '/?inspectorId=inspector-id',
 				query: { inspectorId: 'inspector-id' },
-				session: { account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' } }
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'inspector-id' },
+					persistence: { lastRequest: { inspectorId: 'inspector-id' } }
+				}
 			};
 			const res = { render: mock.fn() };
 			const controller = buildViewHome(service, service.getSimplifiedEvents);
@@ -546,6 +577,65 @@ describe('controller.js', () => {
 			const weekStartDate = callArgs[4];
 			const { expectedStart } = calculateExpectedWeekDates(mockDate);
 			assert.strictEqual(weekStartDate.getTime(), expectedStart.getTime());
+		});
+
+		test('removes caseSpecialisms when mapping returns empty', async () => {
+			const service = mockService();
+			service.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => []);
+			const req = {
+				originalUrl: '/?page=1',
+				url: '/?inspectorId=new-inspector',
+				query: { inspectorId: 'new-inspector' },
+				session: {
+					persistence: { lastRequest: { inspectorId: 'prev-inspector', sort: 'age' } },
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'new-inspector' }
+				}
+			};
+			const res = { render: mock.fn(), redirect: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const redirectUrl = res.redirect.mock.calls[0].arguments[0];
+			const qs = new URLSearchParams(redirectUrl.slice(2));
+			assert.strictEqual([...qs.keys()].filter((k) => k === 'filters[caseSpecialisms]').length, 0);
+		});
+
+		test('load error page when failed to retrieve the case specialism mapping associated with inspector', async () => {
+			const service = mockService();
+			service.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => {
+				throw new Error('Failed to retrieve the case specialism mapping associated with inspector');
+			});
+			entraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [
+				{ id: 'new-inspector', name: 'New Inspector' }
+			]);
+			service.inspectorClient.getAllInspectors.mock.mockImplementationOnce(() => [{ id: 'new-inspector' }]);
+			service.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => ({
+				id: 'new-inspector',
+				name: 'New Inspector',
+				latitude: 51.4508591,
+				longitude: -2.5828931,
+				Specialisms: [{ name: 'Planning' }]
+			}));
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({ cases: [], total: 0, page: 1 }));
+
+			const req = {
+				originalUrl: '/?inspectorId=new-inspector&page=1&limit=10&sort=age',
+				url: '/?inspectorId=new-inspector',
+				query: { inspectorId: 'new-inspector' },
+				session: {
+					account: { idTokenClaims: { groups: ['inspectors-group-id'] }, localAccountId: 'new-inspector' },
+					persistence: { lastRequest: { inspectorId: 'prev-inspector', sort: 'age' } }
+				}
+			};
+			const res = { render: mock.fn(), redirect: mock.fn() };
+
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.ok(service.logger.error.mock.callCount() >= 1);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
 		});
 	});
 

@@ -1,4 +1,5 @@
 import { checkAccountGroupAccess, getAccountId } from '#util/account.js';
+import { normalizeString } from '@pins/inspector-programming-lib/util/normalize.js';
 
 /**
  * @param {import("@pins/inspector-programming-lib/graph/types").InitEntraClient} initEntraClient
@@ -184,4 +185,44 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 		cbosLink: service.notifyConfig.cbosLink
 	};
 	await service.notifyClient.sendAssignedCaseProgrammeOfficerEmail(programmeOfficerEmail, options);
+}
+
+/**
+ * Fetch all mappings as a normalized lookup.
+ * Not much data in this instance - but note we could use select here since we only need two fields.
+ * @param {import('#service').WebService} service
+ * @returns {Promise<Record<string,string>>}
+ */
+export async function getInspectorToCaseSpecialismMap(service) {
+	const mappingRows = await service.inspectorClient.getInspectorCaseSpecialism();
+	/** @type {Record<string, string>} */
+	const inspectorToCaseSpecialismLookup = {};
+	for (const mappingEntry of mappingRows) {
+		inspectorToCaseSpecialismLookup[mappingEntry.inspectorSpecialismNormalized] = mappingEntry.caseSpecialism;
+	}
+	return inspectorToCaseSpecialismLookup;
+}
+
+/**
+ * Map inspector specialisms to unique case specialisms.
+ * @param {import('#service').WebService} service
+ * @param {string[]} inspectorSpecialisms
+ * @returns {Promise<string[]>}
+ */
+export async function mapInspectorToCaseSpecialisms(service, inspectorSpecialisms) {
+	if (!Array.isArray(inspectorSpecialisms)) return [];
+
+	const inspectorToCaseMap = await getInspectorToCaseSpecialismMap(service);
+	const seenCaseSpecialisms = new Set();
+
+	for (const inspectorSpecialism of inspectorSpecialisms) {
+		if (typeof inspectorSpecialism !== 'string') continue;
+		const normalizedInspectorSpecialism = normalizeString(inspectorSpecialism);
+		const caseSpecialism = inspectorToCaseMap[normalizedInspectorSpecialism];
+		if (caseSpecialism && !seenCaseSpecialisms.has(caseSpecialism)) {
+			seenCaseSpecialisms.add(caseSpecialism);
+		}
+	}
+
+	return Array.from(seenCaseSpecialisms);
 }

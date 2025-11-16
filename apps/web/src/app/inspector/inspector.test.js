@@ -6,7 +6,9 @@ import {
 	getSortedInspectorList,
 	getInspectorList,
 	notifyInspectorOfAssignedCases,
-	notifyProgrammeOfficerOfAssignedCases
+	notifyProgrammeOfficerOfAssignedCases,
+	getInspectorToCaseSpecialismMap,
+	mapInspectorToCaseSpecialisms
 } from './inspector.js';
 
 const groupId = 'groupId';
@@ -26,7 +28,8 @@ const mockService = {
 	entraClient: mockInitEntraClient,
 	inspectorClient: {
 		getAllInspectors: mock.fn(),
-		getInspectorDetails: mock.fn()
+		getInspectorDetails: mock.fn(),
+		getInspectorCaseSpecialism: mock.fn()
 	},
 	logger: mockLogger,
 	entraGroupIds: {
@@ -493,6 +496,53 @@ describe('inspectors', () => {
 				message: 'Notify client not configured'
 			});
 			assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+		});
+	});
+
+	describe('specialism mapping', () => {
+		beforeEach(() => {
+			mockService.inspectorClient.getInspectorCaseSpecialism.mock.resetCalls();
+		});
+		it('getInspectorToCaseSpecialismMap should build normalized lookup from rows', async () => {
+			const rows = [
+				{ inspectorSpecialismNormalized: 'heritage', caseSpecialism: 'Heritage Assets' },
+				{ inspectorSpecialismNormalized: 'major-infra', caseSpecialism: 'Major Infrastructure' }
+			];
+			mockService.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => rows);
+
+			const result = await getInspectorToCaseSpecialismMap(mockService);
+			assert.deepStrictEqual(result, {
+				heritage: 'Heritage Assets',
+				'major-infra': 'Major Infrastructure'
+			});
+			assert.strictEqual(mockService.inspectorClient.getInspectorCaseSpecialism.mock.callCount(), 1);
+		});
+
+		it('mapInspectorToCaseSpecialisms should map and dedupe case specialisms with normalization', async () => {
+			const rows = [
+				{ inspectorSpecialismNormalized: 'heritage', caseSpecialism: 'Heritage Assets' },
+				{ inspectorSpecialismNormalized: 'major-infra', caseSpecialism: 'Major Infrastructure' },
+				{ inspectorSpecialismNormalized: 'city-centre', caseSpecialism: 'Urban Development' }
+			];
+			mockService.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => rows);
+			const input = ['Heritage', 'MAJOR-INFRA', 'heritage', 'city-centre', 'City-Centre'];
+			const result = await mapInspectorToCaseSpecialisms(mockService, input);
+			assert.deepStrictEqual(result, ['Heritage Assets', 'Major Infrastructure', 'Urban Development']);
+		});
+
+		it('mapInspectorToCaseSpecialisms should return [] for non-array input', async () => {
+			mockService.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => []);
+			const result = await mapInspectorToCaseSpecialisms(mockService, null);
+			assert.deepStrictEqual(result, []);
+		});
+
+		it('mapInspectorToCaseSpecialisms should ignore non-string entries and missing mappings', async () => {
+			const rows = [{ inspectorSpecialismNormalized: 'heritage', caseSpecialism: 'Heritage Assets' }];
+			mockService.inspectorClient.getInspectorCaseSpecialism.mock.mockImplementationOnce(() => rows);
+
+			const input = ['Heritage', 123, undefined, 'Unknown'];
+			const result = await mapInspectorToCaseSpecialisms(mockService, input);
+			assert.deepStrictEqual(result, ['Heritage Assets']);
 		});
 	});
 
