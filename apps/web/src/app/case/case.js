@@ -24,7 +24,7 @@ export async function getCaseDetails(db, caseReference) {
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
 	const cbosApiClient = service.getCbosApiClientForSession(session);
-	const appealPatchData = { inspector: inspectorId };
+	const appealPatchData = { inspectorId: inspectorId };
 
 	/**
 	 * @type {import("@pins/inspector-programming-lib/data/types").CbosSingleAppealResponse[]}
