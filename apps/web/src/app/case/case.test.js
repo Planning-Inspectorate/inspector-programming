@@ -203,6 +203,18 @@ describe('assignCasesToInspector', () => {
 		assert.deepStrictEqual(failedCaseIds.sort(), [10, 11]);
 		assert.deepStrictEqual(failedCaseReferences.sort(), ['CHILD_FAIL', 'PARENT_FAIL'].sort());
 	});
+
+	test('sends correct payload to patchAppeal with given inspectorId and caseId', async () => {
+		const inspectorId = 'd53dea42-369b-44aa-b3ca-a8537018b422';
+		const caseId = 56;
+		const appealsDetailsList = [{ appealId: caseId, appealReference: caseId }];
+		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		await assignCasesToInspector(mockSession, mockService, inspectorId, [caseId]);
+		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 1);
+		const firstCall = mockCbosApiClient.patchAppeal.mock.calls[0];
+		assert.strictEqual(firstCall.arguments[0], caseId);
+		assert.deepStrictEqual(firstCall.arguments[1], { inspectorId });
+	});
 });
 
 describe('getLinkedCaseIdsOfParentId', () => {
