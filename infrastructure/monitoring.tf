@@ -4,7 +4,7 @@ resource "azurerm_log_analytics_workspace" "main" {
   resource_group_name = azurerm_resource_group.primary.name
   sku                 = "PerGB2018"
   retention_in_days   = 30
-  daily_quota_gb      = 0.1
+  daily_quota_gb      = var.monitoring_config.log_daily_cap
 
   tags = local.tags
 }
@@ -56,5 +56,64 @@ resource "azurerm_monitor_action_group" "scheduling_service_manager" {
     ignore_changes = [
       email_receiver
     ]
+  }
+}
+
+# availability test for the app web
+resource "azurerm_application_insights_standard_web_test" "web" {
+  count = var.monitoring_config.web_app_insights_web_test_enabled ? 1 : 0
+
+  name                    = "${local.org}-ai-swt-web-${local.resource_suffix}"
+  resource_group_name     = azurerm_resource_group.primary.name
+  location                = module.primary_region.location
+  application_insights_id = azurerm_application_insights.main.id
+  geo_locations = [
+    "emea-se-sto-edge", # UK West
+    "emea-ru-msa-edge", # UK South
+    "emea-gb-db3-azr",  # North Europe
+    "emea-nl-ams-azr"   # West Europe
+  ]
+  retry_enabled = true
+  enabled       = true
+
+  request {
+    # web app health check endpoint
+    url = "https://${var.web_domains.web}/health"
+  }
+  validation_rules {
+    ssl_check_enabled           = true
+    ssl_cert_remaining_lifetime = 7
+  }
+
+  tags = local.tags
+}
+
+resource "azurerm_monitor_metric_alert" "web_availability" {
+  count = var.monitoring_config.web_app_insights_web_test_enabled ? 1 : 0
+
+  name                = "Web Availability - ${local.resource_suffix}"
+  resource_group_name = azurerm_resource_group.primary.name
+  scopes = [
+    azurerm_application_insights_standard_web_test.web[0].id,
+    azurerm_application_insights.main.id
+  ]
+  description = "Metric alert for standard web test (availability) for the web app - which also checks the certificate"
+
+  application_insights_web_test_location_availability_criteria {
+    web_test_id           = azurerm_application_insights_standard_web_test.web[0].id
+    component_id          = azurerm_application_insights.main.id
+    failed_location_count = 1
+  }
+
+  action {
+    action_group_id = local.action_group_ids.tech
+  }
+
+  action {
+    action_group_id = local.action_group_ids.service_manager
+  }
+
+  action {
+    action_group_id = local.action_group_ids.its
   }
 }
