@@ -136,6 +136,8 @@ model InspectorSpecialism {
   validFrom   DateTime?
 
   Inspector Inspector @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
+
+  @@unique([inspectorId, name])
 }
 
 model CalendarEventTiming {

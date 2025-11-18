@@ -16,7 +16,9 @@ export function loadConfig() {
 		NODE_ENV,
 		SQL_CONNECTION_STRING,
 		LOG_LEVEL,
-		OS_API_KEY
+		OS_API_KEY,
+		SERVICE_BUS_INSPECTOR_TOPIC,
+		SERVICE_BUS_INSPECTOR_SUBSCRIPTION
 	} = process.env;
 
 	if (!SQL_CONNECTION_STRING) {
@@ -37,6 +39,12 @@ export function loadConfig() {
 		NODE_ENV: NODE_ENV || 'development',
 		osApi: {
 			key: OS_API_KEY
+		},
+		serviceBus: {
+			inspector: {
+				topic: SERVICE_BUS_INSPECTOR_TOPIC || 'pins-inspector-topic-placeholder',
+				subscription: SERVICE_BUS_INSPECTOR_SUBSCRIPTION || 'pins-inspector-subscription-placeholder'
+			}
 		}
 	};
 }
