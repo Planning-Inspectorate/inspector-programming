@@ -143,11 +143,6 @@ resource "azurerm_cdn_frontdoor_firewall_policy" "web" {
       exclusion {
         match_variable = "RequestBodyPostArgNames"
         operator       = "Equals"
-        selector       = "files"
-      }
-      exclusion {
-        match_variable = "RequestBodyPostArgNames"
-        operator       = "Equals"
         selector       = "_csrf"
       }
     }
@@ -161,6 +156,16 @@ resource "azurerm_cdn_frontdoor_firewall_policy" "web" {
       rule {
         action  = "Log"
         rule_id = "200003"
+      }
+    }
+
+    override {
+      rule_group_name = "SQLI"
+
+      exclusion {
+        match_variable = "RequestBodyPostArgNames"
+        operator       = "Equals"
+        selector       = "selectedCases"
       }
     }
   }
