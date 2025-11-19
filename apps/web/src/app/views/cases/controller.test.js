@@ -160,7 +160,7 @@ describe('controller.js', () => {
 				{ appealId: 2, appealReference: '2' }
 			];
 			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
-			mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
+			mockCbosApiClient.patchAppeal.mock.mockImplementation(() => {
 				throw new Error();
 			});
 			const service = mockService();

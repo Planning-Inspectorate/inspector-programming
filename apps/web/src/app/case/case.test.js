@@ -10,10 +10,11 @@ import assert from 'assert';
 const mockSession = {};
 const mockLogger = {
 	warn: mock.fn(),
-	error: mock.fn()
+	error: mock.fn(),
+	info: mock.fn()
 };
 const mockCbosApiClient = {
-	patchAppeal: mock.fn(),
+	patchAppeal: mock.fn(() => Promise.resolve()),
 	fetchAppealDetails: mock.fn()
 };
 const mockGetCbosApiClientForSession = mock.fn();
@@ -37,8 +38,10 @@ beforeEach(() => {
 	mockGetCaseById.mock.resetCalls();
 	mockService.logger.error.mock.resetCalls();
 	mockService.logger.warn.mock.resetCalls();
+	mockService.logger.info.mock.resetCalls();
 	mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
 	mockCbosApiClient.patchAppeal.mock.resetCalls();
+	mockCbosApiClient.patchAppeal.mock.mockImplementation(() => Promise.resolve());
 });
 
 describe('assignCasesToInspector', () => {
@@ -57,6 +60,7 @@ describe('assignCasesToInspector', () => {
 		);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 3);
+		assert.strictEqual(mockService.logger.error.mock.callCount(), 0);
 		assert.deepStrictEqual(failedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseIds, []);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
@@ -171,7 +175,7 @@ describe('assignCasesToInspector', () => {
 		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
 		mockCbosApiClient.patchAppeal.mock.mockImplementation((id) => {
 			if (id === 2) throw new Error('child failure');
-			return undefined;
+			return Promise.resolve();
 		});
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences } = await assignCasesToInspector(
 			mockSession,

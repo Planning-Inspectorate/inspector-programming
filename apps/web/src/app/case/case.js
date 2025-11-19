@@ -20,7 +20,7 @@ export async function getCaseDetails(db, caseReference) {
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
  * @param {number[]} caseIds
- * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCaseReferences: (string | undefined)[]}>}
+ * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCaseReferences: (string | undefined)[], successfullyAssignedCaseReferences: (string | undefined)[]}>}
  */
 export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
 	const cbosApiClient = service.getCbosApiClientForSession(session);
@@ -36,32 +36,40 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 		appeals = await cbosApiClient.fetchAppealDetails(caseIds);
 	} catch (error) {
 		service.logger.error(error, `Failed to fetch case details for case details`);
-		return { failedCaseReferences: [], failedCaseIds: caseIds, alreadyAssignedCaseReferences: [] };
+		return {
+			failedCaseReferences: [],
+			failedCaseIds: caseIds,
+			alreadyAssignedCaseReferences: [],
+			successfullyAssignedCaseReferences: []
+		};
 	}
 
 	const assignedCases = appeals.filter((appeal) => appeal.inspector);
 	const alreadyAssignedCaseReferences = assignedCases.map((appeal) => appeal.appealReference);
+	const unassignedCases = appeals.filter((appeal) => !appeal.inspector);
 	const failedCaseReferences = [];
 	const failedCaseIds = [];
+	const successfullyAssignedCaseReferences = [];
 
-	if (alreadyAssignedCaseReferences.length == 0) {
-		for (let appeal of appeals) {
-			try {
-				if (!appeal.appealId) throw new Error('appealId is undefined');
-				if (!appeal.appealReference) throw new Error('appealReference is undefined');
-				await cbosApiClient.patchAppeal(appeal.appealId, appealPatchData);
-			} catch (error) {
-				service.logger.error(
-					error,
-					`Failed to update case (appealId: ${appeal.appealId}, appealReference: ${appeal.appealReference}) for inspector ${inspectorId}`
-				);
-				failedCaseReferences.push(appeal.appealReference);
-				failedCaseIds.push(appeal.appealId);
-			}
+	// Process unassigned cases only - assign them to inspector
+	for (let appeal of unassignedCases) {
+		try {
+			if (!appeal.appealId) throw new Error('appealId is undefined');
+			if (!appeal.appealReference) throw new Error('appealReference is undefined');
+			await cbosApiClient.patchAppeal(appeal.appealId, appealPatchData);
+			successfullyAssignedCaseReferences.push(appeal.appealReference);
+			service.logger.info(`Successfully assigned case ${appeal.appealReference} to inspector ${inspectorId}`);
+		} catch (error) {
+			service.logger.error(
+				error,
+				`Failed to update case (appealId: ${appeal.appealId}, appealReference: ${appeal.appealReference}) for inspector ${inspectorId}`
+			);
+			failedCaseReferences.push(appeal.appealReference);
+			failedCaseIds.push(appeal.appealId);
 		}
 	}
 
-	return { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences };
+	return { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences };
 }
 
 /**
