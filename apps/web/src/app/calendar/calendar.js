@@ -313,6 +313,10 @@ function getStageStartDate(stage, assignment, inspectorEvents) {
 		return subDays(startDate, 1, { in: timeZone });
 	}
 
+	if (!inspectorEvents || inspectorEvents.length === 0) {
+		return startDate;
+	}
+
 	inspectorEvents.sort((a, b) => +fromZonedTime(b.startTime, timeZoneName) - +fromZonedTime(a.startTime, timeZoneName));
 	startDate = fromZonedTime(inspectorEvents[0].startTime, timeZoneName);
 

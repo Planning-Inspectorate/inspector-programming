@@ -48,18 +48,70 @@ export function buildPostCases(service) {
  */
 async function handleCases(selectedCases, service, req, res) {
 	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
-	const { failedCaseIds, alreadyAssignedCaseReferences: alreadyAssignedCases } = await assignCasesToInspector(
-		req.session,
-		service,
-		req.body.inspectorId,
-		selectedCaseIds
-	);
+	const {
+		failedCaseIds,
+		alreadyAssignedCaseReferences: alreadyAssignedCases,
+		successfullyAssignedCaseReferences: successfullyAssignedCases
+	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
+	// Handle successfully assigned cases first
+	let successfulCaseIds = [];
+	if (successfullyAssignedCases.length > 0) {
+		try {
+			// Get case IDs for successfully assigned cases
+			successfulCaseIds = cases
+				.filter((caseItem) => successfullyAssignedCases.includes(caseItem.caseReference))
+				.map((caseItem) => caseItem.caseId);
+
+			// Generate calendar events for successful assignments
+			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, successfulCaseIds);
+			service.logger.info(
+				`Calendar events created: ${eventsToAdd.length} for ${successfullyAssignedCases.length} successfully assigned cases`
+			);
+
+			// Submit calendar events
+			await submitCalendarEvents(service.entraClient, eventsToAdd, req.session, req.body.inspectorId, service.logger);
+
+			// Delete successfully assigned cases from local database
+			await service.casesClient.deleteCases(successfulCaseIds);
+
+			service.logger.info('Successfully processed assigned cases', {
+				caseIds: successfulCaseIds,
+				caseReferences: successfullyAssignedCases,
+				inspectorId: req.body.inspectorId
+			});
+
+			// Send notification emails to inspector for successful assignments
+			try {
+				await notifyInspectorOfAssignedCases(service, req.body.inspectorId, req.body.assignmentDate, successfulCaseIds);
+			} catch (err) {
+				service.logger.warn(
+					err,
+					`Failed to send email notification to inspector ${req.body.inspectorId} after case assignment`
+				);
+			}
+		} catch (err) {
+			service.logger.error(err, `Failed to process successfully assigned cases for inspector ${req.body.inspectorId}`);
+			// If we fail to process successful assignments, treat them as failed
+			const failedSuccessfulCases = cases.filter((caseItem) =>
+				successfullyAssignedCases.includes(caseItem.caseReference)
+			);
+			return handleFailure(
+				req,
+				res,
+				failedSuccessfulCases,
+				'An error occurred when processing successfully assigned cases. Please try again later.'
+			);
+		}
+	}
+
+	// Handle already assigned cases (sync with CBOS)
 	if (alreadyAssignedCases.length > 0) {
 		// Log duplicate assignment attempt for audit trail
 		service.logger.error('Duplicate assignment attempt detected', {
 			user: req.session?.account?.name || 'unknown',
 			duplicateCases: alreadyAssignedCases,
+			successfullyAssigned: successfullyAssignedCases.length,
 			inspectorId: req.body.inspectorId,
 			assignmentDate: req.body.assignmentDate,
 			timestamp: new Date().toISOString(),
@@ -67,8 +119,30 @@ async function handleCases(selectedCases, service, req, res) {
 			totalDuplicates: alreadyAssignedCases.length
 		});
 
-		// Save selected data for "Back" button to restore state
-		saveSelectedData(selectedCases, req);
+		// Remove already assigned cases from local database to sync with CBOSS
+		try {
+			const alreadyAssignedCaseIds = cases
+				.filter((caseItem) => alreadyAssignedCases.includes(caseItem.caseReference))
+				.map((caseItem) => caseItem.caseId);
+
+			if (alreadyAssignedCaseIds.length > 0) {
+				await service.casesClient.deleteCases(alreadyAssignedCaseIds);
+				service.logger.info('Removed already assigned cases from local database', {
+					caseIds: alreadyAssignedCaseIds,
+					caseReferences: alreadyAssignedCases
+				});
+			}
+		} catch (error) {
+			service.logger.error('Failed to remove already assigned cases from local database', {
+				error: error.message,
+				caseReferences: alreadyAssignedCases
+			});
+		}
+
+		// Clear all selected cases from session since they've all been processed
+		// (either successfully assigned or identified as duplicates)
+		saveSelectedData([], req);
+
 		const bodyCopy =
 			alreadyAssignedCases.length === 1
 				? 'The following case has already been assigned in Manage appeals:'
@@ -77,48 +151,38 @@ async function handleCases(selectedCases, service, req, res) {
 		return res.render('views/errors/duplicate-assignment.njk', {
 			bodyCopy,
 			failedCases: alreadyAssignedCases,
-			inspectorId: req.body.inspectorId
+			inspectorId: req.body.inspectorId,
+			successfulCases: successfullyAssignedCases
 		});
-	} else if (failedCaseIds.length > 0) {
+	}
+
+	// Handle assignment failures
+	if (failedCaseIds.length > 0) {
 		const failedCases = cases.filter((caseItem) => failedCaseIds.includes(caseItem.caseId));
 		// Keep selected any failed cases, then go to the failed-cases error page
 		saveSelectedData(failedCaseIds, req);
-		return handleFailure(req, res, failedCases, 'Try again later. None of the selected cases were assigned.');
-	} else {
-		try {
-			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
-			service.logger.info('Calendar events created: ' + eventsToAdd.length); //placeholder
-			await submitCalendarEvents(service.entraClient, eventsToAdd, req.session, req.body.inspectorId, service.logger);
-			await service.casesClient.deleteCases(selectedCaseIds);
-		} catch (/** @type {any} */ err) {
-			service.logger.error(err, `Failed to generate case calendar events for inspector ${req.body.inspectorId}`);
-			return handleFailure(
-				req,
-				res,
-				selectedCases,
-				'An error occurred when generating case calendar events. Please try again later.'
-			);
-		}
 
+		// Determine error message based on whether all or some cases failed
+		const allCasesFailed = successfullyAssignedCases.length === 0 && alreadyAssignedCases.length === 0;
+		const errorMessage = allCasesFailed
+			? 'Try again later. None of the selected cases were assigned.'
+			: 'Try again later. Some of the selected cases failed to assign.';
+
+		return handleFailure(req, res, failedCases, errorMessage);
+	}
+
+	// All cases were successfully assigned
+	if (successfullyAssignedCases.length > 0) {
 		const successSummary = {
 			heading: 'Cases have been assigned',
 			body: 'Cases have been removed from the unassigned case list'
 		};
 
-		//send notification emails to inspector
-		try {
-			await notifyInspectorOfAssignedCases(service, req.body.inspectorId, req.body.assignmentDate, selectedCaseIds);
-		} catch (/** @type {any} */ err) {
-			service.logger.warn(
-				err,
-				`Failed to send email notification to inspector ${req.body.inspectorId} after case assignment`
-			);
-			successSummary.heading = 'Cases have been assigned but there was a problem with sending an email notification';
-		}
-
 		const success = { successSummary };
-
 		addSessionData(req, 'success', success, 'persistence');
+
+		// Clear selected cases since all were successfully processed
+		saveSelectedData([], req);
 	}
 
 	return redirectToHome(req, res);

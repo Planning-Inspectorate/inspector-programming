@@ -26,6 +26,31 @@
         </div>
     {% endif %}
 
+    {% if successfulCases and successfulCases.length > 0 %}
+        <p class="govuk-body govuk-!-margin-top-4 govuk-!-font-weight-bold">
+            The following {{ successfulCases.length }} case{{ "s" if successfulCases.length !== 1 }} {{ "were" if successfulCases.length !== 1 else "was" }} successfully assigned:
+        </p>
+
+        {% if successfulCases.length > 5 %}
+            {% set successColumn1Count = 5 %}
+        {% else %}
+            {% set successColumn1Count = successfulCases.length %}
+        {% endif %}
+
+        <div class="case-id-columns">
+            <div>
+                {% for i in range(successColumn1Count)%}
+                    <p class="govuk-body">{{successfulCases[i]}}</p>
+                {% endfor %}
+            </div>
+            <div>
+                {% for i in range (5, successfulCases.length) %}
+                    <p class="govuk-body">{{successfulCases[i]}}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     <p class="govuk-body">
         Contact the <a href="https://intranet.planninginspectorate.gov.uk/task/report-it-problem/" class="govuk-link">Littlefish service desk</a> if the problem persists.
     </p>
