@@ -139,9 +139,16 @@ async function handleCases(selectedCases, service, req, res) {
 			});
 		}
 
-		// Clear all selected cases from session since they've all been processed
-		// (either successfully assigned or identified as duplicates)
-		saveSelectedData([], req);
+		// Keep only unprocessed cases selected (preserve state for retry)
+		// Remove both successfully assigned and duplicate cases from selection
+		const processedCaseReferences = [...successfullyAssignedCases, ...alreadyAssignedCases];
+		const unprocessedCaseIds = selectedCases.filter((caseId) => {
+			const caseItem = cases.find((c) => c.caseId === caseId);
+			return caseItem && !processedCaseReferences.includes(caseItem.caseReference);
+		});
+
+		// Preserve unprocessed cases, inspector, and assignment date for retry
+		saveSelectedData(unprocessedCaseIds, req);
 
 		const bodyCopy =
 			alreadyAssignedCases.length === 1
@@ -225,16 +232,8 @@ function handleFailure(req, res, failedCases, errorMessage) {
 		);
 	}
 
-	/** @type {string[]} */
-	const failedCaseRefs = [...failedParentCaseRefs, ...failedChildCaseRefs];
-
-	const updateCasesResult = {
-		selectedCases: isArrayOfCaseIds ? failedCases : failedCaseRefs,
-		inspectorId: req.body.inspectorId,
-		assignmentDate: req.body.assignmentDate
-	};
-
-	addSessionData(req, 'caseListData', updateCasesResult, 'persistence');
+	// Session data is already set by saveSelectedData() before calling this function
+	// No need to override it here
 
 	let viewData = {};
 
