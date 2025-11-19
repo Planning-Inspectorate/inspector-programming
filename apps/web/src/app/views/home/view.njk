@@ -393,21 +393,80 @@
 
         // Add event listener to each tab to submit select inspector form
         function submitFormForTab (tabId, value) {
-                    const tab = document.querySelector(tabId);
-                    if (!tab) return;
-                    tab.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const currentTab = document.getElementById('currentTab');
-                        currentTab.value = value;
-                        inspectorForm.submit();
-                    });
+            const tab = document.querySelector(tabId);
+            if (!tab) return;
+
+            // Make tab focusable and add ARIA attributes for accessibility
+            tab.setAttribute('tabindex', '0');
+            tab.setAttribute('role', 'tab');
+            tab.setAttribute('aria-controls', tabId.replace('#tab_', ''));
+
+            // Add visual focus indicator with CSS
+            tab.style.outline = 'none'; // Remove default outline
+            tab.addEventListener('focus', function() {
+                this.style.boxShadow = '0 0 0 3px #ffdd00';
+                this.style.outline = '3px solid transparent';
+            });
+            tab.addEventListener('blur', function() {
+                this.style.boxShadow = '';
+                this.style.outline = '';
+            });
+
+            // Handle both click and keyboard events
+            function handleTabActivation(e) {
+                // For keyboard events, only respond to Enter or Space
+                if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') {
+                    return;
                 }
 
-                // Initialize tabs
-                submitFormForTab ('#tab_outlookView', 'calendar');
-                submitFormForTab ('#tab_inspector', 'inspector');
-                submitFormForTab('#tab_cases', '');
-                submitFormForTab('#tab_mapView', '');
+                // Prevent default behavior for custom handling
+                e.preventDefault();
+
+                const currentTab = document.getElementById('currentTab');
+                currentTab.value = value;
+                inspectorForm.submit();
+            }
+
+            // Add both click and keyboard event listeners
+            tab.addEventListener('click', handleTabActivation);
+            tab.addEventListener('keydown', handleTabActivation);
+        }
+
+        // Initialize tabs with accessibility support
+        submitFormForTab ('#tab_outlookView', 'calendar');
+        submitFormForTab ('#tab_inspector', 'inspector');
+        submitFormForTab('#tab_cases', '');
+        submitFormForTab('#tab_mapView', '');
+
+        // Add keyboard navigation between tabs using arrow keys
+        const allTabs = ['#tab_cases', '#tab_mapView', '#tab_inspector', '#tab_outlookView'];
+        allTabs.forEach((tabId, index) => {
+            const tab = document.querySelector(tabId);
+            if (!tab) return;
+
+            tab.addEventListener('keydown', function(e) {
+                let targetIndex;
+
+                switch(e.key) {
+                    case 'ArrowRight':
+                    case 'ArrowDown':
+                        targetIndex = (index + 1) % allTabs.length;
+                        break;
+                    case 'ArrowLeft':
+                    case 'ArrowUp':
+                        targetIndex = (index - 1 + allTabs.length) % allTabs.length;
+                        break;
+                    default:
+                        return; // Don't prevent default for other keys
+                }
+
+                e.preventDefault();
+                const targetTab = document.querySelector(allTabs[targetIndex]);
+                if (targetTab) {
+                    targetTab.focus();
+                }
+            });
+        });
 
             if (typeof accessibleAutocomplete !== 'undefined') {
             accessibleAutocomplete.enhanceSelectElement({
