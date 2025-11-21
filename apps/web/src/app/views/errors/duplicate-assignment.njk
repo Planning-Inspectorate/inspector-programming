@@ -51,6 +51,16 @@
         </div>
     {% endif %}
 
+    {% if successfulCases and successfulCases.length > 0 %}
+        <p class="govuk-body">
+            {% if emailNotificationSent %}
+                The inspector has been notified by email about the successfully assigned cases.
+            {% else %}
+                <strong>Note:</strong> The email notification to the inspector could not be sent. You may need to notify them manually about the successfully assigned cases.
+            {% endif %}
+        </p>
+    {% endif %}
+
     <p class="govuk-body">
         Contact the <a href="https://intranet.planninginspectorate.gov.uk/task/report-it-problem/" class="govuk-link">Littlefish service desk</a> if the problem persists.
     </p>
