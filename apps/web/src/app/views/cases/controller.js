@@ -48,6 +48,7 @@ export function buildPostCases(service) {
  */
 async function handleCases(selectedCases, service, req, res) {
 	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
+	let emailNotificationSent = false;
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
@@ -73,17 +74,27 @@ async function handleCases(selectedCases, service, req, res) {
 			await submitCalendarEvents(service.entraClient, eventsToAdd, req.session, req.body.inspectorId, service.logger);
 
 			// Delete successfully assigned cases from local database
-			await service.casesClient.deleteCases(successfulCaseIds);
-
-			service.logger.info('Successfully processed assigned cases', {
-				caseIds: successfulCaseIds,
-				caseReferences: successfullyAssignedCases,
-				inspectorId: req.body.inspectorId
-			});
+			try {
+				await service.casesClient.deleteCases(successfulCaseIds);
+				service.logger.info('Removed successfully assigned cases from local database', {
+					caseIds: successfulCaseIds,
+					caseReferences: successfullyAssignedCases
+				});
+			} catch (error) {
+				service.logger.error('Failed to remove successfully assigned cases from local database', {
+					error: error.message,
+					caseReferences: successfullyAssignedCases
+				});
+			}
 
 			// Send notification emails to inspector for successful assignments
 			try {
 				await notifyInspectorOfAssignedCases(service, req.body.inspectorId, req.body.assignmentDate, successfulCaseIds);
+				emailNotificationSent = true;
+				service.logger.info('Email notification sent successfully to inspector', {
+					inspectorId: req.body.inspectorId,
+					caseCount: successfulCaseIds.length
+				});
 			} catch (err) {
 				service.logger.warn(
 					err,
@@ -159,7 +170,8 @@ async function handleCases(selectedCases, service, req, res) {
 			bodyCopy,
 			failedCases: alreadyAssignedCases,
 			inspectorId: req.body.inspectorId,
-			successfulCases: successfullyAssignedCases
+			successfulCases: successfullyAssignedCases,
+			emailNotificationSent: emailNotificationSent
 		});
 	}
 
@@ -180,9 +192,13 @@ async function handleCases(selectedCases, service, req, res) {
 
 	// All cases were successfully assigned
 	if (successfullyAssignedCases.length > 0) {
+		const successBody = emailNotificationSent
+			? 'Cases have been removed from the unassigned case list and the inspector has been notified by email.'
+			: 'Cases have been removed from the unassigned case list. Note: The email notification to the inspector could not be sent.';
+
 		const successSummary = {
 			heading: 'Cases have been assigned',
-			body: 'Cases have been removed from the unassigned case list'
+			body: successBody
 		};
 
 		const success = { successSummary };
