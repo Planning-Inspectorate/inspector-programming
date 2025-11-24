@@ -32,7 +32,7 @@
   "dependencies": {
     "@azure/functions": "^4.9.0",
     "@azure/identity": "^4.13.0",
-    "@azure/msal-node": "^3.8.1",
+    "@azure/msal-node": "^3.8.3",
     "@date-fns/tz": "^1.4.1",
     "@faker-js/faker": "^10.1.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
