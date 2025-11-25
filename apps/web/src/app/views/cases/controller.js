@@ -213,6 +213,9 @@ async function handleCases(selectedCases, service, req, res) {
 			? 'Try again later. None of the selected cases were assigned.'
 			: 'Try again later. Some of the selected cases failed to assign.';
 
+		service.logger.error(
+			`Failed to assign cases to inspector ${req.body.inspectorId}. Failed case IDs: ${failedCaseIds}`
+		);
 		return handleFailure(req, res, failedCases, errorMessage);
 	}
 
@@ -259,8 +262,7 @@ function handleFailure(req, res, failedCases, errorMessage) {
 	/** @type {string[]} */
 	const failedChildCaseRefs = [];
 	/** @type {string} */
-	const UNASSIGNED_CASES_MESSAGE =
-		'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:';
+	const UNASSIGNED_CASES_MESSAGE = 'Try again later. The following cases were not assigned:';
 	/** @type {boolean} */
 
 	const isArrayOfCaseIds = Array.isArray(failedCases) && ['number', 'string'].includes(typeof failedCases[0]);
@@ -288,7 +290,7 @@ function handleFailure(req, res, failedCases, errorMessage) {
 		};
 	} else if (failedParentCaseRefs.length && failedChildCaseRefs.length) {
 		viewData = {
-			bodyCopy: 'Try again later. The following cases were not assigned:',
+			bodyCopy: UNASSIGNED_CASES_MESSAGE,
 			failedCases: failedParentCaseRefs,
 			linkedCasesNote:
 				'The following linked cases were also not assigned. The Inspector name must be added manually to the case in Manage appeals:',
