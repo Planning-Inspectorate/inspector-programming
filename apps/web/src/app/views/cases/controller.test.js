@@ -265,8 +265,8 @@ describe('controller.js', () => {
 			assert.strictEqual(templateData.inspectorId, 'inspectorId');
 			assert.strictEqual(service.logger.error.mock.callCount(), 1);
 			const logCall = service.logger.error.mock.calls[0];
-			assert.strictEqual(logCall.arguments[0], 'Duplicate assignment attempt detected');
-			assert.strictEqual(logCall.arguments[1].totalDuplicates, 1);
+			assert.strictEqual(logCall.arguments[1], 'Duplicate assignment attempt detected');
+			assert.strictEqual(logCall.arguments[0].alreadyAssignedCasesCount, 1);
 		});
 
 		test('should render duplicate assignment error page for multiple already assigned cases', async () => {
@@ -287,6 +287,10 @@ describe('controller.js', () => {
 			const templateData = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(templateData.bodyCopy, 'The following cases have already been assigned in Manage appeals:');
 			assert.deepStrictEqual(templateData.failedCases, ['APP/2024/001', 'APP/2024/002']);
+			assert.strictEqual(service.logger.error.mock.callCount(), 1);
+			const logCallMulti = service.logger.error.mock.calls[0];
+			assert.strictEqual(logCallMulti.arguments[1], 'Duplicate assignment attempt detected');
+			assert.strictEqual(logCallMulti.arguments[0].alreadyAssignedCasesCount, 2);
 		});
 	});
 });
