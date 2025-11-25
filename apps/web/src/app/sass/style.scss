@@ -449,18 +449,18 @@ $font-family: arial, helvetica, sans-serif;
 
 .pins-case-details {
 	.govuk-summary-list__row > .govuk-summary-list__key {
-		white-space: normal !important;
-		word-break: break-word !important;
-		overflow-wrap: break-word !important;
-		hyphens: auto !important;
-		width: auto !important;
+		white-space: normal;
+		word-break: break-word;
+		overflow-wrap: break-word;
+		hyphens: auto;
+		width: auto;
 	}
 	.govuk-summary-list__row > .govuk-summary-list__value {
-		white-space: normal !important;
-		word-break: break-word !important;
-		overflow-wrap: anywhere !important;
-		text-overflow: clip !important;
-		overflow: visible !important;
+		white-space: normal;
+		word-break: break-word;
+		overflow-wrap: anywhere;
+		text-overflow: clip;
+		overflow: visible;
 	}
 	@media (min-width: 1900px) {
 		.govuk-grid-column-one-third {
