@@ -119,16 +119,18 @@ async function handleCases(selectedCases, service, req, res) {
 	// Handle already assigned cases (sync with CBOS)
 	if (alreadyAssignedCases.length > 0) {
 		// Log duplicate assignment attempt for audit trail
-		service.logger.error('Duplicate assignment attempt detected', {
-			user: req.session?.account?.name || 'unknown',
-			duplicateCases: alreadyAssignedCases,
-			successfullyAssigned: successfullyAssignedCases.length,
-			inspectorId: req.body.inspectorId,
-			assignmentDate: req.body.assignmentDate,
-			timestamp: new Date().toISOString(),
-			totalAttempted: selectedCases.length,
-			totalDuplicates: alreadyAssignedCases.length
-		});
+		service.logger.error(
+			{
+				user: req.session?.account?.name || 'unknown',
+				alreadyAssignedCases: alreadyAssignedCases,
+				successfullyAssigned: successfullyAssignedCases.length,
+				inspectorId: req.body.inspectorId,
+				assignmentDate: req.body.assignmentDate,
+				totalAttempted: selectedCases.length,
+				alreadyAssignedCasesCount: alreadyAssignedCases.length
+			},
+			'Duplicate assignment attempt detected'
+		);
 
 		// Remove already assigned cases from local database to sync with CBOSS
 		try {
