@@ -82,8 +82,8 @@ function generateAppeals() {
 	});
 
 	// replaced inline linked-case generation with helper
-	const linkedCases = generateLinkedCases(appeals, variations, now);
-	return [...appeals, ...linkedCases];
+	generateLinkedCases(appeals);
+	return appeals;
 }
 
 /**
@@ -339,6 +339,15 @@ export async function seedDev(dbClient) {
 		}
 	});
 
+	// proactively unlink all existing linked-case relationships to avoid stale parents/children
+	console.log('unlinking all existing appeal linked-case relationships');
+	await dbClient.appealCase.updateMany({
+		data: {
+			linkedCaseStatus: null,
+			leadCaseReference: null
+		}
+	});
+
 	// assign valid LPA codes to all appeals
 	await assignAppealLpaCodes(dbClient, appeals);
 
@@ -393,54 +402,51 @@ async function assignAppealLpaCodes(dbClient, appeals, ratio = 1) {
 }
 
 /**
- * Generate linked (child) cases for a randomly selected 50% of the supplied appeals.
- * Each selected appeal becomes a lead case with 2 child cases.
+ * Deterministically set appeals 1–5 as parents and appeals 6–15 as children (2 per parent). The rest are unlinked.
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]} appeals
- * @param {object[]} variations
- * @param {Date} now
- * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]}
+ * @param {number} maxTotal Maximum appeals to generate (default 100).
+ * @returns {[]} Always returns an empty array; linking is done in-place.
  */
-function generateLinkedCases(appeals, variations, now) {
-	const linkedCases = [];
+function generateLinkedCases(appeals, maxTotal = 100) {
+	if (!appeals.length) return [];
 
-	// 50% of appeals become lead cases
-	const leadCaseCount = Math.floor(appeals.length * 0.5);
-	const allIndices = Array.from({ length: appeals.length }, (_, i) => i);
-	const shuffledIndices = shuffleArray(allIndices);
-	const selectedLeadIndices = shuffledIndices.slice(0, leadCaseCount);
-
-	for (const leadIndex of selectedLeadIndices) {
-		const leadCaseReference = appeals[leadIndex].caseReference;
-
-		// mark the existing appeal as a parent case
-		appeals[leadIndex].linkedCaseStatus = 'Parent';
-
-		for (let j = 0; j < 2; j++) {
-			const childIndex = appeals.length + linkedCases.length + 1;
-			const paddedIndex = String(childIndex).padStart(6, '0');
-			const reference = `6${paddedIndex}`;
-			const location = mockLocations[childIndex % mockLocations.length];
-			const valid = addWeeks(now, -Math.floor(childIndex / 2));
-			const created = addDays(valid, -crypto.randomInt(5));
-			const finalCommentsDue = addWeeks(valid, 5);
-
-			linkedCases.push({
-				...mockAppeal,
-				...variations[leadIndex % variations.length],
-				caseId: childIndex,
-				siteAddressPostcode: location.siteAddressPostcode,
-				siteAddressLatitude: location.siteAddressLatitude,
-				siteAddressLongitude: location.siteAddressLongitude,
-				caseReference: reference,
-				leadCaseReference,
-				caseCreatedDate: created,
-				caseValidDate: valid,
-				finalCommentsDueDate: finalCommentsDue,
-				linkedCaseStatus: 'Child',
-				Specialisms: generateCaseSpecialisms(),
-				Events: generateCaseEvents(reference, valid)
-			});
-		}
+	// First unlink any existing relationships
+	for (const appeal of appeals) {
+		delete appeal.leadCaseReference;
+		delete appeal.linkedCaseStatus;
 	}
-	return linkedCases;
+
+	// Enforce maximum total appeals
+	if (appeals.length > maxTotal) {
+		appeals.splice(maxTotal);
+	}
+
+	// Parent appeals: indices 0–4 (1–5)
+	const parentCount = Math.min(5, appeals.length);
+	for (let i = 0; i < parentCount; i++) {
+		appeals[i].linkedCaseStatus = 'Parent';
+		// ensure no stray child linkage on parent
+		delete appeals[i].leadCaseReference;
+	}
+
+	// Ensure two of the parent appeals have the same procedure (minimal change):
+	if (parentCount >= 2) {
+		appeals[1].caseProcedure = appeals[0].caseProcedure;
+	}
+
+	// Child appeals: next 10 (2 per parent in order)
+	const desiredChildCount = 10;
+	const firstChildIndex = parentCount;
+	const availableChildSlots = Math.min(desiredChildCount, appeals.length - firstChildIndex);
+	for (let offset = 0; offset < availableChildSlots; offset++) {
+		const childIdx = firstChildIndex + offset;
+		const parentIdx = Math.floor(offset / 2); // two children per parent sequentially
+		const parent = appeals[parentIdx];
+		if (!parent) break; // safety guard
+		appeals[childIdx].linkedCaseStatus = 'Child';
+		appeals[childIdx].leadCaseReference = parent.caseReference;
+	}
+
+	// Any appeals beyond the child range retain previous (unset) linkedCaseStatus
+	return [];
 }

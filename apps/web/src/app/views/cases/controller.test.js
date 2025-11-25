@@ -32,13 +32,29 @@ describe('controller.js', () => {
 			getAllCalendarEventTimingRules: mock.fn(),
 			getEnglandWalesBankHolidays: mock.fn()
 		};
+		const mockInspectorClient = {
+			getInspectorDetails: mock.fn((id) => ({
+				id,
+				email: 'inspector@example.com',
+				entraId: 'entra-' + id,
+				firstName: 'Test',
+				lastName: 'Inspector'
+			}))
+		};
+		const mockNotifyClient = {
+			sendAssignedCaseEmail: mock.fn()
+		};
+		const notifyConfig = { cbosLink: 'https://example.com/cbos' };
 		const mockService = () => {
 			return {
 				logger: mockLogger(),
 				getCbosApiClientForSession: mockGetCbosApiClientForSession,
 				casesClient: mockCasesClient,
 				calendarClient: mockCalendarClient,
-				entraClient: mock.fn(() => mockEntraClientInstance)
+				entraClient: mock.fn(() => mockEntraClientInstance),
+				inspectorClient: mockInspectorClient,
+				notifyClient: mockNotifyClient,
+				notifyConfig
 			};
 		};
 
@@ -152,7 +168,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
+				'Try again later. The following cases were not assigned:'
 			);
 		});
 
@@ -179,7 +195,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
+				'Try again later. The following cases were not assigned:'
 			);
 		});
 
@@ -202,7 +218,7 @@ describe('controller.js', () => {
 			// Fetch failure also yields the generic message
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
+				'Try again later. The following cases were not assigned:'
 			);
 		});
 
@@ -293,6 +309,56 @@ describe('controller.js', () => {
 			const logCallMulti = service.logger.error.mock.calls[0];
 			assert.strictEqual(logCallMulti.arguments[1], 'Duplicate assignment attempt detected');
 			assert.strictEqual(logCallMulti.arguments[0].alreadyAssignedCasesCount, 2);
+		});
+
+		test('should auto-assign linked child cases when only parent selected', async () => {
+			mockCasesClient.getCaseById.mock.mockImplementation((id) => {
+				if (id === 1)
+					return {
+						caseId: 1,
+						caseReference: 6000107,
+						linkedCaseStatus: 'Parent',
+						caseType: 'H',
+						caseProcedure: 'W',
+						caseLevel: 'B'
+					};
+				if ([2, 3, 4].includes(id))
+					return {
+						caseId: id,
+						caseReference: 6000107 + id - 1,
+						linkedCaseStatus: 'Child',
+						caseType: 'H',
+						caseProcedure: 'W',
+						caseLevel: 'B'
+					};
+				return undefined;
+			});
+			mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementation(() => [mockTimingRule]);
+
+			const appealsDetailsList = [
+				{ appealId: 1, appealReference: 6000107 },
+				{ appealId: 2, appealReference: 6000108 },
+				{ appealId: 3, appealReference: 6000109 },
+				{ appealId: 4, appealReference: 6000110 }
+			];
+			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCasesClient.getLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => [
+				{ caseId: 2 },
+				{ caseId: 3 },
+				{ caseId: 4 }
+			]);
+
+			const service = mockService();
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
+				session: {}
+			};
+			const res = { redirect: mock.fn(), render: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+
+			assert.strictEqual(mockCasesClient.getLinkedCasesByParentCaseId.mock.callCount(), 1);
+			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 4);
 		});
 	});
 });
