@@ -55,19 +55,21 @@ async function handleCases(selectedCases, service, req, res) {
 		successfullyAssignedCaseReferences: successfullyAssignedCases
 	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
-	// Handle successfully assigned cases first
-	let successfulCaseIds = [];
-	if (successfullyAssignedCases.length > 0) {
-		try {
-			// Get case IDs for successfully assigned cases
-			successfulCaseIds = cases
-				.filter((caseItem) => successfullyAssignedCases.includes(caseItem.caseReference))
-				.map((caseItem) => caseItem.caseId);
+	// Get case IDs for successfully assigned cases
+	const successfulCaseIds = cases
+		.filter((caseItem) => successfullyAssignedCases.includes(caseItem.caseReference))
+		.map((caseItem) => caseItem.caseId);
 
+	if (successfulCaseIds.length > 0) {
+		try {
 			// Generate calendar events for successful assignments
 			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, successfulCaseIds);
 			service.logger.info(
-				`Calendar events created: ${eventsToAdd.length} for ${successfullyAssignedCases.length} successfully assigned cases`
+				{
+					eventsCount: eventsToAdd.length,
+					casesCount: successfullyAssignedCases.length
+				},
+				'Calendar events created for successfully assigned cases'
 			);
 
 			// Submit calendar events
@@ -76,33 +78,51 @@ async function handleCases(selectedCases, service, req, res) {
 			// Delete successfully assigned cases from local database
 			try {
 				await service.casesClient.deleteCases(successfulCaseIds);
-				service.logger.info('Removed successfully assigned cases from local database', {
-					caseIds: successfulCaseIds,
-					caseReferences: successfullyAssignedCases
-				});
+				service.logger.info(
+					{
+						caseIds: successfulCaseIds,
+						caseReferences: successfullyAssignedCases
+					},
+					'Removed successfully assigned cases from local database'
+				);
 			} catch (error) {
-				service.logger.error('Failed to remove successfully assigned cases from local database', {
-					error: error.message,
-					caseReferences: successfullyAssignedCases
-				});
+				service.logger.error(
+					{
+						error: error.message,
+						caseReferences: successfullyAssignedCases
+					},
+					'Failed to remove successfully assigned cases from local database'
+				);
 			}
 
 			// Send notification emails to inspector for successful assignments
 			try {
 				await notifyInspectorOfAssignedCases(service, req.body.inspectorId, req.body.assignmentDate, successfulCaseIds);
 				emailNotificationSent = true;
-				service.logger.info('Email notification sent successfully to inspector', {
-					inspectorId: req.body.inspectorId,
-					caseCount: successfulCaseIds.length
-				});
+				service.logger.info(
+					{
+						inspectorId: req.body.inspectorId,
+						caseCount: successfulCaseIds.length
+					},
+					'Email notification sent successfully to inspector'
+				);
 			} catch (err) {
 				service.logger.warn(
-					err,
-					`Failed to send email notification to inspector ${req.body.inspectorId} after case assignment`
+					{
+						err,
+						inspectorId: req.body.inspectorId
+					},
+					'Failed to send email notification to inspector after case assignment'
 				);
 			}
 		} catch (err) {
-			service.logger.error(err, `Failed to process successfully assigned cases for inspector ${req.body.inspectorId}`);
+			service.logger.error(
+				{
+					err,
+					inspectorId: req.body.inspectorId
+				},
+				'Failed to process successfully assigned cases for inspector'
+			);
 			// If we fail to process successful assignments, treat them as failed
 			const failedSuccessfulCases = cases.filter((caseItem) =>
 				successfullyAssignedCases.includes(caseItem.caseReference)
@@ -140,16 +160,22 @@ async function handleCases(selectedCases, service, req, res) {
 
 			if (alreadyAssignedCaseIds.length > 0) {
 				await service.casesClient.deleteCases(alreadyAssignedCaseIds);
-				service.logger.info('Removed already assigned cases from local database', {
-					caseIds: alreadyAssignedCaseIds,
-					caseReferences: alreadyAssignedCases
-				});
+				service.logger.info(
+					{
+						caseIds: alreadyAssignedCaseIds,
+						caseReferences: alreadyAssignedCases
+					},
+					'Removed already assigned cases from local database'
+				);
 			}
 		} catch (error) {
-			service.logger.error('Failed to remove already assigned cases from local database', {
-				error: error.message,
-				caseReferences: alreadyAssignedCases
-			});
+			service.logger.error(
+				{
+					error: error.message,
+					caseReferences: alreadyAssignedCases
+				},
+				'Failed to remove already assigned cases from local database'
+			);
 		}
 
 		// Keep only unprocessed cases selected (preserve state for retry)
@@ -249,9 +275,6 @@ function handleFailure(req, res, failedCases, errorMessage) {
 			...failedCases.filter(({ isParent }) => !isParent).map(({ caseReference }) => caseReference)
 		);
 	}
-
-	// Session data is already set by saveSelectedData() before calling this function
-	// No need to override it here
 
 	let viewData = {};
 
