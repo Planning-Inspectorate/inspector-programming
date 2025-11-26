@@ -48,6 +48,8 @@ export function buildPostCases(service) {
  */
 async function handleCases(selectedCases, service, req, res) {
 	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
+	const casesByReference = new Map(cases.map((c) => [c.caseReference, c]));
+	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
 	const {
 		failedCaseIds,
@@ -56,9 +58,7 @@ async function handleCases(selectedCases, service, req, res) {
 	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
 	// Get case IDs for successfully assigned cases
-	const successfulCaseIds = cases
-		.filter((caseItem) => successfullyAssignedCases.includes(caseItem.caseReference))
-		.map((caseItem) => caseItem.caseId);
+	const successfulCaseIds = successfullyAssignedCases.map((ref) => casesByReference.get(ref)?.caseId).filter(Boolean);
 
 	if (successfulCaseIds.length > 0) {
 		try {
@@ -124,9 +124,7 @@ async function handleCases(selectedCases, service, req, res) {
 				'Failed to process successfully assigned cases for inspector'
 			);
 			// If we fail to process successful assignments, treat them as failed
-			const failedSuccessfulCases = cases.filter((caseItem) =>
-				successfullyAssignedCases.includes(caseItem.caseReference)
-			);
+			const failedSuccessfulCases = successfullyAssignedCases.map((ref) => casesByReference.get(ref)).filter(Boolean);
 			return handleFailure(
 				req,
 				res,
@@ -154,9 +152,9 @@ async function handleCases(selectedCases, service, req, res) {
 
 		// Remove already assigned cases from local database to sync with CBOSS
 		try {
-			const alreadyAssignedCaseIds = cases
-				.filter((caseItem) => alreadyAssignedCases.includes(caseItem.caseReference))
-				.map((caseItem) => caseItem.caseId);
+			const alreadyAssignedCaseIds = alreadyAssignedCases
+				.map((ref) => casesByReference.get(ref)?.caseId)
+				.filter(Boolean);
 
 			if (alreadyAssignedCaseIds.length > 0) {
 				await service.casesClient.deleteCases(alreadyAssignedCaseIds);
@@ -182,7 +180,7 @@ async function handleCases(selectedCases, service, req, res) {
 		// Remove both successfully assigned and duplicate cases from selection
 		const processedCaseReferences = [...successfullyAssignedCases, ...alreadyAssignedCases];
 		const unprocessedCaseIds = selectedCases.filter((caseId) => {
-			const caseItem = cases.find((c) => c.caseId === caseId);
+			const caseItem = casesById.get(caseId);
 			return caseItem && !processedCaseReferences.includes(caseItem.caseReference);
 		});
 
@@ -205,7 +203,7 @@ async function handleCases(selectedCases, service, req, res) {
 
 	// Handle assignment failures
 	if (failedCaseIds.length > 0) {
-		const failedCases = cases.filter((caseItem) => failedCaseIds.includes(caseItem.caseId));
+		const failedCases = failedCaseIds.map((id) => casesById.get(id)).filter(Boolean);
 		// Keep selected any failed cases, then go to the failed-cases error page
 		saveSelectedData(failedCaseIds, req);
 
