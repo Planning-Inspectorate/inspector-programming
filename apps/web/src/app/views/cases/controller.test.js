@@ -5,8 +5,6 @@ import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.
 
 describe('controller.js', () => {
 	describe('buildPostCases', () => {
-		const mockLoggerInstance = mockLogger();
-
 		beforeEach(() => {
 			mockGetCbosApiClientForSession.mock.resetCalls();
 			mockCbosApiClient.patchAppeal.mock.resetCalls();
@@ -14,9 +12,6 @@ describe('controller.js', () => {
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
 			mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
-			Object.values(mockLoggerInstance).forEach((mockFn) => {
-				if (mockFn && mockFn.mock) mockFn.mock.resetCalls();
-			});
 		});
 		//mock clients
 		const mockCasesClient = {
@@ -39,7 +34,7 @@ describe('controller.js', () => {
 		};
 		const mockService = () => {
 			return {
-				logger: mockLoggerInstance,
+				logger: mockLogger(),
 				getCbosApiClientForSession: mockGetCbosApiClientForSession,
 				casesClient: mockCasesClient,
 				calendarClient: mockCalendarClient,
@@ -48,7 +43,14 @@ describe('controller.js', () => {
 		};
 
 		//mock data responses
-		const appeal = { caseId: 'caseId', linkedCaseStatus: 'child', caseType: 'H', caseProcedure: 'W', caseLevel: 'B' };
+		const appeal = {
+			caseId: 1,
+			caseReference: '1',
+			linkedCaseStatus: 'child',
+			caseType: 'H',
+			caseProcedure: 'W',
+			caseLevel: 'B'
+		};
 		const mockTimingRule = {
 			id: 1,
 			caseType: 'H',
@@ -150,7 +152,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'Try again later. None of the selected cases were assigned.'
+				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
 			);
 		});
 
@@ -177,7 +179,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'Try again later. None of the selected cases were assigned.'
+				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
 			);
 		});
 
@@ -200,7 +202,7 @@ describe('controller.js', () => {
 			// Fetch failure also yields the generic message
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'Try again later. None of the selected cases were assigned.'
+				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
 			);
 		});
 
