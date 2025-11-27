@@ -1,7 +1,9 @@
 import { describe, test } from 'node:test';
 import assert from 'assert';
-import { Decimal } from '@prisma/client/runtime/library.js';
 import { distanceBetween } from './distances.js';
+import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
+
+const Decimal = Prisma.Decimal;
 
 describe('distances.js', () => {
 	describe('distanceBetween', () => {

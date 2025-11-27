@@ -1,7 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { sortCasesByAge, sortCasesByDistance } from './sorting.js';
-import { Decimal } from '@prisma/client/runtime/library.js';
+import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
+
+const Decimal = Prisma.Decimal;
 
 describe('sorting', () => {
 	describe('sortCasesByAge', () => {
