@@ -2,7 +2,7 @@ import { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/
 import { Event } from '@microsoft/microsoft-graph-types';
 import { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client/client.ts';
 import { Inspector } from '@pins/inspector-programming-database/src/client/client.ts';
-import { Decimal } from '@pins/inspector-programming-database/src/client/runtime/library';
+import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;
@@ -353,8 +353,8 @@ export interface AppealCaseModel {
 	siteAddressTown: string;
 	siteAddressCounty: string;
 	siteAddressPostcode: string;
-	siteAddressLatitude: Decimal | number | undefined;
-	siteAddressLongitude: Decimal | number | undefined;
+	siteAddressLatitude: Prisma.Decimal | number | undefined;
+	siteAddressLongitude: Prisma.Decimal | number | undefined;
 	lpaCode: string;
 	lpaName: string;
 	caseCreatedDate: Date | null;
