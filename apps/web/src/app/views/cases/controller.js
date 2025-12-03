@@ -2,7 +2,7 @@ import { addSessionData } from '@pins/inspector-programming-lib/util/session.js'
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
-import { notifyInspectorOfAssignedCases } from '../../inspector/inspector.js';
+import { notifyInspectorOfAssignedCases, notifyProgrammeOfficerOfAssignedCases } from '../../inspector/inspector.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -51,6 +51,7 @@ async function handleCases(selectedCases, service, req, res) {
 	const casesByReference = new Map(cases.map((c) => [c.caseReference, c]));
 	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
+	let poEmailSent = false;
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
@@ -113,6 +114,33 @@ async function handleCases(selectedCases, service, req, res) {
 						inspectorId: req.body.inspectorId
 					},
 					'Failed to send email notification to inspector after case assignment'
+				);
+			}
+
+			// Send notification email to programme officer for successful assignments
+			try {
+				await notifyProgrammeOfficerOfAssignedCases(
+					service,
+					req.session?.account,
+					req.body.inspectorId,
+					req.body.assignmentDate,
+					successfullyAssignedCases
+				);
+				poEmailSent = true;
+				service.logger.info(
+					{
+						programmeOfficerEmail: req.session?.account?.username,
+						caseCount: successfullyAssignedCases.length
+					},
+					'Email notification sent successfully to programme officer'
+				);
+			} catch (err) {
+				service.logger.warn(
+					{
+						err,
+						programmeOfficerEmail: req.session?.account?.username
+					},
+					'Failed to send email notification to programme officer after case assignment'
 				);
 			}
 		} catch (err) {
@@ -213,21 +241,14 @@ async function handleCases(selectedCases, service, req, res) {
 			? 'Try again later. None of the selected cases were assigned.'
 			: 'Try again later. Some of the selected cases failed to assign.';
 
-		service.logger.error(
-			`Failed to assign cases to inspector ${req.body.inspectorId}. Failed case IDs: ${failedCaseIds}`
-		);
 		return handleFailure(req, res, failedCases, errorMessage);
 	}
 
 	// All cases were successfully assigned
 	if (successfullyAssignedCases.length > 0) {
-		const successBody = emailNotificationSent
-			? 'Cases have been removed from the unassigned case list and the inspector has been notified by email.'
-			: 'Cases have been removed from the unassigned case list. Note: The email notification to the inspector could not be sent.';
-
 		const successSummary = {
 			heading: 'Cases have been assigned',
-			body: successBody
+			body: getSuccessMessage(emailNotificationSent, poEmailSent)
 		};
 
 		const success = { successSummary };
@@ -238,6 +259,25 @@ async function handleCases(selectedCases, service, req, res) {
 	}
 
 	return redirectToHome(req, res);
+}
+
+/**
+ * Returns the appropriate success message based on email notification status
+ * @param {boolean} emailNotificationSent - Whether inspector email was sent successfully
+ * @param {boolean} poEmailSent - Whether programme officer email was sent successfully
+ * @returns {string}
+ */
+export function getSuccessMessage(emailNotificationSent, poEmailSent) {
+	if (emailNotificationSent && poEmailSent) {
+		return 'Cases have been removed from the unassigned case list and notifications have been sent.';
+	}
+	if (emailNotificationSent && !poEmailSent) {
+		return 'Cases have been removed from the unassigned case list. The inspector has been notified by email, but the programme officer notification could not be sent.';
+	}
+	if (!emailNotificationSent && poEmailSent) {
+		return 'Cases have been removed from the unassigned case list. The programme officer has been notified by email, but the inspector notification could not be sent.';
+	}
+	return 'Cases have been removed from the unassigned case list. Email notifications could not be sent.';
 }
 
 /**
@@ -262,7 +302,8 @@ function handleFailure(req, res, failedCases, errorMessage) {
 	/** @type {string[]} */
 	const failedChildCaseRefs = [];
 	/** @type {string} */
-	const UNASSIGNED_CASES_MESSAGE = 'Try again later. The following cases were not assigned:';
+	const UNASSIGNED_CASES_MESSAGE =
+		'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:';
 	/** @type {boolean} */
 
 	const isArrayOfCaseIds = Array.isArray(failedCases) && ['number', 'string'].includes(typeof failedCases[0]);
@@ -290,7 +331,7 @@ function handleFailure(req, res, failedCases, errorMessage) {
 		};
 	} else if (failedParentCaseRefs.length && failedChildCaseRefs.length) {
 		viewData = {
-			bodyCopy: UNASSIGNED_CASES_MESSAGE,
+			bodyCopy: 'Try again later. The following cases were not assigned:',
 			failedCases: failedParentCaseRefs,
 			linkedCasesNote:
 				'The following linked cases were also not assigned. The Inspector name must be added manually to the case in Manage appeals:',
