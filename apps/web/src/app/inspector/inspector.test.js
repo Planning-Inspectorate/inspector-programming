@@ -5,7 +5,8 @@ import {
 	fetchInspectorList,
 	getSortedInspectorList,
 	getInspectorList,
-	notifyInspectorOfAssignedCases
+	notifyInspectorOfAssignedCases,
+	notifyProgrammeOfficerOfAssignedCases
 } from './inspector.js';
 
 const groupId = 'groupId';
@@ -37,7 +38,8 @@ const mockService = {
 		cbosLink: 'test link'
 	},
 	notifyClient: {
-		sendAssignedCaseEmail: mock.fn()
+		sendAssignedCaseEmail: mock.fn(),
+		sendAssignedCaseProgrammeOfficerEmail: mock.fn()
 	}
 };
 
@@ -491,6 +493,193 @@ describe('inspectors', () => {
 				message: 'Notify client not configured'
 			});
 			assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+		});
+	});
+
+	describe('notifyProgrammeOfficerOfAssignedCases', () => {
+		beforeEach(() => {
+			mockService.inspectorClient.getInspectorDetails.mock.resetCalls();
+			mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.resetCalls();
+		});
+
+		it('should successfully call notifyClient with correct arguments after fetching inspector info', async () => {
+			const inspector = { firstName: 'Jeff', lastName: 'Bridges' };
+			const mockSessionAccount = {
+				username: 'officer@test.com',
+				name: 'Test Officer'
+			};
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
+
+			await notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+				'REF001',
+				'REF002'
+			]);
+
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+			const notifyCall = mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.calls[0];
+			assert.strictEqual(notifyCall.arguments[0], 'officer@test.com');
+			assert.deepStrictEqual(notifyCall.arguments[1], {
+				programmeOfficerName: 'Test Officer',
+				inspectorName: 'Jeff Bridges',
+				assignmentDate: '2025-01-01',
+				selectedCases: 'REF001, REF002',
+				cbosLink: 'test link'
+			});
+		});
+
+		it('should throw error when programme officer email is missing from session', async () => {
+			const mockSessionAccount = {
+				name: 'Test Officer'
+			};
+
+			await assert.rejects(
+				() =>
+					notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+						'REF001',
+						'REF002'
+					]),
+				{
+					name: 'Error',
+					message: 'Could not retrieve programme officer email from session'
+				}
+			);
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 0);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+		});
+
+		it('should throw error when programme officer name is missing from session', async () => {
+			const mockSessionAccount = {
+				username: 'officer@test.com'
+			};
+
+			await assert.rejects(
+				() =>
+					notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+						'REF001',
+						'REF002'
+					]),
+				{
+					name: 'Error',
+					message: 'Could not retrieve programme officer name from session'
+				}
+			);
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 0);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+		});
+
+		it('should throw error when session account is missing', async () => {
+			const mockSessionAccount = undefined;
+
+			await assert.rejects(
+				() =>
+					notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+						'REF001',
+						'REF002'
+					]),
+				{
+					name: 'Error',
+					message: 'Could not retrieve programme officer email from session'
+				}
+			);
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 0);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+		});
+
+		it('should throw error when inspector details cannot be retrieved', async () => {
+			const mockSessionAccount = {
+				username: 'officer@test.com',
+				name: 'Test Officer'
+			};
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => null);
+
+			await assert.rejects(
+				() =>
+					notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+						'REF001',
+						'REF002'
+					]),
+				{
+					name: 'Error',
+					message: 'Could not retrieve inspector name'
+				}
+			);
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+		});
+
+		it('should throw error when inspector firstName is missing', async () => {
+			const inspector = { lastName: 'Bridges' };
+			const mockSessionAccount = {
+				username: 'officer@test.com',
+				name: 'Test Officer'
+			};
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
+
+			await assert.rejects(
+				() =>
+					notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+						'REF001',
+						'REF002'
+					]),
+				{
+					name: 'Error',
+					message: 'Could not retrieve inspector name'
+				}
+			);
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+		});
+
+		it('should throw error when notify client not configured', async () => {
+			const service = { ...mockService, notifyClient: undefined };
+			const mockSessionAccount = {
+				username: 'officer@test.com',
+				name: 'Test Officer'
+			};
+
+			await assert.rejects(
+				() =>
+					notifyProgrammeOfficerOfAssignedCases(service, mockSessionAccount, '1', '2025-01-01', ['REF001', 'REF002']),
+				{
+					name: 'Error',
+					message: 'Notify client not configured'
+				}
+			);
+			assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.callCount(), 0);
+		});
+
+		it('should handle inspector with no lastName gracefully', async () => {
+			const inspector = { firstName: 'Jeff' };
+			const mockSessionAccount = {
+				username: 'officer@test.com',
+				name: 'Test Officer'
+			};
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
+
+			await notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', [
+				'REF001',
+				'REF002'
+			]);
+
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+			const notifyCall = mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.calls[0];
+			assert.strictEqual(notifyCall.arguments[1].inspectorName, 'Jeff');
+		});
+
+		it('should work with empty case list', async () => {
+			const inspector = { firstName: 'Jeff', lastName: 'Bridges' };
+			const mockSessionAccount = {
+				username: 'officer@test.com',
+				name: 'Test Officer'
+			};
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
+
+			await notifyProgrammeOfficerOfAssignedCases(mockService, mockSessionAccount, '1', '2025-01-01', []);
+
+			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
 		});
 	});
 });

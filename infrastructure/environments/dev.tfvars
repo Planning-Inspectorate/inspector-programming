@@ -44,7 +44,7 @@ apps_config = {
   gov_notify = {
     template_ids = {
       assigned_case                        = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
-      assigned_case_programme_officer      = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+      assigned_case_programme_officer      = "25645f3f-5775-4316-9778-e99c081d2e18"
       self_assigned_case                   = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
       self_assigned_case_programme_officer = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
     }

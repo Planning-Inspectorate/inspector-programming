@@ -113,6 +113,17 @@ function mapToInspector(groupMember) {
 }
 
 /**
+ * Formats inspector full name
+ * @param {Object} inspector
+ * @param {string} inspector.firstName
+ * @param {string} [inspector.lastName]
+ * @returns {string}
+ */
+function formatInspectorName(inspector) {
+	return `${inspector.firstName} ${inspector?.lastName || ''}`.trim();
+}
+
+/**
  * sends an email using GovUK Notify client to the inspector that the cases have been assigned to
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
@@ -125,11 +136,52 @@ export async function notifyInspectorOfAssignedCases(service, inspectorId, assig
 	if (!(inspector?.email && inspector?.firstName)) throw new Error('Could not retrieve inspector email and name');
 
 	const options = {
-		inspectorName: `${inspector.firstName} ${inspector?.lastName}`,
+		inspectorName: formatInspectorName(inspector),
 		assignmentDate: assignmentDate,
 		selectedCases: caseIds.join(', '),
 		cbosLink: service.notifyConfig.cbosLink
 	};
 	if (!service.notifyClient) throw new Error('Notify client not configured');
 	await service.notifyClient.sendAssignedCaseEmail(inspector.email, options);
+}
+
+/**
+ * sends an email using GovUK Notify client to the programme officer that assigned the cases
+ * @param {import('#service').WebService} service
+ * @param {Object} sessionAccount
+ * @param {string} sessionAccount.username
+ * @param {string} sessionAccount.name
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ * @returns {Promise<void>}
+ */
+export async function notifyProgrammeOfficerOfAssignedCases(
+	service,
+	sessionAccount,
+	inspectorId,
+	assignmentDate,
+	caseReferences
+) {
+	if (!service.notifyClient) throw new Error('Notify client not configured');
+
+	// Get programme officer details from session account
+	const programmeOfficerEmail = sessionAccount?.username;
+	const programmeOfficerName = sessionAccount?.name;
+
+	if (!programmeOfficerEmail) throw new Error('Could not retrieve programme officer email from session');
+	if (!programmeOfficerName) throw new Error('Could not retrieve programme officer name from session');
+
+	// Get inspector details
+	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
+	if (!inspector?.firstName) throw new Error('Could not retrieve inspector name');
+
+	const options = {
+		programmeOfficerName: programmeOfficerName,
+		inspectorName: formatInspectorName(inspector),
+		assignmentDate: assignmentDate,
+		selectedCases: caseReferences.join(', '),
+		cbosLink: service.notifyConfig.cbosLink
+	};
+	await service.notifyClient.sendAssignedCaseProgrammeOfficerEmail(programmeOfficerEmail, options);
 }
