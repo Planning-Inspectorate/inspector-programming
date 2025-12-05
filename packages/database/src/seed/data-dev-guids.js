@@ -17,6 +17,18 @@ export const inspectorSpecialismIds = [
 	'd55a9433-70bc-47d3-9fb9-06e774897aee'
 ];
 
+export const inspectorSpecialCircumstanceIds = [
+	'f1a2b3c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6',
+	'a2b3c4d5-e6f7-a8b9-c0d1-e2f3a4b5c6d7',
+	'b3c4d5e6-f7a8-b9c0-d1e2-f3a4b5c6d7e8',
+	'c4d5e6f7-a8b9-c0d1-e2f3-a4b5c6d7e8f9',
+	'd5e6f7a8-b9c0-d1e2-f3a4-b5c6d7e8f9a0',
+	'e6f7a8b9-c0d1-e2f3-a4b5-c6d7e8f9a0b1',
+	'f7a8b9c0-d1e2-f3a4-b5c6-d7e8f9a0b1c2',
+	'a8b9c0d1-e2f3-a4b5-c6d7-e8f9a0b1c2d3',
+	'b9c0d1e2-f3a4-b5c6-d7e8-f9a0b1c2d3e4'
+];
+
 export const caseSpecialismIds = [
 	'912e4bb8-afa4-480c-92f3-7b8d01aa6330',
 	'9ecf6def-c6cc-4eeb-98ed-d947b1923d73',

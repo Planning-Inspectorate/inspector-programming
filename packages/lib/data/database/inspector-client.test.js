@@ -33,7 +33,7 @@ describe('InspectorClient', () => {
 			assert.equal(mockDb.inspector.findFirst.mock.callCount(), 1);
 			const args = mockDb.inspector.findFirst.mock.calls[0].arguments[0];
 			assert.deepEqual(args.where?.entraId, 'entra-id-1');
-			assert.deepEqual(args?.include, { Specialisms: true });
+			assert.deepEqual(args?.include, { Specialisms: true, SpecialCircumstances: true });
 		});
 	});
 });

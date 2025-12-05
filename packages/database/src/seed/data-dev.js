@@ -8,7 +8,7 @@ import { addDays, addWeeks } from 'date-fns';
 import { mockLocations } from './data-dev-mock-locations.js';
 import { SPECIALISMS, WORKING_ABOVE_BAND_SPECIALISMS } from './specialisms.js';
 import crypto from 'node:crypto';
-import { caseSpecialismIds, inspectorSpecialismIds } from './data-dev-guids.js';
+import { caseSpecialismIds, inspectorSpecialismIds, inspectorSpecialCircumstanceIds } from './data-dev-guids.js';
 import { generateCaseEvents } from './data-dev-events.js';
 
 /**
@@ -178,6 +178,31 @@ const inspectors = [
 					}
 				}
 			]
+		},
+		SpecialCircumstances: {
+			connectOrCreate: [
+				{
+					where: { id: inspectorSpecialCircumstanceIds[0] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[0],
+						name: 'General Reader'
+					}
+				},
+				{
+					where: { id: inspectorSpecialCircumstanceIds[1] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[1],
+						name: 'Green Belt'
+					}
+				},
+				{
+					where: { id: inspectorSpecialCircumstanceIds[2] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[2],
+						name: 'Inquiries Trained'
+					}
+				}
+			]
 		}
 	},
 	{
@@ -220,6 +245,24 @@ const inspectors = [
 					}
 				}
 			]
+		},
+		SpecialCircumstances: {
+			connectOrCreate: [
+				{
+					where: { id: inspectorSpecialCircumstanceIds[3] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[3],
+						name: 'Appeal Against Conditions'
+					}
+				},
+				{
+					where: { id: inspectorSpecialCircumstanceIds[4] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[4],
+						name: '4 Hearings /Fortnight'
+					}
+				}
+			]
 		}
 	},
 	{
@@ -253,6 +296,9 @@ const inspectors = [
 					}
 				}
 			]
+		},
+		SpecialCircumstances: {
+			connectOrCreate: []
 		}
 	},
 	{
@@ -286,6 +332,24 @@ const inspectors = [
 					}
 				}
 			]
+		},
+		SpecialCircumstances: {
+			connectOrCreate: [
+				{
+					where: { id: inspectorSpecialCircumstanceIds[5] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[5],
+						name: 'Appeals Planning Officers (in part 1 training)'
+					}
+				},
+				{
+					where: { id: inspectorSpecialCircumstanceIds[6] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[6],
+						name: 'Work Above Band approved at Band 2'
+					}
+				}
+			]
 		}
 	},
 	{
@@ -316,6 +380,24 @@ const inspectors = [
 						name: 'Hearings trained',
 						proficiency: 'In Training',
 						validFrom: '2025-06-09T23:00:00Z'
+					}
+				}
+			]
+		},
+		SpecialCircumstances: {
+			connectOrCreate: [
+				{
+					where: { id: inspectorSpecialCircumstanceIds[7] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[7],
+						name: 'Inspectors in Training (in Part 1 Training)'
+					}
+				},
+				{
+					where: { id: inspectorSpecialCircumstanceIds[8] },
+					create: {
+						id: inspectorSpecialCircumstanceIds[8],
+						name: 'Work Above Band approved at Band 3'
 					}
 				}
 			]

@@ -125,7 +125,8 @@ model Inspector {
   email   String?
   entraId String? // to link with logged in user
 
-  Specialisms InspectorSpecialism[]
+  Specialisms          InspectorSpecialism[]
+  SpecialCircumstances InspectorSpecialCircumstance[]
 }
 
 model InspectorSpecialism {
@@ -134,6 +135,16 @@ model InspectorSpecialism {
   name        String
   proficiency String?
   validFrom   DateTime?
+
+  Inspector Inspector @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
+
+  @@unique([inspectorId, name])
+}
+
+model InspectorSpecialCircumstance {
+  id          String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  inspectorId String @db.UniqueIdentifier
+  name        String
 
   Inspector Inspector @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
 
