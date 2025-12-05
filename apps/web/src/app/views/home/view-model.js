@@ -139,12 +139,14 @@ export function toInspectorViewModel(inspector) {
 		return inspector;
 	}
 	const specialisms = inspector.Specialisms || [];
+	const specialCircumstances = inspector.SpecialCircumstances || [];
 	return {
 		...inspector,
 		specialisms: specialisms.map((s) => ({
 			...s,
 			validFrom: formatDateForDisplay(s.validFrom, { format: 'dd/MM/yyyy' })
 		})),
+		specialCircumstances: specialCircumstances,
 		specialismsList: specialisms.map((specialism) => specialism.name).join(', ')
 	};
 }

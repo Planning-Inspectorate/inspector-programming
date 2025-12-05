@@ -24,3 +24,17 @@ export const SPECIALISMS = Object.freeze([
 ]);
 
 export const WORKING_ABOVE_BAND_SPECIALISMS = Object.freeze(['WAB approved at Band 2', 'WAB approved at Band 3']);
+
+export const SPECIAL_CIRCUMSTANCES = Object.freeze([
+	'4 Hearings /Fortnight',
+	'Appeals Planning Officers (in part 1 training)',
+	'Appeals Planning Officers (in part 2 training)',
+	'Appeal Against Conditions',
+	'General Reader',
+	'Green Belt',
+	'Inspectors in Training (in Part 1 Training)',
+	'Inspectors in Training (in Part 2 Training)',
+	'Inquiries Trained',
+	'Work Above Band approved at Band 2',
+	'Work Above Band approved at Band 3'
+]);

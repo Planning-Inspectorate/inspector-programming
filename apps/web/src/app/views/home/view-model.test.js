@@ -209,6 +209,8 @@ describe('view-model', () => {
 			assert.strictEqual(result.lastName, inspector.lastName);
 			assert.strictEqual(Array.isArray(result.specialisms), true);
 			assert.strictEqual(result.specialisms.length, 0);
+			assert.strictEqual(Array.isArray(result.specialCircumstances), true);
+			assert.strictEqual(result.specialCircumstances.length, 0);
 			assert.strictEqual(typeof result.specialismsList, 'string');
 		});
 		test('should map specialism validFrom dates', () => {
@@ -227,6 +229,23 @@ describe('view-model', () => {
 			assert.strictEqual(result.specialisms[0].validFrom, '01/10/2023');
 			assert.strictEqual(result.specialisms[1].validFrom, '15/01/2024');
 			assert.strictEqual(result.specialismsList, 'Specialism 1, Specialism 2');
+		});
+
+		test('should map special circumstances', () => {
+			const inspector = {
+				id: '1',
+				firstName: 'John',
+				lastName: 'Doe',
+				SpecialCircumstances: [
+					{ id: 'sc1', name: 'General Reader' },
+					{ id: 'sc2', name: 'Green Belt' }
+				]
+			};
+			const result = toInspectorViewModel(inspector);
+			assert.strictEqual(Array.isArray(result.specialCircumstances), true);
+			assert.strictEqual(result.specialCircumstances.length, 2);
+			assert.strictEqual(result.specialCircumstances[0].name, 'General Reader');
+			assert.strictEqual(result.specialCircumstances[1].name, 'Green Belt');
 		});
 	});
 });

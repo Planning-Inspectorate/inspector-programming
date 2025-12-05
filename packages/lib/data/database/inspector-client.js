@@ -27,7 +27,8 @@ export class InspectorClient {
 		return this.#client.inspector.findFirst({
 			where: { entraId },
 			include: {
-				Specialisms: true
+				Specialisms: true,
+				SpecialCircumstances: true
 			}
 		});
 	}
@@ -37,6 +38,6 @@ export class InspectorClient {
 	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').Inspector[]>}
 	 */
 	async getAllInspectors() {
-		return this.#client.inspector.findMany({ include: { Specialisms: true } });
+		return this.#client.inspector.findMany({ include: { Specialisms: true, SpecialCircumstances: true } });
 	}
 }

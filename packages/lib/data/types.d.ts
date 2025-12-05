@@ -55,6 +55,7 @@ export interface FilterQuery {
 
 export interface InspectorViewModel extends Inspector {
 	specialisms: Specialism[];
+	specialCircumstances: SpecialCircumstance[];
 	specialismsList: string;
 }
 
@@ -62,6 +63,10 @@ export interface Specialism {
 	name: string;
 	proficiency: string;
 	validFrom: Date | string;
+}
+
+export interface SpecialCircumstance {
+	name: string;
 }
 
 export interface Coordinates {

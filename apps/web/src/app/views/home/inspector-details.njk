@@ -9,6 +9,24 @@
                 { key: { text: "Email address" }, value: { text: inspectors.selected.email  } }
             ]
         }) }}
+
+        <section>
+            <h3 class="govuk-heading-m">Special Circumstances</h3>
+            {% if inspectors.selected.specialCircumstances.length === 0 %}
+                <p class="govuk-body">None recorded</p>
+            {% else %}
+                {% set specialCircumstancesRows = [] %}
+                {% for item in inspectors.selected.specialCircumstances %}
+                    {% set specialCircumstancesRows = specialCircumstancesRows.concat([{
+                        key: { text: item.name }
+                    }]) %}
+                {% endfor %}
+
+                {{ govukSummaryList({
+                    rows: specialCircumstancesRows
+                }) }}
+            {% endif %}
+        </section>
     </div>
     <div class="govuk-grid-column-one-half govuk-grid-column-one-half govuk-!-margin-top-8">
         <section>
