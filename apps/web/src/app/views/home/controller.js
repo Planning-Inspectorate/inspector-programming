@@ -1,4 +1,4 @@
-import { getInspectorList } from '../../inspector/inspector.js';
+import { getInspectorList, mapInspectorToCaseSpecialisms } from '../../inspector/inspector.js';
 import { specialisms } from '../../specialism/specialism.js';
 import {
 	getNextWeekStartDate,
@@ -26,6 +26,8 @@ export function buildViewHome(service, getEventsFunction) {
 		/** @type {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel | undefined} */
 		const selectedInspector = inspectors.find((i) => inspectorId === i.id);
 		const selectedInspectorDetails = await service.inspectorClient.getInspectorDetails(selectedInspector?.id);
+		const selectedInspectorSpecialisms =
+			selectedInspectorDetails?.Specialisms?.map((specialism) => specialism.name) || [];
 
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
 		const filterQuery = filtersQueryViewModel(req.query, lastSort);
@@ -43,6 +45,52 @@ export function buildViewHome(service, getEventsFunction) {
 				lat: selectedInspectorDetails.latitude,
 				lng: selectedInspectorDetails.longitude
 			};
+		}
+
+		//Track previous inspectorId from last request to detect change when action param missing
+		const previousInspectorId = readSessionData(req, 'lastRequest', 'inspectorId', null, 'persistence');
+		const inspectorSelectionChanged = previousInspectorId !== inspectorId;
+
+		if (inspectorSelectionChanged) {
+			try {
+				const mappedSpecialisms = await mapInspectorToCaseSpecialisms(service, selectedInspectorSpecialisms);
+				if (mappedSpecialisms.length) {
+					filterQuery.case.caseSpecialisms = mappedSpecialisms;
+				} else {
+					delete filterQuery.case.caseSpecialisms;
+				}
+			} catch (error) {
+				service.logger.error(
+					error,
+					`Failed to retrieve the case specialism mapping associated with inspector: ${inspectorId}`
+				);
+				return res.render('views/errors/500.njk');
+			}
+
+			const currentQueryString = req.originalUrl?.split('?')[1] || '';
+			const queryParams = new URLSearchParams(currentQueryString);
+
+			if (inspectorId) {
+				queryParams.set('inspectorId', inspectorId);
+			} else {
+				queryParams.delete('inspectorId');
+			}
+
+			if (filterQuery.page) queryParams.set('page', filterQuery.page.toString());
+			if (filterQuery.limit) queryParams.set('limit', filterQuery.limit.toString());
+			if (filterQuery.sort) queryParams.set('sort', filterQuery.sort);
+
+			queryParams.delete('filters[caseSpecialisms]');
+			if (filterQuery.case.caseSpecialisms) {
+				for (const specialism of filterQuery.case.caseSpecialisms) {
+					queryParams.append('filters[caseSpecialisms]', specialism);
+				}
+			}
+			const desiredQueryString = queryParams.toString();
+
+			if (currentQueryString !== desiredQueryString) {
+				return res.redirect(`/?${desiredQueryString}`);
+			}
 		}
 
 		// validate sort
@@ -168,7 +216,7 @@ export function buildViewHome(service, getEventsFunction) {
 		viewModel.calendar = calendarViewModel(currentWeekStart, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
-		addSessionData(req, 'lastRequest', { sort: filterQuery.sort }, 'persistence');
+		addSessionData(req, 'lastRequest', { sort: filterQuery.sort, inspectorId: inspectorId || null }, 'persistence');
 
 		//clear session data passed on from /cases
 		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');

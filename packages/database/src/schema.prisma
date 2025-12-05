@@ -192,3 +192,14 @@ model LpaRegionName {
 
   LpaRegion LpaRegion[]
 }
+
+model InspectorCaseSpecialism {
+  id                            String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  inspectorSpecialism           String
+  inspectorSpecialismNormalized String   @unique
+  caseSpecialism                String
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+
+  @@index([caseSpecialism])
+}

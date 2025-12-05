@@ -1,5 +1,7 @@
 import { LPA_REGIONS, LPAS, LPA_REGION_NAMES } from './lpa-regions.js';
 import { calendarEventTimings } from './data-static-calendar-event-timings.ts';
+import { normalizeString } from '@pins/inspector-programming-lib/util/normalize.js';
+import { INSPECTOR_TO_CASE_SPECIALISM_MAP } from './specialism-mapping.js';
 
 /**
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
@@ -7,6 +9,7 @@ import { calendarEventTimings } from './data-static-calendar-event-timings.ts';
 export async function seedStaticData(dbClient) {
 	await seedCalendarEventTimings(dbClient);
 	await seedLpaRegionsAndLpas(dbClient);
+	await seedInspectorCaseSpecialismMapping(dbClient);
 	console.log('static data seed complete');
 }
 
@@ -52,4 +55,23 @@ async function seedLpaRegionsAndLpas(dbClient) {
 		Object.keys(LPA_REGION_NAMES).length,
 		'region names'
 	);
+}
+
+/**
+ * Seed InspectorCaseSpecialismMap from inspector-programming-web/src/app/specialism/specialism.ts
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
+ */
+export async function seedInspectorCaseSpecialismMapping(dbClient) {
+	for (const [key, value] of Object.entries(INSPECTOR_TO_CASE_SPECIALISM_MAP)) {
+		await dbClient.inspectorCaseSpecialism.upsert({
+			where: { inspectorSpecialismNormalized: normalizeString(key) },
+			update: { caseSpecialism: value, inspectorSpecialism: key },
+			create: {
+				inspectorSpecialism: key,
+				inspectorSpecialismNormalized: normalizeString(key),
+				caseSpecialism: value
+			}
+		});
+	}
+	console.log('seeding', Object.keys(INSPECTOR_TO_CASE_SPECIALISM_MAP).length, 'inspector-case specialism mappings');
 }
