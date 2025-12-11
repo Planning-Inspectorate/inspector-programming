@@ -100,6 +100,7 @@ function shuffleArray(array) {
 }
 
 let specialismIdCounter = 0;
+let specialismIndex = 0;
 
 function nextSpecialismId() {
 	// If we've used all IDs, cycle back to the beginning
@@ -111,6 +112,13 @@ function nextSpecialismId() {
 	return id;
 }
 
+function nextSpecialism() {
+	if (specialismIndex >= SPECIALISMS.length) {
+		specialismIndex = 0;
+	}
+	return SPECIALISMS[specialismIndex++];
+}
+
 function generateCaseSpecialisms() {
 	/** @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseSpecialismCreateNestedManyWithoutAppealCaseInput} */
 	const specialisms = { connectOrCreate: [] };
@@ -119,15 +127,17 @@ function generateCaseSpecialisms() {
 	// but using a set of IDs stops the list of specialisms growing each time seed is run
 	if (randomPercent > 35) {
 		const id = nextSpecialismId();
+		const specialism = nextSpecialism();
 		specialisms.connectOrCreate.push({
 			where: { id },
-			create: { id, specialism: SPECIALISMS[crypto.randomInt(SPECIALISMS.length)] }
+			create: { id, specialism }
 		});
 		if (randomPercent > 75) {
 			const id = nextSpecialismId();
+			const specialism = nextSpecialism();
 			specialisms.connectOrCreate.push({
 				where: { id },
-				create: { id, specialism: SPECIALISMS[crypto.randomInt(SPECIALISMS.length)] }
+				create: { id, specialism }
 			});
 		}
 	}
