@@ -194,6 +194,28 @@ describe('view-model', () => {
 			assert.strictEqual(filterQuery.sort, 'age');
 			assert.strictEqual(filterQuery.page, 1);
 		});
+
+		test('should wrap single string into array', () => {
+			const query = {
+				'filters[caseSpecialisms]': 'Housing orders'
+			};
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.ok(Array.isArray(filterQuery.case.caseSpecialisms));
+			assert.strictEqual(filterQuery.case.caseSpecialisms.length, 1);
+			assert.strictEqual(filterQuery.case.caseSpecialisms[0], 'Housing orders');
+			assert.strictEqual(filterQuery.case.caseSpecialisms.includes('Housing'), false);
+		});
+
+		test('should preserve provided arrays without modification', () => {
+			const query = {
+				'filters[caseSpecialisms]': ['Housing orders', 'Housing']
+			};
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.ok(Array.isArray(filterQuery.case.caseSpecialisms));
+			assert.deepStrictEqual(filterQuery.case.caseSpecialisms, ['Housing orders', 'Housing']);
+		});
 	});
 
 	describe('toInspectorViewModel', () => {
