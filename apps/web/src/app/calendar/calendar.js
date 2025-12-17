@@ -35,7 +35,24 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 	const eventsResponse = await client.getUserCalendarEvents(selectedInspector.id, false, startDate, endDate);
 	const events = Array.isArray(eventsResponse.value) ? eventsResponse.value : [];
 
-	return events.map((event) => {
+	// Filter out cancelled events
+	const filteredEvents = events.filter((event) => {
+		// Scenario 1: Check the explicit 'isCancelled' flag from Graph API
+		const isCancelledFlag = event.isCancelled === true;
+
+		// Scenario 3: Legacy fallback - Check if title starts with "CANCELLED:"
+		const hasCancelledTitle = (event.subject || '').toUpperCase().startsWith('CANCELLED:');
+
+		if (isCancelledFlag || hasCancelledTitle) {
+			logger.debug(
+				{ eventId: event.id, userEmail: selectedInspector.email },
+				'Filtering out cancelled event from calendar UI'
+			);
+			return false;
+		}
+		return true;
+	});
+	return filteredEvents.map((event) => {
 		const startDateTime = new Date(event.start.dateTime);
 		const endDateTime = new Date(event.end.dateTime);
 

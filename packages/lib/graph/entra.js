@@ -112,7 +112,7 @@ export class EntraClient {
 		let listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
-			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity', 'isCancelled'])
 			.top(PER_PAGE);
 		if (options.fetchExtension) {
 			listEvents = listEvents.expand([`singleValueExtendedProperties($filter=id eq '${EXTENSION_ID}')`]);

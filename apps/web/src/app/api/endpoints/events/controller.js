@@ -36,11 +36,6 @@ export function getCalendarEventsForEntraUsers(service) {
 				return;
 			}
 
-			/**
-			 * @type {(import("./types").CalendarEvent)[][]}
-			 */
-			const calendarEvents = [];
-
 			//should not be able to use endpoint without valid config: fetch far too many events otherwise
 			const { calendarEventsDayRange, calendarEventsFromDateOffset } = service.entraConfig;
 			if (!+calendarEventsDayRange) {
@@ -71,12 +66,14 @@ export function getCalendarEventsForEntraUsers(service) {
 			async function fetchAllEvents() {
 				//chunk users into groups of 5 to avoid overwhelming the API with requests
 				const chunkedUsers = chunkArray(usersInGroups, 5);
+				const allEvents = [];
+
 				for (const userChunk of chunkedUsers) {
-					const chunkEvents = await Promise.all(
+					const chunkResults = await Promise.all(
 						userChunk.map(async (user) => {
 							const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, {
-								calendarEventsDayRange: calendarEventsDayRange,
-								calendarEventsFromDateOffset: calendarEventsFromDateOffset,
+								calendarEventsDayRange,
+								calendarEventsFromDateOffset,
 								fetchExtension: true
 							});
 
@@ -84,14 +81,34 @@ export function getCalendarEventsForEntraUsers(service) {
 							//startDate and endDate are in UTC timezone
 							const formattedEvents = [];
 							for (const event of usersEvents || []) {
-								formattedEvents.push(formatCalendarEvent(event, user));
+								try {
+									// Scenario 1: Check the explicit 'isCancelled' flag from Graph API
+									const isCancelledFlag = event.isCancelled === true;
+
+									// Scenario 3: Legacy fallback - Check if title starts with "CANCELLED:"
+									const hasCancelledTitle = (event.subject || '').toUpperCase().startsWith('CANCELLED:');
+
+									if (isCancelledFlag || hasCancelledTitle) {
+										logger.debug({ eventId: event.id, userEmail: user.email }, 'Filtering out cancelled event');
+										continue;
+									}
+
+									// Format the event
+									const formatted = formatCalendarEvent(event, user);
+									formattedEvents.push(formatted);
+								} catch (err) {
+									logger.error(
+										{ err, eventId: event?.id, userEmail: user.email },
+										'Excluding malformed or invalid event'
+									);
+								}
 							}
 							return formattedEvents;
 						})
 					);
-					calendarEvents.push(...chunkEvents);
+					allEvents.push(...chunkResults.flat());
 				}
-				return calendarEvents.flat();
+				return allEvents;
 			}
 
 			logger.info('fetching calendar events');
