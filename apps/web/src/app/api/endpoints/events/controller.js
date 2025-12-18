@@ -82,10 +82,7 @@ export function getCalendarEventsForEntraUsers(service) {
 							const formattedEvents = [];
 							for (const event of usersEvents || []) {
 								try {
-									// Scenario 1: Check the explicit 'isCancelled' flag from Graph API
 									const isCancelledFlag = event.isCancelled === true;
-
-									// Scenario 3: Legacy fallback - Check if title starts with "CANCELLED:"
 									const hasCancelledTitle = (event.subject || '').toUpperCase().startsWith('CANCELLED:');
 
 									if (isCancelledFlag || hasCancelledTitle) {
