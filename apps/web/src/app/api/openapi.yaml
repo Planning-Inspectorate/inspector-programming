@@ -74,8 +74,6 @@ components:
           type: boolean
         isOutOfOffice:
           type: boolean
-        isCancelled:
-          type: boolean
         status:
           type: string
         sensitivity:
