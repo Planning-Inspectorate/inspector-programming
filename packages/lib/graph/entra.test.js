@@ -5,29 +5,33 @@ import { EXTENSION_ID } from './entra.js';
 
 describe('EntraClient', () => {
 	const mockClient = () => {
-		return {
+		const client = {
 			api() {
-				return this;
+				return client;
 			},
 			select() {
-				return this;
+				return client;
 			},
 			expand() {
-				return this;
+				return client;
 			},
 			query() {
-				return this;
+				return client;
+			},
+			filter() {
+				return client;
 			},
 			top() {
-				return this;
+				return client;
 			},
 			header() {
-				return this;
+				return client;
 			},
-			skipToken: mock.fn(() => this),
+			skipToken: mock.fn(() => client),
 			get: mock.fn(() => ({ value: [] })),
 			post: mock.fn()
 		};
+		return client;
 	};
 
 	describe('listAllGroupMembers', () => {
@@ -448,6 +452,93 @@ describe('EntraClient', () => {
 
 			await entra.createCalendarEvent(event1, 'userId');
 			assert.deepStrictEqual(client.post.mock.calls[0].arguments[0], event1);
+		});
+	});
+	describe('cancelled event filtering', () => {
+		it('should filter out events with isCancelled flag', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => ({
+				value: [
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'normal',
+						subject: 'Normal Event',
+						start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+						end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' },
+						isCancelled: false
+					},
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'cancelled',
+						subject: 'Cancelled Event',
+						start: { dateTime: '2025-08-13T15:00:00.0000000', timeZone: 'UTC' },
+						end: { dateTime: '2025-08-15T15:00:00.0000000', timeZone: 'UTC' },
+						isCancelled: true
+					}
+				]
+			}));
+			const entra = new EntraClient(client);
+			const events = await entra.listAllUserCalendarEvents('user', {
+				calendarEventsDayRange: 3,
+				calendarEventsFromDateOffset: 0
+			});
+			assert.strictEqual(events.length, 1);
+			assert.strictEqual(events[0].id, 'normal');
+		});
+
+		it('should filter out events with CANCELLED prefix', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => ({
+				value: [
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'normal',
+						subject: 'Normal Meeting',
+						start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+						end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
+					},
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'cancelled',
+						subject: 'CANCELLED: Old Meeting',
+						start: { dateTime: '2025-08-13T15:00:00.0000000', timeZone: 'UTC' },
+						end: { dateTime: '2025-08-15T15:00:00.0000000', timeZone: 'UTC' }
+					}
+				]
+			}));
+			const entra = new EntraClient(client);
+			const events = await entra.listAllUserCalendarEvents('user', {
+				calendarEventsDayRange: 3,
+				calendarEventsFromDateOffset: 0
+			});
+			assert.strictEqual(events.length, 1);
+			assert.strictEqual(events[0].id, 'normal');
+		});
+
+		it('should filter cancelled events in getUserCalendarEvents', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => ({
+				value: [
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'normal',
+						subject: 'Normal Event',
+						start: { dateTime: '2025-08-13T14:00:00.0000000', timeZone: 'UTC' },
+						end: { dateTime: '2025-08-15T14:00:00.0000000', timeZone: 'UTC' }
+					},
+					{
+						[ODATA.TYPE]: ODATA.EVENT_TYPE,
+						id: 'cancelled',
+						subject: 'CANCELLED: Test Event',
+						start: { dateTime: '2025-08-13T15:00:00.0000000', timeZone: 'UTC' },
+						end: { dateTime: '2025-08-15T15:00:00.0000000', timeZone: 'UTC' }
+					}
+				]
+			}));
+			const entra = new EntraClient(client);
+			const response = await entra.getUserCalendarEvents('user', false);
+			assert.strictEqual(response.value.length, 1);
+			assert.strictEqual(response.value[0].id, 'normal');
 		});
 	});
 });

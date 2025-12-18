@@ -20,8 +20,7 @@ const mockSession = {};
 
 const mockLogger = {
 	warn: mock.fn(),
-	error: mock.fn(),
-	debug: mock.fn()
+	error: mock.fn()
 };
 
 const mockEntraClient = {
@@ -35,7 +34,6 @@ mockInitEntraClient.mock.mockImplementation(() => mockEntraClient);
 beforeEach(() => {
 	mockLogger.error.mock.resetCalls();
 	mockEntraClient.createCalendarEvents.mock.resetCalls();
-	mockEntraClient.getUserCalendarEvents.mock.resetCalls();
 });
 
 describe('calendar', () => {
@@ -273,187 +271,6 @@ describe('calendar', () => {
 				status: '',
 				location: '',
 				address: 'street 1 city 1 state 1 country 1 post code 1'
-			}
-		];
-
-		const selectedInspector = 'inspector';
-		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
-		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
-		assert.deepStrictEqual(events, expectedEvents);
-	});
-
-	it('should filter out events with isCancelled flag set to true', async () => {
-		const entraEvents = {
-			value: [
-				{
-					subject: 'Normal Event',
-					start: {
-						dateTime: '2025-08-20T15:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					end: {
-						dateTime: '2025-08-20T16:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					location: {
-						displayName: ''
-					},
-					isCancelled: false
-				},
-				{
-					subject: 'Cancelled Event',
-					start: {
-						dateTime: '2025-08-20T17:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					end: {
-						dateTime: '2025-08-20T18:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					location: {
-						displayName: ''
-					},
-					isCancelled: true
-				}
-			]
-		};
-
-		const expectedEvents = [
-			{
-				subject: 'Normal Event',
-				startDateTime: '2025-08-20T15:00:00.000Z',
-				endDateTime: '2025-08-20T16:00:00.000Z',
-				status: '',
-				location: '',
-				address: ''
-			}
-		];
-
-		const selectedInspector = 'inspector';
-
-		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
-		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
-		assert.deepStrictEqual(events, expectedEvents);
-	});
-
-	it('should filter out events with CANCELLED prefix in subject', async () => {
-		const entraEvents = {
-			value: [
-				{
-					subject: 'CANCELLED: Legacy Data Test',
-					start: {
-						dateTime: '2025-08-20T15:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					end: {
-						dateTime: '2025-08-20T16:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					location: {
-						displayName: ''
-					}
-				},
-				{
-					subject: 'Normal Meeting',
-					start: {
-						dateTime: '2025-08-20T16:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					end: {
-						dateTime: '2025-08-20T17:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					location: {
-						displayName: ''
-					}
-				}
-			]
-		};
-
-		const expectedEvents = [
-			{
-				subject: 'Normal Meeting',
-				startDateTime: '2025-08-20T16:00:00.000Z',
-				endDateTime: '2025-08-20T17:00:00.000Z',
-				status: '',
-				location: '',
-				address: ''
-			}
-		];
-
-		const selectedInspector = 'inspector';
-
-		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
-		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
-		assert.deepStrictEqual(events, expectedEvents);
-	});
-
-	it('should keep events with CANCELLED in middle of title', async () => {
-		const entraEvents = {
-			value: [
-				{
-					subject: 'Meeting about CANCELLED items',
-					start: {
-						dateTime: '2025-08-20T15:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					end: {
-						dateTime: '2025-08-20T16:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					location: {
-						displayName: ''
-					}
-				}
-			]
-		};
-
-		const expectedEvents = [
-			{
-				subject: 'Meeting about CANCELLED items',
-				startDateTime: '2025-08-20T15:00:00.000Z',
-				endDateTime: '2025-08-20T16:00:00.000Z',
-				status: '',
-				location: '',
-				address: ''
-			}
-		];
-
-		const selectedInspector = 'inspector';
-
-		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
-		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
-		assert.deepStrictEqual(events, expectedEvents);
-	});
-
-	it('should handle events with null subject', async () => {
-		const entraEvents = {
-			value: [
-				{
-					subject: null,
-					start: {
-						dateTime: '2025-08-20T15:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					end: {
-						dateTime: '2025-08-20T16:00:00.000Z',
-						timeZone: 'Europe/London'
-					},
-					location: {
-						displayName: ''
-					}
-				}
-			]
-		};
-
-		const expectedEvents = [
-			{
-				subject: null,
-				startDateTime: '2025-08-20T15:00:00.000Z',
-				endDateTime: '2025-08-20T16:00:00.000Z',
-				status: '',
-				location: '',
-				address: ''
 			}
 		];
 

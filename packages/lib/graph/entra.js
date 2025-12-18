@@ -84,7 +84,7 @@ export class EntraClient {
 				endDateTime: endDate.toISOString()
 			})
 			.top(999)
-			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'location'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'location', 'isCancelled'])
 			.header('Prefer', 'outlook.timezone="Europe/London"');
 
 		if (fetchExtension) {
@@ -92,7 +92,16 @@ export class EntraClient {
 			request = request.expand([`singleValueExtendedProperties($filter=id eq '${EXTENSION_ID}')`]);
 		}
 
-		return request.get();
+		const response = await request.get();
+		if (response.value) {
+			response.value = response.value.filter((event) => {
+				const isCancelledFlag = event.isCancelled === true;
+				const hasCancelledTitle = (event.subject || '').toUpperCase().startsWith('CANCELLED:');
+				return !(isCancelledFlag || hasCancelledTitle);
+			});
+		}
+
+		return response;
 	}
 
 	/**
@@ -128,10 +137,16 @@ export class EntraClient {
 				break;
 			}
 			// make the next request with the skipToken value to fetch the next page
-			const token = EntraClient.extractSkipToken(nextLink);
-			listEvents.skipToken(token);
+			const skipToken = EntraClient.extractSkipToken(nextLink);
+			listEvents = listEvents.skipToken(skipToken);
 		}
-		return events.flat();
+
+		// Filter out cancelled events
+		return events.filter((event) => {
+			const isCancelledFlag = event.isCancelled === true;
+			const hasCancelledTitle = (event.subject || '').toUpperCase().startsWith('CANCELLED:');
+			return !(isCancelledFlag || hasCancelledTitle);
+		});
 	}
 
 	/**

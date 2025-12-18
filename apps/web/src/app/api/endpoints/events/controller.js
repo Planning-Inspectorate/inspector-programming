@@ -36,6 +36,11 @@ export function getCalendarEventsForEntraUsers(service) {
 				return;
 			}
 
+			/**
+			 * @type {(import("./types").CalendarEvent)[][]}
+			 */
+			const calendarEvents = [];
+
 			//should not be able to use endpoint without valid config: fetch far too many events otherwise
 			const { calendarEventsDayRange, calendarEventsFromDateOffset } = service.entraConfig;
 			if (!+calendarEventsDayRange) {
@@ -66,14 +71,12 @@ export function getCalendarEventsForEntraUsers(service) {
 			async function fetchAllEvents() {
 				//chunk users into groups of 5 to avoid overwhelming the API with requests
 				const chunkedUsers = chunkArray(usersInGroups, 5);
-				const allEvents = [];
-
 				for (const userChunk of chunkedUsers) {
-					const chunkResults = await Promise.all(
+					const chunkEvents = await Promise.all(
 						userChunk.map(async (user) => {
 							const usersEvents = await apiService.entraClient.listAllUserCalendarEvents(user.id, {
-								calendarEventsDayRange,
-								calendarEventsFromDateOffset,
+								calendarEventsDayRange: calendarEventsDayRange,
+								calendarEventsFromDateOffset: calendarEventsFromDateOffset,
 								fetchExtension: true
 							});
 
@@ -81,31 +84,14 @@ export function getCalendarEventsForEntraUsers(service) {
 							//startDate and endDate are in UTC timezone
 							const formattedEvents = [];
 							for (const event of usersEvents || []) {
-								try {
-									const isCancelledFlag = event.isCancelled === true;
-									const hasCancelledTitle = (event.subject || '').toUpperCase().startsWith('CANCELLED:');
-
-									if (isCancelledFlag || hasCancelledTitle) {
-										logger.debug({ eventId: event.id, userEmail: user.email }, 'Filtering out cancelled event');
-										continue;
-									}
-
-									// Format the event
-									const formatted = formatCalendarEvent(event, user);
-									formattedEvents.push(formatted);
-								} catch (err) {
-									logger.error(
-										{ err, eventId: event?.id, userEmail: user.email },
-										'Excluding malformed or invalid event'
-									);
-								}
+								formattedEvents.push(formatCalendarEvent(event, user));
 							}
 							return formattedEvents;
 						})
 					);
-					allEvents.push(...chunkResults.flat());
+					calendarEvents.push(...chunkEvents);
 				}
-				return allEvents;
+				return calendarEvents.flat();
 			}
 
 			logger.info('fetching calendar events');

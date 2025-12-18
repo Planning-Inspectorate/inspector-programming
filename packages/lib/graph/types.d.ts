@@ -26,9 +26,9 @@ export interface CalendarEvent {
 	isAllDay?: boolean;
 	showAs?: string;
 	sensitivity: string;
+	isCancelled?: boolean;
 	singleValueExtendedProperties?: singleValueExtendedProperty[];
 	location: Location;
-	isCancelled?: boolean;
 }
 
 interface singleValueExtendedProperty {
