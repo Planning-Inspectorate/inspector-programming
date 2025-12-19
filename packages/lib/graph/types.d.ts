@@ -28,6 +28,7 @@ export interface CalendarEvent {
 	sensitivity: string;
 	singleValueExtendedProperties?: singleValueExtendedProperty[];
 	location: Location;
+	isCancelled?: boolean;
 }
 
 interface singleValueExtendedProperty {
