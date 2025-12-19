@@ -84,7 +84,8 @@ export class EntraClient {
 				endDateTime: endDate.toISOString()
 			})
 			.top(999)
-			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'location'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'location', 'isCancelled'])
+			.filter('isCancelled eq false')
 			.header('Prefer', 'outlook.timezone="Europe/London"');
 
 		if (fetchExtension) {
@@ -112,7 +113,8 @@ export class EntraClient {
 		let listEvents = this.#client
 			.api(`users/${userId}/calendarView`)
 			.query({ startDateTime: toDate.toISOString(), endDateTime: fromDate.toISOString() })
-			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity'])
+			.select(['id', 'subject', 'start', 'end', 'isAllDay', 'showAs', 'sensitivity', 'isCancelled'])
+			.filter('isCancelled eq false')
 			.top(PER_PAGE);
 		if (options.fetchExtension) {
 			listEvents = listEvents.expand([`singleValueExtendedProperties($filter=id eq '${EXTENSION_ID}')`]);

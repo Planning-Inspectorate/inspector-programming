@@ -21,6 +21,9 @@ describe('EntraClient', () => {
 			top() {
 				return this;
 			},
+			filter() {
+				return this;
+			},
 			header() {
 				return this;
 			},
