@@ -1,6 +1,6 @@
-import Ajv from 'ajv';
-import { MESSAGE_EVENT_TYPE, loadAllSchemas } from '@planning-inspectorate/data-model';
+import { MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { fetchPostcodeCoordinates } from '@pins/inspector-programming-lib/util/fetch-coordinates.js';
+import { getCachedAjv } from '../../util/cached-ajv.js';
 
 /**
  * @param {import('../../service').FunctionService} service
@@ -11,7 +11,7 @@ export function buildHandleInspectorMessage(service) {
 		context.log('Received inspector message');
 		const eventType = context?.triggerMetadata?.applicationProperties?.type;
 
-		const ajv = new Ajv({ allErrors: true, strict: false, schemas: await loadAllSchemas() });
+		const ajv = await getCachedAjv();
 		const validateInspector = ajv.getSchema('pins-inspector.schema.json');
 
 		if (!validateInspector(message)) {

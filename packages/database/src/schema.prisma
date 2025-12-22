@@ -77,6 +77,8 @@ model AppealCaseSpecialism {
   specialism    String
 
   AppealCase AppealCase @relation(fields: [caseReference], references: [caseReference], onDelete: Cascade)
+
+  @@unique([caseReference, specialism])
 }
 
 /// an appeal event, using only required PINS data-model fields

@@ -42,4 +42,10 @@ export class FunctionService {
 	get inspectorServiceBusConfig() {
 		return this.#config.serviceBus.inspector;
 	}
+	get caseHasServiceBusConfig() {
+		return this.#config.serviceBus.caseHas;
+	}
+	get caseS78ServiceBusConfig() {
+		return this.#config.serviceBus.caseS78;
+	}
 }
