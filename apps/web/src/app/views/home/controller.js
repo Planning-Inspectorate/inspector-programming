@@ -134,7 +134,9 @@ export function buildViewHome(service, getEventsFunction) {
 				specialisms,
 				pagination: paginationDetails,
 				query: filterQuery,
-				errors: filterErrors
+				errors: filterErrors,
+				buildUrlWithoutFilter: filterQuery.buildUrlWithoutFilter,
+				clearFiltersUrl: filterQuery.clearFiltersUrl
 			},
 			appeals,
 			inspectors: inspectorsViewModel(
