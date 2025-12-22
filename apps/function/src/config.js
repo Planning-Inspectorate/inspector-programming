@@ -18,7 +18,11 @@ export function loadConfig() {
 		LOG_LEVEL,
 		OS_API_KEY,
 		SERVICE_BUS_INSPECTOR_TOPIC,
-		SERVICE_BUS_INSPECTOR_SUBSCRIPTION
+		SERVICE_BUS_INSPECTOR_SUBSCRIPTION,
+		SERVICE_BUS_CASE_HAS_TOPIC,
+		SERVICE_BUS_CASE_HAS_SUBSCRIPTION,
+		SERVICE_BUS_CASE_S78_TOPIC,
+		SERVICE_BUS_CASE_S78_SUBSCRIPTION
 	} = process.env;
 
 	if (!SQL_CONNECTION_STRING) {
@@ -44,6 +48,14 @@ export function loadConfig() {
 			inspector: {
 				topic: SERVICE_BUS_INSPECTOR_TOPIC || 'pins-inspector-topic-placeholder',
 				subscription: SERVICE_BUS_INSPECTOR_SUBSCRIPTION || 'pins-inspector-subscription-placeholder'
+			},
+			caseHas: {
+				topic: SERVICE_BUS_CASE_HAS_TOPIC || 'appeal-has',
+				subscription: SERVICE_BUS_CASE_HAS_SUBSCRIPTION || 'appeal-has-subscription-placeholder'
+			},
+			caseS78: {
+				topic: SERVICE_BUS_CASE_S78_TOPIC || 'appeal-s78',
+				subscription: SERVICE_BUS_CASE_S78_SUBSCRIPTION || 'appeal-s78-subscription-placeholder'
 			}
 		}
 	};
