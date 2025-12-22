@@ -195,6 +195,21 @@ describe('view-model', () => {
 			assert.strictEqual(filterQuery.page, 1);
 		});
 
+		test('should attach URL building functions to filter object', () => {
+			const query = {
+				'filters[minimumAge]': '10'
+			};
+			const filterQuery = filtersQueryViewModel(query);
+
+			// Verify functions are attached and callable
+			assert.strictEqual(typeof filterQuery.buildUrlWithoutFilter, 'function');
+			assert.strictEqual(typeof filterQuery.clearFiltersUrl, 'string');
+
+			// Verify functions work correctly
+			const removeUrl = filterQuery.buildUrlWithoutFilter('minimumAge');
+			assert.ok(typeof removeUrl === 'string', 'buildUrlWithoutFilter should return a string');
+			assert.ok(removeUrl.startsWith('?'), 'URL should start with query parameter marker');
+		});
 		test('should wrap single string into array', () => {
 			const query = {
 				'filters[caseSpecialisms]': 'Housing orders'
@@ -215,6 +230,231 @@ describe('view-model', () => {
 
 			assert.ok(Array.isArray(filterQuery.case.caseSpecialisms));
 			assert.deepStrictEqual(filterQuery.case.caseSpecialisms, ['Housing orders', 'Housing']);
+		});
+	});
+
+	describe('filtersQueryViewModel - URL functions', () => {
+		/**
+		 * @param {Object} filters - Filter parameters to include
+		 * @param {Object} otherParams - Other query parameters
+		 * @returns {Object} Complete query object
+		 */
+		function createFilterQuery(filters = {}, otherParams = {}) {
+			const query = { ...otherParams };
+			Object.entries(filters).forEach(([key, value]) => {
+				query[`filters[${key}]`] = value;
+			});
+			return query;
+		}
+
+		/**
+		 * @param {string} url - URL to test
+		 * @param {Object} assertions - Object with 'includes' and 'excludes' arrays
+		 */
+		function assertUrlContent(url, assertions = {}) {
+			const { includes = [], excludes = [] } = assertions;
+			includes.forEach((item) => {
+				assert.ok(url.includes(item.value), item.message || `URL should include: ${item.value}`);
+			});
+			excludes.forEach((item) => {
+				assert.ok(!url.includes(item.value), item.message || `URL should not include: ${item.value}`);
+			});
+		}
+
+		test('should handle array filter parameters correctly for LPA regions', () => {
+			const query = createFilterQuery({ lpaRegion: ['North', 'East', 'West'] });
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.deepStrictEqual(filterQuery.case.lpaRegion, ['North', 'East', 'West']);
+		});
+
+		test('should convert single LPA region string to array', () => {
+			const query = createFilterQuery({ lpaRegion: 'North' });
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.deepStrictEqual(filterQuery.case.lpaRegion, ['North']);
+		});
+
+		test('should handle array filter parameters correctly for specialisms', () => {
+			const query = createFilterQuery({ caseSpecialisms: ['Enforcement', 'Householder', 'Planning Obligation'] });
+			const filterQuery = filtersQueryViewModel(query);
+			assert.deepStrictEqual(filterQuery.case.caseSpecialisms, ['Enforcement', 'Householder', 'Planning Obligation']);
+		});
+
+		test('should pass buildUrlWithoutFilter function to template', () => {
+			const query = createFilterQuery({
+				minimumAge: '10',
+				maximumAge: '50',
+				lpaRegion: ['North', 'South']
+			});
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.strictEqual(typeof filterQuery.buildUrlWithoutFilter, 'function');
+
+			const removeMinAgeUrl = filterQuery.buildUrlWithoutFilter('minimumAge');
+			assertUrlContent(removeMinAgeUrl, {
+				includes: [
+					{ value: 'page=1', message: 'Should reset page to 1' },
+					{ value: 'filters%5BmaximumAge%5D=50', message: 'Should preserve max age' },
+					{ value: 'filters%5BlpaRegion%5D=North', message: 'Should preserve LPA regions North' },
+					{ value: 'filters%5BlpaRegion%5D=South', message: 'Should preserve LPA regions South' }
+				],
+				excludes: [{ value: 'minimumAge', message: 'Should remove min age' }]
+			});
+		});
+
+		test('should handle array filter removal correctly', () => {
+			const query = createFilterQuery({ lpaRegion: ['North', 'South', 'East'] }, { inspectorId: '123' });
+			const filterQuery = filtersQueryViewModel(query);
+
+			const removeNorthUrl = filterQuery.buildUrlWithoutFilter('lpaRegion', 'North');
+			assertUrlContent(removeNorthUrl, {
+				includes: [
+					{ value: 'inspectorId=123', message: 'Should preserve inspectorId' },
+					{ value: 'filters%5BlpaRegion%5D=South', message: 'Should preserve South' },
+					{ value: 'filters%5BlpaRegion%5D=East', message: 'Should preserve East' }
+				],
+				excludes: [{ value: 'North', message: 'Should remove North' }]
+			});
+		});
+
+		test('should handle single value removal from array', () => {
+			const query = createFilterQuery({ lpaRegion: 'North' });
+			const filterQuery = filtersQueryViewModel(query);
+
+			const removeUrl = filterQuery.buildUrlWithoutFilter('lpaRegion', 'North');
+			assertUrlContent(removeUrl, {
+				includes: [{ value: 'page=1', message: 'Should reset page to 1' }],
+				excludes: [{ value: 'lpaRegion', message: 'Should remove filter entirely when last value removed' }]
+			});
+		});
+
+		test('should generate clear filters URL correctly', () => {
+			const query = createFilterQuery(
+				{
+					minimumAge: '10',
+					lpaRegion: ['North', 'South']
+				},
+				{
+					inspectorId: '456',
+					page: '3',
+					limit: '25',
+					sort: 'distance'
+				}
+			);
+			const filterQuery = filtersQueryViewModel(query);
+
+			assertUrlContent(filterQuery.clearFiltersUrl, {
+				includes: [
+					{ value: 'inspectorId=456', message: 'Should preserve inspectorId' },
+					{ value: 'page=1', message: 'Should reset page to 1' },
+					{ value: 'limit=25', message: 'Should preserve limit' },
+					{ value: 'sort=distance', message: 'Should preserve sort' }
+				],
+				excludes: [{ value: 'filters', message: 'Should remove all filters' }]
+			});
+		});
+
+		test('should handle special characters in URL encoding', () => {
+			const query = createFilterQuery(
+				{
+					caseSpecialisms: ['Planning & Development', 'Listed Building']
+				},
+				{ inspectorId: '123' }
+			);
+			const filterQuery = filtersQueryViewModel(query);
+
+			const removeUrl = filterQuery.buildUrlWithoutFilter('caseSpecialisms', 'Planning & Development');
+
+			assertUrlContent(removeUrl, {
+				includes: [
+					{ value: 'filters%5BcaseSpecialisms%5D=Listed', message: 'Should preserve and encode other specialisms' },
+					{ value: 'Building', message: 'Should preserve other values' }
+				],
+				excludes: [{ value: 'Planning', message: 'Should remove the specified value' }]
+			});
+		});
+
+		test('should use URLSearchParams pattern for robust encoding', () => {
+			const query = createFilterQuery({ lpaRegion: ['North/West', 'South & East'] }, { sort: 'distance' });
+			const filterQuery = filtersQueryViewModel(query);
+
+			const removeUrl = filterQuery.buildUrlWithoutFilter('lpaRegion', 'North/West');
+
+			assertUrlContent(removeUrl, {
+				includes: [
+					{ value: 'South', message: 'Should preserve other regions' },
+					{ value: 'East', message: 'Should preserve complex values' },
+					{ value: 'sort=distance', message: 'Should preserve other parameters' }
+				],
+				excludes: [{ value: 'North', message: 'Should remove specified value' }]
+			});
+		});
+
+		test('should handle default values in clear URL', () => {
+			const query = createFilterQuery({ minimumAge: '10' });
+			const filterQuery = filtersQueryViewModel(query);
+
+			assertUrlContent(filterQuery.clearFiltersUrl, {
+				includes: [{ value: 'page=1', message: 'Should reset to page 1' }],
+				excludes: [
+					{ value: 'limit=', message: 'Should not include default limit when not set' },
+					{ value: 'sort=', message: 'Should not include default sort when not set' }
+				]
+			});
+		});
+
+		test('should ignore invalid filter parameters', () => {
+			const query = createFilterQuery({
+				invalidFilter: 'somevalue',
+				minimumAge: '10'
+			});
+			const filterQuery = filtersQueryViewModel(query);
+			assert.strictEqual(filterQuery.case.minimumAge, '10');
+			assert.ok(!Object.hasOwn(filterQuery.case, 'invalidFilter'), 'Invalid filter key should not exist');
+		});
+
+		test('should handle empty filter arrays gracefully', () => {
+			const query = createFilterQuery({ caseSpecialisms: [] });
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.deepStrictEqual(filterQuery.case.caseSpecialisms, []);
+		});
+
+		test('should preserve non-filter query parameters in URLs', () => {
+			const query = createFilterQuery(
+				{ minimumAge: '10' },
+				{
+					inspectorId: '123',
+					sort: 'distance',
+					limit: '20',
+					customParam: 'preserved'
+				}
+			);
+			const filterQuery = filtersQueryViewModel(query);
+
+			const removeUrl = filterQuery.buildUrlWithoutFilter('minimumAge');
+			assertUrlContent(removeUrl, {
+				includes: [
+					{ value: 'inspectorId=123', message: 'Should preserve inspectorId' },
+					{ value: 'sort=distance', message: 'Should preserve sort' },
+					{ value: 'limit=20', message: 'Should preserve limit' },
+					{ value: 'customParam=preserved', message: 'Should preserve custom parameters' }
+				]
+			});
+		});
+
+		test('should handle malformed query parameters gracefully', () => {
+			const query = {
+				'filters[minimumAge]': null,
+				'filters[maximumAge]': undefined,
+				'filters[lpaRegion]': ''
+			};
+			const filterQuery = filtersQueryViewModel(query);
+
+			assert.ok(!filterQuery.case.minimumAge);
+			assert.ok(!filterQuery.case.maximumAge);
+			assert.ok(!filterQuery.case.lpaRegion);
 		});
 	});
 

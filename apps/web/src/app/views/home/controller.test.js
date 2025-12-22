@@ -78,6 +78,33 @@ describe('controller.js', () => {
 			const args = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(args.appeals?.cases?.length, 10);
 		});
+
+		test('should pass parsed filter parameters to the view', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [],
+				total: 0
+			}));
+
+			const req = {
+				url: '/?filters[lpaRegion][]=North&filters[minimumAge]=10',
+				query: {
+					'filters[lpaRegion]': ['North'],
+					'filters[minimumAge]': '10'
+				},
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+
+			assert.strictEqual(service.casesClient.getCases.mock.callCount(), 1);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.filters.query.case.minimumAge, '10');
+			assert.deepStrictEqual(args.filters.query.case.lpaRegion, ['North']);
+		});
+
 		test('should fetch inspector data', async () => {
 			const service = mockService();
 			entraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [

@@ -19,6 +19,7 @@
 {% from "views/macros/compile-query-fields.njk" import compileSortPaginationQueryFields %}
 {% from "views/macros/compile-query-fields.njk" import compileFilterQueryFields %}
 {% from "views/macros/checkbox-filter.njk" import checkboxFilter %}
+{% from "views/macros/filter-tag.njk" import filterTag, filterGroup %}
 
 {% block pageContent %}
 <div class="filter-container">
@@ -88,10 +89,62 @@
                         <h2 class="govuk-heading-m">Case filters</h2>
                     </div>
                 </div>
+
+                {# Selected filters display #}
+                {% set hasActiveFilters =
+                    filters.query.case.minimumAge or
+                    filters.query.case.maximumAge or
+                    filters.query.case.lpaRegion or
+                    filters.query.case.caseSpecialisms
+                %}
+
+                {% if hasActiveFilters %}
+                    <div class="selected-filters">
+                        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h3>
+
+                        {# Case Age #}
+                        {% if filters.query.case.minimumAge or filters.query.case.maximumAge %}
+                            {% call filterGroup('Case age') %}
+                                {% if filters.query.case.minimumAge %}
+                                    {{ filterTag('Min ' + filters.query.case.minimumAge + ' weeks', filters.buildUrlWithoutFilter('minimumAge')) }}
+                                {% endif %}
+                                {% if filters.query.case.maximumAge %}
+                                    {{ filterTag('Max ' + filters.query.case.maximumAge + ' weeks', filters.buildUrlWithoutFilter('maximumAge')) }}
+                                {% endif %}
+                            {% endcall %}
+                        {% endif %}
+
+                        {# LPA Region #}
+                        {% if filters.query.case.lpaRegion %}
+                            {% call filterGroup('LPA region') %}
+                                {% for region in filters.query.case.lpaRegion %}
+                                    {{ filterTag(region, filters.buildUrlWithoutFilter('lpaRegion', region)) }}
+                                {% endfor %}
+                            {% endcall %}
+                        {% endif %}
+
+                        {# Specialisms #}
+                        {% if filters.query.case.caseSpecialisms %}
+                            {% call filterGroup('Specialism') %}
+                                {% for specialism in filters.query.case.caseSpecialisms %}
+                                    {{ filterTag(specialism, filters.buildUrlWithoutFilter('caseSpecialisms', specialism)) }}
+                                {% endfor %}
+                            {% endcall %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
                 <form id="filter-form" method="get" novalidate>
-                    <button class="govuk-button" data-module="govuk-button">
-                        Apply filters
-                    </button>
+                    <div class="filter-actions">
+                        <button class="govuk-button" data-module="govuk-button">
+                            Apply filters
+                        </button>
+                        {% if hasActiveFilters %}
+                        <a href="{{ filters.clearFiltersUrl }}"
+                           class="govuk-link govuk-link--no-visited-state govuk-body"
+                           id="clear-filters-link">Clear filters</a>
+                        {% endif %}
+                    </div>
                     {{ govukDetails({
                         summaryText: "Case age",
                         html: ( 

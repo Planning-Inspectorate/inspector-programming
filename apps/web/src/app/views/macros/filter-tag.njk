@@ -1,0 +1,15 @@
+{% macro filterTag(label, removeUrl) %}
+  <li>
+    <a class="moj-filter__tag" href="{{ removeUrl }}">
+      <span class="govuk-visually-hidden">Remove this filter</span>
+      {{ label }}
+    </a>
+  </li>
+{% endmacro %}
+
+{% macro filterGroup(heading) %}
+  <h4 class="govuk-heading-s govuk-!-margin-bottom-2">{{ heading }}</h4>
+  <ul class="moj-filter-tags">
+    {{ caller() }}
+  </ul>
+{% endmacro %}

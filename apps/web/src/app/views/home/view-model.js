@@ -68,6 +68,75 @@ export function getCaseColor(caseAge) {
 }
 
 /**
+ * Appends parameter to URLSearchParams
+ * @param {URLSearchParams} searchParams
+ * @param {string} key
+ * @param {string | number | Array<string | number>} value
+ */
+function appendParam(searchParams, key, value) {
+	if (Array.isArray(value)) {
+		value.forEach((v) => searchParams.append(key, v));
+	} else if (value !== undefined && value !== null) {
+		searchParams.append(key, value);
+	}
+}
+
+/**
+ * Builds URLSearchParams from query object
+ * @param {import('qs').ParsedQs} query - Query parameters object
+ * @returns {URLSearchParams}
+ */
+function buildSearchParams(query) {
+	const searchParams = new URLSearchParams();
+	Object.entries(query).forEach(([key, value]) => {
+		if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+			Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+				appendParam(searchParams, `${key}[${nestedKey}]`, nestedValue);
+			});
+		} else {
+			appendParam(searchParams, key, value);
+		}
+	});
+	return searchParams;
+}
+
+/**
+ * Builds a URL with a specific filter removed
+ * @param {import('qs').ParsedQs} currentQuery - Current query parameters
+ * @param {string} keyType - Type of filter to remove (e.g., 'lpaRegion', 'caseSpecialisms', 'minimumAge')
+ * @param {string} [valueToRemove]
+ * @returns {string}
+ */
+function buildUrlWithoutFilter(currentQuery, keyType, valueToRemove) {
+	const searchParams = buildSearchParams(currentQuery);
+	const filterKey = `filters[${keyType}]`;
+	searchParams.delete(filterKey, valueToRemove);
+
+	// Reset to page 1 when filters change to avoid empty results
+	searchParams.set('page', '1');
+
+	return '?' + searchParams.toString();
+}
+
+/**
+ * Builds the clear filters URL (removes all filter parameters)
+ * @param {import('qs').ParsedQs} currentQuery - Current query parameters
+ * @returns {string} URL with all filters cleared
+ */
+function buildClearFiltersUrl(currentQuery) {
+	const baseQuery = {};
+
+	// Preserve non-filter parameters
+	if (currentQuery.inspectorId) baseQuery.inspectorId = currentQuery.inspectorId;
+	if (currentQuery.limit) baseQuery.limit = currentQuery.limit;
+	if (currentQuery.sort) baseQuery.sort = currentQuery.sort;
+	// Reset to page 1 when filters change to avoid empty results
+	baseQuery.page = '1';
+
+	return '?' + buildSearchParams(baseQuery).toString();
+}
+
+/**
  * @param {import('qs').ParsedQs} query
  * @param {string} [previousSort]
  * @returns {import('@pins/inspector-programming-lib/data/types.js').FilterQuery}
@@ -109,6 +178,9 @@ export function filtersQueryViewModel(query, previousSort) {
 			filters.case[stringProp] = String(value);
 		}
 	}
+
+	filters.buildUrlWithoutFilter = (keyType, valueToRemove) => buildUrlWithoutFilter(query, keyType, valueToRemove);
+	filters.clearFiltersUrl = buildClearFiltersUrl(query);
 
 	return filters;
 }

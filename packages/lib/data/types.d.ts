@@ -46,6 +46,8 @@ export interface Filters {
 }
 
 export interface FilterQuery {
+	clearFiltersUrl: string;
+	buildUrlWithoutFilter: (keyType: string, valueToRemove?: string) => string;
 	case?: FilterCaseQuery;
 	limit?: number;
 	page?: number;
