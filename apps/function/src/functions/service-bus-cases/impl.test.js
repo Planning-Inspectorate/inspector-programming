@@ -1,242 +1,295 @@
-import { describe, test, mock } from 'node:test';
+import { describe, test, mock, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import { MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
-import { buildHandleCaseMessage, mapToDatabase, deleteCase, upsertCase } from './impl.js';
+import { buildHandleCaseMessage, mapToDatabase, deleteCase, upsertCase, resetAjvCache } from './impl.js';
 
-// Helper to create a mock context
-function makeContext(type = MESSAGE_EVENT_TYPE.CREATE) {
-	return {
-		log: mock.fn(),
-		triggerMetadata: { applicationProperties: { type } }
-	};
-}
+// BASE TEST DATA - Single source of truth
 
-// Helper to create a mock service with optional overrides
-function makeService(options = {}) {
-	const { upsertThrow = false, deleteThrow = false, postcodeResponse = null, deleteNotFound = false } = options;
+const BASE_MESSAGE = {
+	caseReference: 'APP/W1234/D/25/1234567',
+	caseId: 12345,
+	caseStatus: 'ready_to_start',
+	caseType: 'D',
+	caseProcedure: 'written',
+	originalDevelopmentDescription: 'Test development',
+	allocationLevel: 'A',
+	allocationBand: 1,
+	siteAddressLine1: '1 Test Street',
+	siteAddressLine2: null,
+	siteAddressTown: 'Test Town',
+	siteAddressCounty: 'Test County',
+	siteAddressPostcode: 'TE1 1ST',
+	lpaCode: 'E1234',
+	lpaName: 'Test LPA',
+	caseCreatedDate: '2025-01-01T00:00:00.000Z',
+	caseValidDate: '2025-01-02T00:00:00.000Z',
+	finalCommentsDueDate: null,
+	linkedCaseStatus: null,
+	leadCaseReference: null,
+	appellantCostsAppliedFor: false,
+	lpaCostsAppliedFor: false,
+	inspectorId: null,
+	specialisms: [],
+	caseOfficerId: 'officer-1',
+	caseSpecialisms: [],
+	caseSubmittedDate: '2025-01-01T00:00:00.000Z',
+	caseUpdatedDate: '2025-01-01T00:00:00.000Z',
+	caseValidationDate: '2025-01-01T00:00:00.000Z',
+	caseValidationOutcome: 'valid',
+	caseValidationInvalidDetails: [],
+	caseValidationIncompleteDetails: [],
+	caseExtensionDate: '2025-01-01T00:00:00.000Z',
+	caseStartedDate: '2025-01-01T00:00:00.000Z',
+	casePublishedDate: '2025-01-01T00:00:00.000Z',
+	lpaQuestionnaireDueDate: '2025-01-01T00:00:00.000Z',
+	lpaQuestionnaireSubmittedDate: '2025-01-01T00:00:00.000Z',
+	lpaQuestionnaireCreatedDate: '2025-01-01T00:00:00.000Z',
+	lpaQuestionnairePublishedDate: '2025-01-01T00:00:00.000Z',
+	lpaQuestionnaireValidationOutcome: 'complete',
+	lpaQuestionnaireValidationOutcomeDate: '2025-01-01T00:00:00.000Z',
+	lpaQuestionnaireValidationDetails: [],
+	lpaStatement: '',
+	caseWithdrawnDate: '2025-01-01T00:00:00.000Z',
+	caseTransferredDate: '2025-01-01T00:00:00.000Z',
+	transferredCaseClosedDate: '2025-01-01T00:00:00.000Z',
+	caseDecisionOutcomeDate: '2025-01-01T00:00:00.000Z',
+	caseDecisionPublishedDate: '2025-01-01T00:00:00.000Z',
+	caseDecisionOutcome: 'allowed',
+	caseCompletedDate: '2025-01-01T00:00:00.000Z',
+	enforcementNotice: false,
+	applicationReference: 'APP/123',
+	applicationDate: '2025-01-01T00:00:00.000Z',
+	applicationDecision: 'granted',
+	applicationDecisionDate: '2025-01-01T00:00:00.000Z',
+	caseSubmissionDueDate: '2025-01-01T00:00:00.000Z',
+	siteAccessDetails: [],
+	siteSafetyDetails: [],
+	siteAreaSquareMetres: 100,
+	floorSpaceSquareMetres: 100,
+	isCorrectAppealType: true,
+	isGreenBelt: false,
+	inConservationArea: false,
+	ownsAllLand: true,
+	ownsSomeLand: false,
+	knowsOtherOwners: 'No',
+	knowsAllOwners: 'Yes',
+	advertisedAppeal: false,
+	notificationMethod: [],
+	ownersInformed: false,
+	changedDevelopmentDescription: false,
+	newConditionDetails: '',
+	nearbyCaseReferences: [],
+	neighbouringSiteAddresses: [],
+	affectedListedBuildingNumbers: []
+};
 
-	const appealCaseDeleteFn = mock.fn(async () => {
-		if (deleteNotFound) {
-			const error = new Error('Record not found');
-			error.code = 'P2025';
-			throw error;
-		}
-		if (deleteThrow) throw new Error('db delete failed');
-	});
+const NULL_COORDS = { latitude: null, longitude: null };
+const VALID_COORDS = { latitude: 51.5, longitude: -0.12 };
+const VALID_POSTCODE_RESPONSE = { results: [{ DPA: { LAT: 51.5, LNG: -0.12 } }] };
 
-	const appealCaseUpsertFn = mock.fn(async () => {
-		if (upsertThrow) throw new Error('db upsert failed');
-		return { caseReference: 'APP/123' };
-	});
+const msg = (overrides = {}) => ({ ...BASE_MESSAGE, ...overrides });
 
-	const specialismDeleteManyFn = mock.fn(async () => ({ count: 0 }));
-	const specialismCreateFn = mock.fn(async () => ({}));
+const ctx = (type = MESSAGE_EVENT_TYPE.CREATE) => ({
+	log: mock.fn(),
+	triggerMetadata: { applicationProperties: { type } }
+});
 
-	const appealCaseObj = { delete: appealCaseDeleteFn, upsert: appealCaseUpsertFn };
-	const specialismObj = { deleteMany: specialismDeleteManyFn, create: specialismCreateFn };
+const svc = (options = {}) => {
+	const { upsertThrow, deleteThrow, deleteNotFound, postcodeResponse } = options;
 
-	// Add a mock logger to match FunctionService type
-	const logger = {
-		fatal: () => {},
-		error: () => {},
-		warn: () => {},
-		info: () => {},
-		debug: () => {},
-		trace: () => {}
+	const mocks = {
+		delete: mock.fn(async () => {
+			if (deleteNotFound) {
+				const err = new Error('Not found');
+				err.code = 'P2025';
+				throw err;
+			}
+			if (deleteThrow) throw new Error('db delete failed');
+		}),
+		upsert: mock.fn(async () => {
+			if (upsertThrow) throw new Error('db upsert failed');
+			return { caseReference: 'APP/123' };
+		}),
+		deleteMany: mock.fn(async () => ({ count: 0 })),
+		create: mock.fn(async () => ({})),
+		transaction: mock.fn(async (cb) =>
+			cb({
+				appealCase: { delete: mocks.delete, upsert: mocks.upsert },
+				appealCaseSpecialism: { deleteMany: mocks.deleteMany, create: mocks.create }
+			})
+		)
 	};
 
 	return {
 		dbClient: {
-			appealCase: appealCaseObj,
-			appealCaseSpecialism: specialismObj,
-			$transaction: async (cb) =>
-				cb({
-					appealCase: appealCaseObj,
-					appealCaseSpecialism: specialismObj
-				})
+			appealCase: { delete: mocks.delete, upsert: mocks.upsert },
+			appealCaseSpecialism: { deleteMany: mocks.deleteMany, create: mocks.create },
+			$transaction: mocks.transaction
 		},
-		osApiClient: {
-			addressesForPostcode: mock.fn(async () => postcodeResponse)
-		},
-		logger
+		osApiClient: { addressesForPostcode: mock.fn(async () => postcodeResponse) },
+		mocks
 	};
-}
+};
 
-// Helper to create a valid message, with optional overrides
-function makeValidMessage(fields = {}) {
-	return {
-		caseReference: 'APP/W1234/D/25/1234567',
-		caseId: 12345,
-		caseStatus: 'ready_to_start',
-		caseType: 'D',
-		caseProcedure: 'written',
-		originalDevelopmentDescription: 'Test development',
-		allocationLevel: 'A',
-		allocationBand: 1,
-		siteAddressLine1: '1 Test Street',
-		siteAddressLine2: null,
-		siteAddressTown: 'Test Town',
-		siteAddressCounty: 'Test County',
-		siteAddressPostcode: 'TE1 1ST',
-		lpaCode: 'E1234',
-		lpaName: 'Test LPA',
-		caseCreatedDate: '2025-01-01T00:00:00.000Z',
-		caseValidDate: '2025-01-02T00:00:00.000Z',
-		finalCommentsDueDate: null,
-		linkedCaseStatus: null,
-		leadCaseReference: null,
-		appellantCostsAppliedFor: false,
-		lpaCostsAppliedFor: false,
-		inspectorId: null,
-		specialisms: [],
-		caseOfficerId: 'officer-1',
-		caseSpecialisms: [],
-		caseSubmittedDate: '2025-01-01T00:00:00.000Z',
-		caseUpdatedDate: '2025-01-01T00:00:00.000Z',
-		caseValidationDate: '2025-01-01T00:00:00.000Z',
-		caseValidationOutcome: 'valid',
-		caseValidationInvalidDetails: [],
-		caseValidationIncompleteDetails: [],
-		caseExtensionDate: '2025-01-01T00:00:00.000Z',
-		caseStartedDate: '2025-01-01T00:00:00.000Z',
-		casePublishedDate: '2025-01-01T00:00:00.000Z',
-		lpaQuestionnaireDueDate: '2025-01-01T00:00:00.000Z',
-		lpaQuestionnaireSubmittedDate: '2025-01-01T00:00:00.000Z',
-		lpaQuestionnaireCreatedDate: '2025-01-01T00:00:00.000Z',
-		lpaQuestionnairePublishedDate: '2025-01-01T00:00:00.000Z',
-		lpaQuestionnaireValidationOutcome: 'complete',
-		lpaQuestionnaireValidationOutcomeDate: '2025-01-01T00:00:00.000Z',
-		lpaQuestionnaireValidationDetails: [],
-		lpaStatement: '',
-		caseWithdrawnDate: '2025-01-01T00:00:00.000Z',
-		caseTransferredDate: '2025-01-01T00:00:00.000Z',
-		transferredCaseClosedDate: '2025-01-01T00:00:00.000Z',
-		caseDecisionOutcomeDate: '2025-01-01T00:00:00.000Z',
-		caseDecisionPublishedDate: '2025-01-01T00:00:00.000Z',
-		caseDecisionOutcome: 'allowed',
-		caseCompletedDate: '2025-01-01T00:00:00.000Z',
-		enforcementNotice: false,
-		applicationReference: 'APP/123',
-		applicationDate: '2025-01-01T00:00:00.000Z',
-		applicationDecision: 'granted',
-		applicationDecisionDate: '2025-01-01T00:00:00.000Z',
-		caseSubmissionDueDate: '2025-01-01T00:00:00.000Z',
-		siteAccessDetails: [],
-		siteSafetyDetails: [],
-		siteAreaSquareMetres: 100,
-		floorSpaceSquareMetres: 100,
-		isCorrectAppealType: true,
-		isGreenBelt: false,
-		inConservationArea: false,
-		ownsAllLand: true,
-		ownsSomeLand: false,
-		knowsOtherOwners: 'No',
-		knowsAllOwners: 'Yes',
-		advertisedAppeal: false,
-		notificationMethod: [],
-		ownersInformed: false,
-		changedDevelopmentDescription: false,
-		newConditionDetails: '',
-		nearbyCaseReferences: [],
-		neighbouringSiteAddresses: [],
-		affectedListedBuildingNumbers: [],
-		...fields
-	};
-}
+const assertCalls = (mockFn, expected, name) => {
+	assert.strictEqual(
+		mockFn.mock.calls.length,
+		expected,
+		`${name}: expected ${expected} calls, got ${mockFn.mock.calls.length}`
+	);
+};
 
 describe('mapToDatabase', () => {
-	test('maps basic fields and coordinates', () => {
-		const data = mapToDatabase(makeValidMessage(), { latitude: 51.5, longitude: -0.12 });
-		assert.strictEqual(data.caseReference, 'APP/W1234/D/25/1234567');
-		assert.strictEqual(data.caseId, 12345);
-		assert.strictEqual(data.siteAddressPostcode, 'TE1 1ST');
-		assert.strictEqual(data.siteAddressLatitude, 51.5);
-		assert.strictEqual(data.siteAddressLongitude, -0.12);
+	test('maps fields and coordinates correctly', () => {
+		const result = mapToDatabase(msg(), VALID_COORDS);
+		assert.strictEqual(result.caseReference, 'APP/W1234/D/25/1234567');
+		assert.strictEqual(result.caseId, 12345);
+		assert.strictEqual(result.siteAddressLatitude, 51.5);
+		assert.strictEqual(result.siteAddressLongitude, -0.12);
 	});
 
 	test('handles null coordinates', () => {
-		const data = mapToDatabase(makeValidMessage(), { latitude: null, longitude: null });
-		assert.strictEqual(data.siteAddressLatitude, null);
-		assert.strictEqual(data.siteAddressLongitude, null);
+		const result = mapToDatabase(msg(), NULL_COORDS);
+		assert.strictEqual(result.siteAddressLatitude, null);
+		assert.strictEqual(result.siteAddressLongitude, null);
 	});
 
 	test('converts date strings to Date objects', () => {
-		const data = mapToDatabase(makeValidMessage(), { latitude: null, longitude: null });
-		assert.ok(data.caseCreatedDate instanceof Date);
-		assert.ok(data.caseValidDate instanceof Date);
+		const result = mapToDatabase(msg(), NULL_COORDS);
+		assert.ok(result.caseCreatedDate instanceof Date);
+		assert.strictEqual(result.caseCreatedDate.toISOString(), '2025-01-01T00:00:00.000Z');
+	});
+
+	test('handles missing optional fields with null', () => {
+		const result = mapToDatabase(msg({ caseStatus: undefined, caseProcedure: undefined }), NULL_COORDS);
+		assert.strictEqual(result.caseStatus, null);
+		assert.strictEqual(result.caseProcedure, null);
 	});
 });
 
 describe('deleteCase', () => {
-	test('deletes case when caseReference provided', async () => {
-		await deleteCase(makeService(), 'APP/123', makeContext(MESSAGE_EVENT_TYPE.DELETE));
+	test('calls database delete with correct caseReference', async () => {
+		const service = svc();
+		await deleteCase(service, 'APP/123', ctx(MESSAGE_EVENT_TYPE.DELETE));
+		assertCalls(service.mocks.delete, 1, 'delete');
+		assert.deepStrictEqual(service.mocks.delete.mock.calls[0].arguments[0], { where: { caseReference: 'APP/123' } });
 	});
 
-	test('throws error when caseReference missing', async () => {
-		await assert.rejects(
-			() => deleteCase(makeService(), '', makeContext(MESSAGE_EVENT_TYPE.DELETE)),
-			/Delete event missing caseReference/
-		);
+	test('throws when caseReference empty', async () => {
+		await assert.rejects(() => deleteCase(svc(), '', ctx()), { message: 'Delete event missing caseReference' });
 	});
 
-	test('handles case not found gracefully', async () => {
-		await deleteCase(makeService({ deleteNotFound: true }), 'APP/123', makeContext(MESSAGE_EVENT_TYPE.DELETE));
+	test('throws when caseReference null', async () => {
+		await assert.rejects(() => deleteCase(svc(), null, ctx()), { message: 'Delete event missing caseReference' });
 	});
 
-	test('wraps database deletion errors', async () => {
-		await assert.rejects(
-			() => deleteCase(makeService({ deleteThrow: true }), 'APP/123', makeContext(MESSAGE_EVENT_TYPE.DELETE)),
-			/Error deleting case: db delete failed/
-		);
+	test('handles P2025 not found gracefully', async () => {
+		const service = svc({ deleteNotFound: true });
+		await deleteCase(service, 'APP/123', ctx());
+		assertCalls(service.mocks.delete, 1, 'delete');
+	});
+
+	test('wraps database errors', async () => {
+		await assert.rejects(() => deleteCase(svc({ deleteThrow: true }), 'APP/123', ctx()), {
+			message: 'Failed to delete case APP/123: db delete failed'
+		});
 	});
 });
 
 describe('upsertCase', () => {
-	test('upserts case with coordinates', async () => {
-		await upsertCase(
-			makeService({ postcodeResponse: { results: [{ DPA: { LAT: 1.23, LNG: 4.56 } }] } }),
-			makeValidMessage(),
-			makeContext(MESSAGE_EVENT_TYPE.CREATE)
-		);
+	test('upserts with coordinates when postcode provided', async () => {
+		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+		await upsertCase(service, msg(), ctx());
+		assertCalls(service.mocks.upsert, 1, 'upsert');
+		assertCalls(service.mocks.transaction, 1, 'transaction');
 	});
 
-	test('continues without coordinates if postcode lookup fails', async () => {
-		await upsertCase(
-			makeService({ postcodeResponse: null }),
-			makeValidMessage(),
-			makeContext(MESSAGE_EVENT_TYPE.CREATE)
-		);
+	test('continues without coordinates when lookup fails', async () => {
+		const service = svc({ postcodeResponse: null });
+		await upsertCase(service, msg(), ctx());
+		assertCalls(service.mocks.upsert, 1, 'upsert');
+	});
+
+	test('skips coordinate lookup when no postcode', async () => {
+		const service = svc();
+		await upsertCase(service, msg({ siteAddressPostcode: null }), ctx());
+		assertCalls(service.mocks.upsert, 1, 'upsert');
+	});
+
+	test('throws when caseReference missing', async () => {
+		await assert.rejects(() => upsertCase(svc(), msg({ caseReference: null }), ctx()), {
+			message: 'Upsert event missing caseReference'
+		});
+	});
+
+	test('syncs specialisms when provided', async () => {
+		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+		await upsertCase(service, msg({ specialisms: [{ specialism: 'highways' }, { specialism: 'heritage' }] }), ctx());
+		assertCalls(service.mocks.deleteMany, 1, 'deleteMany');
+		assertCalls(service.mocks.create, 2, 'create');
+	});
+
+	test('filters invalid specialisms', async () => {
+		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+		await upsertCase(service, msg({ specialisms: [{ specialism: 'valid' }, null, {}, { specialism: null }] }), ctx());
+		assertCalls(service.mocks.create, 1, 'create');
 	});
 
 	test('wraps upsert errors', async () => {
 		await assert.rejects(
-			() =>
-				upsertCase(
-					makeService({ postcodeResponse: { results: [{ DPA: { LAT: 0, LNG: 0 } }] }, upsertThrow: true }),
-					makeValidMessage(),
-					makeContext(MESSAGE_EVENT_TYPE.CREATE)
-				),
+			() => upsertCase(svc({ postcodeResponse: VALID_POSTCODE_RESPONSE, upsertThrow: true }), msg(), ctx()),
 			/Failed to upsert case/
 		);
 	});
 });
 
 describe('buildHandleCaseMessage', () => {
-	test('calls delete for delete events', async () => {
-		const handler = buildHandleCaseMessage(makeService(), 'appeal-has.schema.json');
-		await handler(makeValidMessage(), makeContext(MESSAGE_EVENT_TYPE.DELETE));
+	beforeEach(() => resetAjvCache());
+
+	test('deletes for DELETE event', async () => {
+		const service = svc();
+		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.DELETE));
+		assertCalls(service.mocks.delete, 1, 'delete');
+		assertCalls(service.mocks.upsert, 0, 'upsert');
 	});
 
-	test('calls delete when inspectorId is set', async () => {
-		const handler = buildHandleCaseMessage(makeService(), 'appeal-has.schema.json');
-		await handler(makeValidMessage({ inspectorId: 'inspector-123' }), makeContext(MESSAGE_EVENT_TYPE.UPDATE));
-	});
-
-	test('calls upsert for create events without inspectorId', async () => {
-		const handler = buildHandleCaseMessage(
-			makeService({ postcodeResponse: { results: [{ DPA: { LAT: 9, LNG: 8 } }] } }),
-			'appeal-has.schema.json'
+	test('deletes when inspectorId set', async () => {
+		const service = svc();
+		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(
+			msg({ inspectorId: 'insp-1' }),
+			ctx(MESSAGE_EVENT_TYPE.UPDATE)
 		);
-		await handler(makeValidMessage(), makeContext(MESSAGE_EVENT_TYPE.CREATE));
+		assertCalls(service.mocks.delete, 1, 'delete');
+		assertCalls(service.mocks.upsert, 0, 'upsert');
+	});
+
+	test('upserts for CREATE without inspectorId', async () => {
+		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.CREATE));
+		assertCalls(service.mocks.delete, 0, 'delete');
+		assertCalls(service.mocks.upsert, 1, 'upsert');
+	});
+
+	test('upserts for UPDATE without inspectorId', async () => {
+		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.UPDATE));
+		assertCalls(service.mocks.upsert, 1, 'upsert');
+	});
+
+	test('logs are called', async () => {
+		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+		const context = ctx(MESSAGE_EVENT_TYPE.CREATE);
+		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), context);
+		assert.ok(context.log.mock.calls.length > 0, 'Expected logging');
+	});
+});
+
+describe('resetAjvCache', () => {
+	test('executes without error', () => assert.doesNotThrow(() => resetAjvCache()));
+
+	test('can be called multiple times', () => {
+		resetAjvCache();
+		resetAjvCache();
+		assert.ok(true);
 	});
 });
