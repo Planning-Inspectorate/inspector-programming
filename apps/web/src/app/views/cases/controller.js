@@ -1,4 +1,4 @@
-import { addSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
@@ -52,6 +52,41 @@ async function handleCases(selectedCases, service, req, res) {
 	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
 	let poEmailSent = false;
+	/*  */
+	let eventsToAdd = [];
+
+	// Track previous selected cases to preserve state for retry
+	const previousSelectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
+	console.log('Previous selected cases', previousSelectedCaseIds);
+	const newSelectedCaseIds = selectedCaseIds.filter((id) => !previousSelectedCaseIds.includes(id));
+	saveSelectedData(selectedCaseIds, req);
+
+	if (newSelectedCaseIds.length) {
+		try {
+			// Generate calendar events for selected cases
+			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, selectedCaseIds);
+			console.log('This is event to add', eventsToAdd);
+
+			service.logger.info(
+				{
+					eventsCount: eventsToAdd.length,
+					casesCount: selectedCaseIds.length
+				},
+				'Calendar events created for selected cases'
+			);
+		} catch (error) {
+			service.logger.error(
+				{
+					error: error.message,
+					caseReferences: selectedCaseIds
+				},
+				'Failed to generate calendar events for selected cases'
+			);
+			return res.render('views/errors/500.njk', {
+				bodyCopy: `An error occurred when generating calendar events. ${error.message}. Please try again later.`
+			});
+		}
+	}
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
@@ -63,16 +98,6 @@ async function handleCases(selectedCases, service, req, res) {
 
 	if (successfulCaseIds.length > 0) {
 		try {
-			// Generate calendar events for successful assignments
-			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, successfulCaseIds);
-			service.logger.info(
-				{
-					eventsCount: eventsToAdd.length,
-					casesCount: successfullyAssignedCases.length
-				},
-				'Calendar events created for successfully assigned cases'
-			);
-
 			// Submit calendar events
 			await submitCalendarEvents(service.entraClient, eventsToAdd, req.session, req.body.inspectorId, service.logger);
 
