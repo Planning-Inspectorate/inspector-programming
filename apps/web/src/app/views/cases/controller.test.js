@@ -552,6 +552,86 @@ describe('controller.js', () => {
 				assert.strictEqual(inspectorInfoCall, undefined, 'Inspector success log should NOT exist');
 				assert.strictEqual(poInfoCall, undefined, 'Programme officer success log should NOT exist');
 			});
+
+			test('should create calendar events when there is no previous selection', async () => {
+				const service = mockService();
+				const req = {
+					body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' },
+					session: {} // no previous selectedCaseListData
+				};
+				const res = { redirect: mock.fn(), render: mock.fn() };
+				const controller = buildPostCases(service);
+
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+
+				const calendarCreatedLog = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Calendar events created for selected cases'
+				);
+				assert.ok(calendarCreatedLog, 'Expected calendar events creation to be logged');
+				assert.strictEqual(calendarCreatedLog.arguments[0].casesCount, 1);
+			});
+
+			test('should not generate calendar events when selection overlaps with previous selection', async () => {
+				const service = mockService();
+				const req = {
+					body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
+					session: {
+						persistence: {
+							selectedCaseListData: { selectedCases: [1] }
+						}
+					}
+				};
+				const res = { redirect: mock.fn(), render: mock.fn() };
+				const controller = buildPostCases(service);
+
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+				const calendarCreatedLog = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Calendar events created for selected cases'
+				);
+				assert.strictEqual(calendarCreatedLog, undefined, 'Did not expect calendar events creation log for overlap');
+			});
+
+			test('should throw error 500 if generateCaseCalendarEvents fails', async () => {
+				// Force calendar event generation to fail by making timing rules throw
+				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
+					throw new Error('Timing rules failed');
+				});
+
+				const service = mockService();
+				const req = {
+					body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
+					session: {
+						persistence: {
+							lastRequest: { queryParams: '?page=2' }
+						}
+					}
+				};
+				const res = { render: mock.fn(), redirect: mock.fn() };
+				const controller = buildPostCases(service);
+
+				await controller(req, res);
+
+				// Should render 500 template with appropriate message and query params
+				assert.strictEqual(res.render.mock.callCount(), 1);
+				assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/500.njk');
+				assert.strictEqual(
+					res.render.mock.calls[0].arguments[1].bodyCopy,
+					'An error occurred when generating calendar events. Timing rules failed. Please try again later.'
+				);
+				assert.strictEqual(res.render.mock.calls[0].arguments[1].queryParams, '?page=2');
+
+				assert.strictEqual(res.redirect?.mock?.callCount?.() ?? 0, 0);
+				const errorLog = service.logger.error.mock.calls.find(
+					(call) => call.arguments[1] === 'Failed to generate calendar events for selected cases'
+				);
+				assert.ok(errorLog, 'Expected generation failure to be logged');
+			});
 		});
 	});
 
