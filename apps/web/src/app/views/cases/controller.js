@@ -337,8 +337,8 @@ function handleFailure(req, res, failedCases, errorMessage) {
 	/** @type {string[]} */
 	const failedChildCaseRefs = [];
 	/** @type {string} */
-	const UNASSIGNED_CASES_MESSAGE =
-		'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:';
+
+	const UNASSIGNED_CASES_MESSAGE = 'Try again later. The following cases were not assigned:';
 	/** @type {boolean} */
 
 	const lastQueryParams = readSessionData(req, 'lastRequest', 'queryParams', '', 'persistence');
@@ -358,7 +358,8 @@ function handleFailure(req, res, failedCases, errorMessage) {
 
 	if (!failedParentCaseRefs.length && failedChildCaseRefs.length) {
 		viewData = {
-			bodyCopy: UNASSIGNED_CASES_MESSAGE,
+			bodyCopy:
+				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:',
 			failedCases: failedChildCaseRefs
 		};
 	} else if (failedParentCaseRefs.length && !failedChildCaseRefs.length) {
@@ -368,7 +369,7 @@ function handleFailure(req, res, failedCases, errorMessage) {
 		};
 	} else if (failedParentCaseRefs.length && failedChildCaseRefs.length) {
 		viewData = {
-			bodyCopy: 'Try again later. The following cases were not assigned:',
+			bodyCopy: UNASSIGNED_CASES_MESSAGE,
 			failedCases: failedParentCaseRefs,
 			linkedCasesNote:
 				'The following linked cases were also not assigned. The Inspector name must be added manually to the case in Manage appeals:',
