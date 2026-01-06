@@ -174,7 +174,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
+				'Try again later. The following cases were not assigned:'
 			);
 		});
 
@@ -201,7 +201,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/failed-cases.njk');
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
+				'Try again later. The following cases were not assigned:'
 			);
 			mockCbosApiClient.patchAppeal.mock.mockImplementation(() => Promise.resolve());
 		});
@@ -225,7 +225,7 @@ describe('controller.js', () => {
 			// Fetch failure also yields the generic message
 			assert.strictEqual(
 				res.render.mock.calls[0].arguments[1].bodyCopy,
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:'
+				'Try again later. The following cases were not assigned:'
 			);
 		});
 
