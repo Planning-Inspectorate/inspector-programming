@@ -22,7 +22,21 @@ export class CasesClient {
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
 	async getAllCases() {
+		const timingRules = await this.#client.calendarEventTimingRule.findMany({
+			select: { caseType: true, caseProcedure: true, allocationLevel: true }
+		});
+		if (!timingRules.length) {
+			return [];
+		}
+
 		const cases = await this.#client.appealCase.findMany({
+			where: {
+				OR: timingRules.map((rule) => ({
+					caseType: rule.caseType,
+					caseProcedure: rule.caseProcedure,
+					allocationLevel: rule.allocationLevel
+				}))
+			},
 			include: {
 				ChildCases: true,
 				Specialisms: true,

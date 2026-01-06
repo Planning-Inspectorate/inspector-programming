@@ -67,14 +67,32 @@ describe('CasesClient', () => {
 				}
 			];
 
+			const timingRules = [
+				{ caseType: 'W', caseProcedure: 'inquiry', allocationLevel: 'H' },
+				{ caseType: 'W', caseProcedure: 'written', allocationLevel: 'A' }
+			];
+
 			const mockClient = {
+				calendarEventTimingRule: {
+					findMany: mock.fn(async () => timingRules)
+				},
 				appealCase: {
-					findMany: async () => mockCases
+					findMany: mock.fn(async () => mockCases)
 				}
 			};
 
 			const client = new CasesClient(mockClient);
 			const cases = await client.getAllCases();
+
+			assert.strictEqual(mockClient.calendarEventTimingRule.findMany.mock.calls.length, 1);
+			assert.strictEqual(mockClient.appealCase.findMany.mock.calls.length, 1);
+			const appealFindManyArg = mockClient.appealCase.findMany.mock.calls[0].arguments[0];
+			assert.deepStrictEqual(appealFindManyArg.where, {
+				OR: [
+					{ caseType: 'W', caseProcedure: 'inquiry', allocationLevel: 'H' },
+					{ caseType: 'W', caseProcedure: 'written', allocationLevel: 'A' }
+				]
+			});
 			assert.deepEqual(cases, [
 				{
 					allocationBand: 1,
