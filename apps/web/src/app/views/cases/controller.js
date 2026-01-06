@@ -1,4 +1,4 @@
-import { addSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
@@ -302,8 +302,10 @@ function handleFailure(req, res, failedCases, errorMessage) {
 	/** @type {string[]} */
 	const failedChildCaseRefs = [];
 	/** @type {string} */
-	const UNASSIGNED_CASES_MESSAGE =
-		'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:';
+	const UNASSIGNED_CASES_MESSAGE = 'Try again later. The following cases were not assigned:';
+
+	const lastQueryParams = readSessionData(req, 'lastRequest', 'queryParams', '', 'persistence');
+
 	/** @type {boolean} */
 
 	const isArrayOfCaseIds = Array.isArray(failedCases) && ['number', 'string'].includes(typeof failedCases[0]);
@@ -321,7 +323,8 @@ function handleFailure(req, res, failedCases, errorMessage) {
 
 	if (!failedParentCaseRefs.length && failedChildCaseRefs.length) {
 		viewData = {
-			bodyCopy: UNASSIGNED_CASES_MESSAGE,
+			bodyCopy:
+				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:',
 			failedCases: failedChildCaseRefs
 		};
 	} else if (failedParentCaseRefs.length && !failedChildCaseRefs.length) {
@@ -343,7 +346,7 @@ function handleFailure(req, res, failedCases, errorMessage) {
 		};
 	}
 
-	return res.render('views/errors/failed-cases.njk', viewData);
+	return res.render('views/errors/failed-cases.njk', { ...viewData, queryParams: lastQueryParams });
 }
 
 /**

@@ -218,6 +218,7 @@ export function buildViewHome(service, getEventsFunction) {
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
 		addSessionData(req, 'lastRequest', { sort: filterQuery.sort, inspectorId: inspectorId || null }, 'persistence');
+		addSessionData(req, 'lastRequest', { queryParams: queryParams.toString() }, 'persistence');
 
 		//clear session data passed on from /cases
 		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
