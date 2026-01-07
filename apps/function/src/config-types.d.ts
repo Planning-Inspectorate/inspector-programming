@@ -18,5 +18,13 @@ interface Config {
 			topic: string;
 			subscription: string;
 		};
+		caseHas: {
+			topic: string;
+			subscription: string;
+		};
+		caseS78: {
+			topic: string;
+			subscription: string;
+		};
 	};
 }
