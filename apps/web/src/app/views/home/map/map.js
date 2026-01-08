@@ -96,7 +96,8 @@ function initialiseMap(apiKey, pins, inspector) {
 						width: 2,
 						color: 'red'
 					}
-				}
+				},
+				popupTemplate: null
 			});
 			graphics.push(circleGraphic);
 
@@ -123,7 +124,15 @@ function initialiseMap(apiKey, pins, inspector) {
 			const pointGraphic = new Graphic({
 				geometry: point,
 				symbol: pictureMarkerSymbol,
-				popupTemplate: inspectorTooltip
+				popupTemplate: inspectorTooltip,
+				attributes: {
+					type: 'inspector',
+					firstName: inspectorData.firstName,
+					lastName: inspectorData.lastName,
+					postcode: inspectorData.postcode,
+					grade: inspectorData.grade,
+					specialismsList: inspectorData.specialismsList
+				}
 			});
 			graphics.push(pointGraphic);
 		}
@@ -183,19 +192,18 @@ function initialiseMap(apiKey, pins, inspector) {
 				rotationEnabled: false
 			}
 		});
+		view.popup.highlightEnabled = false;
+
+		view.highlightOptions = {
+			color: [0, 0, 0, 1],
+			haloOpacity: 1,
+			haloColor: [0, 0, 0, 1],
+			fillOpacity: 0
+		};
 
 		// Separate case and inspector graphics
 		const caseGraphics = graphics.filter((g) => g.attributes?.caseReference);
 		const otherGraphics = graphics.filter((g) => !g.attributes?.caseReference); // inspector, circles, etc.
-
-		const uniqueValueInfos = pins.map((p) => ({
-			value: p.caseId,
-			symbol: {
-				type: 'simple-marker',
-				color: '#' + (p.caseAgeColor || '00703c'),
-				outline: { color: '#fff', width: 1 }
-			}
-		}));
 
 		const caseLayer = new FeatureLayer({
 			source: caseGraphics,
@@ -241,12 +249,29 @@ function initialiseMap(apiKey, pins, inspector) {
 						statisticType: 'max',
 						onStatisticField: 'caseAge'
 					}
-				]
-			},
-			renderer: {
-				type: 'unique-value',
-				field: 'caseId',
-				uniqueValueInfos
+				],
+				renderer: {
+					type: 'simple',
+					symbol: {
+						type: 'simple-marker',
+						outline: { color: '#fff', width: 1 }
+					},
+					visualVariables: [
+						{
+							type: 'color',
+							field: 'cluster_oldest_case_age',
+							// Duplicate colors at boundaries force discrete bands with hard breaks: 0–20 green, 21–40 orange, 41+ red.
+							// Prevents interpolation/gradient between ranges.
+							stops: [
+								{ value: 0, color: '#00703c' },
+								{ value: 20, color: '#00703c' },
+								{ value: 21, color: '#f47738' },
+								{ value: 40, color: '#f47738' },
+								{ value: 41, color: '#d4351c' }
+							]
+						}
+					]
+				}
 			},
 			popupTemplate: {
 				title: 'Case {caseReference}',
@@ -276,6 +301,19 @@ function initialiseMap(apiKey, pins, inspector) {
 			}
 		});
 
+		let caseLayerView;
+		let highlightHandle;
+		function refreshSelectionHighlight() {
+			if (!caseLayerView) return;
+			if (highlightHandle) {
+				highlightHandle.remove();
+				highlightHandle = null;
+			}
+			const ids = Array.from(selectedCaseReferences);
+			if (ids.length === 0) return;
+			highlightHandle = caseLayerView.highlight(ids);
+		}
+
 		view.map.add(caseLayer);
 
 		reactiveUtils.watch(
@@ -289,31 +327,8 @@ function initialiseMap(apiKey, pins, inspector) {
 		);
 
 		view.whenLayerView(caseLayer).then((layerView) => {
-			reactiveUtils.watch(
-				() => layerView.graphics,
-				(graphics) => {
-					graphics.forEach((g) => {
-						if (g.attributes?.cluster_count && Array.isArray(g.attributes.cluster_feature_ids)) {
-							const ids = g.attributes.cluster_feature_ids;
-							let oldest = null;
-							for (const id of ids) {
-								const pin = pins.find((p) => p.caseReference === id);
-								if (pin) {
-									if (!oldest || Number(pin.caseAge || 0) > Number(oldest.caseAge || 0)) {
-										oldest = pin;
-									}
-								}
-							}
-							if (oldest) {
-								const desiredColor = '#' + (oldest.caseAgeColor || '00703c');
-								const sym = g.symbol.clone();
-								sym.color = desiredColor;
-								g.symbol = sym;
-							}
-						}
-					});
-				}
-			);
+			caseLayerView = layerView;
+			refreshSelectionHighlight();
 		});
 
 		for (const graphic of otherGraphics) {
@@ -384,12 +399,14 @@ function initialiseMap(apiKey, pins, inspector) {
 				action.title = selected ? UNSELECT_CASE_ACTION : SELECT_CASE_ACTION;
 				action.icon = selected ? 'check-circle-f' : 'check-circle';
 
-				caseLayer.renderer = caseLayer.renderer.clone();
-				caseLayer.renderer.uniqueValueInfos.forEach((info) => {
-					if (info.value === caseId) {
-						info.symbol.outline.color = selected ? '#000000' : '#ffffff';
-					}
-				});
+				const symbol = graphic.symbol.clone ? graphic.symbol.clone() : { ...graphic.symbol };
+				symbol.outline = {
+					...(symbol.outline || {}),
+					color: selected ? '#000000' : '#ffffff',
+					width: selected ? 2 : 1
+				};
+				graphic.symbol = symbol;
+				refreshSelectionHighlight();
 			}
 		});
 	});
