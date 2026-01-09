@@ -188,15 +188,6 @@ function initialiseMap(apiKey, pins, inspector) {
 		const caseGraphics = graphics.filter((g) => g.attributes?.caseReference);
 		const otherGraphics = graphics.filter((g) => !g.attributes?.caseReference); // inspector, circles, etc.
 
-		const uniqueValueInfos = pins.map((p) => ({
-			value: p.caseId,
-			symbol: {
-				type: 'simple-marker',
-				color: '#' + (p.caseAgeColor || '00703c'),
-				outline: { color: '#fff', width: 1 }
-			}
-		}));
-
 		const caseLayer = new FeatureLayer({
 			source: caseGraphics,
 			objectIdField: 'caseReference',
@@ -241,12 +232,27 @@ function initialiseMap(apiKey, pins, inspector) {
 						statisticType: 'max',
 						onStatisticField: 'caseAge'
 					}
-				]
-			},
-			renderer: {
-				type: 'unique-value',
-				field: 'caseId',
-				uniqueValueInfos
+				],
+				renderer: {
+					type: 'simple',
+					symbol: {
+						type: 'simple-marker',
+						outline: { color: '#fff', width: 1 }
+					},
+					visualVariables: [
+						{
+							type: 'color',
+							field: 'cluster_oldest_case_age',
+							stops: [
+								{ value: 0, color: '#00703c' },
+								{ value: 20, color: '#00703c' },
+								{ value: 21, color: '#f47738' },
+								{ value: 40, color: '#f47738' },
+								{ value: 41, color: '#d4351c' }
+							]
+						}
+					]
+				}
 			},
 			popupTemplate: {
 				title: 'Case {caseReference}',
