@@ -42,6 +42,7 @@ const mockService = {
 	},
 	notifyClient: {
 		sendAssignedCaseEmail: mock.fn(),
+		sendSelfAssignedCaseEmail: mock.fn(),
 		sendAssignedCaseProgrammeOfficerEmail: mock.fn()
 	}
 };
@@ -468,21 +469,27 @@ describe('inspectors', () => {
 		beforeEach(() => {
 			mockService.inspectorClient.getInspectorDetails.mock.resetCalls();
 			mockService.notifyClient.sendAssignedCaseEmail.mock.resetCalls();
+			mockService.notifyClient.sendSelfAssignedCaseEmail.mock.resetCalls();
 		});
 		it('should successfully call notifyClient after fetching inspector info', async () => {
 			const inspector = { email: 'test-email@gmail.com', firstName: 'Jeff', lastName: 'Bridges' };
 			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
 
-			await notifyInspectorOfAssignedCases(mockService, '1', '2025-01-01', [1, 2]);
+			const sessionAccount = { username: 'officer@test.com' };
+			await notifyInspectorOfAssignedCases(mockService, sessionAccount, '1', '2025-01-01', [1, 2]);
 
 			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
 			assert.strictEqual(mockService.notifyClient.sendAssignedCaseEmail.mock.callCount(), 1);
 		});
 		it('returning an inspector with either no email or firstname should throw an error', async () => {
-			await assert.rejects(() => notifyInspectorOfAssignedCases(mockService, '1', '2025-01-01', [1, 2]), {
-				name: 'Error',
-				message: 'Could not retrieve inspector email and name'
-			});
+			const sessionAccount = { username: 'officer@test.com' };
+			await assert.rejects(
+				() => notifyInspectorOfAssignedCases(mockService, sessionAccount, '1', '2025-01-01', [1, 2]),
+				{
+					name: 'Error',
+					message: 'Could not retrieve inspector email and name'
+				}
+			);
 			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
 			assert.strictEqual(mockService.notifyClient.sendAssignedCaseEmail.mock.callCount(), 0);
 		});
@@ -491,7 +498,8 @@ describe('inspectors', () => {
 			const inspector = { email: 'test-email@gmail.com', firstName: 'Jeff', lastName: 'Bridges' };
 			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
 
-			await assert.rejects(() => notifyInspectorOfAssignedCases(service, '1', '2025-01-01', [1, 2]), {
+			const sessionAccount = { username: 'officer@test.com' };
+			await assert.rejects(() => notifyInspectorOfAssignedCases(service, sessionAccount, '1', '2025-01-01', [1, 2]), {
 				name: 'Error',
 				message: 'Notify client not configured'
 			});
