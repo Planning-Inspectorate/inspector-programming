@@ -392,6 +392,41 @@
             document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
         });
 
+        document.addEventListener('mapSelectionError', function (event) {
+            const { message } = event.detail;
+            console.debug('mapSelectionError:', message);
+            showMapError(message);
+        });
+
+        function showMapError(message) {
+            // Remove any existing error
+            const existingError = document.getElementById('mapError');
+            if (existingError) {
+                existingError.remove();
+            }
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'mapError';
+            errorDiv.className = 'govuk-error-message';
+            errorDiv.setAttribute('role', 'alert');
+            errorDiv.innerHTML = `
+                <span class="govuk-visually-hidden">Error:</span>
+                ${message}
+            `;
+
+            // Insert error at the top of the map view
+            const mapTab = document.getElementById('mapView');
+            if (mapTab) {
+                mapTab.insertBefore(errorDiv, mapTab.firstChild);
+
+                // Auto-remove the error after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv && errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 5000);
+            }
+        }
+
         document.querySelectorAll('.sort-pagination-link').forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();

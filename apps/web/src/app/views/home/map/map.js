@@ -329,8 +329,23 @@ function initialiseMap(apiKey, pins, inspector) {
 					const selectedCase = pins.find(({ caseReference }) => caseReference === selectedCaseReference);
 					const { caseId, caseReference, selected } = selectedCase;
 					if (!selected && !selectedCaseReferences.has(caseReference)) {
+						// Count currently selected cases using pins array (reliable source)
+						const currentlySelectedCount = pins.filter((pin) => pin.selected).length;
+
+						if (currentlySelectedCount >= 10) {
+							// Create and dispatch error event
+							document.dispatchEvent(
+								new CustomEvent('mapSelectionError', {
+									detail: {
+										message: 'Maximum you can select up to 10 cases at once'
+									}
+								})
+							);
+							return;
+						}
+
 						selectedCaseReferences.add(caseReference);
-					} else {
+					} else if (selected || selectedCaseReferences.has(caseReference)) {
 						selectedCaseReferences.delete(caseReference);
 					}
 
@@ -357,6 +372,13 @@ function initialiseMap(apiKey, pins, inspector) {
 				const caseData = pins.find((pin) => pin.caseId === caseId);
 				caseData.selected = selected;
 				console.debug('caseStateChange, syncing map state', caseData.caseReference, caseData.selected);
+
+				// Sync selectedCaseReferences Set with table selections
+				if (selected) {
+					selectedCaseReferences.add(caseData.caseReference);
+				} else {
+					selectedCaseReferences.delete(caseData.caseReference);
+				}
 
 				const action = graphic.layer.popupTemplate.actions.items[0];
 				action.title = selected ? UNSELECT_CASE_ACTION : SELECT_CASE_ACTION;

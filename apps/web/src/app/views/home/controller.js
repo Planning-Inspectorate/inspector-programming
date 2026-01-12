@@ -222,7 +222,12 @@ export function buildViewHome(service, getEventsFunction) {
 
 		//clear session data passed on from /cases
 		clearSessionData(req, 'caseListData', ['selectedCases', 'inspectorId', 'assignmentDate'], 'persistence');
-		clearSessionData(req, 'errors', ['selectInspectorError', 'selectAssignmentDateError'], 'persistence');
+		clearSessionData(
+			req,
+			'errors',
+			['caseListError', 'selectInspectorError', 'selectAssignmentDateError', 'assignedCasesError'],
+			'persistence'
+		);
 		clearSessionData(req, 'success', ['successSummary'], 'persistence');
 
 		return res.render('views/home/view.njk', viewModel);
