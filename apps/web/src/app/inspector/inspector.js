@@ -127,14 +127,17 @@ function formatInspectorName(inspector) {
 /**
  * sends an email using GovUK Notify client to the inspector that the cases have been assigned to
  * @param {import('#service').WebService} service
+ * @param {Object} sessionAccount
  * @param {string} inspectorId
  * @param {string} assignmentDate
  * @param {number[]} caseIds
  * @returns {Promise<void>}
  */
-export async function notifyInspectorOfAssignedCases(service, inspectorId, assignmentDate, caseIds) {
+export async function notifyInspectorOfAssignedCases(service, sessionAccount, inspectorId, assignmentDate, caseIds) {
 	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
 	if (!(inspector?.email && inspector?.firstName)) throw new Error('Could not retrieve inspector email and name');
+	const sessionAccountEmail = sessionAccount.username.toLowerCase();
+	const inspectorEmail = inspector.email.toLowerCase();
 
 	const options = {
 		inspectorName: formatInspectorName(inspector),
@@ -143,7 +146,11 @@ export async function notifyInspectorOfAssignedCases(service, inspectorId, assig
 		cbosLink: service.notifyConfig.cbosLink
 	};
 	if (!service.notifyClient) throw new Error('Notify client not configured');
-	await service.notifyClient.sendAssignedCaseEmail(inspector.email, options);
+	if (sessionAccountEmail === inspectorEmail) {
+		await service.notifyClient.sendSelfAssignedCaseEmail(inspector.email, options);
+	} else {
+		await service.notifyClient.sendAssignedCaseEmail(inspector.email, options);
+	}
 }
 
 /**

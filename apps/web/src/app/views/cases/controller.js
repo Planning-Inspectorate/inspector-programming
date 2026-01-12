@@ -97,23 +97,39 @@ async function handleCases(selectedCases, service, req, res) {
 			}
 
 			// Send notification emails to inspector for successful assignments
-			try {
-				await notifyInspectorOfAssignedCases(service, req.body.inspectorId, req.body.assignmentDate, successfulCaseIds);
-				emailNotificationSent = true;
-				service.logger.info(
-					{
-						inspectorId: req.body.inspectorId,
-						caseCount: successfulCaseIds.length
-					},
-					'Email notification sent successfully to inspector'
-				);
-			} catch (err) {
+			const sessionAccount = req.session?.account;
+			if (sessionAccount) {
+				try {
+					await notifyInspectorOfAssignedCases(
+						service,
+						sessionAccount,
+						req.body.inspectorId,
+						req.body.assignmentDate,
+						successfulCaseIds
+					);
+					emailNotificationSent = true;
+					service.logger.info(
+						{
+							inspectorId: req.body.inspectorId,
+							caseCount: successfulCaseIds.length
+						},
+						'Email notification sent successfully to inspector'
+					);
+				} catch (err) {
+					service.logger.warn(
+						{
+							err,
+							inspectorId: req.body.inspectorId
+						},
+						'Failed to send email notification to inspector after case assignment'
+					);
+				}
+			} else {
 				service.logger.warn(
 					{
-						err,
 						inspectorId: req.body.inspectorId
 					},
-					'Failed to send email notification to inspector after case assignment'
+					'Could not retrieve account from session'
 				);
 			}
 
