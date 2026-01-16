@@ -11,7 +11,7 @@ import { runBuild } from '@pins/inspector-programming-lib/util/build.js';
 async function run() {
 	const require = createRequire(import.meta.url);
 	// resolves to <root>/node_modules/govuk-frontend/dist/govuk/all.bundle.js than maps to `<root>`
-	const govUkRoot = path.resolve(require.resolve('govuk-frontend'), '../../../../..');
+	const repoRoot = path.resolve(require.resolve('govuk-frontend'), '../../../../..');
 	// resolves to <root>/node_modules/accessible-autocomplete/dist/*.js than maps to `dist`
 	const accessibleAutocompleteRoot = path.resolve(require.resolve('accessible-autocomplete'), '..');
 
@@ -20,7 +20,7 @@ async function run() {
 	await runBuild({
 		staticDir: config.staticDir,
 		srcDir: config.srcDir,
-		govUkRoot,
+		repoRoot,
 		accessibleAutocompleteRoot,
 		localsFile
 	});
