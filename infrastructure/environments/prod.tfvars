@@ -19,14 +19,14 @@ apps_config = {
   }
 
   auth = {
-    client_id                = "d26a7ba3-6f35-4ab6-b395-7e1e971ab6c7"
-    group_application_access = "128f1af5-2438-443b-bec0-99e93e3989d0"
+    client_id                = "d26a7ba3-6f35-4ab6-b395-7e1e971ab6c7" # Inspector Programming Application
+    group_application_access = "128f1af5-2438-443b-bec0-99e93e3989d0" # Inspector Programming Contributor
     groups = { # TODO - set these
       inspectors    = ""
       team_leads    = ""
       national_team = ""
       api_inspector_groups = [
-        "dfcab300-f268-4eb3-820e-1758fa69c150"
+        "dfcab300-f268-4eb3-820e-1758fa69c150" # All Salaried Inspectors England
       ]
     }
   }
@@ -101,7 +101,7 @@ sql_config = {
 }
 
 web_domains = {
-  web = "casework-programming.planninginspectorate.gov.uk"
+  web = "programme-appeals.planninginspectorate.gov.uk"
 }
 
 vnet_config = {
