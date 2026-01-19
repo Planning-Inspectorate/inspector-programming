@@ -101,7 +101,7 @@ sql_config = {
 }
 
 web_domains = {
-  web = "casework-programming.planninginspectorate.gov.uk"
+  web = "programme-appeals.planninginspectorate.gov.uk"
 }
 
 vnet_config = {
