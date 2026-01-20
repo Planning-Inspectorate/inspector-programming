@@ -209,5 +209,8 @@ resource "azurerm_cdn_frontdoor_security_policy" "web" {
 
   lifecycle {
     create_before_destroy = true
+    replace_triggered_by = [
+      azurerm_cdn_frontdoor_custom_domain.web
+    ]
   }
 }
