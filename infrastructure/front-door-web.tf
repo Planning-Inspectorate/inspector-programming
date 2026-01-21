@@ -202,11 +202,4 @@ resource "azurerm_cdn_frontdoor_custom_domain_association" "web" {
 #       }
 #     }
 #   }
-
-#   lifecycle { ### code i have added in anyway
-#     create_before_destroy = true
-#     replace_triggered_by = [
-#       azurerm_cdn_frontdoor_custom_domain.web
-#     ]
-#   }
 # }
