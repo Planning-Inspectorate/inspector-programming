@@ -78,139 +78,139 @@ resource "azurerm_cdn_frontdoor_custom_domain_association" "web" {
 }
 
 # WAF policy
-resource "azurerm_cdn_frontdoor_firewall_policy" "web" {
-  name                              = replace("${local.org}-waf-${local.service_name}-web-${var.environment}", "-", "")
-  resource_group_name               = var.front_door_config.rg
-  sku_name                          = "Premium_AzureFrontDoor"
-  enabled                           = true
-  mode                              = "Prevention"
-  redirect_url                      = "https://${var.web_domains.web}/error/firewall-error"
-  custom_block_response_status_code = 403
-  provider                          = azurerm.front_door
+# resource "azurerm_cdn_frontdoor_firewall_policy" "web" {
+#   name                              = replace("${local.org}-waf-${local.service_name}-web-${var.environment}", "-", "")
+#   resource_group_name               = var.front_door_config.rg
+#   sku_name                          = "Premium_AzureFrontDoor"
+#   enabled                           = true
+#   mode                              = "Prevention"
+#   redirect_url                      = "https://${var.web_domains.web}/error/firewall-error"
+#   custom_block_response_status_code = 403
+#   provider                          = azurerm.front_door
 
-  tags = local.tags
+#   tags = local.tags
 
-  # custom rules in priority order to match the API
-  custom_rule {
-    name     = "IpBlock"
-    action   = "Block"
-    enabled  = true
-    priority = 10
-    type     = "MatchRule"
+#   # custom rules in priority order to match the API
+#   custom_rule {
+#     name     = "IpBlock"
+#     action   = "Block"
+#     enabled  = true
+#     priority = 10
+#     type     = "MatchRule"
 
-    match_condition {
-      match_variable     = "RemoteAddr"
-      operator           = "IPMatch"
-      negation_condition = false
-      match_values = [
-        "10.255.255.255" # placeholder value
-      ]
-    }
-  }
+#     match_condition {
+#       match_variable     = "RemoteAddr"
+#       operator           = "IPMatch"
+#       negation_condition = false
+#       match_values = [
+#         "10.255.255.255" # placeholder value
+#       ]
+#     }
+#   }
 
-  custom_rule {
-    name                           = "RateLimitHttpRequest"
-    enabled                        = var.waf_rate_limits.enabled
-    priority                       = 100
-    rate_limit_duration_in_minutes = var.waf_rate_limits.duration_in_minutes
-    rate_limit_threshold           = var.waf_rate_limits.threshold
-    type                           = "RateLimitRule"
-    action                         = "Block"
+#   custom_rule {
+#     name                           = "RateLimitHttpRequest"
+#     enabled                        = var.waf_rate_limits.enabled
+#     priority                       = 100
+#     rate_limit_duration_in_minutes = var.waf_rate_limits.duration_in_minutes
+#     rate_limit_threshold           = var.waf_rate_limits.threshold
+#     type                           = "RateLimitRule"
+#     action                         = "Block"
 
-    match_condition {
-      match_variable = "RequestMethod"
-      operator       = "Equal"
-      match_values = [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "COPY",
-        "MOVE",
-        "HEAD",
-        "OPTIONS"
-      ]
-    }
-  }
+#     match_condition {
+#       match_variable = "RequestMethod"
+#       operator       = "Equal"
+#       match_values = [
+#         "GET",
+#         "POST",
+#         "PUT",
+#         "DELETE",
+#         "COPY",
+#         "MOVE",
+#         "HEAD",
+#         "OPTIONS"
+#       ]
+#     }
+#   }
 
-  managed_rule {
-    type    = "Microsoft_DefaultRuleSet"
-    version = "2.1"
-    action  = "Block"
+#   managed_rule {
+#     type    = "Microsoft_DefaultRuleSet"
+#     version = "2.1"
+#     action  = "Block"
 
-    override {
-      rule_group_name = "PROTOCOL-ATTACK"
-      rule {
-        action  = "AnomalyScoring"
-        rule_id = "921110"
-      }
-      exclusion {
-        match_variable = "RequestBodyPostArgNames"
-        operator       = "Equals"
-        selector       = "_csrf"
-      }
-    }
+#     override {
+#       rule_group_name = "PROTOCOL-ATTACK"
+#       rule {
+#         action  = "AnomalyScoring"
+#         rule_id = "921110"
+#       }
+#       exclusion {
+#         match_variable = "RequestBodyPostArgNames"
+#         operator       = "Equals"
+#         selector       = "_csrf"
+#       }
+#     }
 
-    override {
-      rule_group_name = "General"
-      rule {
-        action  = "Log"
-        rule_id = "200002"
-      }
-      rule {
-        action  = "Log"
-        rule_id = "200003"
-      }
-    }
+#     override {
+#       rule_group_name = "General"
+#       rule {
+#         action  = "Log"
+#         rule_id = "200002"
+#       }
+#       rule {
+#         action  = "Log"
+#         rule_id = "200003"
+#       }
+#     }
 
-    override {
-      rule_group_name = "SQLI"
+#     override {
+#       rule_group_name = "SQLI"
 
-      exclusion {
-        match_variable = "RequestBodyPostArgNames"
-        operator       = "Equals"
-        selector       = "selectedCases"
-      }
-    }
-  }
+#       exclusion {
+#         match_variable = "RequestBodyPostArgNames"
+#         operator       = "Equals"
+#         selector       = "selectedCases"
+#       }
+#     }
+#   }
 
-  managed_rule {
-    type    = "Microsoft_BotManagerRuleSet"
-    version = "1.1"
-    action  = "Block"
-  }
+#   managed_rule {
+#     type    = "Microsoft_BotManagerRuleSet"
+#     version = "1.1"
+#     action  = "Block"
+#   }
 
-  lifecycle {
-    ignore_changes = [
-      # match the first custom rule (IpBlock) and ignore the match values (IPs)
-      # managed in Portal
-      custom_rule[0].match_condition[0].match_values
-    ]
-  }
-}
+#   lifecycle {
+#     ignore_changes = [
+#       # match the first custom rule (IpBlock) and ignore the match values (IPs)
+#       # managed in Portal
+#       custom_rule[0].match_condition[0].match_values
+#     ]
+#   }
+# }
 
-resource "azurerm_cdn_frontdoor_security_policy" "web" {
-  name                     = replace("${local.org}-sec-${local.service_name}-web-${var.environment}", "-", "")
-  cdn_frontdoor_profile_id = data.azurerm_cdn_frontdoor_profile.shared.id
-  provider                 = azurerm.front_door
+# resource "azurerm_cdn_frontdoor_security_policy" "web" {
+#   name                     = replace("${local.org}-sec-${local.service_name}-web-${var.environment}", "-", "")
+#   cdn_frontdoor_profile_id = data.azurerm_cdn_frontdoor_profile.shared.id
+#   provider                 = azurerm.front_door
 
-  security_policies {
-    firewall {
-      cdn_frontdoor_firewall_policy_id = azurerm_cdn_frontdoor_firewall_policy.web.id
+#   security_policies {
+#     firewall {
+#       cdn_frontdoor_firewall_policy_id = azurerm_cdn_frontdoor_firewall_policy.web.id
 
-      association {
-        domain {
-          cdn_frontdoor_domain_id = azurerm_cdn_frontdoor_custom_domain.web.id
-        }
-        patterns_to_match = ["/*"]
-      }
-    }
-  }
+#       association {
+#         domain {
+#           cdn_frontdoor_domain_id = azurerm_cdn_frontdoor_custom_domain.web.id
+#         }
+#         patterns_to_match = ["/*"]
+#       }
+#     }
+#   }
 
-  lifecycle {
-    create_before_destroy = true
-    replace_triggered_by = [
-      azurerm_cdn_frontdoor_custom_domain.web
-    ]
-  }
-}
+#   lifecycle { ### code i have added in anyway
+#     create_before_destroy = true
+#     replace_triggered_by = [
+#       azurerm_cdn_frontdoor_custom_domain.web
+#     ]
+#   }
+# }
