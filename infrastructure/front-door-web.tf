@@ -43,10 +43,6 @@ resource "azurerm_cdn_frontdoor_custom_domain" "web" {
   tls {
     certificate_type = "ManagedCertificate"
   }
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "azurerm_cdn_frontdoor_route" "web" {
