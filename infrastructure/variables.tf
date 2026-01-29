@@ -15,7 +15,7 @@ variable "apps_config" {
       worker_count             = number
       zone_balancing_enabled   = bool
     })
-    nse_environment          = string
+    node_environment          = string
     private_endpoint_enabled = bool
 
     api = object({
