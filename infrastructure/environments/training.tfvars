@@ -63,19 +63,6 @@ apps_config = {
 #   application_id = "35400f77-eff9-467c-b319-7d30388ba02e"
 # }
 
-back_office_config = {
-  resource_group_name  = "pins-rg-back-office-training-ukw-001"
-  storage_account_name = "pinsstdocsbotrainingukw"
-  service_bus_name     = "pins-sb-back-office-training-ukw-001"
-}
-
-back_office_infra_config = {
-  network = {
-    name = "pins-vnet-common-training-ukw-001"
-    rg   = "pins-rg-common-training-ukw-001"
-  }
-}
-
 common_config = {
   resource_group_name = "pins-rg-common-training-ukw-001"
   action_group_names = {
