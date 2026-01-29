@@ -129,7 +129,7 @@ variable "sb_topic_names" {
 variable "sb_ttl" {
   description = "Service bus TTL settings"
   type = object({
-    default               = string
+    default        = string
     pins_inspector = string
   })
 }
