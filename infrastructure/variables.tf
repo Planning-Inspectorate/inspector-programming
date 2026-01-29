@@ -107,6 +107,27 @@ variable "monitoring_config" {
   })
 }
 
+variable "odw_config" {
+  description = "Config for ODW resources - Service Bus integration"
+  type = object({
+    subscription_id     = string
+    resource_group_name = string
+    service_bus_name    = string
+  })
+  default = null
+}
+
+variable "service_bus_config" {
+  description = "Service bus "
+  type = object({
+    topics = object({
+      inspectors = string
+    })
+    ttl = object({
+      inspectors = string
+    })
+  })
+}
 
 variable "sql_config" {
   description = "Config for SQL Server and DB"
