@@ -36,7 +36,7 @@ module "function_integration" {
     SQL_CONNECTION_STRING                         = local.key_vault_refs["sql-app-connection-string"]
     ServiceBusConnection__fullyQualifiedNamespace = "${var.odw_config.service_bus_name}.servicebus.windows.net" # Needs looking into
     INSPECTORS_SCHEDULING_TOPIC                   = data.azurerm_servicebus_topic.inspectors_scheduling.name
-    INSPECTORS_SCHEDULING_SUBSCRIPTION            = azurerm_servicebus_subscription.inspectors-scheduling.name
+    INSPECTORS_SCHEDULING_SUBSCRIPTION            = azurerm_servicebus_subscription.inspectors_scheduling.name
   }
 }
 
