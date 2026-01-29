@@ -80,6 +80,12 @@ monitoring_config = {
   log_daily_cap                     = 0.2
 }
 
+odw_config = {
+  subscription_id     = "6b18ba9d-2399-48b5-a834-e0f267be122d"
+  resource_group_name = "pins-rg-ingestion-odw-test-uks"
+  service_bus_name    = "pins-sb-odw-test-uks-hk2zun"
+}
+
 sql_config = {
   admin = {
     login_username = "pins-inspector-programming-sql-test"
@@ -97,7 +103,6 @@ sql_config = {
   }
   public_network_access_enabled = false
 }
-
 
 vnet_config = {
   address_space                       = "10.30.4.0/22"
