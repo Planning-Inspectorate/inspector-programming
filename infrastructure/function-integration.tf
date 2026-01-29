@@ -31,9 +31,12 @@ module "function_integration" {
   # settings
   function_node_version = var.apps_config.functions_node_version
   app_settings = {
-    CBOS_API_URL          = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
-    OS_API_KEY            = local.key_vault_refs["os-api-key"]
-    SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
+    CBOS_API_URL                                  = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
+    OS_API_KEY                                    = local.key_vault_refs["os-api-key"]
+    SQL_CONNECTION_STRING                         = local.key_vault_refs["sql-app-connection-string"]
+    ServiceBusConnection__fullyQualifiedNamespace = "${var.odw_config.service_bus_name}.servicebus.windows.net" # Needs looking into
+    INSPECTORS_SCHEDULING_TOPIC                   = data.azurerm_servicebus_topic.inspectors_scheduling.name
+    INSPECTORS_SCHEDULING_SUBSCRIPTION            = azurerm_servicebus_subscription.inspectors_scheduling.name
   }
 }
 
