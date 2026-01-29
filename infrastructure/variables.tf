@@ -15,7 +15,7 @@ variable "apps_config" {
       worker_count             = number
       zone_balancing_enabled   = bool
     })
-    node_environment         = string
+    nse_environment          = string
     private_endpoint_enabled = bool
 
     api = object({
@@ -107,6 +107,32 @@ variable "monitoring_config" {
   })
 }
 
+variable "odw_config" {
+  description = "Config for ODW resources - Service Bus integration"
+  type = object({
+    resource_group_name  = string
+    service_bus_name     = string
+    storage_account_name = string
+    subscription_id      = string
+    vnet_name            = string
+  })
+  default = null
+}
+
+variable "sb_topic_names" {
+  description = "Service bus topic names"
+  type = object({
+    pins_inspector = string
+  })
+}
+
+variable "sb_ttl" {
+  description = "Service bus TTL settings"
+  type = object({
+    default               = string
+    pins_inspector = string
+  })
+}
 
 variable "sql_config" {
   description = "Config for SQL Server and DB"

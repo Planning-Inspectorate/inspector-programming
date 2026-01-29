@@ -57,6 +57,19 @@ apps_config = {
   }
 }
 
+back_office_config = {
+  resource_group_name  = "pins-rg-back-office-test-ukw-001"
+  storage_account_name = "pinsstdocsbotestukw001"
+  service_bus_name     = "pins-sb-back-office-test-ukw-001"
+}
+
+back_office_infra_config = {
+  network = {
+    name = "pins-vnet-common-test-ukw-001"
+    rg   = "pins-rg-common-test-ukw-001"
+  }
+}
+
 common_config = {
   resource_group_name = "pins-rg-common-test-ukw-001"
   action_group_names = {
