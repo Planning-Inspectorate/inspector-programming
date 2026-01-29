@@ -17,7 +17,3 @@ State File Container Name: `pinssttfstateuksscheduli` (tooling sub)
 Variables with common values across environments are set in the `terraform.tfvars` file, which Terraform looks for automatically.
 
 <https://developer.hashicorp.com/terraform/language/values/variables#variable-definitions-tfvars-files>
-
-## Service Bus Integration
-
-- It will need to be able to see CBOS - a data block should do, and a config var containing the BO values?
