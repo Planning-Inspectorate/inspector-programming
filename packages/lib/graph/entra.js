@@ -145,6 +145,11 @@ export class EntraClient {
 		await this.#client.api(`users/${userId}/calendar/events`).post(event);
 	}
 
+	async getMetadata() {
+		// get some metadata for checking Graph access
+		return this.#client.api('').get();
+	}
+
 	/**
 	 * Get a skip token out of an '@odata.nextLink' value
 	 *
