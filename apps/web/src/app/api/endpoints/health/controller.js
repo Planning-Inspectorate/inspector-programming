@@ -11,7 +11,7 @@ export function buildApiHealth(service) {
 		}
 
 		// check Graph API access by reading some metadata
-		const data = await apiService.graphClient.api('').get();
+		const data = await apiService.entraClient.getMetadata();
 
 		logger.info('API health check endpoint');
 		res.status(200).json({ status: 'ok', data });
