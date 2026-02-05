@@ -105,13 +105,13 @@ resource "azurerm_private_dns_zone_virtual_network_link" "redis_cache" {
   provider = azurerm.tooling
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "service_bus" {
+resource "azurerm_private_dns_zone_virtual_network_link" "service_bus" { #### This is fine
   name                  = "${local.org}-vnetlink-service-bus-${local.resource_suffix}"
-  resource_group_name   = data.azurerm_private_dns_zone.service_bus.resource_group_name
+  resource_group_name   = var.tooling_config.network_rg
   private_dns_zone_name = data.azurerm_private_dns_zone.service_bus.name
-  virtual_network_id    = data.azurerm_virtual_network.odw.id
+  virtual_network_id    = azurerm_virtual_network.main.id
 
-  tags = var.tags
+  tags = var.tags # Optional argument - others do not have but can be applied
 
   provider = azurerm.tooling
 }

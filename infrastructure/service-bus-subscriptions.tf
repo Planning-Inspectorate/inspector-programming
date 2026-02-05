@@ -3,7 +3,7 @@ resource "azurerm_servicebus_subscription" "inspectors_scheduling" {
   topic_id                             = data.azurerm_servicebus_topic.inspectors_scheduling.id
   max_delivery_count                   = 1
   dead_lettering_on_message_expiration = true
-  default_message_ttl                  = var.sb_ttl.default
+  default_message_ttl                  = var.sb_ttl.inspectors_scheduling
 }
 
 resource "azurerm_servicebus_subscription_rule" "inspectors_scheduling" { # This rule may not be needed

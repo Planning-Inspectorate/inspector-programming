@@ -112,11 +112,9 @@ variable "odw_config" {
   type = object({
     subscription_id     = string
     resource_group_name = string
-    # vnet_name            = string
-    service_bus_name = string
+    vnet_name           = string
+    service_bus_name    = string
     # storage_account_name = string # Don't think this needed?
-
-
   })
   default = null
 }
