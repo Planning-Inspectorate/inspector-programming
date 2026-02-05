@@ -15,5 +15,5 @@ sb_ttl = {
 }
 
 sb_topic_names = {
-  inspectors_scheduling = "inspectors-scheduling"
+  inspectors_scheduling = "pins-inspector" # Refencing from Azure Portal ODW Topic
 }

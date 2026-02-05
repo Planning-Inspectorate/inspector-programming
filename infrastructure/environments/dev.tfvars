@@ -86,12 +86,11 @@ monitoring_config = {
 
 odw_config = {
   resource_group_name  = "pins-rg-ingestion-odw-dev-uks"
-  service_bus_name     = "ins-sb-odw-dev-uks-b9rt9m"
-  storage_account_name = string
+  service_bus_name     = "pins-sb-odw-dev-uks-b9rt9m"
+  storage_account_name = string # Need to find the value?
   subscription_id      = "ff442a29-fc06-4a13-8e3e-65fd5da513b3"
-  vnet_name            = string
+  vnet_name            = string # Need to find the value?
 }
-
 
 sql_config = {
   admin = {

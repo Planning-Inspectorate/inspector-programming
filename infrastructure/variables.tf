@@ -122,15 +122,15 @@ variable "odw_config" {
 variable "sb_topic_names" {
   description = "Service bus topic names"
   type = object({
-    pins_inspector = string
+    inspectors_scheduling = string
   })
 }
 
 variable "sb_ttl" {
   description = "Service bus TTL settings"
   type = object({
-    default        = string
-    pins_inspector = string
+    default               = string
+    inspectors_scheduling = string
   })
 }
 

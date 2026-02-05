@@ -7,6 +7,13 @@ data "azurerm_virtual_network" "tooling" {
   provider = azurerm.tooling
 }
 
+data "azurerm_virtual_network" "odw" {
+  name                = var.odw_config.vnet_name # slight naming differences compared to above which has network_name whereas this has vnet_name - should be aligned?
+  resource_group_name = var.odw_config.resource_group_name
+
+  provider = azurerm.odw
+}
+
 data "azurerm_monitor_action_group" "common" {
   for_each = tomap(var.common_config.action_group_names)
 
@@ -48,7 +55,28 @@ data "azurerm_private_dns_zone" "app_service" {
   provider = azurerm.tooling
 }
 
+data "azurerm_private_dns_zone" "service_bus" {
+  name                = "privatelink.servicebus.windows.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
 data "azurerm_linux_web_app" "cbos_api" {
   name                = var.apps_config.cbos.api_app_name
   resource_group_name = var.apps_config.cbos.api_app_rg
+}
+
+data "azurerm_servicebus_namespace" "odw" {
+  name                = var.odw_config.service_bus_name
+  resource_group_name = var.odw_config.resource_group_name
+
+  provider = azurerm.odw
+}
+
+data "azurerm_servicebus_topic" "inspectors_scheduling" {
+  name         = var.sb_topic_names.inspectors_scheduling
+  namespace_id = data.azurerm_servicebus_namespace.odw.id
+
+  provider = azurerm.odw
 }
