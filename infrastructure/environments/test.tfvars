@@ -57,6 +57,20 @@ apps_config = {
   }
 }
 
+############################# Have I put this in becuase I am confused about which SB we are using, direct to ODW or via CBOS and PEs?
+# back_office_config = {
+#   resource_group_name  = "pins-rg-back-office-test-ukw-001"
+#   storage_account_name = "pinsstdocsbotestukw001"
+#   service_bus_name     = "pins-sb-back-office-test-ukw-001"
+# }
+
+# back_office_infra_config = {
+#   network = {
+#     name = "pins-vnet-common-test-ukw-001"
+#     rg   = "pins-rg-common-test-ukw-001"
+#   }
+# }
+########################
 common_config = {
   resource_group_name = "pins-rg-common-test-ukw-001"
   action_group_names = {

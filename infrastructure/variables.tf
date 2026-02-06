@@ -107,6 +107,32 @@ variable "monitoring_config" {
   })
 }
 
+variable "odw_config" {
+  description = "Config for ODW resources - Service Bus integration"
+  type = object({
+    subscription_id     = string
+    resource_group_name = string
+    vnet_name           = string
+    service_bus_name    = string
+    # storage_account_name = string # Don't think this needed?
+  })
+  default = null
+}
+
+variable "sb_topic_names" {
+  description = "Service bus topic names"
+  type = object({
+    inspectors_scheduling = string
+  })
+}
+
+variable "sb_ttl" {
+  description = "Service bus TTL settings"
+  type = object({
+    default               = string
+    inspectors_scheduling = string
+  })
+}
 
 variable "sql_config" {
   description = "Config for SQL Server and DB"

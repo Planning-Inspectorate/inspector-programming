@@ -84,6 +84,14 @@ monitoring_config = {
   log_daily_cap                     = 0.2
 }
 
+odw_config = {
+  subscription_id     = "ff442a29-fc06-4a13-8e3e-65fd5da513b3"
+  resource_group_name = "pins-rg-ingestion-odw-dev-uks"
+  vnet_name           = "pins-vnet-common-test-ukw-001" # If it is behind a Private endpoint then this is needed. However, all ODW are public so not in a VNET, and all the networking additions isn't required
+  service_bus_name    = "pins-sb-odw-dev-uks-b9rt9m"
+  # storage_account_name = string # don't think I need this but will confirm
+}
+
 sql_config = {
   admin = {
     login_username = "pins-inspector-programming-sql-dev"
