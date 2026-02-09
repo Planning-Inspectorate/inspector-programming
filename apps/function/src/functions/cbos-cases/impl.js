@@ -2,10 +2,10 @@ const omit = (obj, keys) => Object.fromEntries(Object.entries(obj).filter(([k]) 
 
 /**
  * @param {import('../../service').FunctionService} service
- * @returns {import('@azure/functions').TimerHandler}
+ * @returns {import('@azure/functions').HttpTriggerHandler}
  */
 export function buildCbosFetchCases(service) {
-	return async (timer, context) => {
+	return async (request, context) => {
 		try {
 			context.log('fetching cases from CBOS');
 
@@ -75,12 +75,12 @@ export function buildCbosFetchCases(service) {
 				});
 			});
 
-			context.log('cases fetched');
+			context.log('Finished fetching cases from CBOS');
 		} catch (error) {
 			context.log('Error during case fetch:', error.message);
 			throw new Error(`Error during case fetch: ${error.message}`);
 		} finally {
-			context.log('timer object:', timer);
+			context.log('Finished CBOS case fetch function execution');
 		}
 	};
 }
