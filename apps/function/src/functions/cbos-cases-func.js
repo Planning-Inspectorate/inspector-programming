@@ -4,7 +4,9 @@ import { buildCbosFetchCases } from './cbos-cases/impl.js';
 
 const service = initialiseService();
 
-app.timer('cbos-cases', {
-	schedule: service.cbosFetchCasesSchedule,
+// Http trigger
+app.http('sync-cbos-cases', {
+	methods: ['GET'],
+	authLevel: 'function',
 	handler: buildCbosFetchCases(service)
 });
