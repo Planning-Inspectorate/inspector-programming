@@ -35,6 +35,8 @@ module "function_integration" {
     OS_API_KEY                                       = local.key_vault_refs["os-api-key"]
     SQL_CONNECTION_STRING                            = local.key_vault_refs["sql-app-connection-string"]
     OdwServiceBusConnection__fullyQualifiedNamespace = "${var.odw_config.service_bus_name}.servicebus.windows.net"
+    SERVICE_BUS_INSPECTOR_TOPIC                      = data.azurerm_servicebus_topic.inspectors.name
+    SERVICE_BUS_INSPECTOR_SUBSCRIPTION               = azurerm_servicebus_subscription.inspectors_scheduling.name
   }
 }
 
