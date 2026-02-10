@@ -233,7 +233,7 @@
         <div style="margin: 0; padding: 0;">
             <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">  
                 <div style="margin-bottom: 10px;">
-                    <span class="govuk-body" style="margin-right: 10px;">Sort by:</span>
+                    <span class="govuk-body">Sort by:</span>
                     {% set sorts = [
                         { label: "Age", value: "age" },
                         { label: "Distance", value: "distance" }
@@ -242,22 +242,19 @@
                         <a data-sort="{{ s.value }}"
                             href=''
                             class="sort-pagination-link {% if filters.query.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
-                            {{ s.label }}
-                        </a>{% if not loop.last %} | {% endif %}
+                            {{ s.label }}</a>{% if not loop.last %} | {% endif %}
                     {% endfor %}
                 </div>
-                    <br>
-                        <div style="margin-bottom: 20px;">
-                            <span class="govuk-body" style="margin-right: 10px;">Cases per page:</span>
-                            {% set limits = [5, 10, 15, 25] %}
-                            {% for l in limits %}
-                                <a  data-limit="{{ l }}"
-                                    href=''
-                                    class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
-                                    {{ l }}
-                                </a>{% if not loop.last %} | {% endif %}
-                            {% endfor %}
-                        </div>
+                <div>
+                    <span class="govuk-body">Cases per page:</span>
+                    {% set limits = [5, 10, 15, 25] %}
+                    {% for l in limits %}
+                        <a  data-limit="{{ l }}"
+                            href=''
+                            class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                            {{ l }}</a>{% if not loop.last %} | {% endif %}
+                    {% endfor %}
+                </div>
                 {{ compileFilterQueryFields(filters) }}
                 {{ compileSortPaginationQueryFields(filters)}}
                 <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
