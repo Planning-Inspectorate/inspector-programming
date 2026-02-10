@@ -56,6 +56,6 @@ data "azurerm_private_dns_zone" "service_bus" {
 }
 
 data "azurerm_linux_web_app" "cbos_api" {
-  name                = var.apps_config.cbos.api_app_name
-  resource_group_name = var.apps_config.cbos.api_app_rg
+  name                = var.manage_appeals_config.api_app_name
+  resource_group_name = var.manage_appeals_config.resource_group_name
 }
