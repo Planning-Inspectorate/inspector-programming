@@ -33,12 +33,6 @@ apps_config = {
     }
   }
 
-  cbos = {
-    api_app_name = "pins-app-appeals-bo-api-dev"
-    api_app_rg   = "pins-rg-appeals-bo-dev"
-    cbos_url     = "https://back-office-appeals-dev.planninginspectorate.gov.uk/"
-  }
-
   functions_node_version = 22
 
   gov_notify = {
@@ -80,8 +74,10 @@ front_door_config = {
 }
 
 manage_appeals_config = {
+  api_app_name        = "pins-app-appeals-bo-api-dev"
   resource_group_name = "pins-rg-appeals-bo-dev"
   service_bus_name    = "pins-sb-appeals-bo-dev"
+  web_app_url         = "https://back-office-appeals-dev.planninginspectorate.gov.uk/"
 }
 
 monitoring_config = {

@@ -29,12 +29,6 @@ apps_config = {
     }
   }
 
-  cbos = {
-    api_app_name = "pins-app-appeals-bo-api-test"
-    api_app_rg   = "pins-rg-appeals-bo-test"
-    cbos_url     = "https://back-office-appeals-test.planninginspectorate.gov.uk/"
-  }
-
   functions_node_version = 22
 
   gov_notify = {
@@ -76,8 +70,10 @@ front_door_config = {
 }
 
 manage_appeals_config = {
+  api_app_name        = "pins-app-appeals-bo-api-test"
   resource_group_name = "pins-rg-appeals-bo-test"
   service_bus_name    = "pins-sb-appeals-bo-test"
+  web_app_url         = "https://back-office-appeals-test.planninginspectorate.gov.uk/"
 }
 
 monitoring_config = {
