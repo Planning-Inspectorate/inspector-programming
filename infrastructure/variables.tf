@@ -99,6 +99,14 @@ variable "health_check_eviction_time_in_min" {
   default     = 10
 }
 
+variable "manage_appeals_config" {
+  description = "Config for the manage appeals (back office) system, for integration"
+  type = object({
+    resource_group_name = string
+    service_bus_name    = string
+  })
+}
+
 variable "monitoring_config" {
   description = "Config for monitoring"
   type = object({
@@ -118,14 +126,14 @@ variable "odw_config" {
 }
 
 variable "service_bus_config" {
-  description = "Service bus "
+  description = "Service bus"
   type = object({
     topics = object({
+      appeal_has = string
+      appeal_s78 = string
       inspectors = string
     })
-    ttl = object({
-      inspectors = string
-    })
+    ttl = string
   })
 }
 

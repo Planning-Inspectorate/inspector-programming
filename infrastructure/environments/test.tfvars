@@ -75,6 +75,11 @@ front_door_config = {
   use_tooling = true
 }
 
+manage_appeals_config = {
+  resource_group_name = "pins-rg-appeals-bo-test"
+  service_bus_name    = "pins-sb-appeals-bo-test"
+}
+
 monitoring_config = {
   web_app_insights_web_test_enabled = false
   log_daily_cap                     = 0.2
