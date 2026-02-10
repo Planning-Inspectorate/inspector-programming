@@ -11,9 +11,9 @@ tooling_config = {
 
 service_bus_config = {
   topics = {
+    appeal_has = "appeal-has"
+    appeal_s78 = "appeal-s78"
     inspectors = "pins-inspector"
   }
-  ttl = {
-    inspectors = "P1D"
-  }
+  ttl = "P1D"
 }

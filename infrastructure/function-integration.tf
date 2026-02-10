@@ -31,12 +31,21 @@ module "function_integration" {
   # settings
   function_node_version = var.apps_config.functions_node_version
   app_settings = {
-    CBOS_API_URL                                     = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
-    OS_API_KEY                                       = local.key_vault_refs["os-api-key"]
-    SQL_CONNECTION_STRING                            = local.key_vault_refs["sql-app-connection-string"]
+    CBOS_API_URL          = "https://${data.azurerm_linux_web_app.cbos_api.default_hostname}"
+    OS_API_KEY            = local.key_vault_refs["os-api-key"]
+    SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
+
+    # ODW integration
     OdwServiceBusConnection__fullyQualifiedNamespace = "${var.odw_config.service_bus_name}.servicebus.windows.net"
     SERVICE_BUS_INSPECTOR_TOPIC                      = data.azurerm_servicebus_topic.inspectors.name
     SERVICE_BUS_INSPECTOR_SUBSCRIPTION               = azurerm_servicebus_subscription.inspectors_scheduling.name
+
+    # Manage appeals integration
+    AppealsServiceBusConnection__fullyQualifiedNamespace = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
+    SERVICE_BUS_CASE_HAS_TOPIC                           = data.azurerm_servicebus_topic.appeal_has.name
+    SERVICE_BUS_CASE_HAS_SUBSCRIPTION                    = azurerm_servicebus_subscription.appeal_has.name
+    SERVICE_BUS_CASE_S78_TOPIC                           = data.azurerm_servicebus_topic.appeal_s78.name
+    SERVICE_BUS_CASE_S78_SUBSCRIPTION                    = azurerm_servicebus_subscription.appeal_s78.name
   }
 }
 
