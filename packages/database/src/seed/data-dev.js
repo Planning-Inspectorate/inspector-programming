@@ -360,6 +360,8 @@ export async function seedDev(dbClient) {
 
 	// assign valid LPA codes to all appeals
 	await assignAppealLpaCodes(dbClient, appeals);
+	// leave 1 appeal without an LPA
+	appeals.find((a) => a.caseReference === '6000074').lpaCode = null;
 
 	console.log('seeding', appeals.length, 'appeals');
 
