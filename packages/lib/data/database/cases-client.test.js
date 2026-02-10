@@ -54,7 +54,7 @@ describe('CasesClient', () => {
 					siteAddressLatitude: 53.752716,
 					siteAddressLongitude: -3.001122,
 					lpaCode: 'Q9999',
-					lpaName: 'Other Local Planning Authority',
+					Lpa: { lpaName: 'Other Local Planning Authority' },
 					lpaRegion: null,
 					caseValidDate: fortyFiveWeeksAgo,
 					finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
@@ -93,7 +93,7 @@ describe('CasesClient', () => {
 					{ caseType: 'W', caseProcedure: 'written', allocationLevel: 'A' }
 				]
 			});
-			assert.deepEqual(cases, [
+			assert.deepStrictEqual(cases, [
 				{
 					allocationBand: 1,
 					caseAge: 45,
