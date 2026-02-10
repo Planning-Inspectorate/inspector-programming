@@ -168,6 +168,20 @@ resource "azurerm_cdn_frontdoor_firewall_policy" "web" {
         selector       = "selectedCases"
       }
     }
+
+    # cross site request forgery token
+    exclusion {
+      match_variable = "RequestBodyPostArgNames"
+      operator       = "Equals"
+      selector       = "_csrf"
+    }
+
+    # session cookie
+    exclusion {
+      match_variable = "RequestCookieNames"
+      operator       = "Equals"
+      selector       = "connect.sid"
+    }
   }
 
   managed_rule {
