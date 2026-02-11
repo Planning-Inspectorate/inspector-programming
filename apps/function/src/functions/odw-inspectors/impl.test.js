@@ -174,6 +174,7 @@ describe('upsertInspector', () => {
 		await upsertInspector(service, message, context);
 		// inspector upsert
 		assert.strictEqual(service.dbClient.inspector.upsert.mock.callCount(), 1);
+		assert.strictEqual(service.dbClient.inspector.upsert.mock.calls[0].arguments[0].where.id, 'entra-123');
 		// 2 specialisms with names (filtered out blank)
 		assert.strictEqual(service.dbClient.inspectorSpecialism.upsert.mock.callCount(), 2);
 		// deleteMany called once
