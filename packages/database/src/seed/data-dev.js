@@ -239,9 +239,9 @@ const inspectors = [
 		email: 'inspector-programming-test-3@planninginspectorate.gov.uk',
 		entraId: '7a0c62e2-182a-47a8-987a-26d0faa02876',
 		grade: 'B1',
-		postcode: 'WA15 0RE',
-		longitude: -2.2962547,
-		latitude: 53.3497019,
+		postcode: 'M30 0EX',
+		longitude: -2.340541,
+		latitude: 53.4815724,
 		Specialisms: {
 			connectOrCreate: [
 				{
