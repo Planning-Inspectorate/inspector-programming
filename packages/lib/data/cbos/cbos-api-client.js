@@ -42,8 +42,11 @@ export class CbosApiClient {
 	 */
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
 		try {
-			const appealIds = await this.fetchAppealIds({ pageNumber, pageSize, fetchAll });
-			const [appealDetails, lpaData] = await Promise.all([this.fetchAppealDetails(appealIds), this.fetchLpaData()]);
+			const appealReferences = await this.fetchAppealReferences({ pageNumber, pageSize, fetchAll });
+			const [appealDetails, lpaData] = await Promise.all([
+				this.fetchAppealDetailsByReference(appealReferences),
+				this.fetchLpaData()
+			]);
 
 			// Remove Parent cases with invalid statuses
 			const filteredData = appealDetails.filter(
@@ -144,7 +147,7 @@ export class CbosApiClient {
 				return { latitude, longitude };
 			}
 		} catch (error) {
-			this.logger.error(`Failed to fetch postcode coordinates: ${error}`);
+			this.logger.error(error, `Failed to fetch postcode coordinates`);
 		}
 	}
 
@@ -182,16 +185,16 @@ export class CbosApiClient {
 	}
 
 	/**
-	 * Fetch appeal IDs for a given Azure AD user.
-	 * @returns {Promise<number[]>} Promise resolving to an array of appeal IDs.
-	 * @throws {Error} If fetching appeal IDs fails.
+	 * Fetch appeal Data for a given Azure AD user.
+	 * @returns {Promise<number[] | string[]>} Promise resolving to an array of appeal Data.
+	 * @throws {Error} If fetching appeal Data fails.
 	 */
-	async fetchAppealIds({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
+	async #fetchAppealData({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
 		try {
 			/**
 			 * @type {number[]}
 			 */
-			let appealIds = [];
+			let allItems = [];
 			let continueToFetch = true;
 			while (continueToFetch) {
 				const url = `${this.config.apiUrl}/appeals?hasInspector=false&pageNumber=${pageNumber}&pageSize=${pageSize}`;
@@ -202,9 +205,7 @@ export class CbosApiClient {
 				const data = await response.json();
 				const maxPageNumber = data.pageCount;
 
-				for (let item of data.items) {
-					appealIds.push(item.appealId);
-				}
+				allItems.push(...data.items);
 
 				if (fetchAll && pageNumber < maxPageNumber) {
 					pageNumber += 1;
@@ -213,7 +214,7 @@ export class CbosApiClient {
 				}
 			}
 
-			return appealIds;
+			return allItems;
 		} catch (error) {
 			/** @type {any} */
 			//default error vals - stringified error or fallback val
@@ -223,7 +224,35 @@ export class CbosApiClient {
 			//if error is an Error object with a message
 			else if (error instanceof Error) message = error.message;
 
-			throw new Error(`Failed to fetch appeal IDs: ${message}`);
+			throw new Error(`Failed to fetch appeal data: ${message}`);
+		}
+	}
+
+	/**
+	 * Fetch appeal IDs for a given Azure AD user.
+	 * @returns {Promise<number[]>} Promise resolving to an array of appeal IDs.
+	 * @throws {Error} If fetching appeal IDs fails.
+	 */
+	async fetchAppealIds(options) {
+		try {
+			const items = await this.#fetchAppealData(options);
+			return items.map((item) => item.appealId);
+		} catch (error) {
+			throw new Error(`Failed to fetch appeal IDs: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Fetch appeal References for a given Azure AD user.
+	 * @returns {Promise<string[]>} Promise resolving to an array of appeal References.
+	 * @throws {Error} If fetching appeal References fails.
+	 */
+	async fetchAppealReferences(options) {
+		try {
+			const items = await this.#fetchAppealData(options);
+			return items.map((item) => item.appealReference);
+		} catch (error) {
+			throw new Error(`Failed to fetch appeal References: ${error.message}`);
 		}
 	}
 
@@ -240,6 +269,26 @@ export class CbosApiClient {
 
 			if (!response.ok) {
 				throw new Error(`Failed to fetch details for appealId ${appealId}. Status: ${response.status}`);
+			}
+			return await response.json();
+		});
+
+		return await Promise.all(detailPromises); // Will throw if any promise rejects
+	}
+
+	/**
+	 * Fetch details for each appeal Reference in parallel.
+	 * @param {string[]} appealReferences - Array of appeal References
+	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.
+	 * @throws {Error} If fetching any appeal details fails.
+	 */
+	async fetchAppealDetailsByReference(appealReferences) {
+		const detailPromises = appealReferences.map(async (appealReference) => {
+			const url = `${this.config.apiUrl}/appeals/case-reference/${appealReference}`;
+			const response = await this.fetchWithTimeout(url);
+
+			if (!response.ok) {
+				throw new Error(`Failed to fetch details for appealReference ${appealReference}. Status: ${response.status}`);
 			}
 			return await response.json();
 		});
