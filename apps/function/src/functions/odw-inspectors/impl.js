@@ -96,7 +96,7 @@ export async function upsertInspector(service, message, context) {
 		await service.dbClient.$transaction(async (tx) => {
 			// Upsert inspector
 			const inspectorRecord = await tx.inspector.upsert({
-				where: { entraId },
+				where: { id: entraId }, // use entraId for id, since entraId is not @unique
 				create: data,
 				update: data,
 				select: { id: true }

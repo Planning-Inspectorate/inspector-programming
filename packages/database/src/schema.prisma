@@ -110,6 +110,7 @@ model AppealCasePollStatus {
 }
 
 model Inspector {
+  /// for inspectors sync'd via integration, the id will be the entraId
   id        String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   firstName String
   lastName  String
