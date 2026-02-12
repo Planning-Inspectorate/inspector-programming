@@ -100,46 +100,52 @@ export async function upsertInspector(service, message, context) {
 	const incomingNames = incoming.map((s) => s.name);
 
 	try {
-		await service.dbClient.$transaction(async (tx) => {
-			// Upsert inspector
-			const inspectorRecord = await tx.inspector.upsert({
-				where: { id: entraId }, // use entraId for id, since entraId is not @unique
-				create: data,
-				update: data,
-				select: { id: true }
-			});
-			context.log(`Inspector has been upserted: ${entraId}`);
+		await service.dbClient.$transaction(
+			async (tx) => {
+				// Upsert inspector
+				const inspectorRecord = await tx.inspector.upsert({
+					where: { id: entraId }, // use entraId for id, since entraId is not @unique
+					create: data,
+					update: data,
+					select: { id: true }
+				});
+				context.log(`Inspector has been upserted: ${entraId}`);
 
-			const inspectorId = inspectorRecord.id;
+				const inspectorId = inspectorRecord.id;
 
-			// Remove inspector specialisms not in incoming data
-			await tx.inspectorSpecialism.deleteMany({
-				where: {
-					inspectorId,
-					name: { notIn: incomingNames }
-				}
-			});
+				// Remove inspector specialisms not in incoming data
+				await tx.inspectorSpecialism.deleteMany({
+					where: {
+						inspectorId,
+						name: { notIn: incomingNames }
+					}
+				});
 
-			// Upsert inspector specialisms
-			await Promise.all(
-				incoming.map((s) =>
-					tx.inspectorSpecialism.upsert({
-						where: { inspectorId_name: { inspectorId, name: s.name } },
-						create: {
-							inspectorId,
-							name: s.name,
-							proficiency: s.proficiency ?? null,
-							validFrom: s.validFrom ? new Date(s.validFrom) : null
-						},
-						update: {
-							proficiency: s.proficiency ?? null,
-							validFrom: s.validFrom ? new Date(s.validFrom) : null
-						}
-					})
-				)
-			);
-			context.log(`Specialisms synced for inspector: ${entraId}`);
-		});
+				// Upsert inspector specialisms
+				await Promise.all(
+					incoming.map((s) =>
+						tx.inspectorSpecialism.upsert({
+							where: { inspectorId_name: { inspectorId, name: s.name } },
+							create: {
+								inspectorId,
+								name: s.name,
+								proficiency: s.proficiency ?? null,
+								validFrom: s.validFrom ? new Date(s.validFrom) : null
+							},
+							update: {
+								proficiency: s.proficiency ?? null,
+								validFrom: s.validFrom ? new Date(s.validFrom) : null
+							}
+						})
+					)
+				);
+				context.log(`Specialisms synced for inspector: ${entraId}`);
+			},
+			{
+				// allow the transaction to wait a while if there is a large queue
+				maxWait: 120_000 // 120s
+			}
+		);
 	} catch (error) {
 		context.log(`Failed to upsert inspector ${entraId}: ${error.message}`);
 		throw new Error(`Failed to upsert inspector ${entraId}: ${error.message}`);
