@@ -40,7 +40,8 @@ export async function deleteInspector(service, entraId, context) {
 	}
 
 	try {
-		await service.dbClient.inspector.delete({ where: { entraId } });
+		// we use id=entraId for inspectors
+		await service.dbClient.inspector.delete({ where: { id: entraId, entraId } });
 		context.log(`Inspector with entraId ${entraId} has been deleted`);
 	} catch (error) {
 		context.log(`Error deleting inspector: ${error.message}`);
@@ -55,6 +56,7 @@ export async function deleteInspector(service, entraId, context) {
  */
 export function mapToDatabase(message, coords) {
 	return {
+		id: message.entraId, // use entraId as the unique ID
 		firstName: message.firstName,
 		lastName: message.lastName,
 		grade: message.grade,
