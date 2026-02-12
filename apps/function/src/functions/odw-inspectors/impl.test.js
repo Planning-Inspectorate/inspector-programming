@@ -104,6 +104,7 @@ describe('map To Database', () => {
 		const message = makeValidMessage();
 		const coords = { latitude: 51.5, longitude: -0.12 };
 		const data = mapToDatabase(message, coords);
+		assert.strictEqual(data.id, 'entra-123');
 		assert.strictEqual(data.firstName, 'Jane');
 		assert.strictEqual(data.postcode, 'AB12CD');
 		assert.strictEqual(data.latitude, 51.5);
@@ -134,6 +135,7 @@ describe('delete Inspector', () => {
 	test('deletes inspector when entraId provided', async () => {
 		await deleteInspector(service, 'entra-123', context);
 		assert.strictEqual(service.dbClient.inspector.delete.mock.callCount(), 1);
+		assert.strictEqual(service.dbClient.inspector.delete.mock.calls[0].arguments[0].where.id, 'entra-123');
 		assert.match(context.log.mock.calls[0].arguments[0], /Inspector with entraId entra-123 has been deleted/);
 	});
 
