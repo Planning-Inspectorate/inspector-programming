@@ -77,6 +77,11 @@ export function mapToDatabase(message, coords) {
 export async function upsertInspector(service, message, context) {
 	const entraId = message.entraId;
 	const postcode = message.address?.postcode || null;
+	if (!entraId) {
+		// the app requires entraId so we ignore inspectors without them
+		context.log('inspector has no entraId, skipping', { email: message.email, sapId: message.sapId });
+		return;
+	}
 
 	if (!postcode) {
 		context.log(`Inspector message missing postcode for entraId: ${entraId}`);
