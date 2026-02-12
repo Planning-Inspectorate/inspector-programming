@@ -15,6 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "@planning-inspectorate/data-model": "*",
+    "@pins/inspector-programming-lib": "*",
     "@prisma/adapter-mssql": "*",
     "@prisma/client": "*",
     "date-fns": "*"
