@@ -11,5 +11,10 @@
 	"extensionBundle": {
 		"id": "Microsoft.Azure.Functions.ExtensionBundle",
 		"version": "[4.0.0, 5.0.0)"
+	},
+	"extensions": {
+		"serviceBus": {
+			"maxConcurrentCalls": 10
+		}
 	}
 }
