@@ -134,20 +134,26 @@ export function mapToDatabase(message, coords) {
 		siteAddressPostcode: message.siteAddressPostcode ?? null,
 		siteAddressLatitude: coords.latitude,
 		siteAddressLongitude: coords.longitude,
-		lpaCode: message.lpaCode ?? null,
 		lpaName: message.lpaName ?? null,
 		caseCreatedDate: message.caseCreatedDate ? new Date(message.caseCreatedDate) : null,
 		caseValidDate: message.caseValidDate ? new Date(message.caseValidDate) : null,
 		finalCommentsDueDate: message.finalCommentsDueDate ? new Date(message.finalCommentsDueDate) : null,
 		linkedCaseStatus: message.linkedCaseStatus ?? null,
-		leadCaseReference: message.leadCaseReference ?? null,
 		appellantCostsAppliedFor: message.appellantCostsAppliedFor ?? null,
 		lpaCostsAppliedFor: message.lpaCostsAppliedFor ?? null
 	};
 
+	// Connect the LPA relation
 	if (message.lpaCode) {
 		data.Lpa = {
 			connect: { lpaCode: message.lpaCode }
+		};
+	}
+
+	// Connect the LeadCase relation
+	if (message.leadCaseReference) {
+		data.LeadCase = {
+			connect: { caseReference: message.leadCaseReference }
 		};
 	}
 
