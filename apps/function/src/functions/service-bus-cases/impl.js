@@ -94,6 +94,17 @@ export async function deleteCase(service, caseReference, context) {
 
 			// Finally, delete the main AppealCase record
 			await tx.appealCase.delete({ where: { caseReference } });
+			// save in the DB that we have an update
+			await tx.appealCasePollStatus.upsert({
+				where: { id: 1 },
+				create: {
+					lastPollAt: new Date(),
+					casesFetched: -1 // not used
+				},
+				update: {
+					lastPollAt: new Date()
+				}
+			});
 		});
 		context.log(`Case with caseReference ${caseReference} has been deleted`);
 	} catch (error) {
@@ -234,6 +245,17 @@ export async function upsertCase(service, message, context) {
 				);
 				context.log(`Upserted specialisms for case: ${caseReference}`);
 			}
+			// save in the DB that we have an update
+			await tx.appealCasePollStatus.upsert({
+				where: { id: 1 },
+				create: {
+					lastPollAt: new Date(),
+					casesFetched: -1 // not used
+				},
+				update: {
+					lastPollAt: new Date()
+				}
+			});
 		});
 	} catch (error) {
 		context.log(`Failed to upsert case ${caseReference}:`, error);

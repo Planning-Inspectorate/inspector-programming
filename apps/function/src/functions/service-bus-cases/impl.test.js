@@ -115,6 +115,7 @@ const svc = (options = {}) => {
 		findMany: mock.fn(async () => []),
 		create: mock.fn(async () => ({})),
 		upsertSpecialism: mock.fn(async () => ({})),
+		upsertStatus: mock.fn(async () => ({})),
 		transaction: mock.fn(async (cb) =>
 			cb({
 				appealCase: {
@@ -130,6 +131,9 @@ const svc = (options = {}) => {
 					create: mocks.create,
 					findMany: mocks.findMany,
 					upsert: mocks.upsertSpecialism
+				},
+				appealCasePollStatus: {
+					upsert: mocks.upsertStatus
 				}
 			})
 		)
@@ -183,12 +187,21 @@ describe('mapToDatabase', () => {
 });
 
 describe('deleteCase', () => {
-	test('calls database delete with correct caseReference', async () => {
+	test('calls database delete with correct caseReference', async (testContext) => {
+		testContext.mock.timers.enable({
+			apis: ['Date'],
+			now: new Date('2023-10-04T12:00:00Z')
+		});
 		const service = svc();
 		await deleteCase(service, 'APP/123', ctx(MESSAGE_EVENT_TYPE.DELETE));
 		assertCalls(service.mocks.transaction, 1, 'transaction');
 		assertCalls(service.mocks.delete, 1, 'delete');
 		assert.deepStrictEqual(service.mocks.delete.mock.calls[0].arguments[0], { where: { caseReference: 'APP/123' } });
+		assert.deepStrictEqual(service.mocks.upsertStatus.mock.calls[0].arguments[0], {
+			where: { id: 1 },
+			create: { lastPollAt: new Date(), casesFetched: -1 },
+			update: { lastPollAt: new Date() }
+		});
 	});
 
 	test('throws when caseReference empty', async () => {
@@ -213,11 +226,20 @@ describe('deleteCase', () => {
 });
 
 describe('upsertCase', () => {
-	test('upserts with coordinates when postcode provided', async () => {
+	test('upserts with coordinates when postcode provided', async (testContext) => {
+		testContext.mock.timers.enable({
+			apis: ['Date'],
+			now: new Date('2023-10-04T12:00:00Z')
+		});
 		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
 		await upsertCase(service, msg(), ctx());
 		assertCalls(service.mocks.upsert, 1, 'upsert');
 		assertCalls(service.mocks.transaction, 1, 'transaction');
+		assert.deepStrictEqual(service.mocks.upsertStatus.mock.calls[0].arguments[0], {
+			where: { id: 1 },
+			create: { lastPollAt: new Date(), casesFetched: -1 },
+			update: { lastPollAt: new Date() }
+		});
 	});
 
 	test('continues without coordinates when lookup fails', async () => {
