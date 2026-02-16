@@ -66,11 +66,15 @@ export function buildCbosFetchCases(service) {
 					}
 				});
 
-				// Create record of latest successful update
-				await $tx.appealCasePollStatus.create({
-					data: {
+				// save in the DB that we have an update
+				await $tx.appealCasePollStatus.upsert({
+					where: { id: 1 },
+					create: {
 						lastPollAt: new Date(),
-						casesFetched: appealsData.caseReferences.length
+						casesFetched: -1 // not used
+					},
+					update: {
+						lastPollAt: new Date()
 					}
 				});
 			});

@@ -7,7 +7,7 @@ describe('cbos-cases-impl', () => {
 	const mockUpdate = mock.fn();
 	const mockUpdateMany = mock.fn();
 	const mockDeleteMany = mock.fn();
-	const mockCreate = mock.fn();
+	const mockStatusUpsert = mock.fn();
 	const service = {
 		dbClient: {
 			$transaction: mock.fn(async (callback) => {
@@ -19,7 +19,7 @@ describe('cbos-cases-impl', () => {
 						deleteMany: mockDeleteMany
 					},
 					appealCasePollStatus: {
-						create: mockCreate
+						upsert: mockStatusUpsert
 					}
 				};
 				return await callback(mockTx);
@@ -98,9 +98,11 @@ describe('cbos-cases-impl', () => {
 		assert.deepStrictEqual(mockDeleteMany.mock.calls[0].arguments[0], {
 			where: { caseReference: { notIn: ['1', '2'] } }
 		});
-		assert.strictEqual(mockCreate.mock.callCount(), 1);
-		assert.deepStrictEqual(mockCreate.mock.calls[0].arguments[0], {
-			data: { lastPollAt: new Date(), casesFetched: 2 }
+		assert.strictEqual(mockStatusUpsert.mock.callCount(), 1);
+		assert.deepStrictEqual(mockStatusUpsert.mock.calls[0].arguments[0], {
+			where: { id: 1 },
+			create: { lastPollAt: new Date(), casesFetched: -1 },
+			update: { lastPollAt: new Date() }
 		});
 	});
 	test('should call context.log on error', async () => {
