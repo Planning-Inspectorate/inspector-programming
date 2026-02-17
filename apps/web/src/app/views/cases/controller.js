@@ -57,6 +57,11 @@ async function handleCases(selectedCases, service, req, res) {
 	 * - send inspector notify email
 	 * - send programme officer notify email
 	 * - display success page
+	 *
+	 * Note: as soon as assignCasesToInspector has run, the case will be updated in Manage appeals
+	 * This will trigger an integration message to remove the case from the database, since it has been assigned.
+	 * This can be very quick and happen before generateCaseCalendarEvents is called.
+	 * So we ensure we read all local case data before assignment
 	 */
 
 	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
@@ -93,6 +98,8 @@ async function handleCases(selectedCases, service, req, res) {
 			await submitCalendarEvents(service.entraClient, eventsToAdd, req.session, req.body.inspectorId, service.logger);
 
 			// Delete successfully assigned cases from local database
+			// this isn't strictly required with the integration running, but is left here to ensure cases are removed
+			// immediately after assignment
 			try {
 				await service.casesClient.deleteCases(successfulCaseIds);
 				service.logger.info(
