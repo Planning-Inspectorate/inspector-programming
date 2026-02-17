@@ -36,8 +36,15 @@ export class CalendarClient {
 	 */
 	async getEnglandWalesBankHolidays() {
 		const res = await fetch('https://www.gov.uk/bank-holidays.json');
+		if (!res.ok) {
+			throw new Error(`Could not fetch bank holidays, got ${res.status}`);
+		}
 		/** @type {BankHolidayJson} */
 		const bankHolidayJson = await res.json();
-		return bankHolidayJson['england-and-wales'].events.map((e) => e.date);
+		const key = 'england-and-wales';
+		if (!(key in bankHolidayJson)) {
+			throw new Error(`No bank holidays for ${key} in response, got ${Object.keys(bankHolidayJson).join(',')}`);
+		}
+		return bankHolidayJson[key].events.map((e) => e.date);
 	}
 }
