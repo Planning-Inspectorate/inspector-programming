@@ -240,21 +240,14 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 
 	//fetch info from calendar client
 	const timingRules = await service.calendarClient.getAllCalendarEventTimingRules();
-	let bankHolidays = await service.calendarClient.getEnglandWalesBankHolidays();
-
-	//filter down the number of bank holiday dates if we dont expect to have to check them when allocating times for our events
-	bankHolidays = bankHolidays?.length
-		? bankHolidays.filter((holiday) => {
-				let [holidayDate, pastLimit, futureLimit] = [
-					new Date(holiday),
-					new Date(assignmentDate),
-					new Date(assignmentDate)
-				];
-				pastLimit = subDays(pastLimit, 10, { in: timeZone });
-				futureLimit = addDays(futureLimit, 60, { in: timeZone });
-				return holidayDate > pastLimit && holidayDate < futureLimit;
-			})
-		: [];
+	const bankHolidays = (await service.calendarClient.getEnglandWalesBankHolidays())
+		// filter the bank holidays within a -10 +60 day window
+		.filter((holiday) => {
+			const holidayDate = new Date(holiday);
+			const pastLimit = subDays(new Date(assignmentDate), 10, { in: timeZone });
+			const futureLimit = addDays(new Date(assignmentDate), 60, { in: timeZone });
+			return holidayDate > pastLimit && holidayDate < futureLimit;
+		});
 
 	const bankHolidayEvents = compileBankHolidays(bankHolidays);
 
