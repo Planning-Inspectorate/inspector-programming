@@ -18,3 +18,18 @@ export interface CaseWithEventsAndSpecialisms extends AppealCase {
 	Events: AppealEvent[] | null;
 	Specialisms: AppealCaseSpecialism[] | null;
 }
+
+export interface CaseToAssign {
+	caseId: string | number;
+	caseReference: string;
+	isParent: boolean;
+
+	// used for timing rules
+	caseProcedure: string | null;
+	caseLevel: string | null;
+	caseType: string | null;
+
+	// used for event generation
+	lpaName: string | null;
+	siteAddressPostcode: string | null;
+}

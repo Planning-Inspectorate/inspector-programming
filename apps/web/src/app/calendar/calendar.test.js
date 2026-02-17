@@ -501,7 +501,6 @@ describe('calendar', () => {
 	});
 	describe('generateCaseCalendarEvents', () => {
 		beforeEach(() => {
-			mockCasesClient.getCaseById.mock.resetCalls();
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
 			mockCalendarClient.getEnglandWalesBankHolidays.mock.resetCalls();
 		});
@@ -513,12 +512,8 @@ describe('calendar', () => {
 		const mockService = () => {
 			return {
 				logger: mockLogger,
-				casesClient: mockCasesClient,
 				calendarClient: mockCalendarClient
 			};
-		};
-		const mockCasesClient = {
-			getCaseById: mock.fn()
 		};
 
 		//mock data responses
@@ -551,12 +546,11 @@ describe('calendar', () => {
 		//mock implementations
 		mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementation(() => mockTimingRules);
 		mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementation(() => []);
-		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
 
 		//testing vars
 		const requiredProps = (/** @type {any} */ row) => {
 			['subject', 'start', 'end', 'location'].forEach((prop) => {
-				assert.ok(Object.prototype.hasOwnProperty.call(row, prop));
+				assert.ok(Object.hasOwn(row, prop));
 			});
 		};
 
@@ -576,11 +570,9 @@ describe('calendar', () => {
 
 		it('should generate a list of calendar event json objects for a case', async () => {
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, '2025-10-08', [1]);
+			const res = await generateCaseCalendarEvents(service, '2025-10-08', [appeal]);
 
 			assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-			//expect call count to be num cases * 4 (one per stage)
-			assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 4);
 			assert.strictEqual(res.length, 4);
 
 			requiredProps(res[0]);
@@ -622,9 +614,8 @@ describe('calendar', () => {
 		});
 		it('multiple cases should yield multiple sets of json objects', async () => {
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, '2025-10-08', [1, 2, 3]);
+			const res = await generateCaseCalendarEvents(service, '2025-10-08', [appeal, appeal, appeal]);
 			assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-			assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 12); //3 cases * 4 stages
 			assert.strictEqual(res.length, 12);
 
 			const [case1, case2, case3] = [
@@ -643,38 +634,26 @@ describe('calendar', () => {
 		});
 		it('calendar event extensions should only submit those that are provided', async () => {
 			const service = mockService();
-			const res = await generateCaseCalendarEvents(service, '2025-10-10', [1]);
+			const res = await generateCaseCalendarEvents(service, '2025-10-10', [appeal]);
 			assert.strictEqual(res.length, 4);
 			assert.strictEqual(res[0].singleValueExtendedProperties[0].id, EXTENSION_ID);
-			assert.ok(Object.prototype.hasOwnProperty.call(res[0].singleValueExtendedProperties[0], 'value'));
+			assert.ok(Object.hasOwn(res[0].singleValueExtendedProperties[0], 'value'));
 		});
 		describe('error cases', () => {
-			it('no case details found for caseId should error', async () => {
-				mockCasesClient.getCaseById.mock.mockImplementationOnce(() => undefined);
-				const service = mockService();
-				await assert.rejects(generateCaseCalendarEvents(service, '2025-10-10', [1, 2, 3]), {
-					message: 'Case details could not be fetched for case: 1'
-				});
-				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 1);
-			});
 			it('no timing rule matching case details should error', async () => {
-				const appeal = { caseId: 'caseId', caseType: 'A', caseProcedure: 'P', caseLevel: 'B' };
-				mockCasesClient.getCaseById.mock.mockImplementationOnce(() => appeal);
+				const appeal = { caseId: '1', caseType: 'A', caseProcedure: 'P', caseLevel: 'B' };
 				const service = mockService();
-				await assert.rejects(generateCaseCalendarEvents(service, '2025-10-10', [1, 2, 3]), {
+				await assert.rejects(generateCaseCalendarEvents(service, '2025-10-10', [appeal]), {
 					message: 'No timing rules matching case: 1'
 				});
 				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 1);
 			});
 		});
 		describe('handling events over weekends or bank holidays', () => {
 			it('setting the assignment date to a Monday will generate the prep event on the prior Friday', async () => {
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-22', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-22', [appeal]);
 				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 4);
 				assert.strictEqual(res.length, 4);
 
 				requiredProps(res[0]);
@@ -716,9 +695,8 @@ describe('calendar', () => {
 			});
 			it('setting the assignment date to a Sunday will generate the prep event on the prior Friday and increment all other days by 1', async () => {
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-21', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-21', [appeal]);
 				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 4);
 				assert.strictEqual(res.length, 4);
 
 				requiredProps(res[0]);
@@ -760,9 +738,8 @@ describe('calendar', () => {
 			});
 			it('setting the assignment date to a Saturday will generate the prep event on the prior Friday and increment all other days by 2', async () => {
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-20', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-20', [appeal]);
 				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 4);
 				assert.strictEqual(res.length, 4);
 
 				requiredProps(res[0]);
@@ -804,9 +781,8 @@ describe('calendar', () => {
 			});
 			it('setting the assignment date to a Friday will offload report and costs stages onto the next week', async () => {
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-19', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-19', [appeal]);
 				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 4);
 				assert.strictEqual(res.length, 4);
 
 				requiredProps(res[0]);
@@ -848,9 +824,8 @@ describe('calendar', () => {
 			});
 			it('setting the assignment date to a Thursday will offload costs stage onto the next week', async () => {
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-18', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-18', [appeal]);
 				assert.strictEqual(mockCalendarClient.getAllCalendarEventTimingRules.mock.callCount(), 1);
-				assert.strictEqual(mockCasesClient.getCaseById.mock.callCount(), 4);
 				assert.strictEqual(res.length, 4);
 
 				requiredProps(res[0]);
@@ -894,7 +869,7 @@ describe('calendar', () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
 
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-25', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-25', [appeal]);
 				assert.strictEqual(mockCalendarClient.getEnglandWalesBankHolidays.mock.callCount(), 1);
 				assert.strictEqual(res.length, 4);
 
@@ -940,7 +915,7 @@ describe('calendar', () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
 
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-26', [1, 2, 3]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-26', [appeal, appeal, appeal]);
 				assert.strictEqual(mockCalendarClient.getEnglandWalesBankHolidays.mock.callCount(), 1);
 				assert.strictEqual(res.length, 12);
 
@@ -1063,7 +1038,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1, 2, 3]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal, appeal, appeal]);
 				const [case1, case2, case3] = [
 					{ prep: res[0], siteVisit: res[3], report: res[6], costs: res[9] },
 					{ prep: res[1], siteVisit: res[4], report: res[7], costs: res[10] },
@@ -1192,7 +1167,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal]);
 				const caseEvents = { prep: res[0], siteVisit1: res[1], siteVisit2: res[2], report: res[3], costs: res[4] };
 
 				requiredProps(caseEvents.prep);
@@ -1256,7 +1231,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal]);
 				const caseEvents = { prep: res[0], siteVisit: res[1], report1: res[2], report2: res[3], costs: res[4] };
 
 				requiredProps(caseEvents.prep);
@@ -1320,7 +1295,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal]);
 				const caseEvents = { prep1: res[0], prep2: res[1], siteVisit: res[2], report: res[3], costs: res[4] };
 
 				requiredProps(caseEvents.prep1);
@@ -1384,7 +1359,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal]);
 				const caseEvents = { prep: res[0], siteVisit: res[1], report: res[2], costs1: res[3], costs2: res[4] };
 
 				requiredProps(caseEvents.prep);
@@ -1448,7 +1423,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal]);
 				const caseEvents = {
 					prep1: res[0],
 					prep2: res[1],
@@ -1540,7 +1515,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-10', [1, 2, 3]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-10', [appeal, appeal, appeal]);
 				const [case1, case2, case3] = [
 					{ prep: res[0], siteVisit1: res[3], siteVisit2: res[4], report: res[9], costs: res[12] },
 					{ prep: res[1], siteVisit1: res[5], siteVisit2: res[6], report: res[10], costs: res[13] },
@@ -1694,7 +1669,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-10', [1, 2, 3]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-10', [appeal, appeal, appeal]);
 				console.info(res);
 				const [case1, case2, case3] = [
 					{ prep1: res[0], prep2: res[1], siteVisit: res[6], report: res[9], costs: res[12] },
@@ -1838,7 +1813,7 @@ describe('calendar', () => {
 			});
 			it('handle multiple events that overrun the 8 hour daily limit and straddle the weekend', async () => {
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-10', [1, 2, 3, 4, 5]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-10', [appeal, appeal, appeal, appeal, appeal]);
 				const [case1, case2, case3, case4, case5] = [
 					{ prep: res[0], siteVisit: res[5], report: res[10], costs: res[15] },
 					{ prep: res[1], siteVisit: res[6], report: res[11], costs: res[16] },
@@ -2029,7 +2004,7 @@ describe('calendar', () => {
 				});
 
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-26', [1, 2, 3]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-26', [appeal, appeal, appeal]);
 				assert.strictEqual(res.length, 15);
 
 				const [case1, case2, case3] = [
@@ -2174,7 +2149,7 @@ describe('calendar', () => {
 					];
 				});
 				const service = mockService();
-				const res = await generateCaseCalendarEvents(service, '2025-09-24', [1]);
+				const res = await generateCaseCalendarEvents(service, '2025-09-24', [appeal]);
 				const caseEvents = { prep: res[0], siteVisit: res[1], report: res[2] };
 
 				requiredProps(caseEvents.prep);

@@ -108,7 +108,13 @@ describe('controller.js', () => {
 		const existingEvents = [event1, event2];
 
 		//mock implementations
-		mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
+		mockCasesClient.getCaseById.mock.mockImplementation((id) => {
+			return {
+				...appeal,
+				caseId: id,
+				caseReference: id.toString()
+			};
+		});
 		mockCasesClient.getLinkedCasesByParentCaseId.mock.mockImplementation(() => []);
 		mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 		mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementation(() => []);

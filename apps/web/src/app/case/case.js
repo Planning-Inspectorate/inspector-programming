@@ -73,16 +73,9 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 }
 
 /**
- * @typedef {Object} CaseItem
- * @property {string | number} caseId
- * @property {string} caseReference
- * @property {boolean} isParent
- */
-
-/**
  * @param {number[]} caseIds
  * @param {import('#service').WebService} service
- * @returns {Promise<{cases: CaseItem[], caseIds: number[]}>}
+ * @returns {Promise<{cases: import('./types.d.ts').CaseToAssign[], caseIds: number[]}>}
  */
 export async function getCaseAndLinkedCasesIds(caseIds, service) {
 	const casesById = new Map();
@@ -92,11 +85,7 @@ export async function getCaseAndLinkedCasesIds(caseIds, service) {
 		if (!appeal) continue;
 
 		if (!casesById.has(caseId)) {
-			casesById.set(caseId, {
-				caseId: appeal.caseId,
-				caseReference: appeal.caseReference,
-				isParent: true
-			});
+			casesById.set(caseId, mapCaseViewModelToCaseToAssign(appeal, true));
 		}
 
 		if (appeal.linkedCaseStatus === 'Parent') {
@@ -105,11 +94,7 @@ export async function getCaseAndLinkedCasesIds(caseIds, service) {
 				if (casesById.has(linkedCaseId)) continue;
 				const linkedAppeal = await service.casesClient.getCaseById(linkedCaseId);
 				if (linkedAppeal) {
-					casesById.set(linkedCaseId, {
-						caseId: linkedAppeal.caseId,
-						caseReference: linkedAppeal.caseReference,
-						isParent: false
-					});
+					casesById.set(linkedCaseId, mapCaseViewModelToCaseToAssign(linkedAppeal, false));
 				}
 			}
 		}
@@ -117,6 +102,24 @@ export async function getCaseAndLinkedCasesIds(caseIds, service) {
 
 	const cases = Array.from(casesById.values());
 	return { cases, caseIds: [...casesById.keys()] };
+}
+
+/**
+ * @param {import('@pins/inspector-programming-lib/data/types.d.ts').CaseViewModel} caseViewModel
+ * @param {boolean} isParent
+ * @returns {import('./types.d.ts').CaseToAssign}
+ */
+function mapCaseViewModelToCaseToAssign(caseViewModel, isParent) {
+	return {
+		caseId: caseViewModel.caseId,
+		caseReference: caseViewModel.caseReference,
+		caseProcedure: caseViewModel.caseProcedure,
+		caseType: caseViewModel.caseType,
+		caseLevel: caseViewModel.caseLevel,
+		lpaName: caseViewModel.lpaName,
+		siteAddressPostcode: caseViewModel.siteAddressPostcode,
+		isParent
+	};
 }
 
 /**
