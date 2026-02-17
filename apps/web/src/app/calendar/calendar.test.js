@@ -569,16 +569,17 @@ describe('calendar', () => {
 		};
 
 		/**
+		 * Values given will be interpreted in Europe/London
+		 *
 		 * @param {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput} event
-		 * @param {number} year
-		 * @param {number} monthIndex
+		 * @param {number} monthIndex - 0-indexed month
 		 * @param {number} date
 		 * @param {number} start
 		 * @param {number} end
 		 */
-		function assertEventDates(event, year, monthIndex, date, start, end) {
-			assertEventDate(event.start.dateTime, year, monthIndex, date, start);
-			assertEventDate(event.end.dateTime, year, monthIndex, date, end);
+		function assertEventDates(event, monthIndex, date, start, end) {
+			assertEventDate(event.start.dateTime, 2025, monthIndex, date, start);
+			assertEventDate(event.end.dateTime, 2025, monthIndex, date, end);
 		}
 
 		/**
@@ -589,10 +590,8 @@ describe('calendar', () => {
 		 * @param {number} hours
 		 */
 		function assertEventDate(dateTime, year, monthIndex, date, hours) {
-			assert.strictEqual(
-				new Date(dateTime).toISOString(),
-				fromZonedTime(new Date(year, monthIndex, date, hours), timeZoneName).toISOString()
-			);
+			const expected = fromZonedTime(new Date(year, monthIndex, date, hours), timeZoneName).toISOString();
+			assert.strictEqual(new Date(dateTime).toISOString(), expected);
 		}
 
 		it('should generate a list of calendar event json objects for a case', async () => {
@@ -606,10 +605,10 @@ describe('calendar', () => {
 			requiredStages(res[0], res[1], res[2], res[3]);
 
 			//check correct time allocation
-			assertEventDates(res[0], 2025, 9, 7, 9, 11);
-			assertEventDates(res[1], 2025, 9, 8, 9, 12);
-			assertEventDates(res[2], 2025, 9, 9, 9, 11);
-			assertEventDates(res[3], 2025, 9, 10, 9, 10);
+			assertEventDates(res[0], 9, 7, 9, 11);
+			assertEventDates(res[1], 9, 8, 9, 12);
+			assertEventDates(res[2], 9, 9, 9, 11);
+			assertEventDates(res[3], 9, 10, 9, 10);
 		});
 		it('multiple cases should yield multiple sets of json objects', async () => {
 			const service = mockService();
@@ -659,10 +658,10 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assertEventDates(res[0], 2025, 8, 19, 9, 11);
-				assertEventDates(res[1], 2025, 8, 22, 9, 12);
-				assertEventDates(res[2], 2025, 8, 23, 9, 11);
-				assertEventDates(res[3], 2025, 8, 24, 9, 10);
+				assertEventDates(res[0], 8, 19, 9, 11);
+				assertEventDates(res[1], 8, 22, 9, 12);
+				assertEventDates(res[2], 8, 23, 9, 11);
+				assertEventDates(res[3], 8, 24, 9, 10);
 			});
 			it('setting the assignment date to a Sunday will generate the prep event on the prior Friday and increment all other days by 1', async () => {
 				const service = mockService();
@@ -674,10 +673,10 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assertEventDates(res[0], 2025, 8, 19, 9, 11);
-				assertEventDates(res[1], 2025, 8, 22, 9, 12);
-				assertEventDates(res[2], 2025, 8, 23, 9, 11);
-				assertEventDates(res[3], 2025, 8, 24, 9, 10);
+				assertEventDates(res[0], 8, 19, 9, 11);
+				assertEventDates(res[1], 8, 22, 9, 12);
+				assertEventDates(res[2], 8, 23, 9, 11);
+				assertEventDates(res[3], 8, 24, 9, 10);
 			});
 			it('setting the assignment date to a Saturday will generate the prep event on the prior Friday and increment all other days by 2', async () => {
 				const service = mockService();
@@ -689,10 +688,10 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assertEventDates(res[0], 2025, 8, 19, 9, 11);
-				assertEventDates(res[1], 2025, 8, 22, 9, 12);
-				assertEventDates(res[2], 2025, 8, 23, 9, 11);
-				assertEventDates(res[3], 2025, 8, 24, 9, 10);
+				assertEventDates(res[0], 8, 19, 9, 11);
+				assertEventDates(res[1], 8, 22, 9, 12);
+				assertEventDates(res[2], 8, 23, 9, 11);
+				assertEventDates(res[3], 8, 24, 9, 10);
 			});
 			it('setting the assignment date to a Friday will offload report and costs stages onto the next week', async () => {
 				const service = mockService();
@@ -704,10 +703,10 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assertEventDates(res[0], 2025, 8, 18, 9, 11);
-				assertEventDates(res[1], 2025, 8, 19, 9, 12);
-				assertEventDates(res[2], 2025, 8, 22, 9, 11);
-				assertEventDates(res[3], 2025, 8, 23, 9, 10);
+				assertEventDates(res[0], 8, 18, 9, 11);
+				assertEventDates(res[1], 8, 19, 9, 12);
+				assertEventDates(res[2], 8, 22, 9, 11);
+				assertEventDates(res[3], 8, 23, 9, 10);
 			});
 			it('setting the assignment date to a Thursday will offload costs stage onto the next week', async () => {
 				const service = mockService();
@@ -719,10 +718,10 @@ describe('calendar', () => {
 				requiredStages(res[0], res[1], res[2], res[3]);
 
 				//check correct time allocation
-				assertEventDates(res[0], 2025, 8, 17, 9, 11);
-				assertEventDates(res[1], 2025, 8, 18, 9, 12);
-				assertEventDates(res[2], 2025, 8, 19, 9, 11);
-				assertEventDates(res[3], 2025, 8, 22, 9, 10);
+				assertEventDates(res[0], 8, 17, 9, 11);
+				assertEventDates(res[1], 8, 18, 9, 12);
+				assertEventDates(res[2], 8, 19, 9, 11);
+				assertEventDates(res[3], 8, 22, 9, 10);
 			});
 			it('bank holidays should be accounted for when allocating events', async () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
@@ -737,10 +736,10 @@ describe('calendar', () => {
 				requiredProps(case1.report);
 				requiredStages(case1.prep, case1.siteVisit, case1.report, case1.costs);
 
-				assertEventDates(case1.prep, 2025, 8, 24, 9, 11);
-				assertEventDates(case1.siteVisit, 2025, 8, 25, 9, 12);
-				assertEventDates(case1.report, 2025, 8, 26, 9, 11);
-				assertEventDates(case1.costs, 2025, 8, 30, 9, 10);
+				assertEventDates(case1.prep, 8, 24, 9, 11);
+				assertEventDates(case1.siteVisit, 8, 25, 9, 12);
+				assertEventDates(case1.report, 8, 26, 9, 11);
+				assertEventDates(case1.costs, 8, 30, 9, 10);
 			});
 			it('bank holidays should be accounted for when allocating events for multiple cases', async () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
@@ -756,18 +755,18 @@ describe('calendar', () => {
 					{ prep: res[2], siteVisit: res[5], report: res[8], costs: res[11] }
 				];
 
-				assertEventDates(case1.prep, 2025, 8, 25, 9, 11);
-				assertEventDates(case2.prep, 2025, 8, 25, 11, 13);
-				assertEventDates(case3.prep, 2025, 8, 25, 13, 15);
-				assertEventDates(case1.siteVisit, 2025, 8, 26, 9, 12);
-				assertEventDates(case2.siteVisit, 2025, 8, 26, 12, 15);
-				assertEventDates(case3.siteVisit, 2025, 8, 30, 9, 12);
-				assertEventDates(case1.report, 2025, 9, 1, 9, 11);
-				assertEventDates(case2.report, 2025, 9, 1, 11, 13);
-				assertEventDates(case3.report, 2025, 9, 1, 13, 15);
-				assertEventDates(case1.costs, 2025, 9, 2, 9, 10);
-				assertEventDates(case2.costs, 2025, 9, 2, 10, 11);
-				assertEventDates(case3.costs, 2025, 9, 2, 11, 12);
+				assertEventDates(case1.prep, 8, 25, 9, 11);
+				assertEventDates(case2.prep, 8, 25, 11, 13);
+				assertEventDates(case3.prep, 8, 25, 13, 15);
+				assertEventDates(case1.siteVisit, 8, 26, 9, 12);
+				assertEventDates(case2.siteVisit, 8, 26, 12, 15);
+				assertEventDates(case3.siteVisit, 8, 30, 9, 12);
+				assertEventDates(case1.report, 9, 1, 9, 11);
+				assertEventDates(case2.report, 9, 1, 11, 13);
+				assertEventDates(case3.report, 9, 1, 13, 15);
+				assertEventDates(case1.costs, 9, 2, 9, 10);
+				assertEventDates(case2.costs, 9, 2, 10, 11);
+				assertEventDates(case3.costs, 9, 2, 11, 12);
 			});
 		});
 		describe('allocating events with respect to existing events', () => {
@@ -798,22 +797,22 @@ describe('calendar', () => {
 				requiredStages(case3.prep, case3.siteVisit, case3.report, case3.costs);
 
 				//case1
-				assertEventDates(case1.prep, 2025, 8, 23, 9, 11);
-				assertEventDates(case1.siteVisit, 2025, 8, 24, 9, 11);
-				assertEventDates(case1.report, 2025, 8, 25, 9, 10);
-				assertEventDates(case1.costs, 2025, 8, 26, 9, 10);
+				assertEventDates(case1.prep, 8, 23, 9, 11);
+				assertEventDates(case1.siteVisit, 8, 24, 9, 11);
+				assertEventDates(case1.report, 8, 25, 9, 10);
+				assertEventDates(case1.costs, 8, 26, 9, 10);
 
 				//case2 should come straight after case1
-				assertEventDates(case2.prep, 2025, 8, 23, 11, 13);
-				assertEventDates(case2.siteVisit, 2025, 8, 24, 11, 13);
-				assertEventDates(case2.report, 2025, 8, 25, 10, 11);
-				assertEventDates(case2.costs, 2025, 8, 26, 10, 11);
+				assertEventDates(case2.prep, 8, 23, 11, 13);
+				assertEventDates(case2.siteVisit, 8, 24, 11, 13);
+				assertEventDates(case2.report, 8, 25, 10, 11);
+				assertEventDates(case2.costs, 8, 26, 10, 11);
 
 				//case3 should come straight after case2
-				assertEventDates(case3.prep, 2025, 8, 23, 13, 15);
-				assertEventDates(case3.siteVisit, 2025, 8, 24, 13, 15);
-				assertEventDates(case3.report, 2025, 8, 25, 11, 12);
-				assertEventDates(case3.costs, 2025, 8, 26, 11, 12);
+				assertEventDates(case3.prep, 8, 23, 13, 15);
+				assertEventDates(case3.siteVisit, 8, 24, 13, 15);
+				assertEventDates(case3.report, 8, 25, 11, 12);
+				assertEventDates(case3.costs, 8, 26, 11, 12);
 			});
 		});
 		describe('manipulating larger event allocations', () => {
@@ -840,11 +839,11 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assertEventDates(caseEvents.prep, 2025, 8, 23, 9, 13);
-				assertEventDates(caseEvents.siteVisit1, 2025, 8, 24, 9, 17);
-				assertEventDates(caseEvents.siteVisit2, 2025, 8, 25, 9, 13);
-				assertEventDates(caseEvents.report, 2025, 8, 26, 9, 12);
-				assertEventDates(caseEvents.costs, 2025, 8, 29, 9, 11);
+				assertEventDates(caseEvents.prep, 8, 23, 9, 13);
+				assertEventDates(caseEvents.siteVisit1, 8, 24, 9, 17);
+				assertEventDates(caseEvents.siteVisit2, 8, 25, 9, 13);
+				assertEventDates(caseEvents.report, 8, 26, 9, 12);
+				assertEventDates(caseEvents.costs, 8, 29, 9, 11);
 			});
 			it('report timing rules over 8 hours will be split into chunks of 8 hours and logged individually', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -869,11 +868,11 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assertEventDates(caseEvents.prep, 2025, 8, 23, 9, 13);
-				assertEventDates(caseEvents.siteVisit, 2025, 8, 24, 9, 15);
-				assertEventDates(caseEvents.report1, 2025, 8, 25, 9, 17);
-				assertEventDates(caseEvents.report2, 2025, 8, 26, 9, 15);
-				assertEventDates(caseEvents.costs, 2025, 8, 29, 9, 11);
+				assertEventDates(caseEvents.prep, 8, 23, 9, 13);
+				assertEventDates(caseEvents.siteVisit, 8, 24, 9, 15);
+				assertEventDates(caseEvents.report1, 8, 25, 9, 17);
+				assertEventDates(caseEvents.report2, 8, 26, 9, 15);
+				assertEventDates(caseEvents.costs, 8, 29, 9, 11);
 			});
 			it('prep timing rules over 8 hours will be split into chunks of 8 hours and logged individually, moving backwards from assignment date as required', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -898,11 +897,11 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assertEventDates(caseEvents.prep1, 2025, 8, 23, 9, 17);
-				assertEventDates(caseEvents.prep2, 2025, 8, 22, 9, 11);
-				assertEventDates(caseEvents.siteVisit, 2025, 8, 24, 9, 12);
-				assertEventDates(caseEvents.report, 2025, 8, 25, 9, 11);
-				assertEventDates(caseEvents.costs, 2025, 8, 26, 9, 11);
+				assertEventDates(caseEvents.prep1, 8, 23, 9, 17);
+				assertEventDates(caseEvents.prep2, 8, 22, 9, 11);
+				assertEventDates(caseEvents.siteVisit, 8, 24, 9, 12);
+				assertEventDates(caseEvents.report, 8, 25, 9, 11);
+				assertEventDates(caseEvents.costs, 8, 26, 9, 11);
 			});
 			it('costs timing rules over 8 hours will be split into chunks of 8 hours. Split events also respect weekends', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -927,11 +926,11 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 5);
 
-				assertEventDates(caseEvents.prep, 2025, 8, 23, 9, 11);
-				assertEventDates(caseEvents.siteVisit, 2025, 8, 24, 9, 12);
-				assertEventDates(caseEvents.report, 2025, 8, 25, 9, 11);
-				assertEventDates(caseEvents.costs1, 2025, 8, 26, 9, 17);
-				assertEventDates(caseEvents.costs2, 2025, 8, 29, 9, 17);
+				assertEventDates(caseEvents.prep, 8, 23, 9, 11);
+				assertEventDates(caseEvents.siteVisit, 8, 24, 9, 12);
+				assertEventDates(caseEvents.report, 8, 25, 9, 11);
+				assertEventDates(caseEvents.costs1, 8, 26, 9, 17);
+				assertEventDates(caseEvents.costs2, 8, 29, 9, 17);
 			});
 			it('handle multiple split events going in both directions, respecting weekends', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -968,13 +967,13 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 7);
 
-				assertEventDates(caseEvents.prep1, 2025, 8, 23, 9, 17);
-				assertEventDates(caseEvents.prep2, 2025, 8, 22, 9, 13);
-				assertEventDates(caseEvents.siteVisit1, 2025, 8, 24, 9, 17);
-				assertEventDates(caseEvents.siteVisit2, 2025, 8, 25, 9, 13);
-				assertEventDates(caseEvents.report1, 2025, 8, 26, 9, 17);
-				assertEventDates(caseEvents.report2, 2025, 8, 29, 9, 11);
-				assertEventDates(caseEvents.costs, 2025, 8, 30, 9, 11);
+				assertEventDates(caseEvents.prep1, 8, 23, 9, 17);
+				assertEventDates(caseEvents.prep2, 8, 22, 9, 13);
+				assertEventDates(caseEvents.siteVisit1, 8, 24, 9, 17);
+				assertEventDates(caseEvents.siteVisit2, 8, 25, 9, 13);
+				assertEventDates(caseEvents.report1, 8, 26, 9, 17);
+				assertEventDates(caseEvents.report2, 8, 29, 9, 11);
+				assertEventDates(caseEvents.costs, 8, 30, 9, 11);
 			});
 			it('handle multiple cases with split events', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1009,21 +1008,21 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 15);
 
-				assertEventDates(case1.prep, 2025, 8, 9, 9, 13);
-				assertEventDates(case2.prep, 2025, 8, 9, 13, 17);
-				assertEventDates(case3.prep, 2025, 8, 8, 9, 13);
-				assertEventDates(case1.siteVisit1, 2025, 8, 10, 9, 17);
-				assertEventDates(case1.siteVisit2, 2025, 8, 11, 9, 13);
-				assertEventDates(case2.siteVisit1, 2025, 8, 12, 9, 17);
-				assertEventDates(case2.siteVisit2, 2025, 8, 15, 9, 13);
-				assertEventDates(case3.siteVisit1, 2025, 8, 16, 9, 17);
-				assertEventDates(case3.siteVisit2, 2025, 8, 17, 9, 13);
-				assertEventDates(case1.report, 2025, 8, 18, 9, 13);
-				assertEventDates(case2.report, 2025, 8, 18, 13, 17);
-				assertEventDates(case3.report, 2025, 8, 19, 9, 13);
-				assertEventDates(case1.costs, 2025, 8, 22, 9, 11);
-				assertEventDates(case2.costs, 2025, 8, 22, 11, 13);
-				assertEventDates(case3.costs, 2025, 8, 22, 13, 15);
+				assertEventDates(case1.prep, 8, 9, 9, 13);
+				assertEventDates(case2.prep, 8, 9, 13, 17);
+				assertEventDates(case3.prep, 8, 8, 9, 13);
+				assertEventDates(case1.siteVisit1, 8, 10, 9, 17);
+				assertEventDates(case1.siteVisit2, 8, 11, 9, 13);
+				assertEventDates(case2.siteVisit1, 8, 12, 9, 17);
+				assertEventDates(case2.siteVisit2, 8, 15, 9, 13);
+				assertEventDates(case3.siteVisit1, 8, 16, 9, 17);
+				assertEventDates(case3.siteVisit2, 8, 17, 9, 13);
+				assertEventDates(case1.report, 8, 18, 9, 13);
+				assertEventDates(case2.report, 8, 18, 13, 17);
+				assertEventDates(case3.report, 8, 19, 9, 13);
+				assertEventDates(case1.costs, 8, 22, 9, 11);
+				assertEventDates(case2.costs, 8, 22, 11, 13);
+				assertEventDates(case3.costs, 8, 22, 13, 15);
 			});
 			it('handle multiple cases with split prep events', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1059,21 +1058,21 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 15);
 
-				assertEventDates(case1.prep1, 2025, 8, 9, 9, 17);
-				assertEventDates(case1.prep2, 2025, 8, 8, 9, 13);
-				assertEventDates(case2.prep1, 2025, 8, 5, 9, 17);
-				assertEventDates(case2.prep2, 2025, 8, 4, 9, 13);
-				assertEventDates(case3.prep1, 2025, 8, 3, 9, 17);
-				assertEventDates(case3.prep2, 2025, 8, 2, 9, 13);
-				assertEventDates(case1.siteVisit, 2025, 8, 10, 9, 13);
-				assertEventDates(case2.siteVisit, 2025, 8, 10, 13, 17);
-				assertEventDates(case3.siteVisit, 2025, 8, 11, 9, 13);
-				assertEventDates(case1.report, 2025, 8, 12, 9, 13);
-				assertEventDates(case2.report, 2025, 8, 12, 13, 17);
-				assertEventDates(case3.report, 2025, 8, 15, 9, 13);
-				assertEventDates(case1.costs, 2025, 8, 16, 9, 11);
-				assertEventDates(case2.costs, 2025, 8, 16, 11, 13);
-				assertEventDates(case3.costs, 2025, 8, 16, 13, 15);
+				assertEventDates(case1.prep1, 8, 9, 9, 17);
+				assertEventDates(case1.prep2, 8, 8, 9, 13);
+				assertEventDates(case2.prep1, 8, 5, 9, 17);
+				assertEventDates(case2.prep2, 8, 4, 9, 13);
+				assertEventDates(case3.prep1, 8, 3, 9, 17);
+				assertEventDates(case3.prep2, 8, 2, 9, 13);
+				assertEventDates(case1.siteVisit, 8, 10, 9, 13);
+				assertEventDates(case2.siteVisit, 8, 10, 13, 17);
+				assertEventDates(case3.siteVisit, 8, 11, 9, 13);
+				assertEventDates(case1.report, 8, 12, 9, 13);
+				assertEventDates(case2.report, 8, 12, 13, 17);
+				assertEventDates(case3.report, 8, 15, 9, 13);
+				assertEventDates(case1.costs, 8, 16, 9, 11);
+				assertEventDates(case2.costs, 8, 16, 11, 13);
+				assertEventDates(case3.costs, 8, 16, 13, 15);
 			});
 			it('handle multiple events that overrun the 8 hour daily limit and straddle the weekend', async () => {
 				const service = mockService();
@@ -1093,26 +1092,26 @@ describe('calendar', () => {
 
 				assert.strictEqual(res.length, 20);
 
-				assertEventDates(case1.prep, 2025, 8, 9, 9, 11);
-				assertEventDates(case2.prep, 2025, 8, 9, 11, 13);
-				assertEventDates(case3.prep, 2025, 8, 9, 13, 15);
-				assertEventDates(case4.prep, 2025, 8, 9, 15, 17);
-				assertEventDates(case5.prep, 2025, 8, 8, 9, 11);
-				assertEventDates(case1.siteVisit, 2025, 8, 10, 9, 12);
-				assertEventDates(case2.siteVisit, 2025, 8, 10, 12, 15);
-				assertEventDates(case3.siteVisit, 2025, 8, 11, 9, 12);
-				assertEventDates(case4.siteVisit, 2025, 8, 11, 12, 15);
-				assertEventDates(case5.siteVisit, 2025, 8, 12, 9, 12);
-				assertEventDates(case1.report, 2025, 8, 15, 9, 11);
-				assertEventDates(case2.report, 2025, 8, 15, 11, 13);
-				assertEventDates(case3.report, 2025, 8, 15, 13, 15);
-				assertEventDates(case4.report, 2025, 8, 15, 15, 17);
-				assertEventDates(case5.report, 2025, 8, 16, 9, 11);
-				assertEventDates(case1.costs, 2025, 8, 17, 9, 10);
-				assertEventDates(case2.costs, 2025, 8, 17, 10, 11);
-				assertEventDates(case3.costs, 2025, 8, 17, 11, 12);
-				assertEventDates(case4.costs, 2025, 8, 17, 12, 13);
-				assertEventDates(case5.costs, 2025, 8, 17, 13, 14);
+				assertEventDates(case1.prep, 8, 9, 9, 11);
+				assertEventDates(case2.prep, 8, 9, 11, 13);
+				assertEventDates(case3.prep, 8, 9, 13, 15);
+				assertEventDates(case4.prep, 8, 9, 15, 17);
+				assertEventDates(case5.prep, 8, 8, 9, 11);
+				assertEventDates(case1.siteVisit, 8, 10, 9, 12);
+				assertEventDates(case2.siteVisit, 8, 10, 12, 15);
+				assertEventDates(case3.siteVisit, 8, 11, 9, 12);
+				assertEventDates(case4.siteVisit, 8, 11, 12, 15);
+				assertEventDates(case5.siteVisit, 8, 12, 9, 12);
+				assertEventDates(case1.report, 8, 15, 9, 11);
+				assertEventDates(case2.report, 8, 15, 11, 13);
+				assertEventDates(case3.report, 8, 15, 13, 15);
+				assertEventDates(case4.report, 8, 15, 15, 17);
+				assertEventDates(case5.report, 8, 16, 9, 11);
+				assertEventDates(case1.costs, 8, 17, 9, 10);
+				assertEventDates(case2.costs, 8, 17, 10, 11);
+				assertEventDates(case3.costs, 8, 17, 11, 12);
+				assertEventDates(case4.costs, 8, 17, 12, 13);
+				assertEventDates(case5.costs, 8, 17, 13, 14);
 			});
 			it('assignments should wrap onto the next month elegantly', async () => {
 				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => {
@@ -1137,21 +1136,21 @@ describe('calendar', () => {
 					{ prep: res[2], siteVisit1: res[7], siteVisit2: res[8], report: res[11], costs: res[14] }
 				];
 
-				assertEventDates(case1.prep, 2025, 8, 25, 9, 13);
-				assertEventDates(case2.prep, 2025, 8, 25, 13, 17);
-				assertEventDates(case3.prep, 2025, 8, 24, 9, 13);
-				assertEventDates(case1.siteVisit1, 2025, 8, 26, 9, 17);
-				assertEventDates(case1.siteVisit2, 2025, 8, 29, 9, 11);
-				assertEventDates(case2.siteVisit1, 2025, 8, 30, 9, 17);
-				assertEventDates(case2.siteVisit2, 2025, 9, 1, 9, 11);
-				assertEventDates(case3.siteVisit1, 2025, 9, 2, 9, 17);
-				assertEventDates(case3.siteVisit2, 2025, 9, 3, 9, 11);
-				assertEventDates(case1.report, 2025, 9, 6, 9, 14);
-				assertEventDates(case2.report, 2025, 9, 7, 9, 14);
-				assertEventDates(case3.report, 2025, 9, 8, 9, 14);
-				assertEventDates(case1.costs, 2025, 9, 9, 9, 10);
-				assertEventDates(case2.costs, 2025, 9, 9, 10, 11);
-				assertEventDates(case3.costs, 2025, 9, 9, 11, 12);
+				assertEventDates(case1.prep, 8, 25, 9, 13);
+				assertEventDates(case2.prep, 8, 25, 13, 17);
+				assertEventDates(case3.prep, 8, 24, 9, 13);
+				assertEventDates(case1.siteVisit1, 8, 26, 9, 17);
+				assertEventDates(case1.siteVisit2, 8, 29, 9, 11);
+				assertEventDates(case2.siteVisit1, 8, 30, 9, 17);
+				assertEventDates(case2.siteVisit2, 9, 1, 9, 11);
+				assertEventDates(case3.siteVisit1, 9, 2, 9, 17);
+				assertEventDates(case3.siteVisit2, 9, 3, 9, 11);
+				assertEventDates(case1.report, 9, 6, 9, 14);
+				assertEventDates(case2.report, 9, 7, 9, 14);
+				assertEventDates(case3.report, 9, 8, 9, 14);
+				assertEventDates(case1.costs, 9, 9, 9, 10);
+				assertEventDates(case2.costs, 9, 9, 10, 11);
+				assertEventDates(case3.costs, 9, 9, 11, 12);
 			});
 		});
 		describe('missing stages', () => {
