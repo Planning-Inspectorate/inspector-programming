@@ -55,11 +55,13 @@ async function handleCases(selectedCases, service, req, res) {
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
-		successfullyAssignedCaseReferences: successfullyAssignedCases
+		successfullyAssignedCaseReferences
 	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
 	// Get case IDs for successfully assigned cases
-	const successfulCaseIds = successfullyAssignedCases.map((ref) => casesByReference.get(ref)?.caseId).filter(Boolean);
+	const successfulCaseIds = successfullyAssignedCaseReferences
+		.map((ref) => casesByReference.get(ref)?.caseId)
+		.filter(Boolean);
 
 	if (successfulCaseIds.length > 0) {
 		try {
@@ -68,7 +70,7 @@ async function handleCases(selectedCases, service, req, res) {
 			service.logger.info(
 				{
 					eventsCount: eventsToAdd.length,
-					casesCount: successfullyAssignedCases.length
+					casesCount: successfullyAssignedCaseReferences.length
 				},
 				'Calendar events created for successfully assigned cases'
 			);
@@ -82,7 +84,7 @@ async function handleCases(selectedCases, service, req, res) {
 				service.logger.info(
 					{
 						caseIds: successfulCaseIds,
-						caseReferences: successfullyAssignedCases
+						caseReferences: successfullyAssignedCaseReferences
 					},
 					'Removed successfully assigned cases from local database'
 				);
@@ -90,7 +92,7 @@ async function handleCases(selectedCases, service, req, res) {
 				service.logger.error(
 					{
 						error: error.message,
-						caseReferences: successfullyAssignedCases
+						caseReferences: successfullyAssignedCaseReferences
 					},
 					'Failed to remove successfully assigned cases from local database'
 				);
@@ -140,13 +142,13 @@ async function handleCases(selectedCases, service, req, res) {
 					req.session?.account,
 					req.body.inspectorId,
 					req.body.assignmentDate,
-					successfullyAssignedCases
+					successfullyAssignedCaseReferences
 				);
 				poEmailSent = true;
 				service.logger.info(
 					{
 						programmeOfficerEmail: req.session?.account?.username,
-						caseCount: successfullyAssignedCases.length
+						caseCount: successfullyAssignedCaseReferences.length
 					},
 					'Email notification sent successfully to programme officer'
 				);
@@ -168,7 +170,9 @@ async function handleCases(selectedCases, service, req, res) {
 				'Failed to process successfully assigned cases for inspector'
 			);
 			// If we fail to process successful assignments, treat them as failed
-			const failedSuccessfulCases = successfullyAssignedCases.map((ref) => casesByReference.get(ref)).filter(Boolean);
+			const failedSuccessfulCases = successfullyAssignedCaseReferences
+				.map((ref) => casesByReference.get(ref))
+				.filter(Boolean);
 			return handleFailure(
 				req,
 				res,
@@ -185,7 +189,7 @@ async function handleCases(selectedCases, service, req, res) {
 			{
 				user: req.session?.account?.name || 'unknown',
 				alreadyAssignedCases: alreadyAssignedCases,
-				successfullyAssigned: successfullyAssignedCases.length,
+				successfullyAssigned: successfullyAssignedCaseReferences.length,
 				inspectorId: req.body.inspectorId,
 				assignmentDate: req.body.assignmentDate,
 				totalAttempted: selectedCases.length,
@@ -222,7 +226,7 @@ async function handleCases(selectedCases, service, req, res) {
 
 		// Keep only unprocessed cases selected (preserve state for retry)
 		// Remove both successfully assigned and duplicate cases from selection
-		const processedCaseReferences = [...successfullyAssignedCases, ...alreadyAssignedCases];
+		const processedCaseReferences = [...successfullyAssignedCaseReferences, ...alreadyAssignedCases];
 		const unprocessedCaseIds = selectedCases.filter((caseId) => {
 			const caseItem = casesById.get(caseId);
 			return caseItem && !processedCaseReferences.includes(caseItem.caseReference);
@@ -240,7 +244,7 @@ async function handleCases(selectedCases, service, req, res) {
 			bodyCopy,
 			failedCases: alreadyAssignedCases,
 			inspectorId: req.body.inspectorId,
-			successfulCases: successfullyAssignedCases,
+			successfulCases: successfullyAssignedCaseReferences,
 			emailNotificationSent: emailNotificationSent
 		});
 	}
@@ -252,7 +256,7 @@ async function handleCases(selectedCases, service, req, res) {
 		saveSelectedData(failedCaseIds, req);
 
 		// Determine error message based on whether all or some cases failed
-		const allCasesFailed = successfullyAssignedCases.length === 0 && alreadyAssignedCases.length === 0;
+		const allCasesFailed = successfullyAssignedCaseReferences.length === 0 && alreadyAssignedCases.length === 0;
 		const errorMessage = allCasesFailed
 			? 'Try again later. None of the selected cases were assigned.'
 			: 'Try again later. Some of the selected cases failed to assign.';
@@ -261,7 +265,7 @@ async function handleCases(selectedCases, service, req, res) {
 	}
 
 	// All cases were successfully assigned
-	if (successfullyAssignedCases.length > 0) {
+	if (successfullyAssignedCaseReferences.length > 0) {
 		const successSummary = {
 			heading: 'Cases have been assigned',
 			body: getSuccessMessage(emailNotificationSent, poEmailSent)
