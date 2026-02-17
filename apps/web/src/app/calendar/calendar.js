@@ -1,4 +1,4 @@
-import { addDays, addHours, addWeeks, format, subDays, subWeeks, setHours } from 'date-fns';
+import { addDays, addHours, addWeeks, format, setHours, subDays, subWeeks } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 import { fromZonedTime } from 'date-fns-tz';
@@ -286,19 +286,18 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 }
 
 /**
- * use inspector calendar and bank holidays collection to compile list of previously booked timeslots in the inspectors calendar
+ * Map bank holiday dates into a BookedEventTimeslot
+ *
  * @param {string[]} bankHolidays
  * @returns {import('./types').BookedEventTimeslot[]}
  */
 function compileBankHolidays(bankHolidays) {
-	const bankHolidayTimes = bankHolidays.map((holidayString) => {
-		const baseDate = new Date(holidayString);
-		let [start, end] = [new Date(baseDate), new Date(baseDate)];
-		start = setHours(start, 0, { in: timeZone });
-		end = setHours(end, 23, { in: timeZone });
-		return { startTime: start, endTime: end };
+	return bankHolidays.map((holidayString) => {
+		return {
+			startTime: setHours(new Date(holidayString), 0, { in: timeZone }),
+			endTime: setHours(new Date(holidayString), 23, { in: timeZone })
+		};
 	});
-	return bankHolidayTimes;
 }
 
 /**
@@ -330,7 +329,7 @@ function getStageStartDate(stage, assignment, inspectorEvents) {
  * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }> | undefined}
  */
 function matchTimingRuleToCase(timingRules, fullCase) {
-	const found = fullCase
+	return fullCase
 		? timingRules.find(
 				(r) =>
 					r.caseProcedure.toLowerCase() === fullCase.caseProcedure?.toLowerCase() &&
@@ -338,7 +337,6 @@ function matchTimingRuleToCase(timingRules, fullCase) {
 					r.caseType === fullCase.caseType
 			)
 		: undefined;
-	return found;
 }
 
 /**
