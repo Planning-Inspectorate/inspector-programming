@@ -659,6 +659,7 @@ describe('calendar', () => {
 
 				//check correct time allocation
 				assertEventDates(res[0], 8, 19, 9, 11);
+				// 20th and 21st skipped - weekend
 				assertEventDates(res[1], 8, 22, 9, 12);
 				assertEventDates(res[2], 8, 23, 9, 11);
 				assertEventDates(res[3], 8, 24, 9, 10);
@@ -674,6 +675,7 @@ describe('calendar', () => {
 
 				//check correct time allocation
 				assertEventDates(res[0], 8, 19, 9, 11);
+				// 20th and 21st skipped - weekend
 				assertEventDates(res[1], 8, 22, 9, 12);
 				assertEventDates(res[2], 8, 23, 9, 11);
 				assertEventDates(res[3], 8, 24, 9, 10);
@@ -689,6 +691,7 @@ describe('calendar', () => {
 
 				//check correct time allocation
 				assertEventDates(res[0], 8, 19, 9, 11);
+				// 20th and 21st skipped - weekend
 				assertEventDates(res[1], 8, 22, 9, 12);
 				assertEventDates(res[2], 8, 23, 9, 11);
 				assertEventDates(res[3], 8, 24, 9, 10);
@@ -705,6 +708,7 @@ describe('calendar', () => {
 				//check correct time allocation
 				assertEventDates(res[0], 8, 18, 9, 11);
 				assertEventDates(res[1], 8, 19, 9, 12);
+				// 20th and 21st skipped - weekend
 				assertEventDates(res[2], 8, 22, 9, 11);
 				assertEventDates(res[3], 8, 23, 9, 10);
 			});
@@ -721,6 +725,7 @@ describe('calendar', () => {
 				assertEventDates(res[0], 8, 17, 9, 11);
 				assertEventDates(res[1], 8, 18, 9, 12);
 				assertEventDates(res[2], 8, 19, 9, 11);
+				// 20th and 21st skipped - weekend
 				assertEventDates(res[3], 8, 22, 9, 10);
 			});
 			it('bank holidays should be accounted for when allocating events', async () => {
@@ -739,6 +744,8 @@ describe('calendar', () => {
 				assertEventDates(case1.prep, 8, 24, 9, 11);
 				assertEventDates(case1.siteVisit, 8, 25, 9, 12);
 				assertEventDates(case1.report, 8, 26, 9, 11);
+				// 27th and 28th skipped - weekend
+				// 29th skipped - mocked bank holiday
 				assertEventDates(case1.costs, 8, 30, 9, 10);
 			});
 			it('bank holidays should be accounted for when allocating events for multiple cases', async () => {
@@ -760,6 +767,8 @@ describe('calendar', () => {
 				assertEventDates(case3.prep, 8, 25, 13, 15);
 				assertEventDates(case1.siteVisit, 8, 26, 9, 12);
 				assertEventDates(case2.siteVisit, 8, 26, 12, 15);
+				// 27th and 28th skipped - weekend
+				// 29th skipped - mocked bank holiday
 				assertEventDates(case3.siteVisit, 8, 30, 9, 12);
 				assertEventDates(case1.report, 9, 1, 9, 11);
 				assertEventDates(case2.report, 9, 1, 11, 13);
