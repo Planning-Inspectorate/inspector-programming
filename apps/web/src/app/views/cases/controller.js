@@ -47,17 +47,31 @@ export function buildPostCases(service) {
  * @param {import('express').Response} res
  */
 async function handleCases(selectedCases, service, req, res) {
+	/**
+	 * - fetch cases from the local database
+	 * - assign cases to the inspector in Manage appeals
+	 * - for successfully assigned cases:
+	 *    - generate calendar events
+	 *    - create the calendar events
+	 *    - remove the case locally
+	 * - send inspector notify email
+	 * - send programme officer notify email
+	 * - display success page
+	 */
+
 	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
 	const casesByReference = new Map(cases.map((c) => [c.caseReference, c]));
 	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
 	let poEmailSent = false;
+
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
 		successfullyAssignedCaseReferences
 	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
 
+	const successfullyAssignedCases = successfullyAssignedCaseReferences.map((ref) => casesByReference.get(ref));
 	// Get case IDs for successfully assigned cases
 	const successfulCaseIds = successfullyAssignedCaseReferences
 		.map((ref) => casesByReference.get(ref)?.caseId)
@@ -66,7 +80,7 @@ async function handleCases(selectedCases, service, req, res) {
 	if (successfulCaseIds.length > 0) {
 		try {
 			// Generate calendar events for successful assignments
-			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, successfulCaseIds);
+			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, successfullyAssignedCases);
 			service.logger.info(
 				{
 					eventsCount: eventsToAdd.length,

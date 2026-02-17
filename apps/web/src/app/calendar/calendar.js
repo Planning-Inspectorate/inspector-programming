@@ -228,10 +228,10 @@ export function getNextWeekStartDate(currentStartDate) {
  * generates the calendar events after assigning a set of cases to an inspector
  * @param {import('#service').WebService} service
  * @param {string} assignmentDate
- * @param {number[]} caseIds
+ * @param {import('../case/types.d.ts').CaseToAssign[]} assignedCases
  * @returns {Promise<import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]>}
  */
-export async function generateCaseCalendarEvents(service, assignmentDate, caseIds) {
+export async function generateCaseCalendarEvents(service, assignmentDate, assignedCases) {
 	/** @type {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} */
 	const allEvents = [];
 	/** @type {import('./types').BookedEventTimeslot[]} */
@@ -257,13 +257,9 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 		//get the date to start from based on current stage
 		const stageStartDate = getStageStartDate(stage, assignment, inspectorEvents);
 
-		for (let caseId of caseIds) {
-			//will be cached
-			const fullCase = await service.casesClient.getCaseById(caseId);
-			if (!fullCase) throw new Error('Case details could not be fetched for case: ' + caseId);
-
-			const rule = matchTimingRuleToCase(timingRules, fullCase);
-			if (!rule) throw new Error('No timing rules matching case: ' + caseId);
+		for (let assignedCase of assignedCases) {
+			const rule = matchTimingRuleToCase(timingRules, assignedCase);
+			if (!rule) throw new Error('No timing rules matching case: ' + assignedCase.caseId);
 
 			//if timing rule doesn't include current stage then skip
 			const stageTime = stageLookup(stage, rule.CalendarEventTiming);
@@ -271,7 +267,7 @@ export async function generateCaseCalendarEvents(service, assignmentDate, caseId
 				throw new Error('Invalid appeals stage while generating calendar events. Ensure app is correctly configured.');
 			if (!(+stageTime > 0)) continue;
 
-			const events = generateEvents(stage, stageTime, fullCase, stageStartDate, inspectorEvents, bankHolidayEvents);
+			const events = generateEvents(stage, stageTime, assignedCase, stageStartDate, inspectorEvents, bankHolidayEvents);
 			allEvents.push(...events);
 		}
 	}
@@ -318,16 +314,16 @@ function getStageStartDate(stage, assignment, inspectorEvents) {
 /**
  * matches a timing rule to a given case
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }>[]} timingRules
- * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel} fullCase
- * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{ include: { CalendarEventTiming: true} }> | undefined}
+ * @param {import('../case/types.d.ts').CaseToAssign} assignedCase
+ * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{include: {CalendarEventTiming: true}}>|undefined}
  */
-function matchTimingRuleToCase(timingRules, fullCase) {
-	return fullCase
+function matchTimingRuleToCase(timingRules, assignedCase) {
+	return assignedCase
 		? timingRules.find(
 				(r) =>
-					r.caseProcedure.toLowerCase() === fullCase.caseProcedure?.toLowerCase() &&
-					r.allocationLevel === fullCase.caseLevel &&
-					r.caseType === fullCase.caseType
+					r.caseProcedure.toLowerCase() === assignedCase.caseProcedure?.toLowerCase() &&
+					r.allocationLevel === assignedCase.caseLevel &&
+					r.caseType === assignedCase.caseType
 			)
 		: undefined;
 }
@@ -336,13 +332,13 @@ function matchTimingRuleToCase(timingRules, fullCase) {
  * generates calendar event json objects for all stages of the case programming process
  * @param {string} stage
  * @param {number} stageTime
- * @param {import('@pins/inspector-programming-lib/data/types').CaseViewModel} fullCase
+ * @param {import('../case/types.d.ts').CaseToAssign} assignedCase
  * @param {Date} assignment
  * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
  * @param {import('./types').BookedEventTimeslot[]} bankHolidayEvents
  * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]}
  */
-function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents, bankHolidayEvents) {
+function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEvents, bankHolidayEvents) {
 	/** @type {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} */
 	const events = [];
 
@@ -360,14 +356,14 @@ function generateEvents(stage, stageTime, fullCase, assignment, inspectorEvents,
 		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
 		const event = buildEventJson(
 			{
-				subject: `${fullCase.caseReference} - ${fullCase.caseType} - ${fullCase.lpaName} - ${stage} - ${String(time)}`,
+				subject: `${assignedCase.caseReference} - ${assignedCase.caseType} - ${assignedCase.lpaName} - ${stage} - ${String(time)}`,
 				startTime: eventTimings.startTime.toISOString(),
 				endTime: eventTimings.endTime.toISOString(),
 				streetAddress: null, //TBC: CaseViewModel only has postcode currently
-				postcode: fullCase.siteAddressPostcode
+				postcode: assignedCase.siteAddressPostcode
 			},
 			{
-				caseReference: fullCase.caseReference ?? undefined,
+				caseReference: assignedCase.caseReference ?? undefined,
 				eventType: stage
 			}
 		);
