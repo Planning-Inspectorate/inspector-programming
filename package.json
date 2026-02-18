@@ -34,7 +34,7 @@
     "@azure/identity": "^4.13.0",
     "@azure/msal-node": "^5.0.3",
     "@date-fns/tz": "^1.4.1",
-    "@faker-js/faker": "^10.2.0",
+    "@faker-js/faker": "^10.3.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@planning-inspectorate/data-model": "^2.13.0",
     "@prisma/adapter-mssql": "^7.3.0",
