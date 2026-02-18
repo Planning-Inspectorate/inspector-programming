@@ -9,7 +9,8 @@ import {
 	getSimplifiedEvents,
 	getWeekStartDate,
 	generateCaseCalendarEvents,
-	submitCalendarEvents
+	submitCalendarEvents,
+	matchTimingRuleToCase
 } from './calendar.js';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 import { fromZonedTime } from 'date-fns-tz';
@@ -1215,6 +1216,71 @@ describe('calendar', () => {
 			assert.strictEqual(mockEntraClient.createCalendarEvents.mock.callCount(), 1);
 			assert.strictEqual(mockLogger.error.mock.callCount(), 1);
 			assert.strictEqual(mockLogger.error.mock.calls[0].arguments[0], expectedErrorMessage);
+		});
+	});
+
+	describe('matchTimingRuleToCase', () => {
+		const timingRules = [
+			{
+				id: 1,
+				caseType: 'C', // Enforcement
+				caseProcedure: 'written',
+				allocationLevel: 'A',
+				CalendarEventTiming: { prepTime: 2, siteVisitTime: 2, reportTime: 12, costsTime: 4 }
+			},
+			{
+				id: 2,
+				caseType: 'F', // Listed Building Enforcement
+				caseProcedure: 'written',
+				allocationLevel: 'B',
+				CalendarEventTiming: { prepTime: 2, siteVisitTime: 2, reportTime: 12, costsTime: 4 }
+			},
+			{
+				id: 3,
+				caseType: 'X', // LDC
+				caseProcedure: 'written',
+				allocationLevel: 'C',
+				CalendarEventTiming: { prepTime: 2, siteVisitTime: 2, reportTime: 8, costsTime: 4 }
+			}
+		];
+
+		it('should match Enforcement (C) case type with written procedure', () => {
+			const fullCase = { caseType: 'C', caseProcedure: 'written', caseLevel: 'A' };
+			const result = matchTimingRuleToCase(timingRules, fullCase);
+			assert.ok(result);
+			assert.strictEqual(result.caseType, 'C');
+		});
+
+		it('should match Listed Building Enforcement (F) case type with written procedure', () => {
+			const fullCase = { caseType: 'F', caseProcedure: 'written', caseLevel: 'B' };
+			const result = matchTimingRuleToCase(timingRules, fullCase);
+			assert.ok(result);
+			assert.strictEqual(result.caseType, 'F');
+		});
+
+		it('should match LDC (X) case type with written procedure', () => {
+			const fullCase = { caseType: 'X', caseProcedure: 'written', caseLevel: 'C' };
+			const result = matchTimingRuleToCase(timingRules, fullCase);
+			assert.ok(result);
+			assert.strictEqual(result.caseType, 'X');
+		});
+
+		it('should return undefined when no matching rule exists', () => {
+			const fullCase = { caseType: 'Z', caseProcedure: 'written', caseLevel: 'A' };
+			const result = matchTimingRuleToCase(timingRules, fullCase);
+			assert.strictEqual(result, undefined);
+		});
+
+		it('should return undefined when case is null', () => {
+			const result = matchTimingRuleToCase(timingRules, null);
+			assert.strictEqual(result, undefined);
+		});
+
+		it('should match case procedure case-insensitively', () => {
+			const fullCase = { caseType: 'C', caseProcedure: 'WRITTEN', caseLevel: 'A' };
+			const result = matchTimingRuleToCase(timingRules, fullCase);
+			assert.ok(result);
+			assert.strictEqual(result.caseType, 'C');
 		});
 	});
 });
