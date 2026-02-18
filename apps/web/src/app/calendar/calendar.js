@@ -317,7 +317,7 @@ function getStageStartDate(stage, assignment, inspectorEvents) {
  * @param {import('../case/types.d.ts').CaseToAssign} assignedCase
  * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.CalendarEventTimingRuleGetPayload<{include: {CalendarEventTiming: true}}>|undefined}
  */
-function matchTimingRuleToCase(timingRules, assignedCase) {
+export function matchTimingRuleToCase(timingRules, assignedCase) {
 	return assignedCase
 		? timingRules.find(
 				(r) =>
