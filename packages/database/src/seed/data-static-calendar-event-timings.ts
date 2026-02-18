@@ -12,14 +12,20 @@ interface CalendarEventTimingRule extends Omit<Prisma.CalendarEventTimingCreateI
 }
 
 const allocationLevels = {
-	F_G_H: [APPEAL_ALLOCATION_LEVEL.F, APPEAL_ALLOCATION_LEVEL.G, APPEAL_ALLOCATION_LEVEL.H],
+	F_G: [APPEAL_ALLOCATION_LEVEL.F, APPEAL_ALLOCATION_LEVEL.G],
+	get F_G_H() {
+		return [...this.F_G, APPEAL_ALLOCATION_LEVEL.H];
+	},
 	A_TO_E: [
 		APPEAL_ALLOCATION_LEVEL.A,
 		APPEAL_ALLOCATION_LEVEL.B,
 		APPEAL_ALLOCATION_LEVEL.C,
 		APPEAL_ALLOCATION_LEVEL.D,
 		APPEAL_ALLOCATION_LEVEL.E
-	]
+	],
+	get A_TO_G() {
+		return [...this.A_TO_E, APPEAL_ALLOCATION_LEVEL.F, APPEAL_ALLOCATION_LEVEL.G];
+	}
 };
 
 const calendarEventTimingsRules: CalendarEventTimingRule[] = [
@@ -124,6 +130,77 @@ const calendarEventTimingsRules: CalendarEventTimingRule[] = [
 		prepTime: 2,
 		siteVisitTime: 2,
 		reportTime: 12,
+		costsTime: 4
+	},
+	{
+		id: calendarEventTimingIds[7],
+		AppliesTo: [
+			{
+				caseType: APPEAL_CASE_TYPE.C, // Enforcement notice
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: allocationLevels.F_G
+			}
+		],
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 12,
+		costsTime: 4
+	},
+	{
+		id: calendarEventTimingIds[8],
+		AppliesTo: [
+			{
+				caseType: APPEAL_CASE_TYPE.C, // Enforcement notice
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: allocationLevels.A_TO_E
+			}
+		],
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 16,
+		costsTime: 4
+	},
+	{
+		id: calendarEventTimingIds[9],
+		AppliesTo: [
+			{
+				caseType: APPEAL_CASE_TYPE.F, // Enforcement listed building and conservation area
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: allocationLevels.A_TO_G
+			}
+		],
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 16,
+		costsTime: 4
+	},
+
+	{
+		id: calendarEventTimingIds[10],
+		AppliesTo: [
+			{
+				caseType: APPEAL_CASE_TYPE.X, // Lawful development certificate
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: allocationLevels.F_G
+			}
+		],
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 12,
+		costsTime: 4
+	},
+	{
+		id: calendarEventTimingIds[11],
+		AppliesTo: [
+			{
+				caseType: APPEAL_CASE_TYPE.X, // Lawful development certificate
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: allocationLevels.A_TO_E
+			}
+		],
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 16,
 		costsTime: 4
 	}
 ];
