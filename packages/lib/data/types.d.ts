@@ -44,6 +44,7 @@ export interface Filters {
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
 	caseTypes?: string[];
+	allocationLevels?: string[];
 }
 
 export interface FilterQuery {

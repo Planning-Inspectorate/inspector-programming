@@ -63,6 +63,12 @@ export function filterCases(cases, filters) {
 		cases = cases.filter((c) => c.caseType && types.includes(c.caseType));
 	}
 
+	// Filter by allocationLevels
+	if (filters.allocationLevels) {
+		const levels = Array.isArray(filters.allocationLevels) ? filters.allocationLevels : [filters.allocationLevels];
+		cases = cases.filter((c) => c.caseLevel && levels.includes(c.caseLevel));
+	}
+
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
 		if (!(c.caseAge >= +(cleanFilters.minimumAge || 0) && c.caseAge <= +(cleanFilters.maximumAge || 999))) return false;
