@@ -145,6 +145,36 @@ describe('filterCases', () => {
 		assert.strictEqual(filtered.length, 1);
 		assert.strictEqual(filtered[0].caseType, 'D');
 	});
+	test('should filter cases by allocation level', () => {
+		const cases = [
+			{ caseLevel: 'A', caseAge: 10 },
+			{ caseLevel: 'B', caseAge: 20 },
+			{ caseLevel: 'C', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { allocationLevels: ['A'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].caseLevel, 'A');
+	});
+	test('should filter cases by multiple allocation levels', () => {
+		const cases = [
+			{ caseLevel: 'A', caseAge: 10 },
+			{ caseLevel: 'B', caseAge: 20 },
+			{ caseLevel: 'C', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { allocationLevels: ['A', 'B'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.deepStrictEqual(filtered.map((c) => c.caseLevel).sort(), ['A', 'B']);
+	});
+	test('should exclude cases with missing caseLevel when allocationLevels filter is applied', () => {
+		const cases = [
+			{ caseLevel: null, caseAge: 10 },
+			{ caseLevel: undefined, caseAge: 20 },
+			{ caseLevel: 'A', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { allocationLevels: ['A'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].caseLevel, 'A');
+	});
 });
 
 describe('validateFilters', () => {
