@@ -43,6 +43,7 @@ export interface Filters {
 	inspectorCoordinates?: Coordinates;
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
+	caseTypes?: string[];
 }
 
 export interface FilterQuery {
