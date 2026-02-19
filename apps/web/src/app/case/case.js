@@ -9,7 +9,7 @@ export async function getCaseDetails(db, caseReference) {
 	}
 	return db.appealCase.findUnique({
 		where: { caseReference: caseReference },
-		include: { Events: true, Specialisms: true }
+		include: { Events: true, Specialisms: true, ChildCases: { select: { caseReference: true } } }
 	});
 }
 
