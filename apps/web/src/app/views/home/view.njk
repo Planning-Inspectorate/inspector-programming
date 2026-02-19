@@ -96,7 +96,8 @@
                     filters.query.case.maximumAge or
                     filters.query.case.lpaRegion or
                     filters.query.case.caseSpecialisms or
-                    filters.query.case.caseTypes
+                    filters.query.case.caseTypes or
+                    filters.query.case.allocationLevels
                 %}
 
                 {% if hasActiveFilters %}
@@ -144,6 +145,15 @@
                                         {% endif %}
                                     {% endfor %}
                                     {{ filterTag(caseTypeText, filters.buildUrlWithoutFilter('caseTypes', caseType)) }}
+                                {% endfor %}
+                            {% endcall %}
+                        {% endif %}
+
+                        {# Case allocation #}
+                        {% if filters.query.case.allocationLevels %}
+                            {% call filterGroup('Case allocation level') %}
+                                {% for allocationLevel in filters.query.case.allocationLevels %}
+                                    {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
                                 {% endfor %}
                             {% endcall %}
                         {% endif %}
@@ -253,6 +263,24 @@
                             textBox: {
                                 label: 'Find case type'
                             }
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
+                    {{ govukDetails({
+                        summaryText: "Case allocation",
+                        html: govukCheckboxes({
+                            idPrefix: "filters[allocationLevels]",
+                            name: "filters[allocationLevels]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more case allocation levels",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: filters.allocationLevels,
+                            values: filters.query.case.allocationLevels,
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
