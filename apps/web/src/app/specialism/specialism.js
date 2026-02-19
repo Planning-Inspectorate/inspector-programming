@@ -123,7 +123,12 @@ export const appealTypes = [
 ];
 
 /** @type {import('#util/types.js').RadioOption[]} */
-export const caseTypes = Object.values(appealTypes).map((v) => ({ value: v.key, text: v.type }));
+export const caseTypes = Object.values(appealTypes)
+	.map((v) => ({
+		value: v.key,
+		text: v.changeAppealType
+	}))
+	.sort((a, b) => a.text.localeCompare(b.text));
 
 /** @type {import('#util/types.js').RadioOption[]} */
 export const allocationLevels = Object.values(APPEAL_CASE_TYPE).map((v) => ({ value: v, text: v }));

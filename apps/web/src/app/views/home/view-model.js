@@ -159,7 +159,7 @@ export function filtersQueryViewModel(query, previousSort) {
 		filters.page = 1;
 	}
 
-	const arrayProps = ['caseSpecialisms', 'lpaRegion'];
+	const arrayProps = ['caseSpecialisms', 'lpaRegion', 'caseTypes'];
 
 	for (const arrayProp of arrayProps) {
 		const value = query[`filters[${arrayProp}]`];

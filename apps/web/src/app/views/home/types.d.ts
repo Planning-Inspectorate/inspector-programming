@@ -33,7 +33,7 @@ export interface CalendarViewModel {
 
 export interface Filters {
 	specialisms: RadioOption[];
-
+	caseTypes: RadioOption[];
 	pagination: Pagination;
 	query: FilterQuery;
 
@@ -49,6 +49,7 @@ export interface FilterErrors {
 export interface FilterCaseQuery {
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
+	caseTypes?: string[];
 	minimumAge?: string;
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;
