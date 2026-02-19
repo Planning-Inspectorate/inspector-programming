@@ -22,7 +22,7 @@
         <div class="govuk-checkboxes {% if params.classes %} {{ params.classes }}{% endif %}" data-module="govuk-checkboxes">
             {% for item in params.items %}
                 {% if item %}
-                    {{ checkboxItem(params, item, loop.index) }}
+                    {{ checkboxItem(params, item, idPrefix, loop.index) }}
                 {% endif %}
             {% endfor %}
         </div>
