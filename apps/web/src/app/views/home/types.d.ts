@@ -50,6 +50,7 @@ export interface FilterCaseQuery {
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
 	caseTypes?: string[];
+	allocationLevels?: string[];
 	minimumAge?: string;
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;
