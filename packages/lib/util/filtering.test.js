@@ -115,6 +115,36 @@ describe('filterCases', () => {
 		assert.strictEqual(filtered.length, 1);
 		assert.strictEqual(filtered[0].lpaRegion, 'East');
 	});
+	test('should filter cases by case type', () => {
+		const cases = [
+			{ caseType: 'D', caseAge: 10 },
+			{ caseType: 'W', caseAge: 20 },
+			{ caseType: 'C', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { caseTypes: ['D'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].caseType, 'D');
+	});
+	test('should filter cases by multiple case types', () => {
+		const cases = [
+			{ caseType: 'D', caseAge: 10 },
+			{ caseType: 'W', caseAge: 20 },
+			{ caseType: 'C', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { caseTypes: ['D', 'W'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.deepStrictEqual(filtered.map((c) => c.caseType).sort(), ['D', 'W']);
+	});
+	test('should exclude cases with missing caseType when caseTypes filter is applied', () => {
+		const cases = [
+			{ caseType: null, caseAge: 10 },
+			{ caseType: undefined, caseAge: 20 },
+			{ caseType: 'D', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { caseTypes: ['D'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].caseType, 'D');
+	});
 });
 
 describe('validateFilters', () => {
