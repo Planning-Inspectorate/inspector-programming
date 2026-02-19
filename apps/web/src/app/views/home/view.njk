@@ -95,7 +95,8 @@
                     filters.query.case.minimumAge or
                     filters.query.case.maximumAge or
                     filters.query.case.lpaRegion or
-                    filters.query.case.caseSpecialisms
+                    filters.query.case.caseSpecialisms or
+                    filters.query.case.caseTypes
                 %}
 
                 {% if hasActiveFilters %}
@@ -128,6 +129,21 @@
                             {% call filterGroup('Specialism') %}
                                 {% for specialism in filters.query.case.caseSpecialisms %}
                                     {{ filterTag(specialism, filters.buildUrlWithoutFilter('caseSpecialisms', specialism)) }}
+                                {% endfor %}
+                            {% endcall %}
+                        {% endif %}
+
+                        {# Case types #}
+                        {% if filters.query.case.caseTypes %}
+                            {% call filterGroup('Case type') %}
+                                {% for caseType in filters.query.case.caseTypes %}
+                                    {% set caseTypeText = caseType %}
+                                    {% for item in filters.caseTypes %}
+                                        {% if item.value == caseType %}
+                                            {% set caseTypeText = item.text %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ filterTag(caseTypeText, filters.buildUrlWithoutFilter('caseTypes', caseType)) }}
                                 {% endfor %}
                             {% endcall %}
                         {% endif %}
@@ -219,7 +235,28 @@
                         }),
                         classes: "custom-filter-dropdown",
                         open: true
-                    }) }}     
+                    }) }}
+                    {{ govukDetails({
+                        summaryText: "Case type",
+                        html: checkboxFilter({
+                            idPrefix: "filters[caseTypes]",
+                            name: "filters[caseTypes]",
+                            classes: "govuk-checkboxes--small",
+                            fieldset: {
+                                legend: {
+                                    text: "Select one or more case types",
+                                    classes: "govuk-fieldset__legend--s"
+                                }
+                            },
+                            items: filters.caseTypes,
+                            values: filters.query.case.caseTypes,
+                            textBox: {
+                                label: 'Find case type'
+                            }
+                        }),
+                        classes: "custom-filter-dropdown",
+                        open: true
+                    }) }}
                     {{ compileSortPaginationQueryFields(filters) }}
                     <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
                     <input type="hidden" name="page" value="{{ filters.query.page }}">
