@@ -10,7 +10,8 @@
     "reset-dev": "npx prisma migrate reset",
     "migrate-prod": "npx prisma migrate deploy",
     "generate": "npx prisma generate",
-    "seed": "npx prisma db seed"
+    "seed": "npx prisma db seed",
+    "seed-prod": "npm run generate && node src/seed/seed-prod.js"
   },
   "license": "MIT",
   "dependencies": {
