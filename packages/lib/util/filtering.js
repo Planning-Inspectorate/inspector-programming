@@ -57,6 +57,12 @@ export function filterCases(cases, filters) {
 		cases = cases.filter((c) => c.lpaRegion && regions.some((region) => c.lpaRegion.toLowerCase().startsWith(region)));
 	}
 
+	// Filter by case types
+	if (filters.caseTypes) {
+		const types = Array.isArray(filters.caseTypes) ? filters.caseTypes : [filters.caseTypes];
+		cases = cases.filter((c) => c.caseType && types.includes(c.caseType));
+	}
+
 	return cases.filter((c) => {
 		//always apply case age filters, using defaults if no filter provided
 		if (!(c.caseAge >= +(cleanFilters.minimumAge || 0) && c.caseAge <= +(cleanFilters.maximumAge || 999))) return false;
