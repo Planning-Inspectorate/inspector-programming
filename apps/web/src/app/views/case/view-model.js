@@ -13,6 +13,7 @@ export function caseToViewModel(caseClient, c) {
 	const caseToViewModel = caseClient.caseToViewModel(c);
 	const hasSpecialisms = Array.isArray(c.Specialisms) && c.Specialisms.length > 0;
 	const hasEvents = Array.isArray(c.Events) && c.Events.length > 0;
+	const hasLinkedCases = Array.isArray(c.ChildCases) && c.ChildCases.length > 0;
 	return {
 		...caseToViewModel,
 		siteAddress: c.siteAddressLine1,
@@ -20,6 +21,7 @@ export function caseToViewModel(caseClient, c) {
 		appealStartDate: hasEvents ? formatDateForDisplay(c.Events[0].eventStartDateTime, { format: 'dd/MM/yyyy' }) : '',
 		caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		eventType: hasEvents ? c.Events[0].eventType : 'No events',
-		caseAgeColor: getCaseColor(caseToViewModel.caseAge)
+		caseAgeColor: getCaseColor(caseToViewModel.caseAge),
+		linkedCases: hasLinkedCases ? c.ChildCases.map((c) => c.caseReference).join(', ') : 'None'
 	};
 }
