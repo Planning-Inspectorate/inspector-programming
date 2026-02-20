@@ -1,12 +1,8 @@
 import { DatabaseConfig } from '@pins/inspector-programming-lib/app/config-types';
+import { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
 
 interface Config {
-	cbos: {
-		apiUrl: string;
-		timeoutMs: number;
-		appealTypesCachettl: number;
-		fetchCasesSchedule: string;
-	};
+	cbos: ManageAppealsApiOptions;
 	database: DatabaseConfig;
 	NODE_ENV: string;
 	logLevel: string;

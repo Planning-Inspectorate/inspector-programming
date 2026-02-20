@@ -137,8 +137,8 @@ export function loadConfig() {
 		},
 		cbos: {
 			apiUrl: CBOS_API_URL,
-			timeoutMs: parseInt(CBOS_API_TIMEOUT || 10000),
-			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL || 1440
+			timeoutMs: CBOS_API_TIMEOUT && parseInt(CBOS_API_TIMEOUT),
+			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL
 		},
 		database: {
 			connectionString: SQL_CONNECTION_STRING

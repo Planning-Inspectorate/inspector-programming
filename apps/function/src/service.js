@@ -36,9 +36,6 @@ export class FunctionService {
 		this.cbosClient = new CbosApiClient(config.cbos, osApiClient, logger);
 	}
 
-	get cbosFetchCasesSchedule() {
-		return this.#config.cbos.fetchCasesSchedule;
-	}
 	get inspectorServiceBusConfig() {
 		return this.#config.serviceBus.inspector;
 	}
