@@ -1,4 +1,4 @@
-import { APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_TYPE, APPEAL_ALLOCATION_LEVEL } from '@planning-inspectorate/data-model';
 
 const APPEAL_TYPE = Object.freeze({
 	HOUSEHOLDER: 'Householder',
@@ -131,7 +131,7 @@ export const caseTypes = Object.values(appealTypes)
 	.sort((a, b) => a.text.localeCompare(b.text));
 
 /** @type {import('#util/types.js').RadioOption[]} */
-export const allocationLevels = Object.values(APPEAL_CASE_TYPE).map((v) => ({ value: v, text: v }));
+export const allocationLevels = Object.values(APPEAL_ALLOCATION_LEVEL).map((v) => ({ value: v, text: v }));
 
 /** @type {import('#util/types.js').RadioOption[]} */
 export const specialisms = [
