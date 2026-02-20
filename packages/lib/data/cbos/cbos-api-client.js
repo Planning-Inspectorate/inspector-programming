@@ -53,25 +53,31 @@ export class CbosApiClient {
 		const logger = this.logger.child({ method: 'getUnassignedCases' });
 		try {
 			logger.debug({ pageNumber, pageSize, fetchAll }, 'fetchAppealReferences');
-			const appealReferences = await this.fetchAppealReferences({ pageNumber, pageSize, fetchAll });
-			logger.debug({ count: appealReferences.length }, 'got references');
+			const appealsList = await this.#fetchAppealData({ pageNumber, pageSize, fetchAll });
+			logger.debug({ count: appealsList.length }, 'got appeals');
+
+			/**
+			 * filter out parent appeals where the status isn't one that indicates ready for assignment
+			 * @param {import('../types.d.ts').CbosAppealsListResponse['items'][0]} appeal
+			 * @returns {boolean}
+			 */
+			function shouldIncludeAppeal(appeal) {
+				return (
+					appeal.isChildAppeal || (appeal.appealStatus && READY_TO_ASSIGN_APPEAL_STATUSES.includes(appeal.appealStatus))
+				);
+			}
+			const appealsToAssign = appealsList.filter(shouldIncludeAppeal);
+			logger.debug({ count: appealsToAssign.length }, `filter out parent appeals which aren't ready`);
+
+			const appealReferences = appealsToAssign.map((a) => a.appealReference);
 			const [appealDetails, lpaData] = await Promise.all([
 				this.fetchAppealDetailsByReference(appealReferences),
 				this.fetchLpaData()
 			]);
 			logger.debug('got all appeal details');
+			const mappedAppeals = await Promise.all(appealDetails.map((c) => this.appealToAppealCaseModel(c, lpaData)));
 
-			// Remove Parent cases with invalid statuses
-			// TODO: can we filter before we do fetchAppealDetailsByReference ??
-			const filteredData = appealDetails.filter(
-				(item) =>
-					item.isChildAppeal || (item.appealStatus && READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus))
-			);
-			logger.debug({ count: filteredData.length }, `filter out child cases and appeals which aren't ready`);
-			const mappedAppeals = await Promise.all(filteredData.map((c) => this.appealToAppealCaseModel(c, lpaData)));
-			const filteredCaseReferences = mappedAppeals.map((appeal) => appeal.caseReference);
-
-			return { cases: mappedAppeals, caseReferences: filteredCaseReferences };
+			return { cases: mappedAppeals, caseReferences: appealReferences };
 		} catch (error) {
 			logger.error(error, 'error fetching all unassigned cases');
 			throw error;
@@ -198,14 +204,12 @@ export class CbosApiClient {
 
 	/**
 	 * Fetch appeal Data for a given Azure AD user.
-	 * @returns {Promise<number[] | string[]>} Promise resolving to an array of appeal Data.
+	 * @returns {Promise<import('../types.d.ts').CbosAppealsListResponse['items']>} Promise resolving to an array of appeal Data.
 	 * @throws {Error} If fetching appeal Data fails.
 	 */
 	async #fetchAppealData({ pageNumber = 1, pageSize = 10, fetchAll = false } = {}) {
 		try {
-			/**
-			 * @type {number[]}
-			 */
+			/** @type {import('../types.d.ts').CbosAppealsListResponse['items']} */
 			let allItems = [];
 			let continueToFetch = true;
 			while (continueToFetch) {
@@ -251,20 +255,6 @@ export class CbosApiClient {
 			return items.map((item) => item.appealId);
 		} catch (error) {
 			throw new Error(`Failed to fetch appeal IDs: ${error.message}`);
-		}
-	}
-
-	/**
-	 * Fetch appeal References for a given Azure AD user.
-	 * @returns {Promise<string[]>} Promise resolving to an array of appeal References.
-	 * @throws {Error} If fetching appeal References fails.
-	 */
-	async fetchAppealReferences(options) {
-		try {
-			const items = await this.#fetchAppealData(options);
-			return items.map((item) => item.appealReference);
-		} catch (error) {
-			throw new Error(`Failed to fetch appeal References: ${error.message}`);
 		}
 	}
 
