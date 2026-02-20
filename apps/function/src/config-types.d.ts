@@ -23,4 +23,8 @@ interface Config {
 			subscription: string;
 		};
 	};
+	syncCases: {
+		transactionWaitTime: number;
+		transactionTimeout: number;
+	};
 }

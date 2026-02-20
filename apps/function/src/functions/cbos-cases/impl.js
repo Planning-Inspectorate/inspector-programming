@@ -15,78 +15,75 @@ export function buildCbosFetchCases(service) {
 			context.log('got', appealsData.caseReferences.length, 'cases');
 
 			context.log('starting db transaction');
-			await service.dbClient.$transaction(
-				async ($tx) => {
-					context.log('upsert cases');
-					// Updates/creates cases within the inspector programming database
-					await Promise.all(
-						appealsData.cases.map((appeal) => {
-							return $tx.appealCase.upsert({
-								where: { caseReference: appeal.caseReference },
-								update: {
-									...omit(appeal, ['caseReference', 'leadCaseReference', 'lpaCode', 'childCaseReferences']),
-									Lpa: { connect: { lpaCode: appeal.lpaCode } }
-								},
-								create: {
-									...omit(appeal, ['leadCaseReference', 'lpaCode', 'childCaseReferences']),
-									Lpa: { connect: { lpaCode: appeal.lpaCode } }
-								}
-							});
-						})
-					);
-
-					// Add links between cases (if parent case is not pulled from cbos, case will still be marked as child in linkedCaseStatus)
-					const childCases = appealsData.cases.filter(
-						(appeal) => appeal.leadCaseReference && appealsData.caseReferences.includes(appeal.leadCaseReference)
-					);
-					context.log('upsert links');
-					await Promise.all(
-						childCases.map((appeal) => {
-							return $tx.appealCase.update({
-								where: { caseReference: appeal.caseReference },
-								data: {
-									LeadCase: { connect: { caseReference: appeal.leadCaseReference } }
-								}
-							});
-						})
-					);
-
-					// Remove any old links from cases to be deleted
-					await $tx.appealCase.updateMany({
-						where: {
-							leadCaseReference: {
-								notIn: appealsData.caseReferences
+			await service.dbClient.$transaction(async ($tx) => {
+				context.log('upsert cases');
+				// Updates/creates cases within the inspector programming database
+				await Promise.all(
+					appealsData.cases.map((appeal) => {
+						return $tx.appealCase.upsert({
+							where: { caseReference: appeal.caseReference },
+							update: {
+								...omit(appeal, ['caseReference', 'leadCaseReference', 'lpaCode', 'childCaseReferences']),
+								Lpa: { connect: { lpaCode: appeal.lpaCode } }
+							},
+							create: {
+								...omit(appeal, ['leadCaseReference', 'lpaCode', 'childCaseReferences']),
+								Lpa: { connect: { lpaCode: appeal.lpaCode } }
 							}
-						},
-						data: {
-							leadCaseReference: null
-						}
-					});
+						});
+					})
+				);
 
-					// Delete any cases that are no longer in cbos
-					await $tx.appealCase.deleteMany({
-						where: {
-							caseReference: {
-								notIn: appealsData.caseReferences
+				// Add links between cases (if parent case is not pulled from cbos, case will still be marked as child in linkedCaseStatus)
+				const childCases = appealsData.cases.filter(
+					(appeal) => appeal.leadCaseReference && appealsData.caseReferences.includes(appeal.leadCaseReference)
+				);
+				context.log('upsert links');
+				await Promise.all(
+					childCases.map((appeal) => {
+						return $tx.appealCase.update({
+							where: { caseReference: appeal.caseReference },
+							data: {
+								LeadCase: { connect: { caseReference: appeal.leadCaseReference } }
 							}
-						}
-					});
-					context.log('upsert poll status');
+						});
+					})
+				);
 
-					// save in the DB that we have an update
-					await $tx.appealCasePollStatus.upsert({
-						where: { id: 1 },
-						create: {
-							lastPollAt: new Date(),
-							casesFetched: -1 // not used
-						},
-						update: {
-							lastPollAt: new Date()
+				// Remove any old links from cases to be deleted
+				await $tx.appealCase.updateMany({
+					where: {
+						leadCaseReference: {
+							notIn: appealsData.caseReferences
 						}
-					});
-				},
-				{ maxWait: 30000, timeout: 60000 }
-			);
+					},
+					data: {
+						leadCaseReference: null
+					}
+				});
+
+				// Delete any cases that are no longer in cbos
+				await $tx.appealCase.deleteMany({
+					where: {
+						caseReference: {
+							notIn: appealsData.caseReferences
+						}
+					}
+				});
+				context.log('upsert poll status');
+
+				// save in the DB that we have an update
+				await $tx.appealCasePollStatus.upsert({
+					where: { id: 1 },
+					create: {
+						lastPollAt: new Date(),
+						casesFetched: -1 // not used
+					},
+					update: {
+						lastPollAt: new Date()
+					}
+				});
+			}, service.syncCasesTransactionOptions);
 
 			context.log('Finished fetching cases from CBOS');
 		} catch (error) {
