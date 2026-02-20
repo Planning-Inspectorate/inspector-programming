@@ -1,5 +1,6 @@
 import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { chunk } from '../../util/chunk.js';
 
 const READY_TO_ASSIGN_APPEAL_STATUSES = [
 	APPEAL_CASE_STATUS.READY_TO_START,
@@ -284,27 +285,37 @@ export class CbosApiClient {
 			return await response.json();
 		});
 
-		return await Promise.all(detailPromises); // Will throw if any promise rejects
+		return Promise.all(detailPromises); // Will throw if any promise rejects
 	}
 
 	/**
-	 * Fetch details for each appeal Reference in parallel.
+	 * Fetch details for each appeal reference in parallel.
 	 * @param {string[]} appealReferences - Array of appeal References
 	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.
 	 * @throws {Error} If fetching any appeal details fails.
 	 */
 	async fetchAppealDetailsByReference(appealReferences) {
-		const detailPromises = appealReferences.map(async (appealReference) => {
-			const url = `${this.config.apiUrl}/appeals/case-reference/${appealReference}`;
-			const response = await this.fetchWithTimeout(url);
+		const logger = this.logger.child({ method: 'fetchAppealDetailsByReference' });
+		// split the references into chunks to reduce load on Manage appeals API
+		const chunks = chunk(appealReferences, 10);
+		const details = [];
+		for (let i = 0; i < chunks.length; i++) {
+			logger.debug({ chunk: i + 1, total: chunks.length }, 'fetching details for chunk');
+			const chunkOfReferences = chunks[i];
+			const detailPromises = chunkOfReferences.map(async (appealReference) => {
+				const url = `${this.config.apiUrl}/appeals/case-reference/${appealReference}`;
+				const response = await this.fetchWithTimeout(url);
 
-			if (!response.ok) {
-				throw new Error(`Failed to fetch details for appealReference ${appealReference}. Status: ${response.status}`);
-			}
-			return await response.json();
-		});
+				if (!response.ok) {
+					throw new Error(`Failed to fetch details for appealReference ${appealReference}. Status: ${response.status}`);
+				}
+				return await response.json();
+			});
 
-		return await Promise.all(detailPromises); // Will throw if any promise rejects
+			const res = await Promise.all(detailPromises);
+			details.push(...res);
+		}
+		return details; // Will throw if any promise rejects
 	}
 
 	/**
