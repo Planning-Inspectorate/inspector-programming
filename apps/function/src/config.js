@@ -12,7 +12,6 @@ export function loadConfig() {
 		CBOS_API_URL,
 		CBOS_API_TIMEOUT,
 		CBOS_APPEAL_TYPE_CACHE_TTL,
-		CBOS_FETCH_CASES_SCHEDULE,
 		NODE_ENV,
 		SQL_CONNECTION_STRING,
 		LOG_LEVEL,
@@ -31,10 +30,9 @@ export function loadConfig() {
 
 	return {
 		cbos: {
-			fetchCasesSchedule: CBOS_FETCH_CASES_SCHEDULE || '0 0 0 * * *', // default to daily at midnight
 			apiUrl: CBOS_API_URL,
-			timeoutMs: parseInt(CBOS_API_TIMEOUT || 10000),
-			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL || 1440
+			timeoutMs: CBOS_API_TIMEOUT && parseInt(CBOS_API_TIMEOUT),
+			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL
 		},
 		database: {
 			connectionString: SQL_CONNECTION_STRING

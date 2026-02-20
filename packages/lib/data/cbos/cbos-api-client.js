@@ -12,7 +12,7 @@ const READY_TO_ASSIGN_APPEAL_STATUSES = [
 ];
 
 /**
- * Client for interacting with the CBOS API, providing methods to fetch cases,
+ * Client for interacting with the Manage appeals (CBOS) API, providing methods to fetch cases,
  * and handle caching and request timeouts.
  *
  * @module CbosApiClient
@@ -20,16 +20,24 @@ const READY_TO_ASSIGN_APPEAL_STATUSES = [
 export class CbosApiClient {
 	/**
 	 * Creates an instance of CbosApiClient.
-	 * @param {Object} cbosConfig - Configuration object for the API client.
-	 * @param {string} cbosConfig.apiUrl - Base URL for the CBOS API.
-	 * @param {string} cbosConfig.apiHeader - Azure AD user ID header value.
-	 * @param {number} cbosConfig.timeoutMs - Timeout for API requests in milliseconds.
-	 * @param {number} cbosConfig.appealTypesCachettl - TTL for the appeal types cache.
+	 * @param {import('./types.d.ts').ManageAppealsApiOptions} config
 	 * @param {import('packages/lib/os/os-api-client').OsApiClient} osApiClient - Client for OS API
 	 * @param {import('pino').Logger} logger - Logger instance for logging warnings and errors.
 	 */
-	constructor(cbosConfig, osApiClient, logger) {
-		this.config = cbosConfig;
+	constructor(config, osApiClient, logger) {
+		if (!config.apiUrl) {
+			throw new Error('apiUrl is required for CbosApiClient');
+		}
+		this.config = config;
+		if (!this.config.apiHeader) {
+			this.config.apiHeader = 'programme-appeals-system-user'; // placeholder user ID for api requests
+		}
+		if (!this.config.timeoutMs) {
+			this.config.timeoutMs = 10000; // default to 10s
+		}
+		if (!this.config.appealTypesCachettl) {
+			this.config.appealTypesCachettl = 1440; // default to 24h
+		}
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
 		this.logger = logger;
 		this.osApiClient = osApiClient;
