@@ -372,94 +372,40 @@ describe('cboas-api-client', () => {
 		assert.deepStrictEqual(mappedCase, expectedCase);
 	});
 
-	test('getUnassignedCases should return cases with valid appeal statuses', async () => {
-		const responses = [
-			{
-				ok: true,
-				json: async () => ({
-					items: [
-						{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
-						{ appealId: '2', appealStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
-						{ appealId: '3', appealStatus: APPEAL_CASE_STATUS.STATEMENTS },
-						{ appealId: '4', appealStatus: APPEAL_CASE_STATUS.FINAL_COMMENTS },
-						{ appealId: '5', appealStatus: APPEAL_CASE_STATUS.EVENT },
-						{ appealId: '6', appealStatus: APPEAL_CASE_STATUS.EVIDENCE },
-						{ appealId: '7', appealStatus: APPEAL_CASE_STATUS.WITNESSES }
-					],
-					itemCount: 7,
-					pageCount: 1
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '1',
-					appealReference: '60001',
-					appealStatus: APPEAL_CASE_STATUS.READY_TO_START,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '2',
-					appealReference: '60002',
-					appealStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '3',
-					appealReference: '60003',
-					appealStatus: APPEAL_CASE_STATUS.STATEMENTS,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '4',
-					appealReference: '60004',
-					appealStatus: APPEAL_CASE_STATUS.FINAL_COMMENTS,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '5',
-					appealReference: '60005',
-					appealStatus: APPEAL_CASE_STATUS.EVENT,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '6',
-					appealReference: '60006',
-					appealStatus: APPEAL_CASE_STATUS.EVIDENCE,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '7',
-					appealReference: '60007',
-					appealStatus: APPEAL_CASE_STATUS.WITNESSES,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => [{ id: 'lpaId', lpaName: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]
-			}
-		];
+	const mockFetchResponse = (appeals) => {
 		let call = 0;
-		global.fetch = async () => responses[call++];
+		global.fetch = async () => {
+			call++;
+			if (call === 1) {
+				return {
+					ok: true,
+					json: () => ({ items: appeals, itemCount: 8, pageCount: 1 })
+				};
+			}
+			return {
+				ok: true,
+				json: () => {
+					if (appeals[call - 2]) {
+						return appeals[call - 2];
+					}
+					// last request is LPAs
+					return [{ id: 'lpaId', lpaName: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }];
+				}
+			};
+		};
+	};
+
+	test('getUnassignedCases should return cases with valid appeal statuses', async () => {
+		const appeals = [
+			{ appealId: '1', appealReference: '60001', appealStatus: APPEAL_CASE_STATUS.READY_TO_START },
+			{ appealId: '2', appealReference: '60002', appealStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
+			{ appealId: '3', appealReference: '60003', appealStatus: APPEAL_CASE_STATUS.STATEMENTS },
+			{ appealId: '4', appealReference: '60004', appealStatus: APPEAL_CASE_STATUS.FINAL_COMMENTS },
+			{ appealId: '5', appealReference: '60005', appealStatus: APPEAL_CASE_STATUS.EVENT },
+			{ appealId: '6', appealReference: '60006', appealStatus: APPEAL_CASE_STATUS.EVIDENCE },
+			{ appealId: '7', appealReference: '60007', appealStatus: APPEAL_CASE_STATUS.WITNESSES }
+		];
+		mockFetchResponse(appeals);
 		mock.method(client, 'fetchAppealTypes', () => [{ type: 'appealType', key: 'A' }]);
 
 		const expectedCaseReferences = ['60001', '60002', '60003', '60004', '60005', '60006', '60007'];
@@ -470,103 +416,17 @@ describe('cboas-api-client', () => {
 	});
 
 	test('getUnassignedCases should not return cases with invalid appeal statuses', async () => {
-		const responses = [
-			{
-				ok: true,
-				json: async () => ({
-					items: [
-						{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
-						{ appealId: '2', appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER },
-						{ appealId: '3', appealStatus: APPEAL_CASE_STATUS.CLOSED },
-						{ appealId: '4', appealStatus: APPEAL_CASE_STATUS.COMPLETE },
-						{ appealId: '5', appealStatus: APPEAL_CASE_STATUS.INVALID },
-						{ appealId: '6', appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
-						{ appealId: '7', appealStatus: APPEAL_CASE_STATUS.VALIDATION },
-						{ appealId: '8', appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
-					],
-					itemCount: 8,
-					pageCount: 1
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '1',
-					appealReference: '60001',
-					appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '2',
-					appealReference: '60002',
-					appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '3',
-					appealReference: '60003',
-					appealStatus: APPEAL_CASE_STATUS.CLOSED,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '4',
-					appealReference: '60004',
-					appealStatus: APPEAL_CASE_STATUS.COMPLETE,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '5',
-					appealReference: '60005',
-					appealStatus: APPEAL_CASE_STATUS.INVALID,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '6',
-					appealReference: '60006',
-					appealStatus: APPEAL_CASE_STATUS.TRANSFERRED,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '7',
-					appealReference: '60007',
-					appealStatus: APPEAL_CASE_STATUS.VALIDATION,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '8',
-					appealReference: '60008',
-					appealStatus: APPEAL_CASE_STATUS.WITHDRAWN,
-					appealType: 'appealType'
-				})
-			},
-			{
-				ok: true,
-				json: async () => [{ id: 'lpaId', lpaName: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]
-			}
+		const appeals = [
+			{ appealId: '1', appealReference: '60001', appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
+			{ appealId: '2', appealReference: '60002', appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER },
+			{ appealId: '3', appealReference: '60003', appealStatus: APPEAL_CASE_STATUS.CLOSED },
+			{ appealId: '4', appealReference: '60004', appealStatus: APPEAL_CASE_STATUS.COMPLETE },
+			{ appealId: '5', appealReference: '60005', appealStatus: APPEAL_CASE_STATUS.INVALID },
+			{ appealId: '6', appealReference: '60006', appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
+			{ appealId: '7', appealReference: '60007', appealStatus: APPEAL_CASE_STATUS.VALIDATION },
+			{ appealId: '8', appealReference: '60008', appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
 		];
-		let call = 0;
-		global.fetch = async () => responses[call++];
+		mockFetchResponse(appeals);
 		CbosApiClient.appealTypesCache = [{ type: 'appealType', key: 'A' }];
 
 		const appealsData = await client.getUnassignedCases();
@@ -575,111 +435,28 @@ describe('cboas-api-client', () => {
 	});
 
 	test('getUnassignedCases should allow child cases with invalid statuses', async () => {
-		const responses = [
+		const appeals = [
 			{
-				ok: true,
-				json: async () => ({
-					items: [
-						{ appealId: '1', appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
-						{ appealId: '2', appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER },
-						{ appealId: '3', appealStatus: APPEAL_CASE_STATUS.CLOSED },
-						{ appealId: '4', appealStatus: APPEAL_CASE_STATUS.COMPLETE },
-						{ appealId: '5', appealStatus: APPEAL_CASE_STATUS.INVALID },
-						{ appealId: '6', appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
-						{ appealId: '7', appealStatus: APPEAL_CASE_STATUS.VALIDATION },
-						{ appealId: '8', appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
-					],
-					itemCount: 8,
-					pageCount: 1
-				})
+				appealId: '1',
+				appealReference: '60001',
+				isChildAppeal: true,
+				appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER
 			},
 			{
-				ok: true,
-				json: async () => ({
-					appealId: '1',
-					appealReference: '60001',
-					appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
+				appealId: '2',
+				appealReference: '60002',
+				isChildAppeal: true,
+				appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER
 			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '2',
-					appealReference: '60002',
-					appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '3',
-					appealReference: '60003',
-					appealStatus: APPEAL_CASE_STATUS.CLOSED,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '4',
-					appealReference: '60004',
-					appealStatus: APPEAL_CASE_STATUS.COMPLETE,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '5',
-					appealReference: '60005',
-					appealStatus: APPEAL_CASE_STATUS.INVALID,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '6',
-					appealReference: '60006',
-					appealStatus: APPEAL_CASE_STATUS.TRANSFERRED,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '7',
-					appealReference: '60007',
-					appealStatus: APPEAL_CASE_STATUS.VALIDATION,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => ({
-					appealId: '8',
-					appealReference: '60008',
-					appealStatus: APPEAL_CASE_STATUS.WITHDRAWN,
-					appealType: 'appealType',
-					isChildAppeal: true
-				})
-			},
-			{
-				ok: true,
-				json: async () => [{ id: 'lpaId', lpaName: 'lpaName', lpaCode: 'lpaCode', email: 'lpa@email.com' }]
-			}
+			{ appealId: '3', appealReference: '60003', isChildAppeal: true, appealStatus: APPEAL_CASE_STATUS.CLOSED },
+			{ appealId: '4', appealReference: '60004', isChildAppeal: true, appealStatus: APPEAL_CASE_STATUS.COMPLETE },
+			{ appealId: '5', appealReference: '60005', isChildAppeal: true, appealStatus: APPEAL_CASE_STATUS.INVALID },
+			{ appealId: '6', appealReference: '60006', isChildAppeal: true, appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
+			{ appealId: '7', appealReference: '60007', isChildAppeal: true, appealStatus: APPEAL_CASE_STATUS.VALIDATION },
+			{ appealId: '8', appealReference: '60008', isChildAppeal: true, appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
 		];
-		let call = 0;
-		global.fetch = async () => responses[call++];
+		mockFetchResponse(appeals);
+
 		mock.method(client, 'fetchAppealTypes', () => [{ type: 'appealType', key: 'A' }]);
 
 		const expectedCaseReferences = ['60001', '60002', '60003', '60004', '60005', '60006', '60007', '60008'];
@@ -687,6 +464,38 @@ describe('cboas-api-client', () => {
 		assert.strictEqual(appealsData.caseReferences.length, 8);
 		assert.deepStrictEqual(appealsData.caseReferences, expectedCaseReferences);
 		assert.strictEqual(appealsData.cases.length, 8);
+	});
+
+	test('getUnassignedCases filter by status before calling fetchAppealDetailsByReference', async () => {
+		const appeals = [
+			{
+				appealId: '1',
+				appealReference: '60001',
+				isChildAppeal: true,
+				appealStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER
+			},
+			{ appealId: '2', appealReference: '60002', appealStatus: APPEAL_CASE_STATUS.AWAITING_TRANSFER },
+			{ appealId: '3', appealReference: '60003', appealStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
+			{ appealId: '4', appealReference: '60004', appealStatus: APPEAL_CASE_STATUS.STATEMENTS },
+			{ appealId: '5', appealReference: '60005', appealStatus: APPEAL_CASE_STATUS.INVALID },
+			{ appealId: '6', appealReference: '60006', appealStatus: APPEAL_CASE_STATUS.TRANSFERRED },
+			{ appealId: '7', appealReference: '60007', appealStatus: APPEAL_CASE_STATUS.VALIDATION },
+			{ appealId: '8', appealReference: '60008', appealStatus: APPEAL_CASE_STATUS.WITHDRAWN }
+		];
+		mockFetchResponse(appeals);
+
+		mock.method(client, 'fetchAppealTypes', () => [{ type: 'appealType', key: 'A' }]);
+		mock.method(client, 'fetchLpaData', () => []);
+		client.fetchAppealDetailsByReference = mock.fn((refs) => appeals.filter((a) => refs.includes(a.appealReference)));
+
+		const expectedCaseReferences = ['60001', '60003', '60004'];
+		const appealsData = await client.getUnassignedCases();
+		assert.strictEqual(client.fetchAppealDetailsByReference.mock.callCount(), 1);
+		// only called with the filters list of references
+		assert.deepStrictEqual(client.fetchAppealDetailsByReference.mock.calls[0].arguments[0], expectedCaseReferences);
+		assert.strictEqual(appealsData.caseReferences.length, 3);
+		assert.deepStrictEqual(appealsData.caseReferences, expectedCaseReferences);
+		assert.strictEqual(appealsData.cases.length, 3);
 	});
 
 	test('patchAppeal updates appeal on ok', async () => {

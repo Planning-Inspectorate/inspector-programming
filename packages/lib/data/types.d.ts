@@ -335,6 +335,76 @@ export interface CbosSingleAppealResponse {
 	completedStateList?: string[];
 }
 
+/**
+ * Copied from Manage appeals `AllAppeals` type
+ * https://github.com/Planning-Inspectorate/appeals-back-office/blob/458ac4f482919e6371212861e4a01836fc4b0c3a/appeals/api/src/server/openapi-types.ts#L931
+ * then edited because it is out of date based on a real response from the API!
+ */
+export interface CbosAppealsListResponse {
+	/** @example 57 */
+	itemCount?: number;
+	items?: {
+		/** @example 1 */
+		appealId?: number;
+		/** @example "APP/Q9999/D/21/235348" */
+		appealReference?: string;
+		appealSite?: {
+			/** @example "19 Beauchamp Road" */
+			addressLine1?: string;
+			/** @example "Bristol" */
+			town?: string;
+			/** @example "Bristol" */
+			county?: string;
+			/** @example "BS7 8LQ" */
+			postCode?: string;
+		};
+		/** @example "awaiting_lpa_questionnaire" */
+		appealStatus?: string;
+		/** @example "household" */
+		appealType?: string;
+		/** @example "2024-02-16T11:43:27.096Z" */
+		createdAt?: string;
+		/** @example "Wiltshire Council" */
+		localPlanningDepartment?: string;
+		// not actually included:
+		// appellantCaseStatus?: string;
+		// lpaQuestionnaireStatus?: string;
+		// always null!
+		dueDate?: null;
+
+		isParentAppeal?: boolean;
+		isChildAppeal?: boolean;
+		// other properties are returned too
+		[k: string]: unknown;
+	}[];
+	/** @example ["lpa_questionnaire"] */
+	statuses?: string[];
+	lpas?: {
+		/** @example "Bristol City Council" */
+		name?: string;
+		/** @example "BRIS" */
+		lpaCode?: string;
+	}[];
+	inspectors?: {
+		/** @example "927c9ef9-071d-46f2-bc9e-f9071d26f26b" */
+		azureAdUserId?: string;
+		/** @example 22 */
+		inspectorId?: number;
+	}[];
+	caseOfficers?: {
+		/** @example "db7481a7-f77f-40e8-b481-a7f77fc0e805" */
+		name?: string;
+		/** @example 18 */
+		inspectorId?: number;
+	}[];
+	/** @example 1 */
+	page?: number;
+	/** @example 27 */
+	pageCount?: number;
+	/** @example 30 */
+	pageSize?: number;
+}
+
 export interface CbosLpaResponse {
 	id: number;
 	name: string;
