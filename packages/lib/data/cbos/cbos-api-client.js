@@ -39,7 +39,7 @@ export class CbosApiClient {
 			this.config.appealTypesCachettl = 1440; // default to 24h
 		}
 		this.appealTypesCache = new MapCache(this.config.appealTypesCachettl);
-		this.logger = logger;
+		this.logger = logger.child({ class: CbosApiClient.name });
 		this.osApiClient = osApiClient;
 	}
 
@@ -49,28 +49,31 @@ export class CbosApiClient {
 	 * @throws {Error} If fetching cases fails.
 	 */
 	async getUnassignedCases({ pageNumber = 1, pageSize = 1000, fetchAll = true } = {}) {
+		const logger = this.logger.child({ method: 'getUnassignedCases' });
 		try {
+			logger.debug({ pageNumber, pageSize, fetchAll }, 'fetchAppealReferences');
 			const appealReferences = await this.fetchAppealReferences({ pageNumber, pageSize, fetchAll });
+			logger.debug({ count: appealReferences.length }, 'got references');
 			const [appealDetails, lpaData] = await Promise.all([
 				this.fetchAppealDetailsByReference(appealReferences),
 				this.fetchLpaData()
 			]);
+			logger.debug('got all appeal details');
 
 			// Remove Parent cases with invalid statuses
+			// TODO: can we filter before we do fetchAppealDetailsByReference ??
 			const filteredData = appealDetails.filter(
 				(item) =>
 					item.isChildAppeal || (item.appealStatus && READY_TO_ASSIGN_APPEAL_STATUSES.includes(item.appealStatus))
 			);
+			logger.debug({ count: filteredData.length }, `filter out child cases and appeals which aren't ready`);
 			const mappedAppeals = await Promise.all(filteredData.map((c) => this.appealToAppealCaseModel(c, lpaData)));
-			const filteredCaseReferences = [];
-			for (const appeal of mappedAppeals) {
-				filteredCaseReferences.push(appeal.caseReference);
-			}
+			const filteredCaseReferences = mappedAppeals.map((appeal) => appeal.caseReference);
 
 			return { cases: mappedAppeals, caseReferences: filteredCaseReferences };
 		} catch (error) {
-			this.logger.error({ error: error.message }, '[CaseController] Error fetching case details');
-			throw new Error(error.message);
+			logger.error(error, 'error fetching all unassigned cases');
+			throw error;
 		}
 	}
 
