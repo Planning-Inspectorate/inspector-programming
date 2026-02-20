@@ -2,19 +2,13 @@ import { test, beforeEach, afterEach, mock, describe } from 'node:test';
 import assert from 'assert';
 import { CbosApiClient } from './cbos-api-client.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { mockLogger as newMockLogger } from '../../testing/mock-logger.js';
 
 let client;
-let warnCalls = [];
-let errorCalls = [];
-let infoCalls = [];
 const mockOsApiClient = {
 	addressesForPostcode: mock.fn()
 };
-const mockLogger = {
-	warn: (...args) => warnCalls.push(args),
-	error: (...args) => errorCalls.push(args),
-	info: (...args) => infoCalls.push(args)
-};
+let mockLogger;
 
 const cbosConfig = {
 	apiUrl: 'http://mock-api',
@@ -24,17 +18,9 @@ const cbosConfig = {
 
 let originalFetch;
 
-beforeEach(() => {
-	warnCalls = [];
-	errorCalls = [];
-	client = new CbosApiClient(cbosConfig, mockOsApiClient, mockLogger);
-	originalFetch = global.fetch;
-	mockOsApiClient.addressesForPostcode.mock.resetCalls();
-});
 describe('cboas-api-client', () => {
 	beforeEach(() => {
-		warnCalls = [];
-		errorCalls = [];
+		mockLogger = newMockLogger();
 		client = new CbosApiClient(cbosConfig, mockOsApiClient, mockLogger);
 		originalFetch = global.fetch;
 		mockOsApiClient.addressesForPostcode.mock.resetCalls();
@@ -709,8 +695,8 @@ describe('cboas-api-client', () => {
 		});
 		const appealId = '1';
 		await assert.doesNotReject(() => client.patchAppeal(appealId, {}));
-		assert.strictEqual(infoCalls[0].length, 1);
-		assert.strictEqual(infoCalls[0][0], `Successfully updated appealID ${appealId}`);
+		assert.strictEqual(mockLogger.info.mock.callCount(), 1);
+		assert.strictEqual(mockLogger.info.mock.calls[0].arguments[0], `Successfully updated appealID ${appealId}`);
 	});
 
 	test('patchAppeal handles non 200 return', async () => {
@@ -721,8 +707,11 @@ describe('cboas-api-client', () => {
 		const appealId = '1';
 		const url = `${cbosConfig.apiUrl}/appeals/${appealId}`;
 		await assert.rejects(() => client.patchAppeal(appealId, {}));
-		assert.strictEqual(errorCalls[0].length, 1);
-		assert.strictEqual(errorCalls[0][0], `Failed to update appealID ${appealId} at ${url}. Status: 500`);
+		assert.strictEqual(mockLogger.error.mock.callCount(), 2);
+		assert.strictEqual(
+			mockLogger.error.mock.calls[0].arguments[0],
+			`Failed to update appealID ${appealId} at ${url}. Status: 500`
+		);
 	});
 
 	test('patchAppeal handles error when sending request', async () => {
@@ -733,9 +722,9 @@ describe('cboas-api-client', () => {
 		const appealId = '1';
 		const url = `${cbosConfig.apiUrl}/appeals/${appealId}`;
 		await assert.rejects(() => client.patchAppeal(appealId, {}));
-		assert.strictEqual(errorCalls[0].length, 2);
-		assert.strictEqual(errorCalls[0][0], `Failed to update appealID ${appealId} at ${url}:`);
-		assert.strictEqual(errorCalls[0][1], 'Mock Error');
+		assert.strictEqual(mockLogger.error.mock.callCount(), 1);
+		assert.strictEqual(mockLogger.error.mock.calls[0].arguments[0], `Failed to update appealID ${appealId} at ${url}:`);
+		assert.strictEqual(mockLogger.error.mock.calls[0].arguments[1], `Mock Error`);
 	});
 
 	test('fetchLpaData should return lpa data from cbos', async () => {
@@ -754,9 +743,9 @@ describe('cboas-api-client', () => {
 		});
 		const url = `${cbosConfig.apiUrl}/appeals/local-planning-authorities`;
 		await assert.rejects(() => client.fetchLpaData());
-		assert.strictEqual(errorCalls[0].length, 1);
+		assert.strictEqual(mockLogger.error.mock.callCount(), 1);
 		assert.strictEqual(
-			errorCalls[0][0],
+			mockLogger.error.mock.calls[0].arguments[0],
 			`Error fetching local planning authorities from http://mock-api/appeals/local-planning-authorities: Failed to fetch local planning authorities from ${url}. Status: 500`
 		);
 	});
@@ -768,7 +757,10 @@ describe('cboas-api-client', () => {
 
 		const url = `${cbosConfig.apiUrl}/appeals/local-planning-authorities`;
 		await assert.rejects(() => client.fetchLpaData());
-		assert.strictEqual(errorCalls[0].length, 1);
-		assert.strictEqual(errorCalls[0][0], `Error fetching local planning authorities from ${url}: Mock Error`);
+		assert.strictEqual(mockLogger.error.mock.callCount(), 1);
+		assert.strictEqual(
+			mockLogger.error.mock.calls[0].arguments[0],
+			`Error fetching local planning authorities from ${url}: Mock Error`
+		);
 	});
 });

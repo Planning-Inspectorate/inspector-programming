@@ -4,7 +4,7 @@ import { mock } from 'node:test';
  * @returns {import('pino').BaseLogger}
  */
 export function mockLogger() {
-	return {
+	const logger = {
 		level: 'debug',
 		silent: mock.fn(),
 		trace: mock.fn(),
@@ -14,4 +14,6 @@ export function mockLogger() {
 		error: mock.fn(),
 		fatal: mock.fn()
 	};
+	logger.child = mock.fn(() => logger);
+	return logger;
 }
