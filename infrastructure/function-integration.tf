@@ -1,6 +1,6 @@
 module "function_integration" {
   #checkov:skip=CKV_TF_1: Use of commit hash are not required for our Terraform modules
-  source = "github.com/Planning-Inspectorate/infrastructure-modules.git//modules/node-function-app?ref=1.53"
+  source = "github.com/Planning-Inspectorate/infrastructure-modules.git//modules/node-function-app?ref=1.54"
 
   resource_group_name = azurerm_resource_group.primary.name
   location            = module.primary_region.location
@@ -21,6 +21,12 @@ module "function_integration" {
   # networking
   integration_subnet_id      = azurerm_subnet.apps.id
   outbound_vnet_connectivity = true
+  # use private endpoints
+  inbound_vnet_connectivity = true
+  private_endpoint = {
+    private_dns_zone_id = data.azurerm_private_dns_zone.app_service.id
+    subnet_id           = azurerm_subnet.main.id
+  }
 
   # monitoring
   action_group_ids            = local.action_group_ids
