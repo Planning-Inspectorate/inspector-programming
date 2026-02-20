@@ -21,7 +21,9 @@ export function loadConfig() {
 		SERVICE_BUS_CASE_HAS_TOPIC,
 		SERVICE_BUS_CASE_HAS_SUBSCRIPTION,
 		SERVICE_BUS_CASE_S78_TOPIC,
-		SERVICE_BUS_CASE_S78_SUBSCRIPTION
+		SERVICE_BUS_CASE_S78_SUBSCRIPTION,
+		SYNC_CASES_TRANSACTION_WAIT_TIME_MS,
+		SYNC_CASES_TRANSACTION_TIMEOUT_MS
 	} = process.env;
 
 	if (!SQL_CONNECTION_STRING) {
@@ -55,6 +57,10 @@ export function loadConfig() {
 				topic: SERVICE_BUS_CASE_S78_TOPIC || 'appeal-s78',
 				subscription: SERVICE_BUS_CASE_S78_SUBSCRIPTION || 'appeal-s78-subscription-placeholder'
 			}
+		},
+		syncCases: {
+			transactionWaitTime: parseInt(SYNC_CASES_TRANSACTION_WAIT_TIME_MS || 30000), // default to 30s
+			transactionTimeout: parseInt(SYNC_CASES_TRANSACTION_TIMEOUT_MS || 60000) // default to 60s
 		}
 	};
 }
