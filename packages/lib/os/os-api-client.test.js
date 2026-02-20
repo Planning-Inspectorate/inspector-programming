@@ -27,8 +27,8 @@ describe('os-api-client', () => {
 
 		const client = new OsApiClient('test', { timeout: 500, baseUrl: `http://localhost:${server.port}` });
 		await assert.rejects(() => client.addressesForPostcode('AB12 3CD'), {
-			name: 'AbortError',
-			message: 'This operation was aborted'
+			name: 'Error',
+			message: 'Request to /search/places/v1/postcode timed out after 500ms'
 		});
 	});
 });
