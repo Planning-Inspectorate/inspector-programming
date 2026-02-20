@@ -763,4 +763,158 @@ describe('cboas-api-client', () => {
 			`Error fetching local planning authorities from ${url}: Mock Error`
 		);
 	});
+
+	describe('fetchAppealDetailsByReference', () => {
+		test('fetches details for a single appeal reference', async () => {
+			const mockAppeal = {
+				appealId: '1',
+				caseReference: '12345',
+				appealType: 'Test Appeal',
+				appealStatus: 'ready_to_start'
+			};
+
+			global.fetch = async (url) => {
+				assert.strictEqual(url, 'http://mock-api/appeals/case-reference/12345');
+				return {
+					ok: true,
+					json: async () => mockAppeal
+				};
+			};
+
+			const result = await client.fetchAppealDetailsByReference(['12345']);
+			assert.deepStrictEqual(result, [mockAppeal]);
+		});
+
+		test('chunks requests for more than 10 appeal references', async () => {
+			const references = Array.from({ length: 15 }, (_, i) => String(i + 1));
+			const mockAppealsArray = references.map((ref, i) => ({
+				appealId: String(i + 1),
+				caseReference: ref
+			}));
+			const mockAppealsMap = new Map();
+			references.forEach((ref, i) => {
+				mockAppealsMap.set(ref, mockAppealsArray[i]);
+			});
+
+			const fetchedUrls = new Set();
+			global.fetch = async (url) => {
+				fetchedUrls.add(url);
+				const ref = url.split('/').pop();
+				const appeal = mockAppealsMap.get(ref);
+				return {
+					ok: true,
+					json: async () => appeal
+				};
+			};
+
+			const result = await client.fetchAppealDetailsByReference(references);
+
+			assert.strictEqual(fetchedUrls.size, 15, 'Should make 15 fetch calls');
+			assert.strictEqual(result.length, 15);
+			assert.deepStrictEqual(result, mockAppealsArray);
+		});
+
+		test('chunks requests with 25 references (three chunks)', async () => {
+			const references = Array.from({ length: 25 }, (_, i) => String(i + 1));
+			const mockAppeals = references.map((ref, i) => ({
+				appealId: String(i + 1),
+				caseReference: ref
+			}));
+
+			let callCount = 0;
+			global.fetch = async (url) => {
+				callCount++;
+				const ref = url.split('/').pop();
+				const index = references.indexOf(ref);
+				const data = mockAppeals[index];
+				return {
+					ok: true,
+					json: async () => data
+				};
+			};
+
+			const result = await client.fetchAppealDetailsByReference(references);
+
+			assert.strictEqual(callCount, 25);
+			assert.strictEqual(result.length, 25);
+			assert.deepStrictEqual(result, mockAppeals);
+		});
+
+		test('throws error when API returns non-ok response', async () => {
+			global.fetch = async () => ({
+				ok: false,
+				status: 500
+			});
+
+			await assert.rejects(
+				() => client.fetchAppealDetailsByReference(['12345']),
+				/Failed to fetch details for appealReference 12345. Status: 500/
+			);
+		});
+
+		test('throws error when one reference fails among multiple', async () => {
+			global.fetch = async (url) => {
+				if (url.includes('101')) {
+					return { ok: true, json: async () => ({ appealId: '1', caseReference: '101' }) };
+				} else if (url.includes('102')) {
+					return { ok: false, status: 404 };
+				} else if (url.includes('103')) {
+					return { ok: true, json: async () => ({ appealId: '3', caseReference: '103' }) };
+				}
+			};
+
+			await assert.rejects(
+				() => client.fetchAppealDetailsByReference(['101', '102', '103']),
+				/Failed to fetch details for appealReference 102. Status: 404/
+			);
+		});
+
+		test('returns empty array when passed empty array', async () => {
+			global.fetch = async () => {
+				throw new Error('Should not be called');
+			};
+
+			const result = await client.fetchAppealDetailsByReference([]);
+			assert.deepStrictEqual(result, []);
+		});
+
+		test('chunks process sequentially (second chunk waits for first)', async () => {
+			const references = Array.from({ length: 15 }, (_, i) => String(i + 1));
+			const fetchTiming = [];
+			let currentTime = 0;
+
+			global.fetch = async (url) => {
+				const ref = url.split('/').pop();
+				const startTime = currentTime++;
+				// Simulate async work
+				await new Promise((resolve) => setTimeout(resolve, 1));
+				const endTime = currentTime++;
+				fetchTiming.push({ ref, startTime, endTime });
+				return {
+					ok: true,
+					json: async () => ({ caseReference: ref })
+				};
+			};
+
+			await client.fetchAppealDetailsByReference(references);
+
+			// Check that all first 10 references completed before any of the last 5 started
+			const firstChunkRefs = references.slice(0, 10);
+			const secondChunkRefs = references.slice(10);
+
+			const firstChunkTimings = fetchTiming.filter((t) => firstChunkRefs.includes(t.ref));
+			const secondChunkTimings = fetchTiming.filter((t) => secondChunkRefs.includes(t.ref));
+
+			// Get the latest end time from first chunk
+			const lastFirstChunkEnd = Math.max(...firstChunkTimings.map((t) => t.endTime));
+			// Get the earliest start time from second chunk
+			const firstSecondChunkStart = Math.min(...secondChunkTimings.map((t) => t.startTime));
+
+			// Second chunk should not start until first chunk completes
+			assert.ok(
+				lastFirstChunkEnd <= firstSecondChunkStart,
+				`First chunk should complete (${lastFirstChunkEnd}) before second chunk starts (${firstSecondChunkStart})`
+			);
+		});
+	});
 });
