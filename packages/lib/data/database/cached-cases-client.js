@@ -1,9 +1,15 @@
 import { CasesClient } from './cases-client.js';
 import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
+import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+
+/**
+ * Statuses to filter out from the case list
+ * @type {string[]}
+ */
+const EXCLUDED_APPEAL_STATUSES = [APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER, APPEAL_CASE_STATUS.VALIDATION];
 
 const CACHE_PREFIX = 'cases_';
-
 /**
  * @typedef {import('../../util/map-cache.js').MapCache} MapCache
  */
@@ -51,8 +57,11 @@ export class CachedCasesClient {
 	async getCases(filters, sort, page, pageSize) {
 		const allCases = await this.getAllParentCases();
 
+		// get validated cases
+		const validatedCases = this.getValidatedCases(allCases);
+
 		//filter
-		const filteredCases = filterCases(allCases, filters);
+		const filteredCases = filterCases(validatedCases, filters);
 
 		//sort
 		let sortedCases;
@@ -146,6 +155,15 @@ export class CachedCasesClient {
 	async getAllParentCases() {
 		const cases = await this.getAllCases();
 		return cases.filter((item) => item.linkedCaseStatus != 'Child');
+	}
+
+	/**
+	 *
+	 * @param {import('../types').CaseViewModel[]} cases
+	 * @returns {import('../types').CaseViewModel[]}
+	 */
+	getValidatedCases(cases) {
+		return cases.filter((item) => !EXCLUDED_APPEAL_STATUSES.includes(item.caseStatus));
 	}
 
 	/**
