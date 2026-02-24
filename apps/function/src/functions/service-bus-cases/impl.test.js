@@ -265,10 +265,7 @@ describe('upsertCase', () => {
 		await upsertCase(
 			service,
 			msg({
-				caseSpecialisms: [
-					{ name: 'Highways', specialism: 'highways' },
-					{ name: 'Heritage', specialism: 'heritage' }
-				]
+				caseSpecialisms: ['Highways', 'Heritage']
 			}),
 			ctx()
 		);
@@ -285,7 +282,7 @@ describe('upsertCase', () => {
 		await upsertCase(
 			service,
 			msg({
-				caseSpecialisms: [{ name: 'Valid', specialism: 'valid' }, null, {}, { name: null, specialism: 'ignored' }]
+				caseSpecialisms: ['Valid', null, '']
 			}),
 			ctx()
 		);
