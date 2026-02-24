@@ -205,8 +205,7 @@ export async function upsertCase(service, message, context) {
 	const data = mapToDatabase(message, coords);
 
 	// Handle specialisms if present - filter out any invalid entries
-	const incomingCaseSpecialisms = (message.caseSpecialisms || []).filter((s) => s?.name);
-	const incomingCaseSpecialismNames = incomingCaseSpecialisms.map((s) => s.name);
+	const incomingCaseSpecialisms = (message.caseSpecialisms || []).filter(Boolean);
 
 	try {
 		await service.dbClient.$transaction(async (tx) => {
@@ -222,7 +221,7 @@ export async function upsertCase(service, message, context) {
 			await tx.appealCaseSpecialism.deleteMany({
 				where: {
 					caseReference,
-					specialism: { notIn: incomingCaseSpecialismNames }
+					specialism: { notIn: incomingCaseSpecialisms }
 				}
 			});
 			context.log(`Removed specialisms not present in incoming data: ${caseReference}`);
@@ -230,20 +229,22 @@ export async function upsertCase(service, message, context) {
 			// Upsert appeal case specialisms
 			if (incomingCaseSpecialisms.length) {
 				await Promise.all(
-					incomingCaseSpecialisms.map((s) =>
+					incomingCaseSpecialisms.map((specialism) =>
 						tx.appealCaseSpecialism.upsert({
-							where: { caseReference_specialism: { caseReference, specialism: s.specialism } },
+							where: { caseReference_specialism: { caseReference, specialism } },
 							create: {
 								caseReference,
-								specialism: s.specialism
+								specialism
 							},
 							update: {
-								specialism: s.specialism
+								specialism
 							}
 						})
 					)
 				);
-				context.log(`Upserted specialisms for case: ${caseReference}`);
+				context.log(`Upserted ${incomingCaseSpecialisms.length} specialisms for case: ${caseReference}`);
+			} else {
+				context.log(`No specialisms for case ${caseReference}`);
 			}
 			// save in the DB that we have an update
 			await tx.appealCasePollStatus.upsert({
