@@ -20,9 +20,10 @@ export async function getCaseDetails(db, caseReference) {
  * @param {import('#service').WebService} service
  * @param {string} inspectorId
  * @param {number[]} caseIds
+ * @param {string[]} caseReferences
  * @returns {Promise<{failedCaseReferences: (string | undefined)[], failedCaseIds: (number | undefined)[], alreadyAssignedCaseReferences: (string | undefined)[], successfullyAssignedCaseReferences: (string | undefined)[]}>}
  */
-export async function assignCasesToInspector(session, service, inspectorId, caseIds) {
+export async function assignCasesToInspector(session, service, inspectorId, caseIds, caseReferences) {
 	const cbosApiClient = service.getCbosApiClientForSession(session);
 	const appealPatchData = { inspectorId: inspectorId };
 
@@ -33,7 +34,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 
 	try {
 		// Get latest data from cbos
-		appeals = await cbosApiClient.fetchAppealDetails(caseIds);
+		appeals = await cbosApiClient.fetchAppealDetailsByReference(caseReferences);
 	} catch (error) {
 		service.logger.error(error, `Failed to fetch case details for case details`);
 		return {

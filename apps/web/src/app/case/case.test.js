@@ -15,7 +15,7 @@ const mockLogger = {
 };
 const mockCbosApiClient = {
 	patchAppeal: mock.fn(() => Promise.resolve()),
-	fetchAppealDetails: mock.fn()
+	fetchAppealDetailsByReference: mock.fn()
 };
 const mockGetCbosApiClientForSession = mock.fn();
 mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
@@ -39,7 +39,7 @@ beforeEach(() => {
 	mockService.logger.error.mock.resetCalls();
 	mockService.logger.warn.mock.resetCalls();
 	mockService.logger.info.mock.resetCalls();
-	mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
+	mockCbosApiClient.fetchAppealDetailsByReference.mock.resetCalls();
 	mockCbosApiClient.patchAppeal.mock.resetCalls();
 	mockCbosApiClient.patchAppeal.mock.mockImplementation(() => Promise.resolve());
 });
@@ -51,9 +51,9 @@ describe('assignCasesToInspector', () => {
 			{ appealId: 2, appealReference: '2' },
 			{ appealId: 3, appealReference: '3' }
 		];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1, 2, 3]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1, 2, 3], ['1', '2', '3']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 3);
 		assert.strictEqual(mockService.logger.error.mock.callCount(), 0);
@@ -65,12 +65,12 @@ describe('assignCasesToInspector', () => {
 
 	test('should return case reference and id when case fails to be updated', async () => {
 		const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
 			throw new Error();
 		});
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1], ['1']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 1);
 		assert.strictEqual(mockService.logger.error.mock.callCount(), 1);
@@ -82,9 +82,9 @@ describe('assignCasesToInspector', () => {
 
 	test('should return case reference when case is already assigned', async () => {
 		const appealsDetailsList = [{ appealId: 1, appealReference: '1', inspector: 'inspectorId' }];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1], ['1']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
 		assert.deepStrictEqual(failedCaseReferences, []);
@@ -94,11 +94,11 @@ describe('assignCasesToInspector', () => {
 	});
 
 	test('should return only failed case ids if unable to get latest cbos data', async () => {
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => {
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => {
 			throw new Error();
 		});
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1], ['1']);
 		assert.deepStrictEqual(failedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseIds, [1]);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
@@ -107,9 +107,9 @@ describe('assignCasesToInspector', () => {
 
 	test('should not update case if appealId in case details is undefined', async () => {
 		const appealsDetailsList = [{ appealId: undefined, appealReference: '1' }];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1], ['1']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
 		assert.deepStrictEqual(failedCaseReferences, ['1']);
@@ -120,9 +120,9 @@ describe('assignCasesToInspector', () => {
 
 	test('should not update case if appealReference in case details is undefined', async () => {
 		const appealsDetailsList = [{ appealId: 1, appealReference: undefined }];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1], ['1']);
 		assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
 		assert.deepStrictEqual(failedCaseReferences, [undefined]);
@@ -136,9 +136,9 @@ describe('assignCasesToInspector', () => {
 			{ appealId: 100, appealReference: 'PARENT_X' },
 			{ appealId: 101, appealReference: 'CHILD_X' }
 		];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [100, 101]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [100, 101], ['PARENT_X', 'CHILD_X']);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 2);
 		assert.deepStrictEqual(failedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseIds, []);
@@ -151,13 +151,13 @@ describe('assignCasesToInspector', () => {
 			{ appealId: 1, appealReference: 'PARENT' },
 			{ appealId: 2, appealReference: 'CHILD' }
 		];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		mockCbosApiClient.patchAppeal.mock.mockImplementation((id) => {
 			if (id === 2) throw new Error('child failure');
 			return Promise.resolve();
 		});
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1, 2]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [1, 2], ['PARENT', 'CHILD']);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseReferences, ['CHILD']);
 		assert.deepStrictEqual(failedCaseIds, [2]);
@@ -169,12 +169,12 @@ describe('assignCasesToInspector', () => {
 			{ appealId: 10, appealReference: 'PARENT_FAIL' },
 			{ appealId: 11, appealReference: 'CHILD_FAIL' }
 		];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 		mockCbosApiClient.patchAppeal.mock.mockImplementation(() => {
 			throw new Error('failure');
 		});
 		const { failedCaseReferences, failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
-			await assignCasesToInspector(mockSession, mockService, 'inspector id', [10, 11]);
+			await assignCasesToInspector(mockSession, mockService, 'inspector id', [10, 11], ['PARENT_FAIL', 'CHILD_FAIL']);
 		assert.deepStrictEqual(alreadyAssignedCaseReferences, []);
 		assert.deepStrictEqual(failedCaseIds.sort(), [10, 11]);
 		assert.deepStrictEqual(failedCaseReferences.sort(), ['CHILD_FAIL', 'PARENT_FAIL'].sort());
@@ -185,8 +185,8 @@ describe('assignCasesToInspector', () => {
 		const inspectorId = 'd53dea42-369b-44aa-b3ca-a8537018b422';
 		const caseId = 56;
 		const appealsDetailsList = [{ appealId: caseId, appealReference: caseId }];
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
-		await assignCasesToInspector(mockSession, mockService, inspectorId, [caseId]);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
+		await assignCasesToInspector(mockSession, mockService, inspectorId, [caseId], [caseId]);
 		assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 1);
 		const firstCall = mockCbosApiClient.patchAppeal.mock.calls[0];
 		assert.strictEqual(firstCall.arguments[0], caseId);

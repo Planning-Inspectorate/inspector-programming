@@ -259,26 +259,6 @@ export class CbosApiClient {
 	}
 
 	/**
-	 * Fetch details for each appeal ID in parallel.
-	 * @param {number[]} appealIds - Array of appeal IDs.
-	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.
-	 * @throws {Error} If fetching any appeal details fails.
-	 */
-	async fetchAppealDetails(appealIds) {
-		const detailPromises = appealIds.map(async (appealId) => {
-			const url = `${this.config.apiUrl}/appeals/${appealId}`;
-			const response = await this.fetchWithTimeout(url);
-
-			if (!response.ok) {
-				throw new Error(`Failed to fetch details for appealId ${appealId}. Status: ${response.status}`);
-			}
-			return await response.json();
-		});
-
-		return Promise.all(detailPromises); // Will throw if any promise rejects
-	}
-
-	/**
 	 * Fetch details for each appeal reference in parallel.
 	 * @param {string[]} appealReferences - Array of appeal References
 	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.

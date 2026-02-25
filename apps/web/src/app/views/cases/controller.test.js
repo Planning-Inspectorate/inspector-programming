@@ -11,7 +11,7 @@ describe('controller.js', () => {
 			mockCasesClient.getCaseById.mock.resetCalls();
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
-			mockCbosApiClient.fetchAppealDetails.mock.resetCalls();
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseEmail.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.resetCalls();
 		});
@@ -23,7 +23,7 @@ describe('controller.js', () => {
 		};
 		const mockCbosApiClient = {
 			patchAppeal: mock.fn(),
-			fetchAppealDetails: mock.fn()
+			fetchAppealDetailsByReference: mock.fn()
 		};
 		const mockEntraClientInstance = {
 			listAllUserCalendarEvents: mock.fn(),
@@ -120,12 +120,14 @@ describe('controller.js', () => {
 		mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementation(() => []);
 		mockEntraClientInstance.listAllUserCalendarEvents.mock.mockImplementation(() => existingEvents);
 		mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementation(() => [mockTimingRule]);
-		mockCbosApiClient.fetchAppealDetails.mock.mockImplementation(() => [{ appealId: 1, appealReference: '1' }]);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementation(() => [
+			{ appealId: 1, appealReference: '1' }
+		]);
 		mockCbosApiClient.patchAppeal.mock.mockImplementation(() => Promise.resolve());
 
 		test('should update one case', async () => {
 			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
 			const res = { redirect: mock.fn() };
@@ -144,7 +146,7 @@ describe('controller.js', () => {
 				{ appealId: 2, appealReference: '2' },
 				{ appealId: 3, appealReference: '3' }
 			];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
 				body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: '2026-09-18' },
@@ -162,7 +164,7 @@ describe('controller.js', () => {
 
 		test('should render 500 template when update to cbos fails on all cases', async () => {
 			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
 				throw new Error();
 			});
@@ -189,7 +191,7 @@ describe('controller.js', () => {
 				{ appealId: 1, appealReference: '1' },
 				{ appealId: 2, appealReference: '2' }
 			];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCbosApiClient.patchAppeal.mock.mockImplementation(() => {
 				throw new Error();
 			});
@@ -213,7 +215,7 @@ describe('controller.js', () => {
 		});
 
 		test('should render 500 template only failed case ids are returned', async () => {
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => {
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => {
 				throw new Error();
 			});
 			const service = mockService();
@@ -276,7 +278,7 @@ describe('controller.js', () => {
 
 		test('should render duplicate assignment error page if inspector already assigned', async () => {
 			const appealsDetailsList = [{ appealId: 1, appealReference: 'APP/2024/001', inspector: 'inspectorId' }];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
 				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
@@ -286,7 +288,7 @@ describe('controller.js', () => {
 			const controller = buildPostCases(service);
 			await controller(req, res);
 			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 1);
-			assert.strictEqual(mockCbosApiClient.fetchAppealDetails.mock.callCount(), 1);
+			assert.strictEqual(mockCbosApiClient.fetchAppealDetailsByReference.mock.callCount(), 1);
 			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 0);
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/duplicate-assignment.njk');
@@ -305,7 +307,7 @@ describe('controller.js', () => {
 				{ appealId: 1, appealReference: 'APP/2024/001', inspector: 'inspectorId' },
 				{ appealId: 2, appealReference: 'APP/2024/002', inspector: 'anotherId' }
 			];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
 				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
@@ -354,7 +356,7 @@ describe('controller.js', () => {
 				{ appealId: 3, appealReference: 6000109 },
 				{ appealId: 4, appealReference: 6000110 }
 			];
-			mockCbosApiClient.fetchAppealDetails.mock.mockImplementationOnce(() => appealsDetailsList);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCasesClient.getLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => [
 				{ caseId: 2 },
 				{ caseId: 3 },

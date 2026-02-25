@@ -79,15 +79,15 @@ describe('cboas-api-client', () => {
 		await assert.rejects(() => client.fetchAppealIds(), /Failed to fetch appeal IDs/);
 	});
 
-	test('fetchAppealDetails returns details for each id', async () => {
+	test('fetchAppealDetailsByReference returns details for each case reference', async () => {
 		const responses = [
-			{ ok: true, json: async () => ({ id: '6000084' }) },
-			{ ok: true, json: async () => ({ id: '6000083' }) }
+			{ ok: true, json: async () => ({ caseReference: '6000084' }) },
+			{ ok: true, json: async () => ({ caseReference: '6000083' }) }
 		];
 		let call = 0;
 		global.fetch = async () => responses[call++];
-		const details = await client.fetchAppealDetails(['6000084', '6000083']);
-		assert.deepStrictEqual(details, [{ id: '6000084' }, { id: '6000083' }]);
+		const details = await client.fetchAppealDetailsByReference(['6000084', '6000083']);
+		assert.deepStrictEqual(details, [{ caseReference: '6000084' }, { caseReference: '6000083' }]);
 	});
 
 	test('fetchAppealTypes throws an error', async () => {
