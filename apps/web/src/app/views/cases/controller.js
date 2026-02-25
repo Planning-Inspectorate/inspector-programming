@@ -69,12 +69,12 @@ async function handleCases(selectedCases, service, req, res) {
 	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
 	let poEmailSent = false;
-
+	const selectedCaseReferences = [...casesByReference.keys()];
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
 		successfullyAssignedCaseReferences
-	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds);
+	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds, selectedCaseReferences);
 
 	const successfullyAssignedCases = successfullyAssignedCaseReferences.map((ref) => casesByReference.get(ref));
 	// Get case IDs for successfully assigned cases
