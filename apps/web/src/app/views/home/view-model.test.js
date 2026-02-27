@@ -3,6 +3,7 @@ import assert from 'assert';
 import {
 	appealsViewModel,
 	calendarViewModel,
+	caseTypeOptions,
 	filtersQueryViewModel,
 	getCaseColor,
 	inspectorsViewModel,
@@ -500,6 +501,15 @@ describe('view-model', () => {
 			assert.strictEqual(result.specialisms[0].validFrom, '01/10/2023');
 			assert.strictEqual(result.specialisms[1].validFrom, '15/01/2024');
 			assert.strictEqual(result.specialismsList, 'Specialism 1, Specialism 2');
+		});
+	});
+
+	describe('caseTypeOptions', () => {
+		test('should include type shorthand in brackets', () => {
+			assert.strictEqual(caseTypeOptions[0].text, 'Advertisement (Adv)');
+			assert.strictEqual(caseTypeOptions[3].text, 'Commercial advertisement (CAS Ad)');
+			// expect if the shorthand matches the name
+			assert.strictEqual(caseTypeOptions[11].text, 'Planning');
 		});
 	});
 });
