@@ -102,12 +102,13 @@ export function buildViewHome(service, getEventsFunction) {
 		const sortingErrorList = validateSorts(filterQuery.sort, selectedInspector);
 		//if sort is invalid then sort by age by default
 		if (sortingErrorList.length) filterQuery.sort = 'age';
-
+		const isPaginated = req.query.currentTab !== 'map';
 		const { cases, total, page } = await service.casesClient.getCases(
 			filterQuery.case,
 			filterQuery.sort,
 			filterQuery.page,
-			filterQuery.limit
+			filterQuery.limit,
+			isPaginated
 		);
 		filterQuery.page = page; //update displayed page after validating against number of results
 

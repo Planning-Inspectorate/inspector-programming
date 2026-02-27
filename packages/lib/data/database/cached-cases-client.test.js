@@ -289,6 +289,31 @@ describe('cached-cases-client', () => {
 					[2]
 				);
 			});
+			it('should return full sorted list with numeric total and undefined page when isPaginated is false', async () => {
+				const mockClient = newMockClient();
+				const mockCache = {};
+				const cacheClient = new CachedCasesClient(mockClient, mockCache);
+
+				const allCases = [
+					makeCase({ caseId: 1, caseAge: 5 }),
+					makeCase({ caseId: 2, caseAge: 1 }),
+					makeCase({ caseId: 3, caseAge: 3 })
+				];
+
+				cacheClient.getAllParentCases = mock.fn(() => Promise.resolve(allCases));
+
+				const result = await cacheClient.getCases({}, undefined, undefined, undefined, false);
+
+				assert.strictEqual(mockClient.paginateCases.mock.callCount(), 0);
+
+				assert.deepStrictEqual(
+					result.cases.map((c) => c.caseId),
+					[1, 3, 2]
+				);
+				assert.strictEqual(typeof result.total, 'number');
+				assert.strictEqual(result.total, 3);
+				assert.strictEqual(result.page, undefined);
+			});
 		});
 
 		describe('getValidatedCases', () => {
