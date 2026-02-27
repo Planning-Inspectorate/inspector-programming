@@ -9,6 +9,7 @@ import {
 	toCaseViewModel,
 	toInspectorViewModel
 } from './view-model.js';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 
 describe('view-model', () => {
 	describe('calendarViewModel', () => {
@@ -87,6 +88,16 @@ describe('view-model', () => {
 				'Final comments date should be formatted in Europe/London timezone'
 			);
 			assert.strictEqual(viewModel.caseAgeColor, 'f47738', 'Color should be orange for case age 30');
+		});
+		test('should map case type and procedure', () => {
+			const caseData = {
+				id: 1,
+				caseType: APPEAL_CASE_TYPE.D,
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN
+			};
+			const viewModel = toCaseViewModel(caseData);
+			assert.strictEqual(viewModel.procedureShort, 'WR');
+			assert.strictEqual(viewModel.caseTypeShort, 'HAS');
 		});
 	});
 
