@@ -15,7 +15,9 @@ export interface CaseViewModel {
 	caseReference: string | null;
 	caseId: number | null;
 	caseType: string | null;
+	caseTypeShort?: string;
 	caseProcedure: string | null;
+	procedureShort?: string;
 	allocationBand: string | number | null;
 	caseLevel: string | null;
 	siteAddressPostcode: string | null;

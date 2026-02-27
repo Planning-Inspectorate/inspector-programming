@@ -1,6 +1,8 @@
 import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { generateCalendar, generateDatesList, generateTimeList, generateWeekTitle } from '../../calendar/calendar.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
+import { appealTypes } from '../../specialism/specialism.js';
 
 /**
  * @param {Date} currentStartDate
@@ -50,10 +52,62 @@ export function appealsViewModel(cases, req) {
 export function toCaseViewModel(c) {
 	return {
 		...c,
+		procedureShort: shortProcedure(c.caseProcedure),
+		caseTypeShort: shortCaseType(c.caseType),
 		caseStatus: c.caseStatus?.replace('_', ' '),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
 		caseAgeColor: getCaseColor(c.caseAge)
 	};
+}
+
+function shortCaseType(caseType) {
+	switch (caseType) {
+		case APPEAL_CASE_TYPE.C:
+			return 'Enf.';
+		case APPEAL_CASE_TYPE.D:
+			return 'HAS';
+		case APPEAL_CASE_TYPE.F:
+			return 'ENF LB';
+		case APPEAL_CASE_TYPE.G:
+			return 'DN';
+		case APPEAL_CASE_TYPE.H:
+			return 'Adv';
+		case APPEAL_CASE_TYPE.L:
+			return 'CIL';
+		case APPEAL_CASE_TYPE.Q:
+			return 'S106B';
+		case APPEAL_CASE_TYPE.S:
+			return 'S106BC';
+		case APPEAL_CASE_TYPE.V:
+			return 'Call-in';
+		case APPEAL_CASE_TYPE.W:
+			return 'Planning';
+		case APPEAL_CASE_TYPE.X:
+			return 'LDC';
+		case APPEAL_CASE_TYPE.Y:
+			return 'LB';
+		case APPEAL_CASE_TYPE.Z:
+			return 'CAS';
+		case APPEAL_CASE_TYPE.ZA:
+			return 'CAS Ad';
+		case APPEAL_CASE_TYPE.ZP:
+			return 'CAS plan';
+	}
+	return caseType;
+}
+
+function shortProcedure(procedure) {
+	switch (procedure?.toLowerCase()) {
+		case APPEAL_CASE_PROCEDURE.WRITTEN:
+			return 'WR';
+		case APPEAL_CASE_PROCEDURE.WRITTEN_PART_1:
+			return 'WR (1)';
+		case APPEAL_CASE_PROCEDURE.HEARING:
+			return 'H';
+		case APPEAL_CASE_PROCEDURE.INQUIRY:
+			return 'LI';
+	}
+	return procedure;
 }
 
 /**
@@ -222,3 +276,18 @@ export function toInspectorViewModel(inspector) {
 		specialismsList: specialisms.map((specialism) => specialism.name).join(', ')
 	};
 }
+
+/** @type {import('#util/types.js').RadioOption[]} */
+export const caseTypeOptions = Object.values(appealTypes)
+	.map((v) => {
+		const shorthand = shortCaseType(v.key);
+		let text = v.changeAppealType;
+		if (text !== shorthand) {
+			if (text.match(/\(\w+\)/)) {
+				text = text.replace(/\s\(\w+\)/, '');
+			}
+			text += ` (${shorthand})`;
+		}
+		return { value: v.key, text };
+	})
+	.sort((a, b) => a.text.localeCompare(b.text));

@@ -10,8 +10,8 @@
                 items: [{ value: c.caseId, text: " ", checked: c.selected }]
             }) },
             { html: '<a href="/case/' + c.caseReference + '?inspectorId=' + filters.query.inspectorId + '" class="govuk-link">' + c.caseReference + '</a>' },
-            { text: c.caseType },
-            { text: c.caseProcedure },
+            { text: c.caseTypeShort },
+            { text: c.procedureShort },
             { text: c.allocationBand },
             { text: c.caseLevel },
             { text: c.siteAddressPostcode },
