@@ -2,6 +2,7 @@ import { readSessionData } from '@pins/inspector-programming-lib/util/session.js
 import { generateCalendar, generateDatesList, generateTimeList, generateWeekTitle } from '../../calendar/calendar.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
+import { appealTypes } from '../../specialism/specialism.js';
 
 /**
  * @param {Date} currentStartDate
@@ -275,3 +276,11 @@ export function toInspectorViewModel(inspector) {
 		specialismsList: specialisms.map((specialism) => specialism.name).join(', ')
 	};
 }
+
+/** @type {import('#util/types.js').RadioOption[]} */
+export const caseTypeOptions = Object.values(appealTypes)
+	.map((v) => ({
+		value: v.key,
+		text: v.changeAppealType
+	}))
+	.sort((a, b) => a.text.localeCompare(b.text));

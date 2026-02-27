@@ -1,5 +1,5 @@
 import { getInspectorList, mapInspectorToCaseSpecialisms } from '../../inspector/inspector.js';
-import { allocationLevels, caseTypes, specialisms } from '../../specialism/specialism.js';
+import { allocationLevels, specialisms } from '../../specialism/specialism.js';
 import {
 	getNextWeekStartDate,
 	getPreviousWeekStartDate,
@@ -9,7 +9,13 @@ import {
 import { validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
 import { addSessionData, clearSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import { appealsViewModel, calendarViewModel, filtersQueryViewModel, inspectorsViewModel } from './view-model.js';
+import {
+	appealsViewModel,
+	calendarViewModel,
+	caseTypeOptions,
+	filtersQueryViewModel,
+	inspectorsViewModel
+} from './view-model.js';
 import { paginationValues } from './pagination.js';
 
 /**
@@ -133,7 +139,7 @@ export function buildViewHome(service, getEventsFunction) {
 			filters: {
 				allocationLevels,
 				specialisms,
-				caseTypes,
+				caseTypes: caseTypeOptions,
 				pagination: paginationDetails,
 				query: filterQuery,
 				errors: filterErrors,
