@@ -279,8 +279,15 @@ export function toInspectorViewModel(inspector) {
 
 /** @type {import('#util/types.js').RadioOption[]} */
 export const caseTypeOptions = Object.values(appealTypes)
-	.map((v) => ({
-		value: v.key,
-		text: v.changeAppealType
-	}))
+	.map((v) => {
+		const shorthand = shortCaseType(v.key);
+		let text = v.changeAppealType;
+		if (text !== shorthand) {
+			if (text.match(/\(\w+\)/)) {
+				text = text.replace(/\s\(\w+\)/, '');
+			}
+			text += ` (${shorthand})`;
+		}
+		return { value: v.key, text };
+	})
 	.sort((a, b) => a.text.localeCompare(b.text));
