@@ -237,6 +237,26 @@ describe('controller.js', () => {
 			);
 		});
 
+		test('should redirect to home and set session error when case not in DB', async () => {
+			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => undefined);
+			const service = mockService();
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
+			const res = { redirect: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+
+			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
+
+			assert.strictEqual(service.logger.warn.mock.callCount() >= 1, true);
+			const warnCall = service.logger.warn.mock.calls.find(
+				(call) => call.arguments[1] === 'Some requested cases Id were not found in CBOS'
+			);
+			assert.ok(warnCall, 'Missing cases warning log should exist');
+
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+		});
+
 		test('should not update cases if no inspector is selected', async () => {
 			const service = mockService();
 			const req = { body: { selectedCases: ['1', '2', '3'], assignmentDate: '2026-09-18' }, session: {} };

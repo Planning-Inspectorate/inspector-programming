@@ -76,14 +76,18 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 /**
  * @param {number[]} caseIds
  * @param {import('#service').WebService} service
- * @returns {Promise<{cases: import('./types.d.ts').CaseToAssign[], caseIds: number[]}>}
+ * @returns {Promise<{cases: import('./types.d.ts').CaseToAssign[], caseIds: number[], casesNotInDb: number[]}>}
  */
 export async function getCaseAndLinkedCasesIds(caseIds, service) {
 	const casesById = new Map();
+	const casesNotInDbSet = new Set();
 
 	for (const caseId of caseIds) {
 		const appeal = await service.casesClient.getCaseById(caseId);
-		if (!appeal) continue;
+		if (!appeal) {
+			casesNotInDbSet.add(caseId);
+			continue;
+		}
 
 		if (!casesById.has(caseId)) {
 			casesById.set(caseId, mapCaseViewModelToCaseToAssign(appeal, true));
@@ -102,7 +106,7 @@ export async function getCaseAndLinkedCasesIds(caseIds, service) {
 	}
 
 	const cases = Array.from(casesById.values());
-	return { cases, caseIds: [...casesById.keys()] };
+	return { cases, caseIds: [...casesById.keys()], casesNotInDb: [...casesNotInDbSet] };
 }
 
 /**

@@ -64,12 +64,27 @@ async function handleCases(selectedCases, service, req, res) {
 	 * So we ensure we read all local case data before assignment
 	 */
 
-	const { cases, caseIds: selectedCaseIds } = await getCaseAndLinkedCasesIds(selectedCases, service);
+	const { cases, caseIds: selectedCaseIds, casesNotInDb } = await getCaseAndLinkedCasesIds(selectedCases, service);
 	const casesByReference = new Map(cases.map((c) => [c.caseReference, c]));
 	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
 	let poEmailSent = false;
 	const selectedCaseReferences = [...casesByReference.keys()];
+
+	if (casesNotInDb && casesNotInDb.length > 0) {
+		service.logger.warn(
+			{
+				user: req.session?.account?.name || 'unknown',
+				inspectorId: req.body.inspectorId,
+				missingCaseReferences: casesNotInDb
+			},
+			'Some requested cases Id were not found in CBOS'
+		);
+		saveSelectedData(selectedCaseIds, req);
+
+		addSessionData(req, 'errors', { casesNotInDbError: true }, 'persistence');
+		return redirectToHome(req, res);
+	}
 	const {
 		failedCaseIds,
 		alreadyAssignedCaseReferences: alreadyAssignedCases,
@@ -395,7 +410,7 @@ function handleFailure(req, res, failedCases, errorMessage) {
  * @param {(number|undefined)[]} selectedCases
  * @param {import('express').Request} req
  */
-function saveSelectedData(selectedCases, req) {
+export function saveSelectedData(selectedCases, req) {
 	const updateCasesResult = {
 		selectedCases: selectedCases,
 		inspectorId: req.body.inspectorId,

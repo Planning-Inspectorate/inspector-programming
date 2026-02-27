@@ -216,6 +216,14 @@ export function buildViewHome(service, getEventsFunction) {
 			});
 		}
 
+		const casesNotInDbError = readSessionData(req, 'errors', 'casesNotInDbError', false, 'persistence');
+		if (casesNotInDbError) {
+			viewModel.errorSummary?.push({
+				text: 'Case(s) not found to assign, please try again',
+				href: ''
+			});
+		}
+
 		viewModel.calendar = calendarViewModel(currentWeekStart, calendarEvents, calendarError);
 
 		//after finishing with page filters and settings, persist lastRequest in session for future reference
@@ -227,7 +235,7 @@ export function buildViewHome(service, getEventsFunction) {
 		clearSessionData(
 			req,
 			'errors',
-			['caseListError', 'selectInspectorError', 'selectAssignmentDateError', 'assignedCasesError'],
+			['caseListError', 'selectInspectorError', 'selectAssignmentDateError', 'assignedCasesError', 'casesNotInDbError'],
 			'persistence'
 		);
 		clearSessionData(req, 'success', ['successSummary'], 'persistence');
