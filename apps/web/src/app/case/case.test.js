@@ -232,6 +232,18 @@ describe('getCaseAndLinkedCasesIds', () => {
 		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
 		assert.deepStrictEqual(casesIdsList, caseIds);
 	});
+
+	test('should return casesNotInDb when a requested case is missing from DB', async () => {
+		const inputCaseIds = [5];
+
+		mockGetCaseById.mock.mockImplementationOnce(() => undefined);
+
+		const { cases, caseIds: returnedCaseIds, casesNotInDb } = await getCaseAndLinkedCasesIds(inputCaseIds, mockService);
+
+		assert.deepStrictEqual(cases, []);
+		assert.deepStrictEqual(returnedCaseIds, []);
+		assert.deepStrictEqual(casesNotInDb, [5]);
+	});
 });
 
 describe('getCaseDetails', () => {
