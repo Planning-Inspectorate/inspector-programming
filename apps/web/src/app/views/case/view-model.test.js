@@ -51,6 +51,8 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.appealStartDate, '');
 		assert.strictEqual(result.eventType, 'No events');
 		assert.strictEqual(result.caseAgeColor, '00703c');
+		assert.strictEqual(result.caseStatus, 'IN PROGRESS');
+		assert.strictEqual(result.caseProcedure, 'WRITTEN');
 	});
 
 	test('enriches with specialisms and events (formats date, sets color)', (ctx) => {
@@ -94,7 +96,7 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.specialismList, 'Spec 1, Spec 2');
 		assert.strictEqual(result.caseSpecialisms, 'Spec 1, Spec 2');
 		assert.strictEqual(result.appealStartDate, '15/03/2025');
-		assert.strictEqual(result.eventType, 'Hearing');
+		assert.strictEqual(result.eventType, 'HEARING');
 		assert.strictEqual(result.caseAgeColor, 'f47738');
 	});
 });

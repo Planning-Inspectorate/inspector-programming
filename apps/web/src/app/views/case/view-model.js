@@ -20,8 +20,14 @@ export function caseToViewModel(caseClient, c) {
 		specialismList: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		appealStartDate: hasEvents ? formatDateForDisplay(c.Events[0].eventStartDateTime, { format: 'dd/MM/yyyy' }) : '',
 		caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
-		eventType: hasEvents ? c.Events[0].eventType : 'No events',
+		eventType: hasEvents ? formatTag(c.Events[0].eventType) : 'No events',
 		caseAgeColor: getCaseColor(caseToViewModel.caseAge),
-		linkedCases: hasLinkedCases ? c.ChildCases.map((c) => c.caseReference).join(', ') : 'None'
+		linkedCases: hasLinkedCases ? c.ChildCases.map((c) => c.caseReference).join(', ') : 'None',
+		caseStatus: formatTag(c.caseStatus),
+		caseProcedure: c.caseProcedure?.toUpperCase()
 	};
+}
+
+function formatTag(value) {
+	return String(value).replace(/_/g, ' ').toUpperCase();
 }
