@@ -52,9 +52,10 @@ export class CachedCasesClient {
 	 * @param {string} sort - The sort criteria, can be 'distance' or 'age'.
 	 * @param {number} page
 	 * @param {number} pageSize
-	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number, page: number }>}
+	 * @param {boolean} isPaginated
+	 * @returns {Promise<{ cases: import('../types').CaseViewModel[], total: number, page?: number }> }
 	 */
-	async getCases(filters, sort, page, pageSize) {
+	async getCases(filters, sort, page, pageSize, isPaginated = true) {
 		const allCases = await this.getAllParentCases();
 
 		// get validated cases
@@ -72,6 +73,11 @@ export class CachedCasesClient {
 			default:
 				sortedCases = filteredCases.sort(sortCasesByAge);
 				break;
+		}
+
+		// Handle Non-Paginated Request
+		if (!isPaginated) {
+			return Promise.resolve({ cases: sortedCases, total: sortedCases.length, page: undefined });
 		}
 
 		//paginate and validate page number based on number of results
