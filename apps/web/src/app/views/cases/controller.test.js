@@ -350,6 +350,26 @@ describe('controller.js', () => {
 			assert.strictEqual(logCallMulti.arguments[0].alreadyAssignedCasesCount, 2);
 		});
 
+		test('should redirect to home and set session error when no cases are in the db', async () => {
+			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => undefined);
+			const service = mockService();
+			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
+			const res = { redirect: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+
+			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
+
+			assert.strictEqual(service.logger.warn.mock.callCount() >= 1, true);
+			const warnCall = service.logger.warn.mock.calls.find(
+				(call) => call.arguments[1] === 'None of the requested cases were not found in the database'
+			);
+			assert.ok(warnCall, 'Missing cases warning log should exist');
+
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+		});
+
 		test('should auto-assign linked child cases when only parent selected', async () => {
 			mockCasesClient.getCaseById.mock.mockImplementation((id) => {
 				if (id === 1)

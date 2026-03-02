@@ -65,6 +65,23 @@ async function handleCases(selectedCases, service, req, res) {
 	 */
 
 	const { cases, caseIds: selectedCaseIds, casesNotInDb } = await getCaseAndLinkedCasesIds(selectedCases, service);
+
+	if (casesNotInDb && casesNotInDb.length === selectedCases.length) {
+		// no cases were found
+		service.logger.warn(
+			{
+				user: req.session?.account?.name || 'unknown',
+				inspectorId: req.body.inspectorId,
+				missingCaseReferences: casesNotInDb
+			},
+			'None of the requested cases were not found in the database'
+		);
+		saveSelectedData(selectedCaseIds, req);
+
+		addSessionData(req, 'errors', { casesNotInDbError: true }, 'persistence');
+		return redirectToHome(req, res);
+	}
+
 	const casesByReference = new Map(cases.map((c) => [c.caseReference, c]));
 	const casesById = new Map(cases.map((c) => [c.caseId, c]));
 	let emailNotificationSent = false;
