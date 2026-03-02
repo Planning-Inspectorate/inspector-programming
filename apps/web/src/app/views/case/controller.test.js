@@ -88,7 +88,9 @@ describe('buildViewCase', () => {
 			caseSpecialisms: 'None',
 			eventType: 'No events',
 			caseAgeColor: '00703c',
-			linkedCases: 'None'
+			linkedCases: 'None',
+			caseStatus: 'LPA QUESTIONNAIRE',
+			caseProcedure: 'WRITTEN'
 		});
 
 		assert.strictEqual(service.db.appealCase.findUnique.mock.calls.length, 1);

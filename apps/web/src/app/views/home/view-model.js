@@ -54,7 +54,7 @@ export function toCaseViewModel(c) {
 		...c,
 		procedureShort: shortProcedure(c.caseProcedure),
 		caseTypeShort: shortCaseType(c.caseType),
-		caseStatus: c.caseStatus?.replace('_', ' '),
+		caseStatus: c.caseStatus?.replace('_', ' ').toUpperCase(),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
 		caseAgeColor: getCaseColor(c.caseAge)
 	};

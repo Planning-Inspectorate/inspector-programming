@@ -1,4 +1,5 @@
 {% extends "views/layouts/main.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "views/home/map/map.njk" import osMap %}
@@ -19,9 +20,9 @@
             rows: [
                 { key: { text: "Case reference" }, value: { text: caseData.caseReference } },
                 { key: { text: "Site address" }, value: { text: caseData.siteAddress  } },
-                { key: { text: "Case Description" }, value: { text: caseData.originalDevelopmentDescription } },
+                { key: { text: "Case description" }, value: { text: caseData.originalDevelopmentDescription } },
                 { key: { text: "Procedure" }, value: { text: caseData.caseProcedure  } },
-                { key: { text: "Case status" }, value: { text: caseData.caseStatus  } },
+                { key: { text: "Case status" }, value: { html: govukTag({text: caseData.caseStatus }) } },
                 { key: { text: "Band" }, value: { text: caseData. allocationBand  } },
                 { key: { text: "Case level" }, value: { text: caseData.caseLevel  } },
                 { key: { text: "Special circumstances" }, value: { text: caseData.specialCircumstance  } },
@@ -41,10 +42,10 @@
             ]
         }) }}
 
-        <h2 class="govuk-heading-m">Event Arrangements</h2>
+        <h2 class="govuk-heading-m">Event arrangements</h2>
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Event type" }, value: { text: caseData.eventType } },
+                { key: { text: "Event type" }, value: { html: govukTag({text: caseData.eventType }) } },
                 { key: { text: "Duration notes" }, value: { text: "__" } }
             ]
         }) }}
