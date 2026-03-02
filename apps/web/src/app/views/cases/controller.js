@@ -1,5 +1,5 @@
 import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
-import { assignCasesToInspector, getCaseAndLinkedCasesIds } from '../../case/case.js';
+import { assignCasesToInspector, getCasesToAssign } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
 import { notifyInspectorOfAssignedCases, notifyProgrammeOfficerOfAssignedCases } from '../../inspector/inspector.js';
@@ -64,7 +64,7 @@ async function handleCases(selectedCases, service, req, res) {
 	 * So we ensure we read all local case data before assignment
 	 */
 
-	const { cases, caseIds: selectedCaseIds, casesNotInDb } = await getCaseAndLinkedCasesIds(selectedCases, service);
+	const { cases, caseIds: selectedCaseIds, casesNotInDb } = await getCasesToAssign(selectedCases, service);
 
 	if (casesNotInDb && casesNotInDb.length === selectedCases.length) {
 		// no cases were found
@@ -341,69 +341,27 @@ export function getSuccessMessage(emailNotificationSent, poEmailSent) {
 }
 
 /**
- * @typedef {Object} failedCase
- * @property {string | number} caseId
- * @property {string} caseReference
- * @property {boolean} isParent
- */
-
-/**
  * handles a failure in the case assignment process where the user has no actionable fix
  * compiles the response to attach to the user session and renders the error view with the details of the failed cases
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * @param {failedCase[] | (string|number|undefined)[]} failedCases
+ * @param {import('./types.d.ts').CaseToAssign[]} failedCases
  * @param {string} errorMessage
  * @returns
  */
 function handleFailure(req, res, failedCases, errorMessage) {
-	/** @type {string[]} */
-	const failedParentCaseRefs = [];
-	/** @type {string[]} */
-	const failedChildCaseRefs = [];
 	/** @type {string} */
 	const UNASSIGNED_CASES_MESSAGE = 'Try again later. The following cases were not assigned:';
 
 	const lastQueryParams = readSessionData(req, 'lastRequest', 'queryParams', '', 'persistence');
 
-	/** @type {boolean} */
+	let viewData = {
+		bodyCopy: UNASSIGNED_CASES_MESSAGE,
+		failedCases: failedCases.map((appeal) => appeal.caseReference)
+	};
 
-	const isArrayOfCaseIds = Array.isArray(failedCases) && ['number', 'string'].includes(typeof failedCases[0]);
-
-	if (!isArrayOfCaseIds) {
-		failedParentCaseRefs.push(
-			...failedCases.filter(({ isParent }) => isParent).map(({ caseReference }) => caseReference)
-		);
-		failedChildCaseRefs.push(
-			...failedCases.filter(({ isParent }) => !isParent).map(({ caseReference }) => caseReference)
-		);
-	}
-
-	let viewData = {};
-
-	if (!failedParentCaseRefs.length && failedChildCaseRefs.length) {
-		viewData = {
-			bodyCopy:
-				'The following linked cases were not assigned and need to be assigned manually in Manage appeals with the Inspector name:',
-			failedCases: failedChildCaseRefs
-		};
-	} else if (failedParentCaseRefs.length && !failedChildCaseRefs.length) {
-		viewData = {
-			bodyCopy: UNASSIGNED_CASES_MESSAGE,
-			failedCases: failedParentCaseRefs
-		};
-	} else if (failedParentCaseRefs.length && failedChildCaseRefs.length) {
-		viewData = {
-			bodyCopy: 'Try again later. The following cases were not assigned:',
-			failedCases: failedParentCaseRefs,
-			linkedCasesNote:
-				'The following linked cases were also not assigned. The Inspector name must be added manually to the case in Manage appeals:',
-			linkedCases: failedChildCaseRefs
-		};
-	} else {
-		viewData = {
-			bodyCopy: errorMessage
-		};
+	if (!failedCases.length) {
+		viewData.bodyCopy = errorMessage;
 	}
 
 	return res.render('views/errors/failed-cases.njk', { ...viewData, queryParams: lastQueryParams });

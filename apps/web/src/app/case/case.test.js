@@ -1,10 +1,5 @@
 import { beforeEach, describe, test, mock } from 'node:test';
-import {
-	assignCasesToInspector,
-	getCaseAndLinkedCasesIds,
-	getLinkedCaseIdsOfParentId,
-	getCaseDetails
-} from './case.js';
+import { assignCasesToInspector, getCasesToAssign, getLinkedCaseIdsOfParentId, getCaseDetails } from './case.js';
 import assert from 'assert';
 
 const mockSession = {};
@@ -205,32 +200,19 @@ describe('getLinkedCaseIdsOfParentId', () => {
 	});
 });
 
-describe('getCaseAndLinkedCasesIds', () => {
-	test('should add linked cases ids to parent case ids list', async () => {
+describe('getCasesToAssign', () => {
+	test('should add only parent cases to the list', async () => {
 		const caseIds = [1];
 		const appeal = { caseReference: '1', caseId: 1, linkedCaseStatus: 'Parent' };
-		const linkedCases = [{ caseId: 2 }, { caseId: 3 }, { caseId: 4 }];
-		const expectedCaseIds = [1, 2, 3, 4];
-		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
+		const expectedCaseIds = [1];
 		mockGetCaseById.mock.mockImplementation((id) => {
 			if (id === 1) return appeal;
 			if ([2, 3, 4].includes(id)) return { caseReference: String(id), caseId: id, linkedCaseStatus: 'Child' };
 			return undefined;
 		});
-		const { caseIds: casesIdsList } = await getCaseAndLinkedCasesIds(caseIds, mockService);
-		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
-		assert.strictEqual(mockGetCaseById.mock.callCount(), 4);
-		assert.deepStrictEqual(casesIdsList.sort(), expectedCaseIds.sort());
-	});
-
-	test('should not add linked if linked case status is child', async () => {
-		const caseIds = [1];
-		const appeal = { caseReference: '1', caseId: 1, linkedCaseStatus: 'Child' };
-		mockGetCaseById.mock.mockImplementationOnce(() => appeal);
-		const { caseIds: casesIdsList } = await getCaseAndLinkedCasesIds(caseIds, mockService);
-		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 0);
+		const { caseIds: casesIdsList } = await getCasesToAssign(caseIds, mockService);
 		assert.strictEqual(mockGetCaseById.mock.callCount(), 1);
-		assert.deepStrictEqual(casesIdsList, caseIds);
+		assert.deepStrictEqual(casesIdsList.sort(), expectedCaseIds.sort());
 	});
 
 	test('should return casesNotInDb when a requested case is missing from DB', async () => {
@@ -238,7 +220,7 @@ describe('getCaseAndLinkedCasesIds', () => {
 
 		mockGetCaseById.mock.mockImplementationOnce(() => undefined);
 
-		const { cases, caseIds: returnedCaseIds, casesNotInDb } = await getCaseAndLinkedCasesIds(inputCaseIds, mockService);
+		const { cases, caseIds: returnedCaseIds, casesNotInDb } = await getCasesToAssign(inputCaseIds, mockService);
 
 		assert.deepStrictEqual(cases, []);
 		assert.deepStrictEqual(returnedCaseIds, []);
