@@ -70,26 +70,11 @@ async function handleCases(selectedCases, service, req, res) {
 	let emailNotificationSent = false;
 	let poEmailSent = false;
 	const selectedCaseReferences = [...casesByReference.keys()];
+	const { failedCaseIds, alreadyAssignedCaseReferences, successfullyAssignedCaseReferences } =
+		await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds, selectedCaseReferences);
 
-	if (casesNotInDb && casesNotInDb.length > 0) {
-		service.logger.warn(
-			{
-				user: req.session?.account?.name || 'unknown',
-				inspectorId: req.body.inspectorId,
-				missingCaseReferences: casesNotInDb
-			},
-			'Some requested cases Id were not found in CBOS'
-		);
-		saveSelectedData(selectedCaseIds, req);
-
-		addSessionData(req, 'errors', { casesNotInDbError: true }, 'persistence');
-		return redirectToHome(req, res);
-	}
-	const {
-		failedCaseIds,
-		alreadyAssignedCaseReferences: alreadyAssignedCases,
-		successfullyAssignedCaseReferences
-	} = await assignCasesToInspector(req.session, service, req.body.inspectorId, selectedCaseIds, selectedCaseReferences);
+	// assume that casesNotInDb are already assigned
+	const alreadyAssignedCases = [...alreadyAssignedCaseReferences, ...casesNotInDb];
 
 	const successfullyAssignedCases = successfullyAssignedCaseReferences.map((ref) => casesByReference.get(ref));
 	// Get case IDs for successfully assigned cases
@@ -236,7 +221,9 @@ async function handleCases(selectedCases, service, req, res) {
 
 		// Remove already assigned cases from local database to sync with CBOSS
 		try {
-			const alreadyAssignedCaseIds = alreadyAssignedCases
+			// only attempt to remove those that were found in the database - i.e. not
+			// using alreadyAssignedCases here which includes casesNotInDb
+			const alreadyAssignedCaseIds = alreadyAssignedCaseReferences
 				.map((ref) => casesByReference.get(ref)?.caseId)
 				.filter(Boolean);
 
@@ -245,7 +232,7 @@ async function handleCases(selectedCases, service, req, res) {
 				service.logger.info(
 					{
 						caseIds: alreadyAssignedCaseIds,
-						caseReferences: alreadyAssignedCases
+						caseReferences: alreadyAssignedCaseReferences
 					},
 					'Removed already assigned cases from local database'
 				);
@@ -254,7 +241,7 @@ async function handleCases(selectedCases, service, req, res) {
 			service.logger.error(
 				{
 					error: error.message,
-					caseReferences: alreadyAssignedCases
+					caseReferences: alreadyAssignedCaseReferences
 				},
 				'Failed to remove already assigned cases from local database'
 			);
@@ -278,7 +265,7 @@ async function handleCases(selectedCases, service, req, res) {
 
 		return res.render('views/errors/duplicate-assignment.njk', {
 			bodyCopy,
-			failedCases: alreadyAssignedCases,
+			alreadyAssignedCases,
 			inspectorId: req.body.inspectorId,
 			successfulCases: successfullyAssignedCaseReferences,
 			emailNotificationSent: emailNotificationSent

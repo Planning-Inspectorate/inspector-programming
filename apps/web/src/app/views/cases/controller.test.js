@@ -237,26 +237,6 @@ describe('controller.js', () => {
 			);
 		});
 
-		test('should redirect to home and set session error when case not in DB', async () => {
-			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => undefined);
-			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
-			const res = { redirect: mock.fn() };
-			const controller = buildPostCases(service);
-			await controller(req, res);
-
-			assert.strictEqual(mockGetCbosApiClientForSession.mock.callCount(), 0);
-
-			assert.strictEqual(service.logger.warn.mock.callCount() >= 1, true);
-			const warnCall = service.logger.warn.mock.calls.find(
-				(call) => call.arguments[1] === 'Some requested cases Id were not found in CBOS'
-			);
-			assert.ok(warnCall, 'Missing cases warning log should exist');
-
-			assert.strictEqual(res.redirect.mock.callCount(), 1);
-			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
-		});
-
 		test('should not update cases if no inspector is selected', async () => {
 			const service = mockService();
 			const req = { body: { selectedCases: ['1', '2', '3'], assignmentDate: '2026-09-18' }, session: {} };
@@ -314,7 +294,7 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.calls[0].arguments[0], 'views/errors/duplicate-assignment.njk');
 			const templateData = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(templateData.bodyCopy, 'The following case has already been assigned in Manage appeals:');
-			assert.deepStrictEqual(templateData.failedCases, ['APP/2024/001']);
+			assert.deepStrictEqual(templateData.alreadyAssignedCases, ['APP/2024/001']);
 			assert.strictEqual(templateData.inspectorId, 'inspectorId');
 			assert.strictEqual(service.logger.error.mock.callCount(), 1);
 			const logCall = service.logger.error.mock.calls[0];
@@ -339,7 +319,31 @@ describe('controller.js', () => {
 			assert.strictEqual(res.render.mock.callCount(), 1);
 			const templateData = res.render.mock.calls[0].arguments[1];
 			assert.strictEqual(templateData.bodyCopy, 'The following cases have already been assigned in Manage appeals:');
-			assert.deepStrictEqual(templateData.failedCases, ['APP/2024/001', 'APP/2024/002']);
+			assert.deepStrictEqual(templateData.alreadyAssignedCases, ['APP/2024/001', 'APP/2024/002']);
+			assert.strictEqual(service.logger.error.mock.callCount(), 1);
+			const logCallMulti = service.logger.error.mock.calls[0];
+			assert.strictEqual(logCallMulti.arguments[1], 'Duplicate assignment attempt detected');
+			assert.strictEqual(logCallMulti.arguments[0].alreadyAssignedCasesCount, 2);
+		});
+
+		test('should render duplicate assignment error page for not found cases', async () => {
+			const appealsDetailsList = [{ appealId: 2, appealReference: 'APP/2024/002', inspector: 'anotherId' }];
+			// one case not found/null
+			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => null);
+			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
+			const service = mockService();
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+			assert.strictEqual(res.render.mock.callCount(), 1);
+			const templateData = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(templateData.bodyCopy, 'The following cases have already been assigned in Manage appeals:');
+			// mix of case references and case IDs
+			assert.deepStrictEqual(templateData.alreadyAssignedCases, ['APP/2024/002', 1]);
 			assert.strictEqual(service.logger.error.mock.callCount(), 1);
 			const logCallMulti = service.logger.error.mock.calls[0];
 			assert.strictEqual(logCallMulti.arguments[1], 'Duplicate assignment attempt detected');
