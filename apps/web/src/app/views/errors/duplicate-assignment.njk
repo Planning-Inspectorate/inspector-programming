@@ -5,22 +5,22 @@
 {% block pageContent %}
     <p class="govuk-body">{{ bodyCopy }}</p>
 
-    {% if failedCases %}
-        {% if failedCases.length > 5 %}
+    {% if alreadyAssignedCases %}
+        {% if alreadyAssignedCases.length > 5 %}
             {% set column1Count = 5 %}
         {% else %}
-            {% set column1Count = failedCases.length %}
+            {% set column1Count = alreadyAssignedCases.length %}
         {% endif %}
 
         <div class="case-id-columns">
             <div>
                 {% for i in range(column1Count)%}
-                    <p class="govuk-body">{{failedCases[i]}}</p>
+                    <p class="govuk-body">{{alreadyAssignedCases[i]}}</p>
                 {% endfor %}
             </div>
             <div>
-                {% for i in range (5, failedCases.length) %}
-                    <p class="govuk-body">{{failedCases[i]}}</p>
+                {% for i in range (5, alreadyAssignedCases.length) %}
+                    <p class="govuk-body">{{alreadyAssignedCases[i]}}</p>
                 {% endfor %}
             </div>
         </div>
