@@ -370,57 +370,6 @@ describe('controller.js', () => {
 			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
 		});
 
-		test('should auto-assign linked child cases when only parent selected', async () => {
-			mockCasesClient.getCaseById.mock.mockImplementation((id) => {
-				if (id === 1)
-					return {
-						caseId: 1,
-						caseReference: 6000107,
-						linkedCaseStatus: 'Parent',
-						caseType: 'H',
-						caseProcedure: 'W',
-						caseLevel: 'B'
-					};
-				if ([2, 3, 4].includes(id))
-					return {
-						caseId: id,
-						caseReference: 6000107 + id - 1,
-						linkedCaseStatus: 'Child',
-						caseType: 'H',
-						caseProcedure: 'W',
-						caseLevel: 'B'
-					};
-				return undefined;
-			});
-			mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementation(() => [mockTimingRule]);
-
-			const appealsDetailsList = [
-				{ appealId: 1, appealReference: 6000107 },
-				{ appealId: 2, appealReference: 6000108 },
-				{ appealId: 3, appealReference: 6000109 },
-				{ appealId: 4, appealReference: 6000110 }
-			];
-			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
-			mockCasesClient.getLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => [
-				{ caseId: 2 },
-				{ caseId: 3 },
-				{ caseId: 4 }
-			]);
-
-			const service = mockService();
-			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
-				session: {}
-			};
-			const res = { redirect: mock.fn(), render: mock.fn() };
-			const controller = buildPostCases(service);
-			await controller(req, res);
-
-			assert.strictEqual(mockCasesClient.getLinkedCasesByParentCaseId.mock.callCount(), 1);
-			assert.strictEqual(mockCbosApiClient.patchAppeal.mock.callCount(), 4);
-			mockCasesClient.getCaseById.mock.mockImplementation(() => appeal);
-		});
-
 		test('should log info when programme officer notification succeeds', async () => {
 			const service = mockService();
 			const req = {

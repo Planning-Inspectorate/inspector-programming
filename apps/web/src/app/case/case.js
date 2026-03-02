@@ -78,7 +78,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
  * @param {import('#service').WebService} service
  * @returns {Promise<{cases: import('./types.d.ts').CaseToAssign[], caseIds: number[], casesNotInDb: number[]}>}
  */
-export async function getCaseAndLinkedCasesIds(caseIds, service) {
+export async function getCasesToAssign(caseIds, service) {
 	const casesById = new Map();
 	const casesNotInDbSet = new Set();
 
@@ -91,17 +91,6 @@ export async function getCaseAndLinkedCasesIds(caseIds, service) {
 
 		if (!casesById.has(caseId)) {
 			casesById.set(caseId, mapCaseViewModelToCaseToAssign(appeal, true));
-		}
-
-		if (appeal.linkedCaseStatus === 'Parent') {
-			const linkedCaseIds = await getLinkedCaseIdsOfParentId(appeal.caseReference, service);
-			for (const linkedCaseId of linkedCaseIds) {
-				if (casesById.has(linkedCaseId)) continue;
-				const linkedAppeal = await service.casesClient.getCaseById(linkedCaseId);
-				if (linkedAppeal) {
-					casesById.set(linkedCaseId, mapCaseViewModelToCaseToAssign(linkedAppeal, false));
-				}
-			}
 		}
 	}
 
