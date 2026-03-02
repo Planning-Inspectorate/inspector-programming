@@ -352,6 +352,14 @@
                     </div>
                 </div>
             {% include 'views/home/cases-table.njk' %}
+
+            {# Hidden checkboxes for cases not on the current page, enabling map selections to be submitted #}
+            {% if appeals.offPageCases %}
+                {% for c in appeals.offPageCases %}
+                    <label class="govuk-visually-hidden" for="off-page-case-{{ c.caseId }}">Select case {{ c.caseId }}</label>
+                    <input type="checkbox" id="off-page-case-{{ c.caseId }}" name="selectedCases" value="{{ c.caseId }}" {% if c.selected %}checked{% endif %} style="display:none" aria-hidden="true">
+                {% endfor %}
+            {% endif %}
             </form>
 
             {% if appeals.cases.length > 0 %}
@@ -451,7 +459,10 @@
             const { caseId, selected } = event.detail;
             console.debug('caseStateChange, syncing checkbox state', caseId, selected);
 
-            document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
+            const checkbox = document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`);
+            if (checkbox) {
+                checkbox.checked = selected;
+            }
         });
 
         document.addEventListener('mapSelectionError', function (event) {
