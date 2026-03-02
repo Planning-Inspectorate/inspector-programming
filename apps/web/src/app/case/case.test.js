@@ -1,5 +1,5 @@
 import { beforeEach, describe, test, mock } from 'node:test';
-import { assignCasesToInspector, getCasesToAssign, getLinkedCaseIdsOfParentId, getCaseDetails } from './case.js';
+import { assignCasesToInspector, getCasesToAssign, getCaseDetails } from './case.js';
 import assert from 'assert';
 
 const mockSession = {};
@@ -15,21 +15,18 @@ const mockCbosApiClient = {
 const mockGetCbosApiClientForSession = mock.fn();
 mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 
-const mockGetLinkedCasesByParentCaseId = mock.fn();
 const mockGetCaseById = mock.fn();
 
 const mockService = {
 	logger: mockLogger,
 	getCbosApiClientForSession: mockGetCbosApiClientForSession,
 	casesClient: {
-		getLinkedCasesByParentCaseId: mockGetLinkedCasesByParentCaseId,
 		getCaseById: mockGetCaseById
 	}
 };
 
 beforeEach(() => {
 	mockGetCbosApiClientForSession.mock.resetCalls();
-	mockGetLinkedCasesByParentCaseId.mock.resetCalls();
 	mockGetCaseById.mock.resetCalls();
 	mockService.logger.error.mock.resetCalls();
 	mockService.logger.warn.mock.resetCalls();
@@ -186,17 +183,6 @@ describe('assignCasesToInspector', () => {
 		const firstCall = mockCbosApiClient.patchAppeal.mock.calls[0];
 		assert.strictEqual(firstCall.arguments[0], caseId);
 		assert.deepStrictEqual(firstCall.arguments[1], { inspectorId });
-	});
-});
-
-describe('getLinkedCaseIdsOfParentId', () => {
-	test('should get all linked cases ids from parent case id', async () => {
-		const linkedCases = [{ caseId: '1' }, { caseId: '2' }, { caseId: '3' }];
-		const expectedLinkedCaseIds = ['1', '2', '3'];
-		mockGetLinkedCasesByParentCaseId.mock.mockImplementationOnce(() => linkedCases);
-		const linkedCasesIds = await getLinkedCaseIdsOfParentId('caseId', mockService);
-		assert.strictEqual(mockGetLinkedCasesByParentCaseId.mock.callCount(), 1);
-		assert.deepStrictEqual(linkedCasesIds, expectedLinkedCaseIds);
 	});
 });
 
