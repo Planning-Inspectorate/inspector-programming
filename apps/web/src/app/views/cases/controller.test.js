@@ -9,7 +9,6 @@ describe('controller.js', () => {
 			mockGetCbosApiClientForSession.mock.resetCalls();
 			mockCbosApiClient.patchAppeal.mock.resetCalls();
 			mockCasesClient.getCaseById.mock.resetCalls();
-			mockCasesClient.getLinkedCasesByParentCaseId.mock.resetCalls();
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
 			mockCbosApiClient.fetchAppealDetailsByReference.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseEmail.mock.resetCalls();
@@ -18,7 +17,6 @@ describe('controller.js', () => {
 		//mock clients
 		const mockCasesClient = {
 			getCaseById: mock.fn(),
-			getLinkedCasesByParentCaseId: mock.fn(),
 			deleteCases: mock.fn()
 		};
 		const mockCbosApiClient = {
@@ -115,7 +113,6 @@ describe('controller.js', () => {
 				caseReference: id.toString()
 			};
 		});
-		mockCasesClient.getLinkedCasesByParentCaseId.mock.mockImplementation(() => []);
 		mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 		mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementation(() => []);
 		mockEntraClientInstance.listAllUserCalendarEvents.mock.mockImplementation(() => existingEvents);

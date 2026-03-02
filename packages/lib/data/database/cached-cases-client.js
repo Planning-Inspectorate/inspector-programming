@@ -124,16 +124,6 @@ export class CachedCasesClient {
 
 	/**
 	 *
-	 * @param {string} caseId
-	 * @returns {Promise<import('../types').CaseViewModel[]>}
-	 */
-	async getLinkedCasesByParentCaseId(caseId) {
-		const cases = await this.getAllCases();
-		return cases.filter((item) => item.leadCaseReference == caseId);
-	}
-
-	/**
-	 *
 	 * @param {number} caseId
 	 * @returns {Promise<import('../types').CaseViewModel|undefined>}
 	 */

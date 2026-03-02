@@ -115,21 +115,3 @@ function mapCaseViewModelToCaseToAssign(caseViewModel, isParent) {
 		isParent
 	};
 }
-
-/**
- *
- * @param {string} parentId
- * @param {import('#service').WebService} service
- * @returns {Promise<number[]>}
- */
-export async function getLinkedCaseIdsOfParentId(parentId, service) {
-	const caseIds = [];
-	const linkedCases = await service.casesClient.getLinkedCasesByParentCaseId(parentId);
-	for (const linkedCase of linkedCases) {
-		if (linkedCase.caseId) {
-			caseIds.push(linkedCase.caseId);
-		}
-	}
-
-	return caseIds;
-}

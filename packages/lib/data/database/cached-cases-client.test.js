@@ -71,26 +71,6 @@ describe('cached-cases-client', () => {
 			assert.deepStrictEqual(appeals, [{ caseId: 2 }]);
 		});
 
-		it('should return linked cases by lead case reference', async () => {
-			const mockClient = {
-				lastCasesUpdate: mock.fn()
-			};
-			const mockCache = {
-				get: mock.fn(() => [
-					{ id: '1', leadCaseReference: 'A' },
-					{ id: '2', leadCaseReference: 'B' },
-					{ id: '3', leadCaseReference: 'A' }
-				])
-			};
-			const cacheClient = new CachedCasesClient(mockClient, mockCache);
-			const linkedCases = await cacheClient.getLinkedCasesByParentCaseId('A');
-			assert.strictEqual(mockCache.get.mock.callCount(), 1);
-			assert.deepStrictEqual(linkedCases, [
-				{ id: '1', leadCaseReference: 'A' },
-				{ id: '3', leadCaseReference: 'A' }
-			]);
-		});
-
 		it('should get all cases that are parent or stand alone cases', async () => {
 			const mockClient = {
 				lastCasesUpdate: mock.fn()
