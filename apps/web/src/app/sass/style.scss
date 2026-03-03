@@ -49,22 +49,42 @@ $font-family: arial, helvetica, sans-serif;
 	white-space: pre-wrap;
 }
 
-.filter-container {
-	display: flex;
-	gap: 20px;
-}
+// home page styling
+.case-list-container {
+	.govuk-grid-row {
+		display: flex;
+		gap: 16px;
+	}
 
-.app-filter {
-	flex: 0.6;
-	background-color: #f3f2f1;
-	padding: 16px;
-	border: none;
-	border-radius: 4px;
-	margin-bottom: 20px;
-}
+	aside {
+		flex: 1;
+		background-color: #f3f2f1;
+		padding: 16px;
+		margin-top: 40px;
+		margin-bottom: 20px;
+		border-radius: 4px;
 
-.cases-inspectors-container {
-	flex: 3;
+		.govuk-form-group {
+			margin-bottom: 0;
+		}
+	}
+
+	main {
+		flex: 5;
+
+		.home-cases-table {
+			.govuk-form-group {
+				margin-bottom: 0;
+			}
+			th {
+				font-size: 18px;
+				font-weight: bold;
+			}
+			td {
+				font-size: 18px;
+			}
+		}
+	}
 }
 
 .sort-pagination-link.selected {
@@ -73,42 +93,8 @@ $font-family: arial, helvetica, sans-serif;
 	text-decoration: none;
 }
 
-.app-filter__header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	border-bottom: none;
-	padding-bottom: 8px;
-	margin-bottom: 16px;
-}
-
-.app-filter__header-title h2 {
-	margin: 0;
-	font-size: 1.25rem;
-}
-
-.app-filter__content {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.govuk-button--primary {
-	background-color: #00703c;
-	border-color: #005a30;
-}
-
 .govuk-button--secondary {
 	background-color: #bfbfbfcd;
-}
-
-.govuk-button:hover {
-	background-color: #005a30;
-	border-color: #003e20;
-}
-
-.bold-title {
-	font-weight: bold;
 }
 
 .custom-filter-dropdown {
@@ -128,7 +114,10 @@ $font-family: arial, helvetica, sans-serif;
 	}
 }
 
-.cases-inspectors-container {
+.assignment-form {
+	display: flex;
+	justify-content: flex-end;
+
 	.govuk-form-group {
 		margin-bottom: 0;
 		margin-left: 10px;
@@ -137,24 +126,14 @@ $font-family: arial, helvetica, sans-serif;
 			margin-top: 8px;
 		}
 	}
-}
 
-.cases-inspectors-container .govuk-button {
-	margin-bottom: 10px;
-}
-
-.align-right {
-	display: flex;
-	justify-content: flex-end;
+	.govuk-button {
+		margin-bottom: 0;
+	}
 }
 
 .app-filter .govuk-form-group {
 	margin-bottom: 0;
-}
-
-.align-right {
-	display: flex;
-	justify-content: flex-end;
 }
 
 .app-filter .govuk-form-group {
@@ -374,15 +353,6 @@ $font-family: arial, helvetica, sans-serif;
 .govuk-grid-column-full {
 	padding: 0;
 	height: 55px;
-}
-
-.home-cases-table th {
-	font-size: 18px;
-	font-weight: bold;
-}
-
-.home-cases-table td {
-	font-size: 18px;
 }
 
 .pins-header__logo-image {
