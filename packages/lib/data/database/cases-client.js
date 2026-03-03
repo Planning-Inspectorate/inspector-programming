@@ -67,7 +67,7 @@ export class CasesClient {
 			caseProcedure: c.caseProcedure || '',
 			allocationBand: c.allocationBand || '',
 			caseLevel: c.allocationLevel || '',
-			siteAddressPostcode: c.siteAddressPostcode || '',
+			siteAddressPostcode: c.siteAddressPostcode?.toUpperCase() || '',
 			siteAddressLatitude: Number(c.siteAddressLatitude),
 			siteAddressLongitude: Number(c.siteAddressLongitude),
 			lpaName: c.lpaName || c.Lpa?.lpaName || '',

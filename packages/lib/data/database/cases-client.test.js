@@ -22,7 +22,7 @@ describe('CasesClient', () => {
 					siteAddressLine2: null,
 					siteAddressTown: 'Example Town',
 					siteAddressCounty: 'Example County',
-					siteAddressPostcode: 'SY10 7FA',
+					siteAddressPostcode: 'sy10 7fa',
 					siteAddressLatitude: 52.89835,
 					siteAddressLongitude: -3.064346,
 					lpaCode: 'Q9999',
