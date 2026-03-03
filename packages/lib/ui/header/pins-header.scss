@@ -36,6 +36,11 @@ header.govuk-header.pins-header {
 		border-color: brand.$pins-green-200;
 	}
 
+	& .govuk-service-navigation__link {
+		color: black;
+		border-bottom-color: black;
+	}
+
 	& .govuk-service-navigation__link:hover {
 		color: black;
 	}
