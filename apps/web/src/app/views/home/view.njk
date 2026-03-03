@@ -310,7 +310,7 @@
                             </div>
                             <div>
                                 <span class="govuk-body">Cases per page:</span>
-                                {% set limits = [5, 10, 15, 25] %}
+                                {% set limits = [25, 50, 100, 250] %}
                                 {% for l in limits %}
                                 <a  data-limit="{{ l }}"
                                     href=''
