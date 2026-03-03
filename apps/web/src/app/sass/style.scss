@@ -49,6 +49,12 @@ $font-family: arial, helvetica, sans-serif;
 	white-space: pre-wrap;
 }
 
+// error styling
+.govuk-error-summary {
+	margin-top: 16px;
+	margin-bottom: 0;
+}
+
 // home page styling
 .case-list-container {
 	.govuk-grid-row {
