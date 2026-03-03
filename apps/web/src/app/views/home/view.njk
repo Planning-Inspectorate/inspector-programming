@@ -337,9 +337,10 @@
                                     classes: "govuk-input",
                                     type: "date",
                                     value: appeals.assignmentDate,
-                                    attributes: { min: appeals.assignmentDateMin },
+                                    attributes: { min: appeals.assignmentDateMin, readonly:true, placeholder: "dd/mm/yyyy" },
                                     errorMessage: {text: appeals.assignmentDateError} if appeals.assignmentDateError else null
                                 }) }}
+                                <div class="event-label"></div>
                             </div>
                             <div class="govuk-form-group">
                                 {{ govukButton({
@@ -567,6 +568,29 @@
                 displayMenu: 'overlay'
             });
         }
+			const bankHolidaysRaw = '{{ bankHolidays | dump | safe }}';
+			let nonWorkingDays = [];
+			try {
+				nonWorkingDays = JSON.parse(bankHolidaysRaw);
+			} catch (e) {
+				nonWorkingDays = [];
+			}
+
+			flatpickr("#assignment-date", {
+				enableTime: false,
+				minDate: "{{ appeals.assignmentDateMin }}",
+				disable: [
+					// this disables all weekends
+					function(date) {
+						return date.getDay() === 0 || date.getDay() === 6;
+					},
+					...nonWorkingDays
+				],
+				dateFormat: "d/m/Y",
+				defaultDate: "{{ appeals.assignmentDate }}",
+                position: "below right",
+			});
+
     });
 </script>
 

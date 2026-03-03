@@ -35,6 +35,9 @@ describe('controller.js', () => {
 					getAllInspectors: mock.fn(),
 					getInspectorCaseSpecialism: mock.fn(() => [])
 				},
+				calendarClient: {
+					getEnglandWalesBankHolidays: mock.fn(async () => [])
+				},
 				osMapsApiKey: 'test-api-key',
 				getSimplifiedEvents: mock.fn(async () => [])
 			};
@@ -710,6 +713,9 @@ describe('controller.js', () => {
 					getInspectorDetails: mock.fn(() => ({ id: 'inspector-id' })),
 					getAllInspectors: mock.fn(() => [{ id: 'inspector-id' }]),
 					getInspectorCaseSpecialism: mock.fn(() => [])
+				},
+				calendarClient: {
+					getEnglandWalesBankHolidays: mock.fn(async () => [])
 				}
 			};
 

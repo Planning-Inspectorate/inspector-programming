@@ -11,6 +11,7 @@ export interface HomeViewModel extends PageViewModel {
 	calendar?: CalendarViewModel;
 	inspectors?: InspectorsViewModel;
 	map?: MapViewModel;
+	bankHolidays?: string[];
 }
 
 export interface AppealsViewModel {
