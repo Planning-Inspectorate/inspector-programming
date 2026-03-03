@@ -21,160 +21,152 @@
 {% from "views/macros/checkbox-filter.njk" import checkboxFilter %}
 {% from "views/macros/filter-tag.njk" import filterTag, filterGroup %}
 
-{% block pageContent %}
-<div class="filter-container">
-    <div class="app-filter">
-        <div class="app-filter__header">
-            <div class="app-filter__header-title">
-                <h2 class="govuk-heading-m bold-title">Select inspector</h2>
-            </div>
-        </div>
-        <form method="get" novalidate id="inspector-form">
-            <div class="govuk-form-group flex-gap">
-                {% set inspectorList = [{
-                    text: '',
-                    value: null,
-                    selected: null
-                }] %}
-                {% for i in inspectors.list %}
-                    {% set inspectorList = (inspectorList.push({
-                        text: i.lastName + ', ' + i.firstName,
-                        value: i.id,
-                        selected: i.id == filters.query.inspectorId
-                    }), inspectorList) %}
-                {% endfor %}
-                {{ govukSelect({
-                    id: "inspectors",
-                    name: "inspectorId",
-                    items: inspectorList,
-                    errorMessage: { text: inspectors.error } if inspectors.error else null
-                }) }}
-                {{ govukInput({
-                    id: "currentTab",
-                    name: "currentTab",
-                    type: "hidden"
-                }) }}
-                {{ govukButton({
-                    text: "Select",
-                    classes: "govuk-button--secondary margin-top-error" if inspectors.error else "govuk-button--secondary",
-                    value: "select",
-                    name: "action",
-                    type: "submit"
-                }) }}
-            </div>
-            {{ compileFilterQueryFields(filters) }}
-            {{ compileSortPaginationQueryFields(filters) }}
-            <input type="hidden" name="page" value="{{ filters.query.page }}">
-        </form>
-        <div class="app-filter__content">
-            <div class="app-filter__options">
-                <form method="get" novalidate>
-                    <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                    <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+{% block container %}
+    <div class="govuk-width-container case-list-container {{ containerClasses }}">
+        <div class="govuk-grid-row">
+            <aside>
+                <h2 class="govuk-heading-m">Select inspector</h2>
+                <form method="get" novalidate id="inspector-form">
+                    <div class="govuk-form-group flex-gap">
+                        {% set inspectorList = [{
+                            text: '',
+                            value: null,
+                            selected: null
+                        }] %}
+                        {% for i in inspectors.list %}
+                            {% set inspectorList = (inspectorList.push({
+                                text: i.lastName + ', ' + i.firstName,
+                                value: i.id,
+                                selected: i.id == filters.query.inspectorId
+                            }), inspectorList) %}
+                        {% endfor %}
+                        {{ govukSelect({
+                            id: "inspectors",
+                            name: "inspectorId",
+                            items: inspectorList,
+                            errorMessage: { text: inspectors.error } if inspectors.error else null
+                        }) }}
+                        {{ govukInput({
+                            id: "currentTab",
+                            name: "currentTab",
+                            type: "hidden"
+                        }) }}
+                        {{ govukButton({
+                            text: "Select",
+                            classes: "govuk-button--secondary margin-top-error" if inspectors.error else "govuk-button--secondary",
+                            value: "select",
+                            name: "action",
+                            type: "submit"
+                        }) }}
+                    </div>
+                    {{ compileFilterQueryFields(filters) }}
+                    {{ compileSortPaginationQueryFields(filters) }}
                     <input type="hidden" name="page" value="{{ filters.query.page }}">
-                    <input type="hidden" name="sort" value="{{ filters.query.sort }}">
-
-                    {% for key, value in filters.query.case %}
-                        {% if value is iterable and not value is string %}
-                            {% for item in value %}
-                                <input type="hidden" name="filters[{{ key }}][]" value="{{ item }}">
-                            {% endfor %}
-                        {% else %}
-                            <input type="hidden" name="filters[{{ key }}]" value="{{ value }}">
-                        {% endif %}
-                    {% endfor %}
                 </form>
-                <div class="app-filter__header">
-                    <div class="app-filter__header-title">
-                        <h2 class="govuk-heading-m">Case filters</h2>
-                    </div>
-                </div>
+                <div class="app-filters">
+                    <form method="get" novalidate>
+                        <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                        <input type="hidden" name="limit" value="{{ filters.query.limit }}">
+                        <input type="hidden" name="page" value="{{ filters.query.page }}">
+                        <input type="hidden" name="sort" value="{{ filters.query.sort }}">
 
-                {# Selected filters display #}
-                {% set hasActiveFilters =
-                    filters.query.case.minimumAge or
-                    filters.query.case.maximumAge or
-                    filters.query.case.lpaRegion or
-                    filters.query.case.caseSpecialisms or
-                    filters.query.case.caseTypes or
-                    filters.query.case.allocationLevels
-                %}
-
-                {% if hasActiveFilters %}
-                    <div class="selected-filters">
-                        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h3>
-
-                        {# Case Age #}
-                        {% if filters.query.case.minimumAge or filters.query.case.maximumAge %}
-                            {% call filterGroup('Case age') %}
-                                {% if filters.query.case.minimumAge %}
-                                    {{ filterTag('Min ' + filters.query.case.minimumAge + ' weeks', filters.buildUrlWithoutFilter('minimumAge')) }}
-                                {% endif %}
-                                {% if filters.query.case.maximumAge %}
-                                    {{ filterTag('Max ' + filters.query.case.maximumAge + ' weeks', filters.buildUrlWithoutFilter('maximumAge')) }}
-                                {% endif %}
-                            {% endcall %}
-                        {% endif %}
-
-                        {# LPA Region #}
-                        {% if filters.query.case.lpaRegion %}
-                            {% call filterGroup('LPA region') %}
-                                {% for region in filters.query.case.lpaRegion %}
-                                    {{ filterTag(region, filters.buildUrlWithoutFilter('lpaRegion', region)) }}
+                        {% for key, value in filters.query.case %}
+                            {% if value is iterable and not value is string %}
+                                {% for item in value %}
+                                    <input type="hidden" name="filters[{{ key }}][]" value="{{ item }}">
                                 {% endfor %}
-                            {% endcall %}
-                        {% endif %}
+                            {% else %}
+                                <input type="hidden" name="filters[{{ key }}]" value="{{ value }}">
+                            {% endif %}
+                        {% endfor %}
+                    </form>
+                    <h2 class="govuk-heading-m">Case filters</h2>
 
-                        {# Specialisms #}
-                        {% if filters.query.case.caseSpecialisms %}
-                            {% call filterGroup('Specialism') %}
-                                {% for specialism in filters.query.case.caseSpecialisms %}
-                                    {{ filterTag(specialism, filters.buildUrlWithoutFilter('caseSpecialisms', specialism)) }}
-                                {% endfor %}
-                            {% endcall %}
-                        {% endif %}
+                    {# Selected filters display #}
+                    {% set hasActiveFilters =
+                        filters.query.case.minimumAge or
+                        filters.query.case.maximumAge or
+                        filters.query.case.lpaRegion or
+                        filters.query.case.caseSpecialisms or
+                        filters.query.case.caseTypes or
+                        filters.query.case.allocationLevels
+                    %}
 
-                        {# Case types #}
-                        {% if filters.query.case.caseTypes %}
-                            {% call filterGroup('Case type') %}
-                                {% for caseType in filters.query.case.caseTypes %}
-                                    {% set caseTypeText = caseType %}
-                                    {% for item in filters.caseTypes %}
-                                        {% if item.value == caseType %}
-                                            {% set caseTypeText = item.text %}
-                                        {% endif %}
+                    {% if hasActiveFilters %}
+                        <div class="selected-filters">
+                            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h3>
+
+                            {# Case Age #}
+                            {% if filters.query.case.minimumAge or filters.query.case.maximumAge %}
+                                {% call filterGroup('Case age') %}
+                                    {% if filters.query.case.minimumAge %}
+                                        {{ filterTag('Min ' + filters.query.case.minimumAge + ' weeks', filters.buildUrlWithoutFilter('minimumAge')) }}
+                                    {% endif %}
+                                    {% if filters.query.case.maximumAge %}
+                                        {{ filterTag('Max ' + filters.query.case.maximumAge + ' weeks', filters.buildUrlWithoutFilter('maximumAge')) }}
+                                    {% endif %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# LPA Region #}
+                            {% if filters.query.case.lpaRegion %}
+                                {% call filterGroup('LPA region') %}
+                                    {% for region in filters.query.case.lpaRegion %}
+                                        {{ filterTag(region, filters.buildUrlWithoutFilter('lpaRegion', region)) }}
                                     {% endfor %}
-                                    {{ filterTag(caseTypeText, filters.buildUrlWithoutFilter('caseTypes', caseType)) }}
-                                {% endfor %}
-                            {% endcall %}
-                        {% endif %}
+                                {% endcall %}
+                            {% endif %}
 
-                        {# Case allocation #}
-                        {% if filters.query.case.allocationLevels %}
-                            {% call filterGroup('Case allocation level') %}
-                                {% for allocationLevel in filters.query.case.allocationLevels %}
-                                    {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
-                                {% endfor %}
-                            {% endcall %}
-                        {% endif %}
-                    </div>
-                {% endif %}
+                            {# Specialisms #}
+                            {% if filters.query.case.caseSpecialisms %}
+                                {% call filterGroup('Specialism') %}
+                                    {% for specialism in filters.query.case.caseSpecialisms %}
+                                        {{ filterTag(specialism, filters.buildUrlWithoutFilter('caseSpecialisms', specialism)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
 
-                <form id="filter-form" method="get" novalidate>
-                    <div class="filter-actions">
-                        <button class="govuk-button" data-module="govuk-button">
-                            Apply filters
-                        </button>
-                        {% if hasActiveFilters %}
-                        <a href="{{ filters.clearFiltersUrl }}"
-                           class="govuk-link govuk-link--no-visited-state govuk-body"
-                           id="clear-filters-link">Clear filters</a>
-                        {% endif %}
-                    </div>
-                    {{ govukDetails({
-                        summaryText: "Case age",
-                        html: ( 
-                                govukInput({
+                            {# Case types #}
+                            {% if filters.query.case.caseTypes %}
+                                {% call filterGroup('Case type') %}
+                                    {% for caseType in filters.query.case.caseTypes %}
+                                        {% set caseTypeText = caseType %}
+                                        {% for item in filters.caseTypes %}
+                                            {% if item.value == caseType %}
+                                                {% set caseTypeText = item.text %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ filterTag(caseTypeText, filters.buildUrlWithoutFilter('caseTypes', caseType)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# Case allocation #}
+                            {% if filters.query.case.allocationLevels %}
+                                {% call filterGroup('Case allocation level') %}
+                                    {% for allocationLevel in filters.query.case.allocationLevels %}
+                                        {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <form id="filter-form" method="get" novalidate>
+                        <div class="filter-actions">
+                            <button class="govuk-button" data-module="govuk-button">
+                                Apply filters
+                            </button>
+                            {% if hasActiveFilters %}
+                                <a href="{{ filters.clearFiltersUrl }}"
+                                   class="govuk-link govuk-link--no-visited-state govuk-body"
+                                   id="clear-filters-link">Clear filters</a>
+                            {% endif %}
+                        </div>
+                        {{ govukDetails({
+                            summaryText: "Case age",
+                            html: (
+                            govukInput({
                                 label: {
                                     text: "Minimum age (weeks)",
                                     classes: "govuk-label--s",
@@ -185,240 +177,246 @@
                                 classes: "govuk-input--width-5",
                                 errorMessage: filters.errors.minimumAge,
                                 value: filters.query.case.minimumAge
-                                }) + 
-                                govukInput({
-                                    label: {
-                                        text: "Maximum age (weeks)",
-                                        classes: "govuk-label--s",
-                                        isPageHeading: false
-                                    },
-                                    idPrefix: "filters[maximumAge]",
-                                    name: "filters[maximumAge]",
-                                    classes: "govuk-input--width-5",
-                                    errorMessage: filters.errors.maximumAge,
-                                    value: filters.query.case.maximumAge
-                                })
+                            }) +
+                            govukInput({
+                                label: {
+                                    text: "Maximum age (weeks)",
+                                    classes: "govuk-label--s",
+                                    isPageHeading: false
+                                },
+                                idPrefix: "filters[maximumAge]",
+                                name: "filters[maximumAge]",
+                                classes: "govuk-input--width-5",
+                                errorMessage: filters.errors.maximumAge,
+                                value: filters.query.case.maximumAge
+                            })
 
-                        ),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ govukDetails({
-                        summaryText: "LPA region",
-                        html: govukCheckboxes({
-                            idPrefix: "filters[lpaRegion]",
-                            name: "filters[lpaRegion]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more LPA regions",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: [
-                                { value: 'North', text: 'North' },
-                                { value: 'East', text: 'East' },
-                                { value: 'West', text: 'West' }
-                            ],
-                            values: filters.query.case.lpaRegion
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ govukDetails({
-                        summaryText: "Specialism",
-                        html: checkboxFilter({
-                            idPrefix: "filters[caseSpecialisms]",
-                            name: "filters[caseSpecialisms]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more specialisms",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: filters.specialisms,
-                            values: filters.query.case.caseSpecialisms,
-                            textBox: {
-                                label: 'Find specialism'
-                            }
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ govukDetails({
-                        summaryText: "Case type",
-                        html: checkboxFilter({
-                            idPrefix: "filters[caseTypes]",
-                            name: "filters[caseTypes]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more case types",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: filters.caseTypes,
-                            values: filters.query.case.caseTypes,
-                            textBox: {
-                                label: 'Find case type'
-                            }
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ govukDetails({
-                        summaryText: "Case allocation",
-                        html: govukCheckboxes({
-                            idPrefix: "filters[allocationLevels]",
-                            name: "filters[allocationLevels]",
-                            classes: "govuk-checkboxes--small",
-                            fieldset: {
-                                legend: {
-                                    text: "Select one or more case allocation levels",
-                                    classes: "govuk-fieldset__legend--s"
-                                }
-                            },
-                            items: filters.allocationLevels,
-                            values: filters.query.case.allocationLevels
-                        }),
-                        classes: "custom-filter-dropdown",
-                        open: true
-                    }) }}
-                    {{ compileSortPaginationQueryFields(filters) }}
-                    <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                    <input type="hidden" name="page" value="{{ filters.query.page }}">
-                </form>
-            </div>
-        </div>
-    </div>
-<div class="cases-inspectors-container">
-    <div id="table-view" class="view">
-        {% set casesTable %}
-        <div style="margin: 0; padding: 0;">
-            <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">  
-                <div style="margin-bottom: 10px;">
-                    <span class="govuk-body">Sort by:</span>
-                    {% set sorts = [
-                        { label: "Age", value: "age" },
-                        { label: "Distance", value: "distance" }
-                    ] %}
-                    {% for s in sorts %}
-                        <a data-sort="{{ s.value }}"
-                            href=''
-                            class="sort-pagination-link {% if filters.query.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
-                            {{ s.label }}</a>{% if not loop.last %} | {% endif %}
-                    {% endfor %}
-                </div>
-                <div>
-                    <span class="govuk-body">Cases per page:</span>
-                    {% set limits = [5, 10, 15, 25] %}
-                    {% for l in limits %}
-                        <a  data-limit="{{ l }}"
-                            href=''
-                            class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
-                            {{ l }}</a>{% if not loop.last %} | {% endif %}
-                    {% endfor %}
-                </div>
-                {{ compileFilterQueryFields(filters) }}
-                {{ compileSortPaginationQueryFields(filters)}}
-                <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                <input type="hidden" name="page" value="{{ filters.query.page }}">
-            </form>
-        </div>
-        <form method="post" action="/cases" novalidate>
-                <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                <div class="align-right">
-                    <div class="govuk-form-group {% if appeals.assignmentDateError %} margin-top-error-40px {% endif %}">
-                        <label class="govuk-label" for="assignment-date">Event date: </label>
-                    </div>
-                    <div class="govuk-form-group">
-                        {{ govukInput({
-                            id: "assignment-date",
-                            name: "assignmentDate",
-                            classes: "govuk-input",
-                            type: "date",
-                            value: appeals.assignmentDate,
-                            attributes: { min: appeals.assignmentDateMin },
-                            errorMessage: {text: appeals.assignmentDateError} if appeals.assignmentDateError else null
+                            ),
+                            classes: "custom-filter-dropdown",
+                            open: true
                         }) }}
-                    </div>
-                    <div class="govuk-form-group">
-                        {{ govukButton({
-                            text: "Assign selected cases",
-                            type: "submit",
-                            classes: "margin-top-error-40px" if appeals.assignmentDateError else null
+                        {{ govukDetails({
+                            summaryText: "LPA region",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[lpaRegion]",
+                                name: "filters[lpaRegion]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more LPA regions",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: [
+                                    { value: 'North', text: 'North' },
+                                    { value: 'East', text: 'East' },
+                                    { value: 'West', text: 'West' }
+                                ],
+                                values: filters.query.case.lpaRegion
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
                         }) }}
-                    </div>
+                        {{ govukDetails({
+                            summaryText: "Specialism",
+                            html: checkboxFilter({
+                                idPrefix: "filters[caseSpecialisms]",
+                                name: "filters[caseSpecialisms]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more specialisms",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.specialisms,
+                                values: filters.query.case.caseSpecialisms,
+                                textBox: {
+                                    label: 'Find specialism'
+                                }
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+                        {{ govukDetails({
+                            summaryText: "Case type",
+                            html: checkboxFilter({
+                                idPrefix: "filters[caseTypes]",
+                                name: "filters[caseTypes]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more case types",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.caseTypes,
+                                values: filters.query.case.caseTypes,
+                                textBox: {
+                                    label: 'Find case type'
+                                }
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+                        {{ govukDetails({
+                            summaryText: "Case allocation",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[allocationLevels]",
+                                name: "filters[allocationLevels]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more case allocation levels",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.allocationLevels,
+                                values: filters.query.case.allocationLevels
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+                        {{ compileSortPaginationQueryFields(filters) }}
+                        <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                        <input type="hidden" name="page" value="{{ filters.query.page }}">
+                    </form>
                 </div>
-            {% include 'views/home/cases-table.njk' %}
-            </form>
+            </aside>
+            <main class="govuk-main-wrapper" id="main-content">
+                <h1 class="govuk-heading-l">
+                    {% if pageCaption %}
+                        <span class="govuk-caption-xl">{{ pageCaption }}</span>
+                    {% endif %}
+                    {{ pageHeading or pageTitle }}
+                </h1>
 
-            {% if appeals.cases.length > 0 %}
-                <div class="govuk-form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0; padding: 0;">
+                {% set casesTable %}
                     <div style="margin: 0; padding: 0;">
-                        {{ govukPagination(filters.pagination) }}
+                        <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">
+                            <div style="margin-bottom: 10px;">
+                                <span class="govuk-body">Sort by:</span>
+                                {% set sorts = [
+                                    { label: "Age", value: "age" },
+                                    { label: "Distance", value: "distance" }
+                                ] %}
+                                {% for s in sorts %}
+                                <a data-sort="{{ s.value }}"
+                                   href=''
+                                   class="sort-pagination-link {% if filters.query.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                                    {{ s.label }}</a>{% if not loop.last %} | {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div>
+                                <span class="govuk-body">Cases per page:</span>
+                                {% set limits = [5, 10, 15, 25] %}
+                                {% for l in limits %}
+                                <a  data-limit="{{ l }}"
+                                    href=''
+                                    class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                                    {{ l }}</a>{% if not loop.last %} | {% endif %}
+                                {% endfor %}
+                            </div>
+                            {{ compileFilterQueryFields(filters) }}
+                            {{ compileSortPaginationQueryFields(filters)}}
+                            <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                            <input type="hidden" name="page" value="{{ filters.query.page }}">
+                        </form>
                     </div>
-                </div>
-            {% endif %}
+                    <form method="post" action="/cases" novalidate>
+                        <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                        <div class="assignment-form">
+                            <div class="govuk-form-group {% if appeals.assignmentDateError %} margin-top-error-40px {% endif %}">
+                                <label class="govuk-label" for="assignment-date">Event date: </label>
+                            </div>
+                            <div class="govuk-form-group">
+                                {{ govukInput({
+                                    id: "assignment-date",
+                                    name: "assignmentDate",
+                                    classes: "govuk-input",
+                                    type: "date",
+                                    value: appeals.assignmentDate,
+                                    attributes: { min: appeals.assignmentDateMin },
+                                    errorMessage: {text: appeals.assignmentDateError} if appeals.assignmentDateError else null
+                                }) }}
+                            </div>
+                            <div class="govuk-form-group">
+                                {{ govukButton({
+                                    text: "Assign selected cases",
+                                    type: "submit",
+                                    classes: "margin-top-error-40px" if appeals.assignmentDateError else null
+                                }) }}
+                            </div>
+                        </div>
+                        {% include 'views/home/cases-table.njk' %}
+                    </form>
 
-        {% endset %}
+                    {% if appeals.cases.length > 0 %}
+                        <div class="govuk-form-group" style="display: flex; justify-content: space-between; align-items: center; margin: 0; padding: 0;">
+                            <div style="margin: 0; padding: 0;">
+                                {{ govukPagination(filters.pagination) }}
+                            </div>
+                        </div>
+                    {% endif %}
 
-        {% set mapView %}
-            <div class="home-map">
-                {{ osMap(map.apiKey, appeals.cases, inspectors.selected) }}
-            </div>
-        {% endset %}
+                {% endset %}
 
-        {% set inspectorDetails %}
-            {% if inspectors.selected %}
-                {% include 'views/home/inspector-details.njk' %}
-            {% else %}
-                {{ govukErrorMessage({
-                    text: inspectorError,
-                    visuallyHiddenText: "Error"
+                {% set mapView %}
+                    <div class="home-map">
+                        {{ osMap(map.apiKey, appeals.cases, inspectors.selected) }}
+                    </div>
+                {% endset %}
+
+                {% set inspectorDetails %}
+                    {% if inspectors.selected %}
+                        {% include 'views/home/inspector-details.njk' %}
+                    {% else %}
+                        {{ govukErrorMessage({
+                            text: inspectorError,
+                            visuallyHiddenText: "Error"
+                        }) }}
+                    {% endif %}
+                {% endset %}
+
+                {% set outlookView %}
+                    {% if calendar.error %}
+                        {{ govukErrorMessage({
+                            id: "calendarError",
+                            text: calendar.error,
+                            visuallyHiddenText: "Error"
+                        }) }}
+                        {% elif inspectors.selected %}
+                        {% include 'views/home/calendar.njk' %}
+                    {% endif %}
+                {% endset %}
+
+                {{ govukTabs({
+                    items: [
+                        {
+                            label: "Cases",
+                            id: "cases",
+                            panel: { html: casesTable }
+                        },
+                        {
+                            label: "Map view",
+                            id: "mapView",
+                            panel: { html: mapView }
+                        },
+                        {
+                            label: "Inspector personal details",
+                            id: "inspector",
+                            panel: { html: inspectorDetails }
+                        },
+                        {
+                            label: "Inspector calendar",
+                            id: "outlookView",
+                            panel: { html: outlookView }
+                        }
+                    ]
                 }) }}
-            {% endif %}
-        {% endset %}
-
-        {% set outlookView %}
-            {% if calendar.error %}
-                {{ govukErrorMessage({
-                    id: "calendarError",
-                    text: calendar.error,
-                    visuallyHiddenText: "Error"
-                }) }}
-            {% elif inspectors.selected %}
-                {% include 'views/home/calendar.njk' %}
-            {% endif %}
-        {% endset %}
-
-        {{ govukTabs({
-            items: [
-                {
-                    label: "Cases",
-                    id: "cases",
-                    panel: { html: casesTable }
-                },
-                {
-                    label: "Map view",
-                    id: "mapView",
-                    panel: { html: mapView }
-                },
-                {
-                    label: "Inspector personal details",
-                    id: "inspector",
-                    panel: { html: inspectorDetails }
-                },
-                {
-                    label: "Inspector calendar",
-                    id: "outlookView",
-                    panel: { html: outlookView }
-                }
-            ]
-        }) }}
+            </main>
+        </div>
     </div>
-</div>
 <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
     document.addEventListener('DOMContentLoaded', function () {
         const selectAllCheckbox = document.querySelector('#select-all');
