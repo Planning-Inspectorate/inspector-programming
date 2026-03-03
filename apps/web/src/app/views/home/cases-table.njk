@@ -7,7 +7,11 @@
             { html: govukCheckboxes({
                 name: "selectedCases",
                 classes: "govuk-checkboxes--small",
-                items: [{ value: c.caseId, text: " ", checked: c.selected }]
+                items: [ {
+                    value: c.caseId,
+                    html: '<span class="govuk-visually-hidden">' + c.caseReference + '</span>',
+                    checked: c.selected
+                } ]
             }) },
             { html: '<a href="/case/' + c.caseReference + '?inspectorId=' + filters.query.inspectorId + '" class="govuk-link">' + c.caseReference + '</a>' },
             { text: c.caseTypeShort },
@@ -39,7 +43,7 @@
             idPrefix: "select-all",
             name: "select-all",
             classes: "govuk-checkboxes--small",
-            items: [{ value: "select-all", text: " ", checked: false }]
+            items: [{ value: "select-all", html: '<span class="govuk-visually-hidden">Select all cases</span>', checked: false }]
         }) },
         { text: "Case reference" },
         { text: "Case type" },

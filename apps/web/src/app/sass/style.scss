@@ -76,6 +76,9 @@ $font-family: arial, helvetica, sans-serif;
 			.govuk-form-group {
 				margin-bottom: 0;
 			}
+			.govuk-checkboxes__label {
+				padding: 0;
+			}
 			th {
 				font-size: 18px;
 				font-weight: bold;
