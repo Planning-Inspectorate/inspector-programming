@@ -190,7 +190,7 @@ describe('view-model', () => {
 		test('should add default limit', () => {
 			const query = {};
 			const filterQuery = filtersQueryViewModel(query);
-			assert.strictEqual(filterQuery.limit, 10);
+			assert.strictEqual(filterQuery.limit, 25);
 		});
 		test('should add default sort', () => {
 			const query = {};
