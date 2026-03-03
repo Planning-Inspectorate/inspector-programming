@@ -6,7 +6,7 @@ export function addLocalsConfiguration() {
 	return (req, res, next) => {
 		res.locals.config = {
 			headerTitle: 'Programme appeals',
-			styleFile: 'style-ef8110e5.css'
+			styleFile: 'style-1302a8fd.css'
 		};
 		next();
 	};
