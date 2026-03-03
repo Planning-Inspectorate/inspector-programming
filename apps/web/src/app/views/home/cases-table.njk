@@ -5,6 +5,7 @@
     {% for c in appeals.cases %}
         {% set caseRows = (caseRows.push([
             { html: govukCheckboxes({
+                idPrefix: "select-case-" + c.caseId,
                 name: "selectedCases",
                 classes: "govuk-checkboxes--small",
                 items: [ {
