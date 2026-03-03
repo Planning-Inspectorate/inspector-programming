@@ -32,6 +32,8 @@ export function buildViewHome(service, getEventsFunction) {
 		/** @type {import('@pins/inspector-programming-lib/data/types.js').InspectorViewModel | undefined} */
 		const selectedInspector = inspectors.find((i) => inspectorId === i.id);
 		const selectedInspectorDetails = await service.inspectorClient.getInspectorDetails(selectedInspector?.id);
+		const bankHolidays = await service.calendarClient.getEnglandWalesBankHolidays();
+
 		const selectedInspectorSpecialisms =
 			selectedInspectorDetails?.Specialisms?.map((specialism) => specialism.name) || [];
 
@@ -155,6 +157,7 @@ export function buildViewHome(service, getEventsFunction) {
 			map: {
 				apiKey: service.osMapsApiKey
 			},
+			bankHolidays,
 			successSummary
 		};
 		const currentWeekStart = req.query.calendarStartDate
