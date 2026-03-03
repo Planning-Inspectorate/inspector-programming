@@ -1,0 +1,30 @@
+<script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
+    document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
+</script>
+
+{% block error_summary %}
+    {% if errorSummary and errorSummary.length != 0 %}
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: errorSummary
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block success_summary %}
+    {% if successSummary %}
+        {% set html %}
+            <h3 class="govuk-notification-banner__heading">{{successSummary.heading}}</h3>
+            <p class="govuk-body">{{successSummary.body}}</p>
+        {% endset %}
+
+        {{ govukNotificationBanner({
+            html: html,
+            type: "success"
+        }) }}
+    {% endif %}
+{% endblock %}
