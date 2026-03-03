@@ -32,13 +32,24 @@ const mockAppeal = {
 };
 
 /**
+ * @param {Object} params
+ * @param {number} params.targetCount
+ * @param {string} [params.idPrefix]
  * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]}
  */
-function generateAppeals() {
+function generateAppeals({ targetCount, idPrefix = 'MOCK-' }) {
 	const now = new Date();
 	const allocationLevels = Object.values(APPEAL_ALLOCATION_LEVEL);
-	const procedures = Object.values(APPEAL_CASE_PROCEDURE);
-	const caseTypes = [APPEAL_CASE_TYPE.D, APPEAL_CASE_TYPE.W]; // Householder and S78
+	// const procedures = Object.values(APPEAL_CASE_PROCEDURE);
+	// for now only written is supported
+	const procedures = [APPEAL_CASE_PROCEDURE.WRITTEN];
+	const caseTypes = [
+		APPEAL_CASE_TYPE.C, // Enforcement
+		APPEAL_CASE_TYPE.D, // Householder
+		APPEAL_CASE_TYPE.Y, // Listed building
+		APPEAL_CASE_TYPE.W, // S78/planning
+		APPEAL_CASE_TYPE.ZP // CAS planning
+	];
 
 	const variables = {
 		allocationLevel: allocationLevels,
@@ -56,19 +67,29 @@ function generateAppeals() {
 		variations.push(...newVariations);
 	}
 
+	const toAdd = targetCount - variations.length;
+	if (toAdd > 0) {
+		for (let i = 0; i < toAdd; i++) {
+			const pseudoRandomVariation = variations[Math.floor(Math.random() * variations.length)];
+			variations.push({
+				...pseudoRandomVariation
+			});
+		}
+	}
+
 	const appeals = variations.map((variation, index) => {
 		// not concerned with time zone issues, just rough dates is OK
 		const valid = addWeeks(now, -Math.floor(index / 2));
 		const created = addDays(valid, -crypto.randomInt(5));
 		const finalCommentsDue = addWeeks(valid, 5);
-		const paddedIndex = String(index + 1).padStart(6, '0');
+		const paddedIndex = String(index + 1).padStart(3, '0');
 		const location = mockLocations[index % mockLocations.length];
-		const reference = `6${paddedIndex}`;
+		const reference = `${idPrefix}${paddedIndex}`;
 
 		return {
 			...mockAppeal,
 			...variation,
-			caseId: index + 1,
+			caseId: index + 1_000_001, // attempt to avoid clashes with real IDs
 			siteAddressPostcode: location.siteAddressPostcode,
 			siteAddressLatitude: location.siteAddressLatitude,
 			siteAddressLongitude: location.siteAddressLongitude,
@@ -337,31 +358,14 @@ const inspectors = [
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  */
 export async function seedDev(dbClient) {
-	const appeals = generateAppeals();
-
-	console.log('removing non generated appeals');
-	const caseReferences = appeals.map((appeal) => appeal.caseReference);
-	await dbClient.appealCase.deleteMany({
-		where: {
-			caseReference: {
-				notIn: caseReferences
-			}
-		}
-	});
-
-	// proactively unlink all existing linked-case relationships to avoid stale parents/children
-	console.log('unlinking all existing appeal linked-case relationships');
-	await dbClient.appealCase.updateMany({
-		data: {
-			linkedCaseStatus: null,
-			leadCaseReference: null
-		}
+	const appeals = generateAppeals({
+		targetCount: 600 // to test 250 per-page pagination
 	});
 
 	// assign valid LPA codes to all appeals
 	await assignAppealLpaCodes(dbClient, appeals);
 	// leave 1 appeal without an LPA
-	appeals.find((a) => a.caseReference === '6000074').lpaCode = null;
+	appeals.find((a) => a.caseReference === 'MOCK-074').lpaCode = null;
 
 	console.log('seeding', appeals.length, 'appeals');
 
@@ -372,6 +376,12 @@ export async function seedDev(dbClient) {
 			update: appeal
 		});
 	}
+
+	await dbClient.appealCasePollStatus.upsert({
+		where: { id: 1 },
+		create: { casesFetched: -1, lastPollAt: new Date() },
+		update: { lastPollAt: new Date() }
+	});
 
 	console.log('seeding', inspectors.length, 'inspectors');
 
@@ -416,21 +426,15 @@ async function assignAppealLpaCodes(dbClient, appeals, ratio = 1) {
 /**
  * Deterministically set appeals 1–5 as parents and appeals 6–15 as children (2 per parent). The rest are unlinked.
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput[]} appeals
- * @param {number} maxTotal Maximum appeals to generate (default 100).
  * @returns {[]} Always returns an empty array; linking is done in-place.
  */
-function generateLinkedCases(appeals, maxTotal = 100) {
+function generateLinkedCases(appeals) {
 	if (!appeals.length) return [];
 
 	// First unlink any existing relationships
 	for (const appeal of appeals) {
 		delete appeal.leadCaseReference;
 		delete appeal.linkedCaseStatus;
-	}
-
-	// Enforce maximum total appeals
-	if (appeals.length > maxTotal) {
-		appeals.splice(maxTotal);
 	}
 
 	// Parent appeals: indices 0–4 (1–5)
