@@ -373,7 +373,7 @@
                         {% include 'views/home/inspector-details.njk' %}
                     {% else %}
                         {{ govukErrorMessage({
-                            text: inspectorError,
+                            text: inspectors.error,
                             visuallyHiddenText: "Error"
                         }) }}
                     {% endif %}

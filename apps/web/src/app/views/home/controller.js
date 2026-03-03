@@ -193,7 +193,7 @@ export function buildViewHome(service, getEventsFunction) {
 				}
 			}
 		} else if (isCalendarTab || isInspectorTab || selectInspectorError) {
-			calendarError = '';
+			calendarError = 'Select an inspector';
 			viewModel.errorSummary.push({
 				text: 'Select an inspector',
 				href: '#inspectors'
