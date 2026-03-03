@@ -194,7 +194,7 @@
 
                             ),
                             classes: "custom-filter-dropdown",
-                            open: true
+                            open: false
                         }) }}
                         {{ govukDetails({
                             summaryText: "LPA region",
@@ -216,7 +216,7 @@
                                 values: filters.query.case.lpaRegion
                             }),
                             classes: "custom-filter-dropdown",
-                            open: true
+                            open: false
                         }) }}
                         {{ govukDetails({
                             summaryText: "Specialism",
@@ -237,7 +237,7 @@
                                 }
                             }),
                             classes: "custom-filter-dropdown",
-                            open: true
+                            open: false
                         }) }}
                         {{ govukDetails({
                             summaryText: "Case type",
@@ -258,7 +258,7 @@
                                 }
                             }),
                             classes: "custom-filter-dropdown",
-                            open: true
+                            open: false
                         }) }}
                         {{ govukDetails({
                             summaryText: "Case allocation",
@@ -276,7 +276,7 @@
                                 values: filters.query.case.allocationLevels
                             }),
                             classes: "custom-filter-dropdown",
-                            open: true
+                            open: false
                         }) }}
                         {{ compileSortPaginationQueryFields(filters) }}
                         <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
