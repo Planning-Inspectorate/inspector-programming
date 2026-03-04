@@ -110,21 +110,22 @@ describe('controller.js', () => {
 			return {
 				...appeal,
 				caseId: id,
-				caseReference: id.toString()
+				caseReference: 'REF-' + id.toString()
 			};
 		});
 		mockGetCbosApiClientForSession.mock.mockImplementation(() => mockCbosApiClient);
 		mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementation(() => []);
 		mockEntraClientInstance.listAllUserCalendarEvents.mock.mockImplementation(() => existingEvents);
 		mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementation(() => [mockTimingRule]);
-		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementation(() => [
-			{ appealId: 1, appealReference: '1' }
-		]);
+		mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementation((refs) =>
+			refs.map((ref, index) => ({
+				appealId: index + 1,
+				appealReference: ref
+			}))
+		);
 		mockCbosApiClient.patchAppeal.mock.mockImplementation(() => Promise.resolve());
 
 		test('should update one case', async () => {
-			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
-			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
 			const res = { redirect: mock.fn() };
@@ -138,12 +139,6 @@ describe('controller.js', () => {
 		});
 
 		test('should update list of cases', async () => {
-			const appealsDetailsList = [
-				{ appealId: 1, appealReference: '1' },
-				{ appealId: 2, appealReference: '2' },
-				{ appealId: 3, appealReference: '3' }
-			];
-			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
 				body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: '2026-09-18' },
@@ -160,8 +155,6 @@ describe('controller.js', () => {
 		});
 
 		test('should render 500 template when update to cbos fails on all cases', async () => {
-			const appealsDetailsList = [{ appealId: 1, appealReference: '1' }];
-			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCbosApiClient.patchAppeal.mock.mockImplementationOnce(() => {
 				throw new Error();
 			});
@@ -184,11 +177,6 @@ describe('controller.js', () => {
 		});
 
 		test('should render 500 template when update to cbos fails on some cases', async () => {
-			const appealsDetailsList = [
-				{ appealId: 1, appealReference: '1' },
-				{ appealId: 2, appealReference: '2' }
-			];
-			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			mockCbosApiClient.patchAppeal.mock.mockImplementation(() => {
 				throw new Error();
 			});
