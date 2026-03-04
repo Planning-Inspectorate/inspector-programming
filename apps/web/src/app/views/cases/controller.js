@@ -145,13 +145,13 @@ async function handleCases(selectedCases, service, req, res) {
 						sessionAccount,
 						req.body.inspectorId,
 						req.body.assignmentDate,
-						successfulCaseIds
+						successfullyAssignedCaseReferences
 					);
 					emailNotificationSent = true;
 					service.logger.info(
 						{
 							inspectorId: req.body.inspectorId,
-							caseCount: successfulCaseIds.length
+							caseCount: successfullyAssignedCaseReferences.length
 						},
 						'Email notification sent successfully to inspector'
 					);

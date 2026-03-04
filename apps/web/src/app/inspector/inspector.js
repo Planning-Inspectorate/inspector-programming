@@ -130,10 +130,16 @@ function formatInspectorName(inspector) {
  * @param {Object} sessionAccount
  * @param {string} inspectorId
  * @param {string} assignmentDate
- * @param {number[]} caseIds
+ * @param {string[]} caseReferences
  * @returns {Promise<void>}
  */
-export async function notifyInspectorOfAssignedCases(service, sessionAccount, inspectorId, assignmentDate, caseIds) {
+export async function notifyInspectorOfAssignedCases(
+	service,
+	sessionAccount,
+	inspectorId,
+	assignmentDate,
+	caseReferences
+) {
 	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
 	if (!(inspector?.email && inspector?.firstName)) throw new Error('Could not retrieve inspector email and name');
 	const sessionAccountEmail = sessionAccount.username.toLowerCase();
@@ -142,7 +148,7 @@ export async function notifyInspectorOfAssignedCases(service, sessionAccount, in
 	const options = {
 		inspectorName: formatInspectorName(inspector),
 		assignmentDate: assignmentDate,
-		selectedCases: caseIds.join(', '),
+		selectedCases: caseReferences.join(', '),
 		cbosLink: service.notifyConfig.cbosLink
 	};
 	if (!service.notifyClient) throw new Error('Notify client not configured');
