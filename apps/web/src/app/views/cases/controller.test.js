@@ -435,6 +435,32 @@ describe('controller.js', () => {
 			);
 		});
 
+		test('should use case references for notification emails', async () => {
+			const service = mockService();
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				session: { account: { username: 'officer@test.com', name: 'Test Officer' } }
+			};
+			const res = { redirect: mock.fn(), render: mock.fn() };
+			const controller = buildPostCases(service);
+			await controller(req, res);
+
+			// Verify redirect happened
+			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+
+			// check both emails were sent - inspector and programmer
+			const { sendAssignedCaseProgrammeOfficerEmail, sendAssignedCaseEmail } = mockNotifyClient;
+			assert.strictEqual(sendAssignedCaseEmail.mock.callCount(), 1);
+			assert.strictEqual(sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+
+			// check email content uses case references
+			const inspectorArgs = sendAssignedCaseEmail.mock.calls[0].arguments;
+			const programmerArgs = sendAssignedCaseProgrammeOfficerEmail.mock.calls[0].arguments;
+			assert.strictEqual(inspectorArgs[1].selectedCases, 'REF-1, REF-2');
+			assert.strictEqual(programmerArgs[1].selectedCases, 'REF-1, REF-2');
+		});
+
 		describe('email notification status flags', () => {
 			let service;
 			let req;
