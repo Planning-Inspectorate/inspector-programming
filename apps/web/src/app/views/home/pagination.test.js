@@ -8,7 +8,7 @@ describe('pagination', () => {
 			const req = { query: { sort: 'age', page: 2 } };
 			const total = 25;
 			const formData = { page: 2, limit: 10 };
-			const result = paginationValues(req, total, formData);
+			const result = paginationValues(req.query, total, formData);
 
 			assert.deepStrictEqual(result.previous, { href: '?sort=age&page=1' });
 			assert.deepStrictEqual(result.next, { href: '?sort=age&page=3' });
@@ -20,7 +20,7 @@ describe('pagination', () => {
 			const req = { query: { sort: 'age', page: 1 } };
 			const total = 15;
 			const formData = { page: 1, limit: 10 };
-			const result = paginationValues(req, total, formData);
+			const result = paginationValues(req.query, total, formData);
 
 			assert.strictEqual(result.previous, null);
 			assert.deepStrictEqual(result.next, { href: '?sort=age&page=2' });
@@ -32,7 +32,7 @@ describe('pagination', () => {
 			const req = { query: { sort: 'age', page: 2 } };
 			const total = 20;
 			const formData = { page: 2, limit: 10 };
-			const result = paginationValues(req, total, formData);
+			const result = paginationValues(req.query, total, formData);
 
 			assert.deepStrictEqual(result.previous, { href: '?sort=age&page=1' });
 			assert.strictEqual(result.next, null);
@@ -44,7 +44,7 @@ describe('pagination', () => {
 			const req = { query: {} };
 			const total = 0;
 			const formData = { page: 1, limit: 10 };
-			const result = paginationValues(req, total, formData);
+			const result = paginationValues(req.query, total, formData);
 
 			assert.strictEqual(result.items.length, 1);
 			assert.strictEqual(result.items[0].current, true);

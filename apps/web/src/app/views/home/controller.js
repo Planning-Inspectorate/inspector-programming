@@ -113,7 +113,7 @@ export function buildViewHome(service, getEventsFunction) {
 		);
 		filterQuery.page = page; //update displayed page after validating against number of results
 
-		const paginationDetails = paginationValues(req, total, filterQuery);
+		const paginationDetails = paginationValues(req.query, total, filterQuery);
 
 		const isCalendarTab = req.query.currentTab === 'calendar';
 		const isInspectorTab = req.query.currentTab === 'inspector';

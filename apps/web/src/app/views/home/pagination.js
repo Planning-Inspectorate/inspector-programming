@@ -1,15 +1,15 @@
 /**
- * @param {import('express').Request} req
+ * @param {import('qs').ParsedQs} query
  * @param {number} total
  * @param {{page: number, limit: number}} formData
  * @returns {import('#util/types.js').Pagination}
  */
-export function paginationValues(req, total, formData) {
+export function paginationValues(query, total, formData) {
 	const page = formData.page;
 	const limit = formData.limit;
 	const totalPages = Math.max(1, Math.ceil(total / limit));
 
-	const params = { ...req.query, page: undefined };
+	const params = { ...query, page: undefined };
 
 	return {
 		previous: page > 1 ? { href: buildQueryString(params, page - 1) } : null,
