@@ -28,7 +28,9 @@ export function caseToViewModel(caseClient, c) {
 		caseProcedure: c.caseProcedure?.toUpperCase(),
 		isGreenBelt: c.isGreenBelt ? 'Yes' : 'No',
 		designatedSitesNames: hasDesignatedSitesNames ? JSON.parse(c.designatedSitesNames).join(', ') : 'None',
-		typeOfPlanningApplication: c.typeOfPlanningApplication.replace(/[_-]/g, ' ').toUpperCase(),
+		typeOfPlanningApplication: c.typeOfPlanningApplication
+			? c.typeOfPlanningApplication.replace(/[_-]/g, ' ').toUpperCase()
+			: '',
 		applicationDecision: c.applicationDecision,
 		isAonbNationalLandscape: c.isAonbNationalLandscape ? 'Yes' : 'No'
 	};
