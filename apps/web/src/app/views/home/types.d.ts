@@ -4,6 +4,7 @@ import { InspectorViewModel } from '../../inspector/types';
 import { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from '#util/types';
 
 export interface HomeViewModel extends PageViewModel {
+	isHomePage: true;
 	filters: Filters;
 	errorSummary?: ErrorSummary[];
 	successSummary?: SuccessSummary;
