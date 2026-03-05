@@ -37,6 +37,11 @@ export interface CaseViewModel {
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
 	leadCaseReference: string | null;
+	isGreenBelt: string | null;
+	designatedSitesNames: string;
+	typeOfPlanningApplication: string | null;
+	applicationDecision: string | null;
+	isAonbNationalLandscape: string | null;
 }
 
 export interface Filters {

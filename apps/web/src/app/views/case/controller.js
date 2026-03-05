@@ -24,6 +24,7 @@ export function buildViewCase(service) {
 			map: {
 				apiKey: service.osMapsApiKey
 			},
+			cbosUrl: service.notifyConfig.cbosLink,
 			inspectorPin: toInspectorViewModel(inspectorData),
 			caseData: caseToViewModel(service.casesClient, caseData)
 		};

@@ -69,6 +69,12 @@ model AppealCase {
 
   Events      AppealEvent[]
   Specialisms AppealCaseSpecialism[]
+
+  isGreenBelt               Boolean?
+  designatedSitesNames      String?
+  typeOfPlanningApplication String?
+  applicationDecision       String?
+  isAonbNationalLandscape   Boolean?
 }
 
 model AppealCaseSpecialism {

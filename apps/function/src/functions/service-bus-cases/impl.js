@@ -151,7 +151,12 @@ export function mapToDatabase(message, coords) {
 		finalCommentsDueDate: message.finalCommentsDueDate ? new Date(message.finalCommentsDueDate) : null,
 		linkedCaseStatus: message.linkedCaseStatus ?? null,
 		appellantCostsAppliedFor: message.appellantCostsAppliedFor ?? null,
-		lpaCostsAppliedFor: message.lpaCostsAppliedFor ?? null
+		lpaCostsAppliedFor: message.lpaCostsAppliedFor ?? null,
+		isGreenBelt: message.isGreenBelt ?? null,
+		designatedSitesNames: message.designatedSitesNames ? JSON.stringify(message.designatedSitesNames) : null,
+		typeOfPlanningApplication: message.typeOfPlanningApplication ?? null,
+		applicationDecision: message.applicationDecision ?? null,
+		isAonbNationalLandscape: message.isAonbNationalLandscape ?? null
 	};
 
 	// Connect the LPA relation
