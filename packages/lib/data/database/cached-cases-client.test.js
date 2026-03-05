@@ -123,10 +123,6 @@ describe('cached-cases-client', () => {
 
 			const newMockClient = () => {
 				return {
-					paginateCases: mock.fn((cases, page, pageSize) => {
-						const start = (page - 1) * pageSize;
-						return { cases: cases.slice(start, start + pageSize), total: cases.length };
-					}),
 					lastCasesUpdate: mock.fn()
 				};
 			};
@@ -166,13 +162,6 @@ describe('cached-cases-client', () => {
 
 				const result = await cacheClient.getCases({}, undefined, 1, 10);
 
-				assert.strictEqual(mockClient.paginateCases.mock.callCount(), 1);
-				const passedCases = mockClient.paginateCases.mock.calls[0].arguments[0];
-				assert.deepStrictEqual(
-					passedCases.map((c) => c.caseId),
-					[3]
-				);
-
 				assert.strictEqual(result.total, 1);
 				assert.strictEqual(result.page, 1);
 				assert.deepStrictEqual(
@@ -197,14 +186,6 @@ describe('cached-cases-client', () => {
 				const pageSize = 2;
 				const result = await cacheClient.getCases({}, undefined, 1, pageSize);
 
-				assert.strictEqual(mockClient.paginateCases.mock.callCount(), 1);
-
-				const passedCases = mockClient.paginateCases.mock.calls[0].arguments[0];
-				assert.deepStrictEqual(
-					passedCases.map((c) => c.caseId),
-					[1, 3, 2]
-				);
-
 				assert.deepStrictEqual(
 					result.cases.map((c) => c.caseId),
 					[1, 3]
@@ -224,14 +205,6 @@ describe('cached-cases-client', () => {
 				cacheClient.getAllParentCases = mock.fn(() => Promise.resolve(allCases));
 
 				const result = await cacheClient.getCases({ inspectorCoordinates: inspectorCoords }, 'distance', 1, 10);
-
-				assert.strictEqual(mockClient.paginateCases.mock.callCount(), 1);
-
-				const passedCases = mockClient.paginateCases.mock.calls[0].arguments[0];
-				assert.deepStrictEqual(
-					passedCases.map((c) => c.caseId),
-					[2, 1]
-				);
 
 				assert.deepStrictEqual(
 					result.cases.map((c) => c.caseId),
@@ -254,13 +227,6 @@ describe('cached-cases-client', () => {
 				cacheClient.getAllParentCases = mock.fn(() => Promise.resolve(allCases));
 
 				const result = await cacheClient.getCases({ inspectorCoordinates: inspectorCoords }, 'distance', 5, 1);
-
-				assert.strictEqual(mockClient.paginateCases.mock.callCount(), 1);
-				const passedCases = mockClient.paginateCases.mock.calls[0].arguments[0];
-				assert.deepStrictEqual(
-					passedCases.map((c) => c.caseId),
-					[2]
-				);
 
 				assert.strictEqual(result.page, 1);
 				assert.strictEqual(result.total, 1);

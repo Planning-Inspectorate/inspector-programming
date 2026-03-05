@@ -21,7 +21,7 @@ export function normalizeFilters(filters) {
  *
  * @param {import('../data/types.js').CaseViewModel[]} cases
  * @param {import('@pins/inspector-programming-lib/data/types.js').Filters} filters
- * @returns
+ * @returns {import('../data/types.js').CaseViewModel[]}
  */
 export function filterCases(cases, filters) {
 	//sanitise filters object

@@ -2,7 +2,7 @@ import { CasesClient } from './cases-client.js';
 import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
 import { filterExcludedStatuses } from './appeal-status.js';
-import { getPageNumber } from '../../util/pagination.ts';
+import { getPageNumber, paginateList } from '../../util/pagination.ts';
 
 const CACHE_PREFIX = 'cases_';
 /**
@@ -72,8 +72,8 @@ export class CachedCasesClient {
 		//paginate and validate page number based on number of results
 		const totalPages = Math.max(1, Math.ceil((sortedCases.length || 0) / pageSize)) || 1;
 		const processedPage = getPageNumber(page, totalPages);
-		const paginatedResults = await this.#client.paginateCases(sortedCases, processedPage, pageSize);
-		return { ...paginatedResults, page: processedPage };
+		const paginatedResults = paginateList(sortedCases, processedPage, pageSize);
+		return { cases: paginatedResults.list, total: paginatedResults.total, page: processedPage };
 	}
 
 	/**
