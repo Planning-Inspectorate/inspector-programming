@@ -25,7 +25,12 @@ describe('case/view-model caseToViewModel', () => {
 			allocationBand: 2,
 			caseProcedure: 'written',
 			caseType: 'W',
-			siteAddressLine1: '10 Downing St'
+			siteAddressLine1: '10 Downing St',
+			isGreenBelt: false,
+			designatedSitesNames: JSON.stringify([]),
+			typeOfPlanningApplication: 'householder-application',
+			applicationDecision: 'refused',
+			isAonbNationalLandscape: false
 		};
 
 		const baseViewModel = {
@@ -52,7 +57,10 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.eventType, 'No events');
 		assert.strictEqual(result.caseAgeColor, '00703c');
 		assert.strictEqual(result.caseStatus, 'IN PROGRESS');
-		assert.strictEqual(result.caseProcedure, 'WRITTEN');
+		assert.strictEqual(result.designatedSitesNames, 'None');
+		assert.strictEqual(result.typeOfPlanningApplication, 'HOUSEHOLDER APPLICATION');
+		assert.strictEqual(result.applicationDecision, 'refused');
+		assert.strictEqual(result.isAonbNationalLandscape, 'No');
 	});
 
 	test('enriches with specialisms and events (formats date, sets color)', (ctx) => {
@@ -75,7 +83,12 @@ describe('case/view-model caseToViewModel', () => {
 			Events: [
 				{ id: 'e1', eventType: 'Hearing', eventStartDateTime: '2025-03-15T10:00:00Z' },
 				{ id: 'e2', eventType: 'Site Visit', eventStartDateTime: '2025-04-01T09:00:00Z' }
-			]
+			],
+			isGreenBelt: true,
+			designatedSitesNames: JSON.stringify(['Site Alpha', 'Site Beta']),
+			typeOfPlanningApplication: 'full-appeal',
+			applicationDecision: 'allowed',
+			isAonbNationalLandscape: true
 		};
 
 		const baseViewModel = {
@@ -98,5 +111,13 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.appealStartDate, '15/03/2025');
 		assert.strictEqual(result.eventType, 'HEARING');
 		assert.strictEqual(result.caseAgeColor, 'f47738');
+		assert.strictEqual(result.linkedCases, 'None');
+		assert.strictEqual(result.caseStatus, 'READY');
+		assert.strictEqual(result.caseProcedure, 'HEARING');
+		assert.strictEqual(result.isGreenBelt, 'Yes');
+		assert.strictEqual(result.designatedSitesNames, 'Site Alpha, Site Beta');
+		assert.strictEqual(result.typeOfPlanningApplication, 'FULL APPEAL');
+		assert.strictEqual(result.applicationDecision, 'allowed');
+		assert.strictEqual(result.isAonbNationalLandscape, 'Yes');
 	});
 });

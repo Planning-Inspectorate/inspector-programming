@@ -68,6 +68,8 @@ const BASE_MESSAGE = {
 	floorSpaceSquareMetres: 100,
 	isCorrectAppealType: true,
 	isGreenBelt: false,
+	designatedSitesNames: ['Test Site'],
+	typeOfPlanningApplication: 'householder-planning',
 	inConservationArea: false,
 	ownsAllLand: true,
 	ownsSomeLand: false,
@@ -80,7 +82,8 @@ const BASE_MESSAGE = {
 	newConditionDetails: '',
 	nearbyCaseReferences: [],
 	neighbouringSiteAddresses: [],
-	affectedListedBuildingNumbers: []
+	affectedListedBuildingNumbers: [],
+	isAonbNationalLandscape: false
 };
 
 const NULL_COORDS = { latitude: null, longitude: null };

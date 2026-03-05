@@ -12,7 +12,12 @@ describe('buildViewCase', () => {
 		caseProcedure: 'written',
 		allocationLevel: 'G',
 		allocationBand: 1,
-		siteAddressLine1: '123 Example Street'
+		siteAddressLine1: '123 Example Street',
+		isGreenBelt: false,
+		designatedSitesNames: JSON.stringify([]),
+		typeOfPlanningApplication: 'householder-application',
+		applicationDecision: 'refused',
+		isAonbNationalLandscape: false
 	};
 	const inspectorData = {
 		id: 'c938e712-bebf-4010-b618-1218ce991145',
@@ -41,7 +46,7 @@ describe('buildViewCase', () => {
 		]
 	};
 	test('renders case view with correct view model', async () => {
-		const caseViewModel = { caseId: '6900107', siteAddress: '123 Main St' };
+		const caseViewModel = { caseId: '6900107', siteAddress: '123 Main St', caseAge: 10 };
 
 		const service = {
 			db: {
@@ -50,6 +55,9 @@ describe('buildViewCase', () => {
 				}
 			},
 			osMapsApiKey: 'test-api-key',
+			notifyConfig: {
+				cbosLink: 'https://test-cbos-url.com'
+			},
 			casesClient: {
 				caseToViewModel: mock.fn(() => caseViewModel)
 			},
@@ -83,6 +91,7 @@ describe('buildViewCase', () => {
 		assert.deepStrictEqual(renderedModel.caseData, {
 			caseId: '6900107',
 			siteAddress: '123 Example Street',
+			caseAge: 10,
 			specialismList: 'None',
 			appealStartDate: '',
 			caseSpecialisms: 'None',
@@ -90,7 +99,12 @@ describe('buildViewCase', () => {
 			caseAgeColor: '00703c',
 			linkedCases: 'None',
 			caseStatus: 'LPA QUESTIONNAIRE',
-			caseProcedure: 'WRITTEN'
+			caseProcedure: 'WRITTEN',
+			isGreenBelt: 'No',
+			designatedSitesNames: 'None',
+			typeOfPlanningApplication: 'HOUSEHOLDER APPLICATION',
+			applicationDecision: 'refused',
+			isAonbNationalLandscape: 'No'
 		});
 
 		assert.strictEqual(service.db.appealCase.findUnique.mock.calls.length, 1);
@@ -115,6 +129,9 @@ describe('buildViewCase', () => {
 				}
 			},
 			osMapsApiKey: 'test-api-key',
+			notifyConfig: {
+				cbosLink: 'https://test-cbos-url.com'
+			},
 			casesClient: {
 				caseToViewModel: mock.fn(() => caseViewModel)
 			},
@@ -152,6 +169,9 @@ describe('buildViewCase', () => {
 				}
 			},
 			osMapsApiKey: 'test-api-key',
+			notifyConfig: {
+				cbosLink: 'https://test-cbos-url.com'
+			},
 			casesClient: {
 				caseToViewModel: mock.fn(() => null)
 			},

@@ -14,23 +14,29 @@
 {% endblock %}
 
 {% block pageContent %}
+
 <div class="pins-container-wide govuk-grid-row pins-case-details">
     <div class="govuk-grid-column-one-third">
     <h2 class="govuk-heading-m">Case</h2>
 
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Case reference" }, value: { text: caseData.caseReference } },
+                { key: { text: "Case reference" }, value: { html: '<a href="' + cbosUrl + 'appeals-service/appeal-details/' + caseData.caseId + '" class="govuk-link govuk-!-margin-right-2" target="_blank">' + caseData.caseReference + '</a> <span> (Will open in new window/tab)</span>' } },
                 { key: { text: "Site address" }, value: { text: caseData.siteAddress  } },
                 { key: { text: "Case description" }, value: { text: caseData.originalDevelopmentDescription } },
                 { key: { text: "Procedure" }, value: { text: caseData.caseProcedure  } },
                 { key: { text: "Case status" }, value: { html: govukTag({text: caseData.caseStatus }) } },
-                { key: { text: "Band" }, value: { text: caseData. allocationBand  } },
+                { key: { text: "Band" }, value: { text: caseData.allocationBand  } },
                 { key: { text: "Case level" }, value: { text: caseData.caseLevel  } },
-                { key: { text: "Special circumstances" }, value: { text: caseData.specialCircumstance  } },
                 { key: { text: "Specialisms" }, value: { text: caseData.caseSpecialisms } },
                 { key: { text: "Costs applied for" }, value: { text: caseData.appellantCostsAppliedFor  } },
-                { key: { text: "Linked cases" }, value: { text:caseData.linkedCases  } }
+                { key: { text: "Linked cases" }, value: { text:caseData.linkedCases  } },
+                { key: { text: "Green belt" }, value: { text: caseData.isGreenBelt  } },
+                { key: { text: "Designated site names" }, value: { text:caseData.designatedSitesNames  } },
+                { key: { text: "Type of planning application" }, value: { text:caseData.typeOfPlanningApplication  } },
+                { key: { text: "Application decision" }, value: { text:caseData.applicationDecision   } },
+                { key: { text: "Is the site in a national landscape?" }, value: { text: caseData.isAonbNationalLandscape  } }
+
             ]
         }) }}
 

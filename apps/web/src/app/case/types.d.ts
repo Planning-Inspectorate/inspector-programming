@@ -12,6 +12,7 @@ export interface CasePageViewModel extends PageViewModel {
 	map: MapViewModel;
 	caseData: CaseViewModel;
 	inspectorPin?: Inspector;
+	cbosUrl: string;
 }
 
 export interface CaseWithEventsAndSpecialisms extends AppealCase {
