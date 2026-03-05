@@ -2,6 +2,7 @@ import { CasesClient } from './cases-client.js';
 import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
 import { filterExcludedStatuses } from './appeal-status.js';
+import { getPageNumber } from '../../util/pagination.ts';
 
 const CACHE_PREFIX = 'cases_';
 /**
@@ -70,7 +71,7 @@ export class CachedCasesClient {
 
 		//paginate and validate page number based on number of results
 		const totalPages = Math.max(1, Math.ceil((sortedCases.length || 0) / pageSize)) || 1;
-		const processedPage = this.determinePage(page, totalPages);
+		const processedPage = getPageNumber(page, totalPages);
 		const paginatedResults = await this.#client.paginateCases(sortedCases, processedPage, pageSize);
 		return { ...paginatedResults, page: processedPage };
 	}
@@ -92,20 +93,6 @@ export class CachedCasesClient {
 		const cases = await this.#client.getAllCases();
 		this.#cache.set(key, cases);
 		return cases;
-	}
-
-	/**
-	 * Determines the current page number by validating the requested page against the number of results
-	 * @param {number} requestedPage
-	 * @param {number} totalPages
-	 * @returns {number}
-	 */
-	determinePage(requestedPage, totalPages) {
-		//default to first page if not a number
-		if (isNaN(+requestedPage)) return 1;
-		//if desired page exceeds total pages, fallback to highest available page
-		if (requestedPage > totalPages) return totalPages;
-		return +requestedPage;
 	}
 
 	/**
