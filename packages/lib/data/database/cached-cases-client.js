@@ -71,6 +71,26 @@ export class CachedCasesClient {
 	}
 
 	/**
+	 * Fetch all appeals cases which cannot be assigned
+	 *
+	 * @returns {Promise<import('../types').CaseViewModel[]>}
+	 */
+	async getUnassignedCases() {
+		const shouldTryCache = await this.shouldTryCache();
+		const key = CACHE_PREFIX + 'getUnassignedCases';
+		if (shouldTryCache) {
+			const cases = this.#cache.get(key);
+			if (cases) {
+				return cases;
+			}
+		}
+		const allCases = await this.getAllCases();
+		const cases = await this.#client.getUnassignableCases(allCases);
+		this.#cache.set(key, cases);
+		return cases;
+	}
+
+	/**
 	 * Fetch all appeals cases currently held in the database
 	 *
 	 * @returns {Promise<import('../types').CaseViewModel[]>}

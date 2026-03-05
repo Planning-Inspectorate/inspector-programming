@@ -1,3 +1,5 @@
+import { filterExcludedStatuses } from './appeal-status.js';
+
 /**
  * Client for fetching case data from the Prisma database for the application,
  *
@@ -52,6 +54,43 @@ export class CasesClient {
 			}
 		});
 		return cases.map((c) => this.caseToViewModel(c));
+	}
+
+	/**
+	 * Fetch all appeals which cannot be assigned
+	 * All cases list is passed in so that a cached array can be used
+	 *
+	 * @param {import('../types').CaseViewModel[]} allCases
+	 * @returns {Promise<import('../types').CaseViewModel[]>}
+	 */
+	async getUnassignableCases(allCases) {
+		// filter out excluded statuses
+		// filter out child appeals
+		const assignableCases = filterExcludedStatuses(allCases).filter((appeal) => appeal.linkedCaseStatus !== 'Child');
+
+		// fetch all appeals not in the assignable list
+		// excludes child appeals
+		const appeals = await this.#client.appealCase.findMany({
+			where: {
+				caseReference: {
+					notIn: assignableCases.map((c) => c.caseReference)
+				},
+				OR: [{ linkedCaseStatus: { not: 'Child' } }, { linkedCaseStatus: null }]
+			},
+			include: {
+				Lpa: {
+					include: {
+						LpaRegion: {
+							include: {
+								LpaRegionName: true
+							}
+						}
+					}
+				}
+			},
+			orderBy: [{ caseValidDate: 'asc' }, { caseCreatedDate: 'asc' }, { Lpa: { lpaName: 'asc' } }]
+		});
+		return appeals.map((c) => this.caseToViewModel(c));
 	}
 
 	/**

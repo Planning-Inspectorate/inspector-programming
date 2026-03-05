@@ -1,0 +1,76 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set tableRows = [] %}
+{% for c in unassignableList %}
+    {% set tableRows = (tableRows.push([
+        { html: '<a href="/case/' + c.caseReference + '" class="govuk-link">' + c.caseReference + '</a>' },
+        { text: c.unassignableReason },
+        { text: c.caseTypeShort },
+        { text: c.procedureShort },
+        { text: c.allocationBand },
+        { text: c.caseLevel },
+        { text: c.siteAddressPostcode },
+        { text: c.lpaName },
+        { text: c.lpaRegion },
+        { html: govukTag({text: c.caseStatus }) },
+        { html: '<span class="case-border" style="--border-color:#' + c.caseAgeColor + ';">' + c.caseAge + '</span>' }
+    ]), tableRows) %}
+{% endfor %}
+
+{% block pageContent %}
+    {% if unassignableList | length %}
+        {% set limits = [25, 50, 100, 250] %}
+        {% set perPageLinks %}
+            {% for l in limits %}
+                {% if pagination.limit == l %}
+                    <span class="govuk-body-s govuk-!-font-weight-bold">{{ l }}</span>
+                {% else %}
+                    <a href='/unassignable-cases?limit={{ l }}' class="sort-pagination-link govuk-body-s govuk-link govuk-link--no-visited-state">{{ l }}</a>
+                {% endif %}{% if not loop.last %} | {% endif %}
+            {% endfor %}
+        {% endset %}
+
+        {{ govukSummaryList({
+            classes: 'govuk-summary-list--no-border govuk-!-width-one-half govuk-!-margin-bottom-2',
+            rows: [
+                {
+                    key: { text: "Cases per page", classes: 'govuk-!-font-weight-regular govuk-body-s' },
+                    value: { html: perPageLinks }
+                },
+                {
+                    key: { text: "Total unassignable cases", classes: 'govuk-!-font-weight-regular govuk-body-s' },
+                    value: { text: pagination.total, classes: 'govuk-body-s' }
+                }
+            ]
+        }) }}
+
+        {{ govukTable({
+            head: [
+                { text: "Case reference" },
+                { text: "Unassignable reason" },
+                { text: "Case type" },
+                { text: "Procedure" },
+                { text: "Band" },
+                { text: "Level" },
+                { text: "Postcode" },
+                { text: "LPA" },
+                { text: "Region" },
+                { text: "Case status" },
+                { text: "Age (weeks)" }
+            ],
+            rows: tableRows
+        }) }}
+
+        {% if pagination.total > pagination.limit %}
+            {{ govukPagination(paginationLinks) }}
+        {% endif %}
+    {% else %}
+        <p class="govuk-body">No unassignable cases found</p>
+    {% endif %}
+
+{% endblock %}
