@@ -8,3 +8,12 @@ export function getPageNumber(requestedPage: number, totalPages: number): number
 	if (requestedPage > totalPages) return totalPages;
 	return +requestedPage;
 }
+
+export function paginateList<T>(list: T[], page = 1, pageSize = 10): { list: T[]; total: number } {
+	const skip = (page - 1) * pageSize;
+
+	return {
+		list: list.slice(skip, skip + pageSize),
+		total: list.length || 0
+	};
+}
