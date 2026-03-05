@@ -67,15 +67,33 @@ export function loadConfig() {
 		SQL_CONNECTION_STRING
 	} = process.env;
 
+	const requiredConfig = {
+		API_CALENDAR_EVENTS_DAY_RANGE,
+		API_INSPECTOR_ENTRA_GROUPS,
+		APP_HOSTNAME,
+		CBOS_API_URL,
+		ENTRA_GROUP_ID_INSPECTORS,
+		ENTRA_GROUP_ID_NATIONAL_TEAM,
+		ENTRA_GROUP_ID_TEAM_LEADS,
+		GIT_SHA,
+		GOV_NOTIFY_API_KEY,
+		GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE,
+		GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER,
+		GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE,
+		GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE_PROGRAMME_OFFICER,
+		CBOS_URL,
+		OS_API_KEY,
+		SQL_CONNECTION_STRING,
+		SESSION_SECRET
+	};
+
+	for (const [k, v] of Object.entries(requiredConfig)) {
+		if (v === undefined || v === '') {
+			throw new Error(`${k} is required`);
+		}
+	}
+
 	const buildConfig = loadBuildConfig();
-
-	if (!SESSION_SECRET) {
-		throw new Error('SESSION_SECRET is required');
-	}
-
-	if (!API_CALENDAR_EVENTS_DAY_RANGE) {
-		throw new Error('API_CALENDAR_EVENTS_DAY_RANGE is required');
-	}
 
 	let httpPort = 8090;
 	if (PORT) {
