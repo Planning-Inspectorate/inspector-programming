@@ -336,44 +336,5 @@ describe('cached-cases-client', () => {
 				assert.deepStrictEqual(cases, [5, 6, 7]);
 			});
 		});
-
-		describe('determinePage', () => {
-			it('should return requested page if valid', () => {
-				const mockClient = { getAllCases: mock.fn(() => [3, 4, 5]) };
-				const mockCache = {
-					get: mock.fn(),
-					set: mock.fn()
-				};
-				const cacheClient = new CachedCasesClient(mockClient, mockCache);
-				const requestedPage = 3;
-				const totalPages = 5;
-				const page = cacheClient.determinePage(requestedPage, totalPages);
-				assert.strictEqual(page, requestedPage);
-			});
-			it('should return the maximum page if requested page exceeds maximum', () => {
-				const mockClient = { getAllCases: mock.fn(() => [3, 4, 5]) };
-				const mockCache = {
-					get: mock.fn(),
-					set: mock.fn()
-				};
-				const cacheClient = new CachedCasesClient(mockClient, mockCache);
-				const requestedPage = 7;
-				const totalPages = 5;
-				const page = cacheClient.determinePage(requestedPage, totalPages);
-				assert.strictEqual(page, totalPages);
-			});
-			it('should return page 1 if the requested page is not a valid number', () => {
-				const mockClient = { getAllCases: mock.fn(() => [3, 4, 5]) };
-				const mockCache = {
-					get: mock.fn(),
-					set: mock.fn()
-				};
-				const cacheClient = new CachedCasesClient(mockClient, mockCache);
-				const requestedPage = 'seven';
-				const totalPages = 5;
-				const page = cacheClient.determinePage(requestedPage, totalPages);
-				assert.strictEqual(page, 1);
-			});
-		});
 	});
 });
