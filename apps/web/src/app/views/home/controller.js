@@ -136,6 +136,7 @@ export function buildViewHome(service, getEventsFunction) {
 		const viewModel = {
 			pageHeading: 'Unassigned case list',
 			containerClasses: 'pins-container-wide',
+			isHomePage: true,
 			title: 'Unassigned case list',
 			errorSummary: [...filterErrorList, ...sortingErrorList],
 			filters: {
