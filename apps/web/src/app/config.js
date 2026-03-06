@@ -69,7 +69,6 @@ export function loadConfig() {
 
 	const requiredConfig = {
 		API_CALENDAR_EVENTS_DAY_RANGE,
-		API_INSPECTOR_ENTRA_GROUPS,
 		APP_HOSTNAME,
 		CBOS_API_URL,
 		ENTRA_GROUP_ID_INSPECTORS,
