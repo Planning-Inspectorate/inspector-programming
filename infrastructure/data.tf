@@ -55,6 +55,13 @@ data "azurerm_private_dns_zone" "service_bus" {
   provider = azurerm.tooling
 }
 
+data "azurerm_private_dns_zone" "keyvault" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
 data "azurerm_linux_web_app" "cbos_api" {
   name                = var.manage_appeals_config.api_app_name
   resource_group_name = var.manage_appeals_config.resource_group_name
