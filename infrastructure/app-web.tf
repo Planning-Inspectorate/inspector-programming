@@ -117,5 +117,10 @@ resource "azurerm_key_vault_secret" "web_session_secret" {
   value        = random_password.web_session_secret.result
   content_type = "session-secret"
 
+  depends_on = [
+    azurerm_private_endpoint.keyvault,
+    azurerm_private_dns_zone_virtual_network_link.keyvault
+  ]
+
   tags = local.tags
 }
