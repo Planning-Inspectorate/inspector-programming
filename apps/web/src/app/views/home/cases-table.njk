@@ -40,12 +40,7 @@
 {{ govukTable({
     classes: "home-cases-table",
     head: [
-        { html: govukCheckboxes({
-            idPrefix: "select-all",
-            name: "select-all",
-            classes: "govuk-checkboxes--small",
-            items: [{ value: "select-all", html: '<span class="govuk-visually-hidden">Select all cases</span>', checked: false }]
-        }) },
+        { text: "" },
         { text: "Case reference" },
         { text: "Case type" },
         { text: "Procedure" },
@@ -61,23 +56,3 @@
     ],
     rows: caseRows
 }) }}
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const checkboxes = document.querySelectorAll('input[name="selectedCases"]');
-    //select all checkbox only usable if 10 or less results on page
-    const selectAll = document.querySelector('#select-all');
-    const limitInput = document.querySelector('input[name="limit"]');
-    selectAll.disabled = limitInput.value > 10? true: false;
-
-    checkboxes.forEach(cb => {
-      cb.addEventListener('change', function () {
-        const checked = document.querySelectorAll('input[name="selectedCases"]:checked');
-        checkboxes.forEach(cb => {
-            if (!cb.checked && checked.length >= 10) cb.disabled = true;
-            else cb.disabled = false;
-        });
-      });
-    });
-  });
-</script>

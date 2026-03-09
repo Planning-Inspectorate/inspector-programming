@@ -21,7 +21,7 @@
 
         {{ govukSummaryList({
             rows: [
-                { key: { text: "Case reference" }, value: { html: '<a href="' + cbosUrl + 'appeals-service/appeal-details/' + caseData.caseId + '" class="govuk-link govuk-!-margin-right-2" target="_blank">' + caseData.caseReference + '</a> <span> (Will open in new window/tab)</span>' } },
+                { key: { text: "Case reference" }, value: { html: '<a href="' + cbosUrl + 'appeals-service/appeal-details/' + caseData.caseId + '" class="govuk-link govuk-!-margin-right-2" target="_blank">' + caseData.caseReference + '</a> <span> (Will open in a new tab)</span>' } },
                 { key: { text: "Site address" }, value: { text: caseData.siteAddress  } },
                 { key: { text: "Case description" }, value: { text: caseData.originalDevelopmentDescription } },
                 { key: { text: "Procedure" }, value: { text: caseData.caseProcedure  } },

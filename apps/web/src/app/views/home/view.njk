@@ -421,20 +421,7 @@
     </div>
 <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
     document.addEventListener('DOMContentLoaded', function () {
-        const selectAllCheckbox = document.querySelector('#select-all');
         const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedCases"]');
-
-        selectAllCheckbox.addEventListener('change', function () {
-            checkboxes.forEach(checkbox => {
-                document.dispatchEvent(new CustomEvent('caseStateChange', {
-                    detail: {
-                        caseId: checkbox.value,
-                        selected: selectAllCheckbox.checked
-                    }
-                }));
-            });
-        });
-
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
               console.debug('case checkbox value changed:', checkbox.value, checkbox.checked);
