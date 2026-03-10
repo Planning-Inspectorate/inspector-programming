@@ -528,23 +528,27 @@
             inspectorForm.submit()
         });
 
-        // Add event listener to each tab to submit select inspector form
-        function submitFormForTab (tabId, value) {
+        const inspectorsInput = document.querySelector('#inspectors');
+        function registerNoInspectorError (tabId, showTab) {
             const tab = document.querySelector(tabId);
             if (!tab) return;
             tab.addEventListener('click', (e) => {
+                if (inspectorsInput.value) {
+                    // do nothing if an inspector is selected already
+                    return;
+                }
+                // show 'no inspector' error if choosing a tab which requires an inspector to be selected
+                // do this by submitting the 'select inspector' form
                 e.preventDefault();
                 const currentTab = document.getElementById('currentTab');
-                currentTab.value = value;
+                currentTab.value = showTab;
                 inspectorForm.submit();
             });
         }
-
-        // Initialize tabs
-        submitFormForTab('#tab_outlookView', 'calendar');
-        submitFormForTab('#tab_inspector', 'inspector');
-        submitFormForTab('#tab_cases', '');
-        submitFormForTab('#tab_mapView', '');
+        // Add event listener to each tab to submit select inspector form
+        // this shows an error if no inspector is selected
+        registerNoInspectorError('#tab_outlookView', 'calendar');
+        registerNoInspectorError('#tab_inspector', 'inspector');
 
         // configure accessible auto complete for the select inspector input
         if (typeof accessibleAutocomplete !== 'undefined') {
