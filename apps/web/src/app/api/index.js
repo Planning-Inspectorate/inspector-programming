@@ -23,7 +23,6 @@ export function createRoutes(service) {
 
 	router.get('/health', asyncHandler(buildApiHealth(service)));
 
-	// todo: /events
 	if (service.mockApiData) {
 		const { inspectors, events } = buildMockApiControllers(service);
 		router.get('/users', asyncHandler(inspectors));
