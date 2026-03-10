@@ -1,6 +1,6 @@
 import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
-import { MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { buildHandleCaseMessage, mapToDatabase, deleteCase, upsertCase } from './impl.js';
 
 // BASE TEST DATA - Single source of truth
@@ -187,6 +187,36 @@ describe('service-bus-cases', () => {
 			const result = mapToDatabase(msg({ caseStatus: undefined, caseProcedure: undefined }), NULL_COORDS);
 			assert.strictEqual(result.caseStatus, null);
 			assert.strictEqual(result.caseProcedure, null);
+		});
+
+		test('does not add LeadCase if linkedCaseStatus not set', () => {
+			const result = mapToDatabase(
+				msg({ linkedCaseStatus: APPEAL_LINKED_CASE_STATUS.LEAD, leadCaseReference: 'LEAD-REF-1' }),
+				NULL_COORDS
+			);
+			assert.strictEqual(result.LeadCase, undefined);
+		});
+
+		test('does not add LeadCase if case is lead', () => {
+			const result = mapToDatabase(
+				msg({ linkedCaseStatus: APPEAL_LINKED_CASE_STATUS.LEAD, leadCaseReference: 'LEAD-REF-1' }),
+				NULL_COORDS
+			);
+			assert.strictEqual(result.LeadCase, undefined);
+		});
+
+		test('adds LeadCase if case is child', () => {
+			const result = mapToDatabase(
+				msg({ linkedCaseStatus: APPEAL_LINKED_CASE_STATUS.CHILD, leadCaseReference: '6011010' }),
+				NULL_COORDS
+			);
+			assert.deepStrictEqual(result.LeadCase?.connectOrCreate, {
+				where: { caseReference: '6011010' },
+				create: {
+					caseId: 11010,
+					caseReference: '6011010'
+				}
+			});
 		});
 	});
 
