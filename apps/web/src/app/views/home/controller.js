@@ -120,8 +120,8 @@ export function buildViewHome(service, getEventsFunction) {
 
 		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
 		for (let caseId of selectedCaseIds) {
-			let caseIndex = cases.findIndex((item) => item.caseId == parseInt(caseId));
-			if (caseIndex != -1) {
+			let caseIndex = cases.findIndex((item) => item.caseId === parseInt(caseId));
+			if (caseIndex !== -1) {
 				cases[caseIndex].selected = true;
 			}
 		}
@@ -262,9 +262,9 @@ export function buildPostHome(service) {
 
 		let newStartDate;
 
-		if (req.body.calendarAction == 'prevWeek') {
+		if (req.body.calendarAction === 'prevWeek') {
 			newStartDate = getPreviousWeekStartDate(currentDate);
-		} else if (req.body.calendarAction == 'nextWeek') {
+		} else if (req.body.calendarAction === 'nextWeek') {
 			newStartDate = getNextWeekStartDate(currentDate);
 		} else if (req.body.newStartDate) {
 			const date = new Date(req.body.newStartDate);

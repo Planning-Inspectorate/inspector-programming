@@ -24,7 +24,7 @@ export function buildPostCases(service) {
 		const { error: assignmentDateError } = validateAssignmentDate(req.body.assignmentDate);
 		const errors = {
 			selectInspectorError: req.body.inspectorId ? false : true,
-			caseListError: selectedCases.length == 0 ? 'Select case(s) to assign' : null,
+			caseListError: selectedCases.length === 0 ? 'Select case(s) to assign' : null,
 			selectAssignmentDateError: assignmentDateError
 		};
 

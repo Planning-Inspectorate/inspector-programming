@@ -509,9 +509,9 @@
             const inspectorTabSelected = document.querySelector('#tab_inspector').getAttribute('aria-selected');
             let currentTab = document.getElementById('currentTab');
 
-            if (outlookTabSelected == 'true') {
+            if (outlookTabSelected === 'true') {
                 currentTab.value = 'calendar';
-            } else if (inspectorTabSelected == 'true') {
+            } else if (inspectorTabSelected === 'true') {
               currentTab.value = 'inspector';
             }
             else {
@@ -521,7 +521,7 @@
             const autocompleteInputText = document.querySelector('#inspectors');
             const autocompleteInputValue = document.querySelector('#inspectors-select');
 
-            if (autocompleteInputText.value == '') {
+            if (autocompleteInputText.value === '') {
                 autocompleteInputValue.value = null;
             }
 
