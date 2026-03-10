@@ -83,17 +83,7 @@ export async function upsertInspector(service, message, context) {
 		return;
 	}
 
-	if (!postcode) {
-		context.log(`Inspector message missing postcode for entraId: ${entraId}`);
-		throw new Error(`Inspector message missing postcode for entraId: ${entraId}`);
-	}
-
-	const coords = await fetchPostcodeCoordinates(service.osApiClient, postcode);
-
-	if (coords.latitude === null || coords.longitude === null) {
-		context.log(`No coordinates found for postcode: ${postcode}`);
-		throw new Error(`No coordinates found for postcode: ${postcode}`);
-	}
+	const coords = await inspectorCoords(service, postcode);
 
 	const data = mapToDatabase(message, coords);
 	const incoming = (message.specialisms || []).filter((s) => s?.name);
@@ -150,4 +140,16 @@ export async function upsertInspector(service, message, context) {
 		context.log(`Failed to upsert inspector ${entraId}: ${error.message}`);
 		throw new Error(`Failed to upsert inspector ${entraId}: ${error.message}`);
 	}
+}
+
+/**
+ * @param {import('../../service').FunctionService} service
+ * @param {string|undefined|null} postcode
+ * @returns {Promise<{ latitude: number|null, longitude: number|null }>}
+ */
+async function inspectorCoords(service, postcode) {
+	if (!postcode) {
+		return { latitude: null, longitude: null };
+	}
+	return fetchPostcodeCoordinates(service.osApiClient, postcode);
 }

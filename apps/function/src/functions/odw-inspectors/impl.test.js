@@ -211,6 +211,30 @@ describe('upsertInspector', () => {
 		assert.ok(deleteArgs.where.inspectorId);
 	});
 
+	test('processes postcode', async () => {
+		const service = makeService({ postcodeResponse: { results: [{ DPA: { LAT: 7.89, LNG: 0.12 } }] } });
+		const message = makeValidMessage();
+		await upsertInspector(service, message, context);
+		const upsertInspectorMock = service.dbClient.inspector.upsert.mock;
+		assert.strictEqual(upsertInspectorMock.callCount(), 1);
+		const upsertArgs = upsertInspectorMock.calls[0].arguments[0];
+		assert.strictEqual(upsertArgs.where.id, message.entraId);
+		assert.strictEqual(upsertArgs.create.latitude, 7.89);
+		assert.strictEqual(upsertArgs.create.longitude, 0.12);
+	});
+
+	test('processes null postcode', async () => {
+		const service = makeService();
+		const message = makeValidMessage({ address: { postcode: null } });
+		await upsertInspector(service, message, context);
+		const upsertInspectorMock = service.dbClient.inspector.upsert.mock;
+		assert.strictEqual(upsertInspectorMock.callCount(), 1);
+		const upsertArgs = upsertInspectorMock.calls[0].arguments[0];
+		assert.strictEqual(upsertArgs.where.id, message.entraId);
+		assert.strictEqual(upsertArgs.create.latitude, null);
+		assert.strictEqual(upsertArgs.create.longitude, null);
+	});
+
 	test('wraps upsert errors', async () => {
 		const service = makeService({ postcodeResponse: { results: [{ DPA: { LAT: 0, LNG: 0 } }] }, upsertThrow: true });
 		const message = makeValidMessage();
