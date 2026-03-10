@@ -274,11 +274,6 @@ export function buildPostHome(service) {
 			newStartDate = getWeekStartDate(today);
 		}
 
-		const redirectUrl =
-			req.body.action === 'view'
-				? `/inspector/${req.body.inspectorId}`
-				: `/?inspectorId=${req.body.inspectorId}&calendarStartDate=${newStartDate}`;
-
-		return res.redirect(redirectUrl);
+		return res.redirect(`/?inspectorId=${req.body.inspectorId}&calendarStartDate=${newStartDate}`);
 	};
 }

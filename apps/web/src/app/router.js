@@ -7,7 +7,6 @@ import { createRoutes as createApiRoutes } from './api/index.js';
 import { buildPostHome, buildViewHome } from './views/home/controller.js';
 import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildViewCase } from './views/case/controller.js';
-import { buildViewInspector } from './views/inspector/controller.js';
 import { buildPostCases } from './views/cases/controller.js';
 
 /**
@@ -52,13 +51,11 @@ export function buildRouter(service) {
 	const postHome = buildPostHome(service);
 	const viewCase = buildViewCase(service);
 	const postCases = buildPostCases(service);
-	const viewInspector = buildViewInspector(); // TODO - pass service as param (currently unused)
 
 	router.get('/', asyncHandler(viewHome));
 	router.post('/cases', asyncHandler(postCases));
 	router.post('/', asyncHandler(postHome));
 	router.get('/case/:caseId', asyncHandler(viewCase));
-	router.get('/inspector/:inspectorId', asyncHandler(viewInspector));
 
 	return router;
 }
