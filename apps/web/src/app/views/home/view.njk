@@ -530,23 +530,24 @@
 
         // Add event listener to each tab to submit select inspector form
         function submitFormForTab (tabId, value) {
-                    const tab = document.querySelector(tabId);
-                    if (!tab) return;
-                    tab.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const currentTab = document.getElementById('currentTab');
-                        currentTab.value = value;
-                        inspectorForm.submit();
-                    });
-                }
+            const tab = document.querySelector(tabId);
+            if (!tab) return;
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                const currentTab = document.getElementById('currentTab');
+                currentTab.value = value;
+                inspectorForm.submit();
+            });
+        }
 
-                // Initialize tabs
-                submitFormForTab ('#tab_outlookView', 'calendar');
-                submitFormForTab ('#tab_inspector', 'inspector');
-                submitFormForTab('#tab_cases', '');
-                submitFormForTab('#tab_mapView', '');
+        // Initialize tabs
+        submitFormForTab('#tab_outlookView', 'calendar');
+        submitFormForTab('#tab_inspector', 'inspector');
+        submitFormForTab('#tab_cases', '');
+        submitFormForTab('#tab_mapView', '');
 
-            if (typeof accessibleAutocomplete !== 'undefined') {
+        // configure accessible auto complete for the select inspector input
+        if (typeof accessibleAutocomplete !== 'undefined') {
             accessibleAutocomplete.enhanceSelectElement({
                 selectElement: document.querySelector('#inspectors'),
                 autoselect: false,
@@ -555,31 +556,32 @@
                 displayMenu: 'overlay'
             });
         }
-			const bankHolidaysRaw = '{{ bankHolidays | dump | safe }}';
-			let nonWorkingDays = [];
-			try {
-				nonWorkingDays = JSON.parse(bankHolidaysRaw);
-			} catch (e) {
-				nonWorkingDays = [];
-			}
 
-			flatpickr("#assignment-date", {
-				enableTime: false,
-				minDate: "{{ appeals.assignmentDateMin }}",
-				disable: [
-					// this disables all weekends
-					function(date) {
-						return date.getDay() === 0 || date.getDay() === 6;
-					},
-					...nonWorkingDays
-				],
-                altInput: true,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-				defaultDate: "{{ appeals.assignmentDate }}",
-                position: "below right",
-			});
+        // configure the data picker for assignment date
+        const bankHolidaysRaw = '{{ bankHolidays | dump | safe }}';
+        let nonWorkingDays = [];
+        try {
+            nonWorkingDays = JSON.parse(bankHolidaysRaw);
+        } catch (e) {
+            nonWorkingDays = [];
+        }
 
+        flatpickr("#assignment-date", {
+            enableTime: false,
+            minDate: "{{ appeals.assignmentDateMin }}",
+            disable: [
+                // this disables all weekends
+                function(date) {
+                    return date.getDay() === 0 || date.getDay() === 6;
+                },
+                ...nonWorkingDays
+            ],
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+            defaultDate: "{{ appeals.assignmentDate }}",
+            position: "below right",
+        });
     });
 </script>
 
