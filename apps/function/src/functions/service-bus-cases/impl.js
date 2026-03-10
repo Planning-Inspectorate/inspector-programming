@@ -1,4 +1,4 @@
-import { MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { fetchPostcodeCoordinates } from '@pins/inspector-programming-lib/util/fetch-coordinates.js';
 import { getCachedAjv } from '../../util/cached-ajv.js';
 
@@ -129,6 +129,7 @@ export async function deleteCase(service, caseReference, context) {
  * @returns {import('@pins/inspector-programming-database/src/client/client.js').Prisma.AppealCaseCreateInput}
  */
 export function mapToDatabase(message, coords) {
+	/** @type {import('@pins/inspector-programming-database/src/client/client.js').Prisma.AppealCaseCreateInput} */
 	const data = {
 		caseReference: message.caseReference,
 		caseId: message.caseId,
@@ -167,9 +168,22 @@ export function mapToDatabase(message, coords) {
 	}
 
 	// Connect the LeadCase relation
-	if (message.leadCaseReference) {
+	if (message.linkedCaseStatus === APPEAL_LINKED_CASE_STATUS.CHILD && message.leadCaseReference) {
+		// currently Manage appeals uses caseId + 6,000,000 for the case reference
+		// so we reverse that here to compute the ID
+		// future runs which populate the full case can change the caseId if it iss wrong,
+		// as they match on case reference anyway
+		const leadCaseId = parseInt(message.leadCaseReference) - 6_000_000;
 		data.LeadCase = {
-			connect: { caseReference: message.leadCaseReference }
+			connectOrCreate: {
+				where: { caseReference: message.leadCaseReference },
+				// messages are async and the lead case may not yet be in the database
+				// so that the insert doesn't fail, we create a skeleton lead case if needed
+				create: {
+					caseId: leadCaseId,
+					caseReference: message.leadCaseReference
+				}
+			}
 		};
 	}
 
