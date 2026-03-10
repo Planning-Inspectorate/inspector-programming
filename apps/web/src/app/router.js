@@ -27,7 +27,7 @@ export function buildRouter(service) {
 
 	router.get('/unauthenticated', (req, res) => res.status(401).render('views/errors/401.njk'));
 
-	// API routes don't use the Entra auth, auth is TBC but must be implemented
+	// API routes use a separate auth check
 	router.use('/api/v1', apiRoutes);
 
 	if (!service.authDisabled) {
@@ -46,7 +46,6 @@ export function buildRouter(service) {
 
 	router.use('/error', createErrorRoutes(service));
 
-	// const entraClientMiddleware = buildEntraClientMiddleware(service);
 	const viewHome = buildViewHome(service);
 	const postHome = buildPostHome(service);
 	const viewCase = buildViewCase(service);
