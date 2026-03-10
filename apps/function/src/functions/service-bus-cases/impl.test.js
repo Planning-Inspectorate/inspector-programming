@@ -161,182 +161,184 @@ const assertCalls = (mockFn, expected, name) => {
 	);
 };
 
-describe('mapToDatabase', () => {
-	test('maps fields and coordinates correctly', () => {
-		const result = mapToDatabase(msg(), VALID_COORDS);
-		assert.strictEqual(result.caseReference, 'APP/W1234/D/25/1234567');
-		assert.strictEqual(result.caseId, 12345);
-		assert.strictEqual(result.siteAddressLatitude, 51.5);
-		assert.strictEqual(result.siteAddressLongitude, -0.12);
-	});
-
-	test('handles null coordinates', () => {
-		const result = mapToDatabase(msg(), NULL_COORDS);
-		assert.strictEqual(result.siteAddressLatitude, null);
-		assert.strictEqual(result.siteAddressLongitude, null);
-	});
-
-	test('converts date strings to Date objects', () => {
-		const result = mapToDatabase(msg(), NULL_COORDS);
-		assert.ok(result.caseCreatedDate instanceof Date);
-		assert.strictEqual(result.caseCreatedDate.toISOString(), '2025-01-01T00:00:00.000Z');
-	});
-
-	test('handles missing optional fields with null', () => {
-		const result = mapToDatabase(msg({ caseStatus: undefined, caseProcedure: undefined }), NULL_COORDS);
-		assert.strictEqual(result.caseStatus, null);
-		assert.strictEqual(result.caseProcedure, null);
-	});
-});
-
-describe('deleteCase', () => {
-	test('calls database delete with correct caseReference', async (testContext) => {
-		testContext.mock.timers.enable({
-			apis: ['Date'],
-			now: new Date('2023-10-04T12:00:00Z')
+describe('service-bus-cases', () => {
+	describe('mapToDatabase', () => {
+		test('maps fields and coordinates correctly', () => {
+			const result = mapToDatabase(msg(), VALID_COORDS);
+			assert.strictEqual(result.caseReference, 'APP/W1234/D/25/1234567');
+			assert.strictEqual(result.caseId, 12345);
+			assert.strictEqual(result.siteAddressLatitude, 51.5);
+			assert.strictEqual(result.siteAddressLongitude, -0.12);
 		});
-		const service = svc();
-		await deleteCase(service, 'APP/123', ctx(MESSAGE_EVENT_TYPE.DELETE));
-		assertCalls(service.mocks.transaction, 1, 'transaction');
-		assertCalls(service.mocks.delete, 1, 'delete');
-		assert.deepStrictEqual(service.mocks.delete.mock.calls[0].arguments[0], { where: { caseReference: 'APP/123' } });
-		assert.deepStrictEqual(service.mocks.upsertStatus.mock.calls[0].arguments[0], {
-			where: { id: 1 },
-			create: { lastPollAt: new Date(), casesFetched: -1 },
-			update: { lastPollAt: new Date() }
+
+		test('handles null coordinates', () => {
+			const result = mapToDatabase(msg(), NULL_COORDS);
+			assert.strictEqual(result.siteAddressLatitude, null);
+			assert.strictEqual(result.siteAddressLongitude, null);
+		});
+
+		test('converts date strings to Date objects', () => {
+			const result = mapToDatabase(msg(), NULL_COORDS);
+			assert.ok(result.caseCreatedDate instanceof Date);
+			assert.strictEqual(result.caseCreatedDate.toISOString(), '2025-01-01T00:00:00.000Z');
+		});
+
+		test('handles missing optional fields with null', () => {
+			const result = mapToDatabase(msg({ caseStatus: undefined, caseProcedure: undefined }), NULL_COORDS);
+			assert.strictEqual(result.caseStatus, null);
+			assert.strictEqual(result.caseProcedure, null);
 		});
 	});
 
-	test('throws when caseReference empty', async () => {
-		await assert.rejects(() => deleteCase(svc(), '', ctx()), { message: 'Delete event missing caseReference' });
-	});
-
-	test('throws when caseReference null', async () => {
-		await assert.rejects(() => deleteCase(svc(), null, ctx()), { message: 'Delete event missing caseReference' });
-	});
-
-	test('handles P2025 not found gracefully', async () => {
-		const service = svc({ deleteNotFound: true });
-		await deleteCase(service, 'APP/123', ctx());
-		assertCalls(service.mocks.delete, 1, 'delete');
-	});
-
-	test('wraps database errors', async () => {
-		await assert.rejects(() => deleteCase(svc({ deleteThrow: true }), 'APP/123', ctx()), {
-			message: 'Failed to delete case APP/123: db delete failed'
+	describe('deleteCase', () => {
+		test('calls database delete with correct caseReference', async (testContext) => {
+			testContext.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-10-04T12:00:00Z')
+			});
+			const service = svc();
+			await deleteCase(service, 'APP/123', ctx(MESSAGE_EVENT_TYPE.DELETE));
+			assertCalls(service.mocks.transaction, 1, 'transaction');
+			assertCalls(service.mocks.delete, 1, 'delete');
+			assert.deepStrictEqual(service.mocks.delete.mock.calls[0].arguments[0], { where: { caseReference: 'APP/123' } });
+			assert.deepStrictEqual(service.mocks.upsertStatus.mock.calls[0].arguments[0], {
+				where: { id: 1 },
+				create: { lastPollAt: new Date(), casesFetched: -1 },
+				update: { lastPollAt: new Date() }
+			});
 		});
-	});
-});
 
-describe('upsertCase', () => {
-	test('upserts with coordinates when postcode provided', async (testContext) => {
-		testContext.mock.timers.enable({
-			apis: ['Date'],
-			now: new Date('2023-10-04T12:00:00Z')
+		test('throws when caseReference empty', async () => {
+			await assert.rejects(() => deleteCase(svc(), '', ctx()), { message: 'Delete event missing caseReference' });
 		});
-		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
-		await upsertCase(service, msg(), ctx());
-		assertCalls(service.mocks.upsert, 1, 'upsert');
-		assertCalls(service.mocks.transaction, 1, 'transaction');
-		assert.deepStrictEqual(service.mocks.upsertStatus.mock.calls[0].arguments[0], {
-			where: { id: 1 },
-			create: { lastPollAt: new Date(), casesFetched: -1 },
-			update: { lastPollAt: new Date() }
+
+		test('throws when caseReference null', async () => {
+			await assert.rejects(() => deleteCase(svc(), null, ctx()), { message: 'Delete event missing caseReference' });
 		});
-	});
 
-	test('continues without coordinates when lookup fails', async () => {
-		const service = svc({ postcodeResponse: null });
-		await upsertCase(service, msg(), ctx());
-		assertCalls(service.mocks.upsert, 1, 'upsert');
-	});
+		test('handles P2025 not found gracefully', async () => {
+			const service = svc({ deleteNotFound: true });
+			await deleteCase(service, 'APP/123', ctx());
+			assertCalls(service.mocks.delete, 1, 'delete');
+		});
 
-	test('skips coordinate lookup when no postcode', async () => {
-		const service = svc();
-		await upsertCase(service, msg({ siteAddressPostcode: null }), ctx());
-		assertCalls(service.mocks.upsert, 1, 'upsert');
-	});
-
-	test('throws when caseReference missing', async () => {
-		await assert.rejects(() => upsertCase(svc(), msg({ caseReference: null }), ctx()), {
-			message: 'Upsert event missing caseReference'
+		test('wraps database errors', async () => {
+			await assert.rejects(() => deleteCase(svc({ deleteThrow: true }), 'APP/123', ctx()), {
+				message: 'Failed to delete case APP/123: db delete failed'
+			});
 		});
 	});
 
-	test('syncs specialisms when provided', async () => {
-		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
-		await upsertCase(
-			service,
-			msg({
-				caseSpecialisms: ['Highways', 'Heritage']
-			}),
-			ctx()
-		);
+	describe('upsertCase', () => {
+		test('upserts with coordinates when postcode provided', async (testContext) => {
+			testContext.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2023-10-04T12:00:00Z')
+			});
+			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+			await upsertCase(service, msg(), ctx());
+			assertCalls(service.mocks.upsert, 1, 'upsert');
+			assertCalls(service.mocks.transaction, 1, 'transaction');
+			assert.deepStrictEqual(service.mocks.upsertStatus.mock.calls[0].arguments[0], {
+				where: { id: 1 },
+				create: { lastPollAt: new Date(), casesFetched: -1 },
+				update: { lastPollAt: new Date() }
+			});
+		});
 
-		assertCalls(service.mocks.upsert, 1, 'upsert');
-		assertCalls(service.mocks.deleteMany, 1, 'deleteMany');
-		assertCalls(service.mocks.upsertSpecialism, 2, 'appealCaseSpecialism.upsert');
-		assertCalls(service.mocks.findMany, 0, 'findMany');
-		assertCalls(service.mocks.create, 0, 'create');
+		test('continues without coordinates when lookup fails', async () => {
+			const service = svc({ postcodeResponse: null });
+			await upsertCase(service, msg(), ctx());
+			assertCalls(service.mocks.upsert, 1, 'upsert');
+		});
+
+		test('skips coordinate lookup when no postcode', async () => {
+			const service = svc();
+			await upsertCase(service, msg({ siteAddressPostcode: null }), ctx());
+			assertCalls(service.mocks.upsert, 1, 'upsert');
+		});
+
+		test('throws when caseReference missing', async () => {
+			await assert.rejects(() => upsertCase(svc(), msg({ caseReference: null }), ctx()), {
+				message: 'Upsert event missing caseReference'
+			});
+		});
+
+		test('syncs specialisms when provided', async () => {
+			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+			await upsertCase(
+				service,
+				msg({
+					caseSpecialisms: ['Highways', 'Heritage']
+				}),
+				ctx()
+			);
+
+			assertCalls(service.mocks.upsert, 1, 'upsert');
+			assertCalls(service.mocks.deleteMany, 1, 'deleteMany');
+			assertCalls(service.mocks.upsertSpecialism, 2, 'appealCaseSpecialism.upsert');
+			assertCalls(service.mocks.findMany, 0, 'findMany');
+			assertCalls(service.mocks.create, 0, 'create');
+		});
+
+		test('filters invalid specialisms', async () => {
+			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+			await upsertCase(
+				service,
+				msg({
+					caseSpecialisms: ['Valid', null, '']
+				}),
+				ctx()
+			);
+			assertCalls(service.mocks.deleteMany, 1, 'deleteMany');
+			assertCalls(service.mocks.upsertSpecialism, 1, 'appealCaseSpecialism.upsert');
+			assertCalls(service.mocks.create, 0, 'create');
+		});
+
+		test('wraps upsert errors', async () => {
+			await assert.rejects(
+				() => upsertCase(svc({ postcodeResponse: VALID_POSTCODE_RESPONSE, upsertThrow: true }), msg(), ctx()),
+				/Failed to upsert case/
+			);
+		});
 	});
 
-	test('filters invalid specialisms', async () => {
-		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
-		await upsertCase(
-			service,
-			msg({
-				caseSpecialisms: ['Valid', null, '']
-			}),
-			ctx()
-		);
-		assertCalls(service.mocks.deleteMany, 1, 'deleteMany');
-		assertCalls(service.mocks.upsertSpecialism, 1, 'appealCaseSpecialism.upsert');
-		assertCalls(service.mocks.create, 0, 'create');
-	});
+	describe('buildHandleCaseMessage', () => {
+		test('deletes for DELETE event', async () => {
+			const service = svc();
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.DELETE));
+			assertCalls(service.mocks.delete, 1, 'delete');
+			assertCalls(service.mocks.upsert, 0, 'upsert');
+		});
 
-	test('wraps upsert errors', async () => {
-		await assert.rejects(
-			() => upsertCase(svc({ postcodeResponse: VALID_POSTCODE_RESPONSE, upsertThrow: true }), msg(), ctx()),
-			/Failed to upsert case/
-		);
-	});
-});
+		test('deletes when inspectorId set', async () => {
+			const service = svc();
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(
+				msg({ inspectorId: 'insp-1' }),
+				ctx(MESSAGE_EVENT_TYPE.UPDATE)
+			);
+			assertCalls(service.mocks.delete, 1, 'delete');
+			assertCalls(service.mocks.upsert, 0, 'upsert');
+		});
 
-describe('buildHandleCaseMessage', () => {
-	test('deletes for DELETE event', async () => {
-		const service = svc();
-		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.DELETE));
-		assertCalls(service.mocks.delete, 1, 'delete');
-		assertCalls(service.mocks.upsert, 0, 'upsert');
-	});
+		test('upserts for CREATE without inspectorId', async () => {
+			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.CREATE));
+			assertCalls(service.mocks.delete, 0, 'delete');
+			assertCalls(service.mocks.upsert, 1, 'upsert');
+		});
 
-	test('deletes when inspectorId set', async () => {
-		const service = svc();
-		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(
-			msg({ inspectorId: 'insp-1' }),
-			ctx(MESSAGE_EVENT_TYPE.UPDATE)
-		);
-		assertCalls(service.mocks.delete, 1, 'delete');
-		assertCalls(service.mocks.upsert, 0, 'upsert');
-	});
+		test('upserts for UPDATE without inspectorId', async () => {
+			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.UPDATE));
+			assertCalls(service.mocks.upsert, 1, 'upsert');
+		});
 
-	test('upserts for CREATE without inspectorId', async () => {
-		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
-		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.CREATE));
-		assertCalls(service.mocks.delete, 0, 'delete');
-		assertCalls(service.mocks.upsert, 1, 'upsert');
-	});
-
-	test('upserts for UPDATE without inspectorId', async () => {
-		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
-		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.UPDATE));
-		assertCalls(service.mocks.upsert, 1, 'upsert');
-	});
-
-	test('logs are called', async () => {
-		const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
-		const context = ctx(MESSAGE_EVENT_TYPE.CREATE);
-		await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), context);
-		assert.ok(context.log.mock.callCount() > 0, 'Expected logging');
+		test('logs are called', async () => {
+			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
+			const context = ctx(MESSAGE_EVENT_TYPE.CREATE);
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), context);
+			assert.ok(context.log.mock.callCount() > 0, 'Expected logging');
+		});
 	});
 });
