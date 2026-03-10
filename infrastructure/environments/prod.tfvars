@@ -21,10 +21,10 @@ apps_config = {
   auth = {
     client_id                = "d26a7ba3-6f35-4ab6-b395-7e1e971ab6c7"
     group_application_access = "128f1af5-2438-443b-bec0-99e93e3989d0"
-    groups = { # TODO - set these
-      inspectors    = ""
-      team_leads    = ""
-      national_team = ""
+    groups = {
+      inspectors    = "128f1af5-2438-443b-bec0-99e93e3989d0" # temporary
+      team_leads    = "128f1af5-2438-443b-bec0-99e93e3989d0" # temporary
+      national_team = "128f1af5-2438-443b-bec0-99e93e3989d0" # temporary
       api_inspector_groups = [
         "dfcab300-f268-4eb3-820e-1758fa69c150"
       ]
