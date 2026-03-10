@@ -73,6 +73,7 @@ front_door_config = {
 
 manage_appeals_config = {
   api_app_name        = "pins-app-appeals-bo-api-prod"
+  network_name        = "pins-vnet-appeals-bo-prod"
   resource_group_name = "pins-rg-appeals-bo-prod"
   service_bus_name    = "pins-sb-appeals-bo-prod"
   web_app_url         = "https://back-office-appeals.planninginspectorate.gov.uk/"

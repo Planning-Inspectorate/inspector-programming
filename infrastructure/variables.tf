@@ -97,6 +97,7 @@ variable "manage_appeals_config" {
   description = "Config for the manage appeals (back office) system, for integration"
   type = object({
     api_app_name        = string
+    network_name        = string
     resource_group_name = string
     service_bus_name    = string
     web_app_url         = string
