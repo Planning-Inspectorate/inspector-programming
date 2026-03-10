@@ -69,7 +69,7 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 			startDateTime: startDateTime.toISOString(),
 			endDateTime: endDateTime.toISOString(),
 			status: event.showAs ? event.showAs : '',
-			location: address == '' ? event.location.displayName : '',
+			location: address === '' ? event.location.displayName : '',
 			address: address.trim()
 		};
 	});
@@ -97,9 +97,9 @@ export function getWeekStartDate(date) {
 export function generateWeekTitle(startDate) {
 	const weekEndDate = addDays(startDate, 6, { in: timeZone });
 	weekEndDate.setHours(23, 59, 59, 999);
-	if (startDate.getFullYear() != weekEndDate.getFullYear()) {
+	if (startDate.getFullYear() !== weekEndDate.getFullYear()) {
 		return `${('0' + startDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })}, ${startDate.getFullYear()} - ${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
-	} else if (startDate.getMonth() != weekEndDate.getMonth()) {
+	} else if (startDate.getMonth() !== weekEndDate.getMonth()) {
 		return `${('0' + startDate.getDate()).slice(-2)} ${startDate.toLocaleString('en-US', { month: 'long' })} - ${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
 	}
 	return `${('0' + startDate.getDate()).slice(-2)} - ${('0' + weekEndDate.getDate()).slice(-2)} ${weekEndDate.toLocaleString('en-US', { month: 'long' })}, ${weekEndDate.getFullYear()}`;
@@ -193,9 +193,9 @@ export function generateCalendar(startDate, events) {
 
 				const validStartRow = Math.max(0, startRow);
 				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
-					calendarGrid[i][dayIndex].text = i == startRow ? event.subject : '';
-					calendarGrid[i][dayIndex].location = i == startRow ? event.location : '';
-					calendarGrid[i][dayIndex].address = i == startRow + 1 ? event.address : '';
+					calendarGrid[i][dayIndex].text = i === startRow ? event.subject : '';
+					calendarGrid[i][dayIndex].location = i === startRow ? event.location : '';
+					calendarGrid[i][dayIndex].address = i === startRow + 1 ? event.address : '';
 					calendarGrid[i][dayIndex].isEvent = true;
 					calendarGrid[i][dayIndex].status = event.status;
 				}

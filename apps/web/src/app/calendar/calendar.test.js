@@ -350,7 +350,7 @@ describe('calendar', () => {
 	it('should generate calendar with cells that are marked today', () => {
 		const startDate = new Date();
 		startDate.setHours(0, 0, 0, 0);
-		const dayIndex = startDate.getDay() - 1 != -1 ? startDate.getDay() - 1 : 6;
+		const dayIndex = startDate.getDay() - 1 !== -1 ? startDate.getDay() - 1 : 6;
 
 		const calendar = generateCalendar(startDate, null);
 		for (let i = 0; i < 20; i++) {

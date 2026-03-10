@@ -110,7 +110,7 @@ export class CachedCasesClient {
 	 */
 	async getCaseById(caseId) {
 		const cases = await this.getAllCases();
-		return cases.find((item) => item.caseId == caseId);
+		return cases.find((item) => item.caseId === caseId);
 	}
 
 	/**
@@ -125,7 +125,7 @@ export class CachedCasesClient {
 
 	async getAllParentCases() {
 		const cases = await this.getAllCases();
-		return cases.filter((item) => item.linkedCaseStatus != 'Child');
+		return cases.filter((item) => item.linkedCaseStatus !== 'Child');
 	}
 
 	/**
