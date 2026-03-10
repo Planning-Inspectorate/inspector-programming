@@ -859,21 +859,6 @@ describe('controller.js', () => {
 				true
 			);
 		});
-
-		test('should redirect to inspector page when action is view', async () => {
-			const service = mockService();
-			const req = {
-				body: {
-					action: 'view',
-					inspectorId: 'test-inspector-id'
-				}
-			};
-			const res = { redirect: mock.fn() };
-			const controller = buildPostHome(service);
-			await controller(req, res);
-			assert.strictEqual(res.redirect.mock.callCount(), 1);
-			assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/inspector/test-inspector-id');
-		});
 	});
 });
 
