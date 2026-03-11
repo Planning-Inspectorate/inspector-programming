@@ -88,7 +88,7 @@ export function buildCbosFetchCases(service) {
 			context.log('Finished fetching cases from CBOS');
 		} catch (error) {
 			context.log('Error during case fetch:', error.message);
-			throw new Error(`Error during case fetch: ${error.message}`);
+			throw new Error(`Error during case fetch: ${error.message}`, { cause: error });
 		} finally {
 			context.log('Finished CBOS case fetch function execution');
 		}

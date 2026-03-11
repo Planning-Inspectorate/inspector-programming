@@ -45,7 +45,7 @@ export async function deleteInspector(service, entraId, context) {
 		context.log(`Inspector with entraId ${entraId} has been deleted`);
 	} catch (error) {
 		context.log(`Error deleting inspector: ${error.message}`);
-		throw new Error(`Error deleting inspector: ${error.message}`);
+		throw new Error(`Error deleting inspector: ${error.message}`, { cause: error });
 	}
 }
 
@@ -138,7 +138,7 @@ export async function upsertInspector(service, message, context) {
 		);
 	} catch (error) {
 		context.log(`Failed to upsert inspector ${entraId}: ${error.message}`);
-		throw new Error(`Failed to upsert inspector ${entraId}: ${error.message}`);
+		throw new Error(`Failed to upsert inspector ${entraId}: ${error.message}`, { cause: error });
 	}
 }
 

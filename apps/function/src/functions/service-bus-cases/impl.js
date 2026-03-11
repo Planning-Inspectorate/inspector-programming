@@ -121,7 +121,7 @@ export async function deleteCase(service, caseReference, context) {
 			return;
 		}
 		context.log(`Failed to delete case ${caseReference}:`, error);
-		throw new Error(`Failed to delete case ${caseReference}: ${error.message}`);
+		throw new Error(`Failed to delete case ${caseReference}: ${error.message}`, { cause: error });
 	}
 }
 
@@ -286,6 +286,6 @@ export async function upsertCase(service, message, context) {
 		});
 	} catch (error) {
 		context.log(`Failed to upsert case ${caseReference}:`, error);
-		throw new Error(`Failed to upsert case ${caseReference}: ${error}`);
+		throw new Error(`Failed to upsert case ${caseReference}: ${error}`, { cause: error });
 	}
 }

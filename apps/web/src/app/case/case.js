@@ -30,6 +30,7 @@ export async function assignCasesToInspector(session, service, inspectorId, case
 	/**
 	 * @type {import("@pins/inspector-programming-lib/data/types").CbosSingleAppealResponse[]}
 	 */
+	// eslint-disable-next-line no-useless-assignment
 	let appeals = [];
 
 	try {

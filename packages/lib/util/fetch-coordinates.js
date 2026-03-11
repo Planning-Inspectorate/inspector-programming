@@ -23,7 +23,7 @@ export async function fetchPostcodeCoordinates(osApiClient, postcode) {
 			}
 		}
 	} catch (error) {
-		throw new Error(`Failed to fetch coordinates for postcode ${postcode}: ${error.message}`);
+		throw new Error(`Failed to fetch coordinates for postcode ${postcode}: ${error.message}`, { cause: error });
 	}
 
 	if (typeof latitude !== 'number' || typeof longitude !== 'number') {

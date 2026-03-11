@@ -551,6 +551,6 @@ export async function submitCalendarEvents(initEntraClient, events, authSession,
 		await client.createCalendarEvents(events, inspectorId);
 	} catch (error) {
 		logger.error(`Error creating adding calendar events to outlook: ${error}`);
-		throw new Error(`Error creating adding calendar events to outlook: ${error}`);
+		throw new Error(`Error creating adding calendar events to outlook: ${error}`, { cause: error });
 	}
 }

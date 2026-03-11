@@ -61,7 +61,7 @@ export class OsApiClient {
 			return await res.json();
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
-				throw new Error(`Request to ${url} timed out after ${this.#timeout}ms`);
+				throw new Error(`Request to ${url} timed out after ${this.#timeout}ms`, { cause: error });
 			}
 			throw error;
 		} finally {

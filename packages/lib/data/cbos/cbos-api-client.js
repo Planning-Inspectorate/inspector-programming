@@ -196,7 +196,7 @@ export class CbosApiClient {
 		} catch (error) {
 			clearTimeout(timeoutId);
 			if (error instanceof Error && error.name === 'AbortError') {
-				throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
+				throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`, { cause: error });
 			}
 			throw error;
 		}
@@ -240,7 +240,7 @@ export class CbosApiClient {
 			//if error is an Error object with a message
 			else if (error instanceof Error) message = error.message;
 
-			throw new Error(`Failed to fetch appeal data: ${message}`);
+			throw new Error(`Failed to fetch appeal data: ${message}`, { cause: error });
 		}
 	}
 
@@ -254,7 +254,7 @@ export class CbosApiClient {
 			const items = await this.#fetchAppealData(options);
 			return items.map((item) => item.appealId);
 		} catch (error) {
-			throw new Error(`Failed to fetch appeal IDs: ${error.message}`);
+			throw new Error(`Failed to fetch appeal IDs: ${error.message}`, { cause: error });
 		}
 	}
 
