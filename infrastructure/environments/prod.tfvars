@@ -85,9 +85,11 @@ monitoring_config = {
 }
 
 odw_config = {
-  subscription_id     = "a82fd28d-5989-4e06-a0bb-1a5d859f9e0c"
-  resource_group_name = "pins-rg-ingestion-odw-prod-uks"
-  service_bus_name    = "pins-sb-odw-prod-uks-mwzecc"
+  network_resource_group_name = "pins-rg-network-odw-prod-uks"
+  network_name                = "vnet-odw-prod-uks"
+  subscription_id             = "a82fd28d-5989-4e06-a0bb-1a5d859f9e0c"
+  resource_group_name         = "pins-rg-ingestion-odw-prod-uks"
+  service_bus_name            = "pins-sb-odw-prod-uks-mwzecc"
 }
 
 sql_config = {
