@@ -115,9 +115,11 @@ variable "monitoring_config" {
 variable "odw_config" {
   description = "Config for ODW resources - Service Bus integration"
   type = object({
-    subscription_id     = string
-    resource_group_name = string
-    service_bus_name    = string
+    network_resource_group_name = string
+    network_name                = string
+    subscription_id             = string
+    resource_group_name         = string
+    service_bus_name            = string
   })
   default = null
 }
