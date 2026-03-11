@@ -22,9 +22,9 @@ apps_config = {
     client_id                = "d26a7ba3-6f35-4ab6-b395-7e1e971ab6c7"
     group_application_access = "128f1af5-2438-443b-bec0-99e93e3989d0"
     groups = {
-      inspectors    = "128f1af5-2438-443b-bec0-99e93e3989d0" # temporary
-      team_leads    = "128f1af5-2438-443b-bec0-99e93e3989d0" # temporary
-      national_team = "128f1af5-2438-443b-bec0-99e93e3989d0" # temporary
+      inspectors    = "59b592a8-9e10-4a10-9adc-6fba50d2a87d"
+      team_leads    = "02cb6692-8933-42d3-9e0c-039712cd8954"
+      national_team = "a769b229-a843-4ce4-a4e2-e9a82a63cf1f"
       api_inspector_groups = [
         "dfcab300-f268-4eb3-820e-1758fa69c150"
       ]
