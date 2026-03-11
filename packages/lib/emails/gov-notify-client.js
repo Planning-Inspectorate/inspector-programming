@@ -92,7 +92,7 @@ export class GovNotifyClient {
 			// log the original error
 			const errors = e?.response?.data?.errors;
 			this.logger.error({ error: e, templateId, errors }, 'failed to dispatch email');
-			throw new Error(`email failed to dispatch: ${e.message}`);
+			throw new Error(`email failed to dispatch: ${e.message}`, { cause: e });
 		}
 	}
 
@@ -102,7 +102,7 @@ export class GovNotifyClient {
 			return await this.notifyClient.getNotificationById(notificationId);
 		} catch (e) {
 			this.logger.error({ error: e, notificationId }, 'failed to fetch notification by ID');
-			throw new Error(`failed to fetch notification: ${e.message}`);
+			throw new Error(`failed to fetch notification: ${e.message}`, { cause: e });
 		}
 	}
 }

@@ -20,7 +20,7 @@ export async function getCachedAjv() {
 				return new Ajv({ allErrors: true, strict: false, schemas });
 			} catch (error) {
 				ajvInit = null;
-				throw new Error(`Failed to initialise AJV instance. Error: ${error.message}`);
+				throw new Error(`Failed to initialise AJV instance. Error: ${error.message}`, { cause: error });
 			}
 		})();
 	}
