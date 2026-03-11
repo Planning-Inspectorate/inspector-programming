@@ -44,6 +44,13 @@ export function buildHandleCaseMessage(service, schemaName) {
 			return;
 		}
 
+		// If padsSapId is set (case is assigned), delete the case from our database
+		if (message.padsSapId) {
+			context.log(`Case ${message.caseReference} has padsSapId set (${message.padsSapId}), deleting from database`);
+			await deleteCase(service, message.caseReference, context);
+			return;
+		}
+
 		// Otherwise upsert the case
 		context.log(`Processing upsert for case: ${message.caseReference}`);
 		await upsertCase(service, message, context);

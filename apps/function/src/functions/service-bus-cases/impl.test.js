@@ -351,6 +351,16 @@ describe('service-bus-cases', () => {
 			assertCalls(service.mocks.upsert, 0, 'upsert');
 		});
 
+		test('deletes when padsSapId set', async () => {
+			const service = svc();
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(
+				msg({ padsSapId: 'id-1' }),
+				ctx(MESSAGE_EVENT_TYPE.UPDATE)
+			);
+			assertCalls(service.mocks.delete, 1, 'delete');
+			assertCalls(service.mocks.upsert, 0, 'upsert');
+		});
+
 		test('upserts for CREATE without inspectorId', async () => {
 			const service = svc({ postcodeResponse: VALID_POSTCODE_RESPONSE });
 			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(msg(), ctx(MESSAGE_EVENT_TYPE.CREATE));
