@@ -6,7 +6,7 @@ describe('cbos-cases-impl', () => {
 	const mockUpsert = mock.fn();
 	const mockUpdate = mock.fn();
 	const mockUpdateMany = mock.fn();
-	const mockDeleteMany = mock.fn();
+	const mockDeleteMany = mock.fn(() => ({ count: 0 }));
 	const mockStatusUpsert = mock.fn();
 	const service = {
 		dbClient: {
@@ -26,7 +26,7 @@ describe('cbos-cases-impl', () => {
 			})
 		},
 		cbosClient: {
-			getUnassignedCases: mock.fn()
+			getUnassignedCases: mock.fn(() => ({ caseReferences: [], cases: [] }))
 		}
 	};
 
@@ -49,8 +49,8 @@ describe('cbos-cases-impl', () => {
 		service.cbosClient.getUnassignedCases.mock.mockImplementationOnce(() => appealsData);
 		const handler = buildCbosFetchCases(service);
 		await handler({}, { log: console.log });
-		assert.strictEqual(service.cbosClient.getUnassignedCases.mock.callCount(), 1);
-		assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 1);
+		assert.strictEqual(service.cbosClient.getUnassignedCases.mock.callCount(), 2);
+		assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 2);
 		assert.strictEqual(mockUpsert.mock.callCount(), 2);
 		assert.deepStrictEqual(mockUpsert.mock.calls[0].arguments[0], {
 			where: { caseReference: '1' },
@@ -98,8 +98,8 @@ describe('cbos-cases-impl', () => {
 		assert.deepStrictEqual(mockDeleteMany.mock.calls[0].arguments[0], {
 			where: { caseReference: { notIn: ['1', '2'] } }
 		});
-		assert.strictEqual(mockStatusUpsert.mock.callCount(), 1);
-		assert.deepStrictEqual(mockStatusUpsert.mock.calls[0].arguments[0], {
+		assert.strictEqual(mockStatusUpsert.mock.callCount(), 2);
+		assert.deepStrictEqual(mockStatusUpsert.mock.calls[1].arguments[0], {
 			where: { id: 1 },
 			create: { lastPollAt: new Date(), casesFetched: -1 },
 			update: { lastPollAt: new Date() }
@@ -115,7 +115,7 @@ describe('cbos-cases-impl', () => {
 		const handler = buildCbosFetchCases(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.cbosClient.getUnassignedCases.mock.callCount(), 1);
-		assert.strictEqual(context.log.mock.callCount(), 3);
-		assert.strictEqual(context.log.mock.calls[1].arguments[1], 'CBOS error');
+		assert.strictEqual(context.log.mock.callCount(), 4);
+		assert.strictEqual(context.log.mock.calls[2].arguments[1], 'CBOS error');
 	});
 });
