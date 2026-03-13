@@ -341,6 +341,7 @@ export interface CbosSingleAppealResponse {
 	stateList?: any[];
 	/** @example ["awaiting_event"] */
 	completedStateList?: string[];
+	originalDevelopmentDescription?: string;
 }
 
 /**
