@@ -116,7 +116,7 @@ export class CbosApiClient {
 			caseType: (await this.getAppealType(c.appealType)) || '',
 			caseStatus: c.appealStatus || 'Unassigned',
 			caseProcedure: c.procedureType || '',
-			originalDevelopmentDescription: '',
+			originalDevelopmentDescription: c.originalDevelopmentDescription || '',
 			allocationLevel: c.allocationDetails?.level || '',
 			allocationBand: c.allocationDetails?.band,
 			siteAddressLine1: c.appealSite?.addressLine1 || '',
