@@ -53,7 +53,7 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.siteAddress, '10 Downing St');
 		assert.strictEqual(result.specialismList, 'None');
 		assert.strictEqual(result.caseSpecialisms, 'None');
-		assert.strictEqual(result.appealStartDate, '');
+		assert.strictEqual(result.caseStartedDate, '');
 		assert.strictEqual(result.eventType, 'No events');
 		assert.strictEqual(result.caseAgeColor, '00703c');
 		assert.strictEqual(result.caseStatus, 'IN PROGRESS');
@@ -76,6 +76,7 @@ describe('case/view-model caseToViewModel', () => {
 			caseProcedure: 'hearing',
 			caseType: 'H',
 			siteAddressLine1: '221B Baker Street',
+			caseStartedDate: new Date('2025-03-15T00:00:00Z'),
 			Specialisms: [
 				{ id: 's1', specialism: 'Spec 1' },
 				{ id: 's2', specialism: 'Spec 2' }
@@ -108,7 +109,7 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.siteAddress, '221B Baker Street');
 		assert.strictEqual(result.specialismList, 'Spec 1, Spec 2');
 		assert.strictEqual(result.caseSpecialisms, 'Spec 1, Spec 2');
-		assert.strictEqual(result.appealStartDate, '15/03/2025');
+		assert.strictEqual(result.caseStartedDate, '15/03/2025');
 		assert.strictEqual(result.eventType, 'HEARING');
 		assert.strictEqual(result.caseAgeColor, 'f47738');
 		assert.strictEqual(result.linkedCases, 'None');
@@ -119,5 +120,6 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.typeOfPlanningApplication, 'FULL APPEAL');
 		assert.strictEqual(result.applicationDecision, 'allowed');
 		assert.strictEqual(result.isAonbNationalLandscape, 'Yes');
+		assert.strictEqual(result.caseStartedDate, '15/03/2025');
 	});
 });
