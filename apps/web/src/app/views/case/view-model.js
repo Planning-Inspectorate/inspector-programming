@@ -19,7 +19,7 @@ export function caseToViewModel(caseClient, c) {
 		...caseToViewModel,
 		siteAddress: c.siteAddressLine1,
 		specialismList: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
-		appealStartDate: hasEvents ? formatDateForDisplay(c.Events[0].eventStartDateTime, { format: 'dd/MM/yyyy' }) : '',
+		caseStartedDate: formatDateForDisplay(c.caseStartedDate, { format: 'dd/MM/yyyy' }),
 		caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		eventType: hasEvents ? formatTag(c.Events[0].eventType) : 'No events',
 		caseAgeColor: getCaseColor(caseToViewModel.caseAge),

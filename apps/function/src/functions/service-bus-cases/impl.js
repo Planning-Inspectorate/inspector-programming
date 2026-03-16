@@ -164,7 +164,8 @@ export function mapToDatabase(message, coords) {
 		designatedSitesNames: message.designatedSitesNames ? JSON.stringify(message.designatedSitesNames) : null,
 		typeOfPlanningApplication: message.typeOfPlanningApplication ?? null,
 		applicationDecision: message.applicationDecision ?? null,
-		isAonbNationalLandscape: message.isAonbNationalLandscape ?? null
+		isAonbNationalLandscape: message.isAonbNationalLandscape ?? null,
+		caseStartedDate: message.caseStartedDate ? new Date(message.caseStartedDate) : null
 	};
 
 	// Connect the LPA relation

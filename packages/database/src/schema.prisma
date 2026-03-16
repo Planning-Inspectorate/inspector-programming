@@ -75,6 +75,7 @@ model AppealCase {
   typeOfPlanningApplication String?
   applicationDecision       String?
   isAonbNationalLandscape   Boolean?
+  caseStartedDate           DateTime?
 }
 
 model AppealCaseSpecialism {

@@ -117,6 +117,7 @@ describe('cboas-api-client', () => {
 		const createdAtDate = new Date(2023, 1, 1);
 		const validAtDate = new Date(2023, 2, 2);
 		const finalCommentsDueDate = new Date(2023, 3, 3);
+		const caseStartedDate = new Date(2023, 4, 4);
 		const c = {
 			appealId: 1,
 			appealReference: '60001',
@@ -137,6 +138,7 @@ describe('cboas-api-client', () => {
 			lpaRegion: 'region',
 			createdAt: createdAtDate,
 			validAt: validAtDate,
+			startedAt: caseStartedDate,
 			appealTimetable: {
 				finalCommentsDueDate: finalCommentsDueDate
 			},
@@ -177,7 +179,8 @@ describe('cboas-api-client', () => {
 			finalCommentsDueDate: finalCommentsDueDate,
 			linkedCaseStatus: 'Parent',
 			leadCaseReference: undefined,
-			childCaseReferences: [{ caseReference: 'linked reference 1' }]
+			childCaseReferences: [{ caseReference: 'linked reference 1' }],
+			caseStartedDate: caseStartedDate
 		};
 
 		const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
@@ -237,6 +240,7 @@ describe('cboas-api-client', () => {
 		const createdAtDate = new Date(2023, 1, 1);
 		const validAtDate = new Date(2023, 2, 2);
 		const finalCommentsDueDate = new Date(2023, 3, 3);
+		const caseStartedDate = new Date(2023, 4, 4);
 		const c = {
 			appealId: 1,
 			appealReference: '60001',
@@ -256,6 +260,7 @@ describe('cboas-api-client', () => {
 			localPlanningDepartment: 'planning department',
 			createdAt: createdAtDate,
 			validAt: validAtDate,
+			startedAt: caseStartedDate,
 			appealTimetable: {
 				finalCommentsDueDate: finalCommentsDueDate
 			},
@@ -296,7 +301,8 @@ describe('cboas-api-client', () => {
 			finalCommentsDueDate: finalCommentsDueDate,
 			linkedCaseStatus: 'Child',
 			leadCaseReference: 'linked reference 1',
-			childCaseReferences: []
+			childCaseReferences: [],
+			caseStartedDate: caseStartedDate
 		};
 
 		const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
@@ -307,6 +313,7 @@ describe('cboas-api-client', () => {
 		const createdAtDate = new Date(2023, 1, 1);
 		const validAtDate = new Date(2023, 2, 2);
 		const finalCommentsDueDate = new Date(2023, 3, 3);
+		const caseStartedDate = new Date(2023, 4, 4);
 		const c = {
 			appealId: 1,
 			appealReference: '60001',
@@ -327,6 +334,7 @@ describe('cboas-api-client', () => {
 			lpaRegion: 'region',
 			createdAt: createdAtDate,
 			validAt: validAtDate,
+			startedAt: caseStartedDate,
 			appealTimetable: {
 				finalCommentsDueDate: finalCommentsDueDate
 			},
@@ -365,7 +373,8 @@ describe('cboas-api-client', () => {
 			finalCommentsDueDate: finalCommentsDueDate,
 			linkedCaseStatus: 'Child',
 			leadCaseReference: 'linked reference 1',
-			childCaseReferences: []
+			childCaseReferences: [],
+			caseStartedDate: caseStartedDate
 		};
 
 		const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
