@@ -2,13 +2,14 @@ import { newDatabaseClient } from '../index.js';
 import { seedStaticData } from './data-static.js';
 import { seedDev } from './data-dev.js';
 import { loadConfig } from '../configuration/config.js';
+import { LPAS_DEV } from './data-lpa-dev.ts';
 
 async function run() {
 	const config = loadConfig();
 	const dbClient = newDatabaseClient(config.db);
 
 	try {
-		await seedStaticData(dbClient);
+		await seedStaticData(dbClient, LPAS_DEV);
 		await seedDev(dbClient);
 	} catch (error) {
 		console.error(error);
