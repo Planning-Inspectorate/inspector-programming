@@ -6,6 +6,7 @@
   "main": "./src/index.js",
   "type": "module",
   "scripts": {
+    "fetch-lpa": "node src/seed/fetch-lpas.ts",
     "migrate-dev": "npx prisma migrate dev",
     "reset-dev": "npx prisma migrate reset",
     "migrate-prod": "npx prisma migrate deploy",
