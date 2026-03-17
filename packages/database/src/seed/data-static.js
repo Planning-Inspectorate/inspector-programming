@@ -1,14 +1,15 @@
-import { LPA_REGIONS, LPAS, LPA_REGION_NAMES } from './lpa-regions.js';
+import { LPA_REGIONS, LPA_REGION_NAMES } from './lpa-regions.js';
 import { calendarEventTimings } from './data-static-calendar-event-timings.ts';
 import { normalizeString } from '@pins/inspector-programming-lib/util/normalize.js';
 import { INSPECTOR_TO_CASE_SPECIALISM_MAP } from './specialism-mapping.js';
 
 /**
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.LpaCreateInput[]} lpaList
  */
-export async function seedStaticData(dbClient) {
+export async function seedStaticData(dbClient, lpaList) {
 	await seedCalendarEventTimings(dbClient);
-	await seedLpaRegionsAndLpas(dbClient);
+	await seedLpaRegionsAndLpas(dbClient, lpaList);
 	await seedInspectorCaseSpecialismMapping(dbClient);
 	console.log('static data seed complete');
 }
@@ -30,8 +31,9 @@ async function seedCalendarEventTimings(dbClient) {
 /**
  * Seed Region names and Regions explicitly, then upsert LPAs by connecting to known Region IDs.
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.LpaCreateInput[]} lpaList
  */
-async function seedLpaRegionsAndLpas(dbClient) {
+async function seedLpaRegionsAndLpas(dbClient, lpaList) {
 	for (const region of LPA_REGIONS) {
 		await dbClient.lpaRegion.upsert({
 			where: { id: region.id },
@@ -39,16 +41,16 @@ async function seedLpaRegionsAndLpas(dbClient) {
 			update: { number: region.number }
 		});
 	}
-	for (const lpa of LPAS) {
+	for (const lpa of lpaList) {
 		await dbClient.lpa.upsert({
 			where: { lpaCode: lpa.lpaCode },
 			create: lpa,
-			update: { LpaRegion: lpa.LpaRegion }
+			update: lpa
 		});
 	}
 	console.log(
 		'seeding',
-		LPAS.length,
+		lpaList.length,
 		'LPAs',
 		LPA_REGIONS.length,
 		'regions and',
