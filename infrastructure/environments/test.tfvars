@@ -33,10 +33,10 @@ apps_config = {
 
   gov_notify = {
     template_ids = {
-      assigned_case                        = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
-      assigned_case_programme_officer      = "25645f3f-5775-4316-9778-e99c081d2e18"
-      self_assigned_case                   = "99089e3c-179c-4560-ba35-6775ba5e5ca2"
-      self_assigned_case_programme_officer = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+      assigned_case                        = "c99895a2-1a6a-4278-be7f-fc1628dbd0ab"
+      assigned_case_programme_officer      = "cc9a7b28-e997-437e-9a90-adf7e6e97f73"
+      self_assigned_case                   = "564f2675-1420-42c7-a890-215776bbb498"
+      self_assigned_case_programme_officer = "c99895a2-1a6a-4278-be7f-fc1628dbd0ab"
     }
   }
 
