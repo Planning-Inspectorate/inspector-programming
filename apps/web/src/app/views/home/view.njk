@@ -421,7 +421,48 @@
     </div>
 <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
     document.addEventListener('DOMContentLoaded', function () {
+
+        const SELECTED_CASES_KEY = 'selectedCases';
+
+        function getStoredSelectedCases() {
+            try {
+                return JSON.parse(sessionStorage.getItem(SELECTED_CASES_KEY) || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setStoredSelectedCases(ids) {
+            try {
+                sessionStorage.setItem(SELECTED_CASES_KEY, JSON.stringify(ids));
+            } catch (e) {}
+        }
+
+       // Clear selected cases when navigating to the home page
+        let homeLinks = document.querySelectorAll('.pins-service-navigation a[href="/"]');
+        homeLinks.forEach(function (link) {
+            link.addEventListener('click', function () {
+                try {
+                    sessionStorage.removeItem('selectedCases');
+                } catch (e) {}
+            });
+        });
+
+        {% if successSummary %}
+            // Clear stored selections after a successful assignment
+            sessionStorage.removeItem(SELECTED_CASES_KEY);
+        {% endif %}
+
         const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedCases"]');
+
+        // Restore checkbox state from sessionStorage on page load
+        const storedSelected = getStoredSelectedCases();
+        checkboxes.forEach(checkbox => {
+            if (storedSelected.includes(checkbox.value)) {
+                checkbox.checked = true;
+            }
+        });
+
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
               console.debug('case checkbox value changed:', checkbox.value, checkbox.checked);
@@ -439,6 +480,15 @@
             console.debug('caseStateChange, syncing checkbox state', caseId, selected);
 
             document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
+
+            // Persist selection state to sessionStorage
+            let stored = getStoredSelectedCases();
+            if (selected && !stored.includes(String(caseId))) {
+                stored.push(String(caseId));
+            } else if (!selected) {
+                stored = stored.filter(id => id !== String(caseId));
+            }
+            setStoredSelectedCases(stored);
         });
 
         document.addEventListener('mapSelectionError', function (event) {
