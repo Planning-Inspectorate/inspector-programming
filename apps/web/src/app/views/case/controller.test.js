@@ -69,7 +69,14 @@ describe('buildViewCase', () => {
 
 		const req = {
 			query: { inspectorId: inspectorData.id },
-			params: { caseId: caseData.caseReference }
+			params: { caseId: caseData.caseReference },
+			session: {
+				persistence: {
+					lastRequest: {
+						queryParams: 'inspectorId=test-id&sort=age'
+					}
+				}
+			}
 		};
 
 		let renderedView;
@@ -88,6 +95,7 @@ describe('buildViewCase', () => {
 		assert.strictEqual(renderedModel.pageHeading, 'Case details');
 		assert.strictEqual(renderedModel.map.apiKey, 'test-api-key');
 		assert.deepStrictEqual(renderedModel.inspectorPin, toInspectorViewModel(inspectorData));
+		assert.strictEqual(renderedModel.backUrl, '/?inspectorId=test-id&sort=age');
 		// enriched case view model merges stub then overrides siteAddress + adds derived fields
 		assert.deepStrictEqual(renderedModel.caseData, {
 			caseId: '6900107',
@@ -143,7 +151,8 @@ describe('buildViewCase', () => {
 
 		const req = {
 			query: { inspectorId: inspectorData.id },
-			params: { caseId: caseData.caseReference }
+			params: { caseId: caseData.caseReference },
+			session: { persistence: {} }
 		};
 
 		let renderedView;
@@ -160,6 +169,7 @@ describe('buildViewCase', () => {
 
 		assert.strictEqual(renderedView, 'views/case/view.njk');
 		assert.strictEqual(renderedModel.caseData.linkedCases, '6000008, 6000009');
+		assert.strictEqual(renderedModel.backUrl, '/');
 	});
 
 	test('handles missing inspectorId and caseId gracefully', async () => {
@@ -181,7 +191,7 @@ describe('buildViewCase', () => {
 			}
 		};
 
-		const req = { query: {}, params: {} };
+		const req = { query: {}, params: {}, session: { persistence: {} } };
 
 		let renderedView;
 		let renderedModel;

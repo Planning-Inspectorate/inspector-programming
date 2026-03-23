@@ -9,7 +9,7 @@
     {{ super() }}
     {{ govukBackLink({
         text: "Back",
-        href: "/"
+        href: backUrl or "/"
     }) }}
 {% endblock %}
 
