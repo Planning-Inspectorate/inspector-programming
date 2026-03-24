@@ -2,6 +2,7 @@ import { getCaseDetails } from '../../case/case.js';
 import { toInspectorViewModel } from '../home/view-model.js';
 import { caseToViewModel } from './view-model.js';
 import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { getPreviousUrlFromSession } from '#util/session.ts';
 
 /**
  * @param {import('#service').WebService} service
@@ -19,7 +20,10 @@ export function buildViewCase(service) {
 
 		// build back URL from the last home page query params
 		const lastQueryParams = readSessionData(req, 'lastRequest', 'queryParams', '', 'persistence');
-		const backUrl = lastQueryParams ? `/?${lastQueryParams}` : '/';
+		let previousUrl = getPreviousUrlFromSession(req);
+		if (lastQueryParams && previousUrl === '/') {
+			previousUrl += `?${lastQueryParams}`;
+		}
 
 		/** @type {import('../../case/types.d.ts').CasePageViewModel} */
 		const viewModel = {
@@ -32,7 +36,7 @@ export function buildViewCase(service) {
 			cbosUrl: service.notifyConfig.cbosLink,
 			inspectorPin: toInspectorViewModel(inspectorData),
 			caseData: caseToViewModel(service.casesClient, caseData),
-			backUrl
+			backUrl: previousUrl
 		};
 
 		return res.render('views/case/view.njk', viewModel);

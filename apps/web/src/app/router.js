@@ -9,6 +9,7 @@ import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler
 import { buildViewCase } from './views/case/controller.js';
 import { buildPostCases } from './views/cases/controller.js';
 import { buildViewUnassignableCases } from './views/unassignable-cases/controller.ts';
+import { saveUrlToSessionMiddleware } from '#util/session.ts';
 
 /**
  * @param {import('#service').WebService} service
@@ -52,6 +53,8 @@ export function buildRouter(service) {
 	const viewCase = buildViewCase(service);
 	const postCases = buildPostCases(service);
 	const viewUnassignableCases = buildViewUnassignableCases(service);
+
+	router.use(saveUrlToSessionMiddleware);
 
 	router.get('/', asyncHandler(viewHome));
 	router.post('/cases', asyncHandler(postCases));
