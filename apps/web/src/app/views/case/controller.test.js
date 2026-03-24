@@ -3,6 +3,7 @@ import assert from 'assert';
 
 import { buildViewCase } from './controller.js';
 import { toInspectorViewModel } from '../home/view-model.js';
+import { PREVIOUS_URL } from '#util/session.ts';
 
 describe('buildViewCase', () => {
 	const caseData = {
@@ -213,5 +214,50 @@ describe('buildViewCase', () => {
 		assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.calls.length, 1);
 		assert.strictEqual(service.casesClient.caseToViewModel.mock.calls.length, 1);
 		assert.strictEqual(service.casesClient.caseToViewModel.mock.calls[0].arguments[0], null);
+	});
+
+	test('should read previous URL from session', async () => {
+		const caseViewModel = { caseId: '6900107', siteAddress: '123 Main St', caseAge: 10 };
+		const previousUrl = '/some-previous-url';
+
+		const service = {
+			db: {
+				appealCase: {
+					findUnique: mock.fn(async ({ where }) => (where.caseReference === caseData.caseReference ? caseData : null))
+				}
+			},
+			osMapsApiKey: 'test-api-key',
+			notifyConfig: {
+				cbosLink: 'https://test-cbos-url.com'
+			},
+			casesClient: {
+				caseToViewModel: mock.fn(() => caseViewModel)
+			},
+			inspectorClient: {
+				getInspectorDetails: mock.fn(async (entraId) => (entraId === inspectorData.id ? inspectorData : null))
+			}
+		};
+
+		const req = {
+			query: { inspectorId: inspectorData.id },
+			params: { caseId: caseData.caseReference },
+			session: {
+				[PREVIOUS_URL]: [previousUrl, '/this-url'],
+				persistence: {
+					lastRequest: {
+						queryParams: 'inspectorId=test-id&sort=age'
+					}
+				}
+			}
+		};
+
+		const res = {
+			render: mock.fn()
+		};
+
+		const handler = buildViewCase(service);
+		await handler(req, res);
+
+		assert.strictEqual(res.render.mock.calls[0].arguments[1].backUrl, previousUrl);
 	});
 });
