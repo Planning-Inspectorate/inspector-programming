@@ -151,6 +151,61 @@ describe('CasesClient', () => {
 			assert.strictEqual(casesClient.getCaseAgeInWeeks(twoWeeksAgo), 2);
 		});
 	});
+	describe('caseToViewModel', () => {
+		it('should set finalCommentsDate to null for HAS cases (caseType D)', () => {
+			const mockClient = {};
+			const casesClient = new CasesClient(mockClient);
+			const hasCase = {
+				caseReference: 'has-ref',
+				caseId: 99,
+				caseStatus: 'ready_to_start',
+				caseType: 'D',
+				caseProcedure: 'written',
+				allocationLevel: 'A',
+				allocationBand: 1,
+				siteAddressPostcode: 'SW1A 1AA',
+				siteAddressLatitude: 51.5,
+				siteAddressLongitude: -0.14,
+				lpaName: 'Test LPA',
+				caseValidDate: new Date(),
+				finalCommentsDueDate: new Date('2025-06-01T00:00:00Z'),
+				linkedCaseStatus: null,
+				leadCaseReference: null,
+				caseCreatedDate: null,
+				ChildCases: [],
+				Specialisms: []
+			};
+			const viewModel = casesClient.caseToViewModel(hasCase);
+			assert.strictEqual(viewModel.finalCommentsDate, null, 'HAS cases should not have a finalCommentsDate');
+		});
+		it('should set finalCommentsDate for non-HAS cases', () => {
+			const mockClient = {};
+			const casesClient = new CasesClient(mockClient);
+			const dueDate = new Date('2025-06-01T00:00:00Z');
+			const nonHasCase = {
+				caseReference: 'w-ref',
+				caseId: 100,
+				caseStatus: 'ready_to_start',
+				caseType: 'W',
+				caseProcedure: 'written',
+				allocationLevel: 'A',
+				allocationBand: 1,
+				siteAddressPostcode: 'SW1A 1AA',
+				siteAddressLatitude: 51.5,
+				siteAddressLongitude: -0.14,
+				lpaName: 'Test LPA',
+				caseValidDate: new Date(),
+				finalCommentsDueDate: dueDate,
+				linkedCaseStatus: null,
+				leadCaseReference: null,
+				caseCreatedDate: null,
+				ChildCases: [],
+				Specialisms: []
+			};
+			const viewModel = casesClient.caseToViewModel(nonHasCase);
+			assert.deepStrictEqual(viewModel.finalCommentsDate, dueDate, 'Non-HAS cases should have a finalCommentsDate');
+		});
+	});
 	describe('deleteCases', () => {
 		it('should call deleteCases', async () => {
 			const mockClient = {

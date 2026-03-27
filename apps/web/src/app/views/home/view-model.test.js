@@ -100,6 +100,17 @@ describe('view-model', () => {
 			assert.strictEqual(viewModel.procedureShort, 'WR');
 			assert.strictEqual(viewModel.caseTypeShort, 'HAS');
 		});
+		test('should return empty string for finalCommentsDate when value is null (HAS cases)', () => {
+			const caseData = {
+				id: 1,
+				caseType: APPEAL_CASE_TYPE.D,
+				caseAge: 10,
+				finalCommentsDate: null
+			};
+			const viewModel = toCaseViewModel(caseData);
+			assert.strictEqual(viewModel.finalCommentsDate, '', 'HAS cases should not display a Final Comments Date');
+			assert.strictEqual(viewModel.caseTypeShort, 'HAS');
+		});
 	});
 
 	describe('getCaseColor', () => {
