@@ -7,6 +7,7 @@ $font-family: arial, helvetica, sans-serif;
 	$govuk-font-family: $font-family
 );
 @use 'node_modules/@pins/inspector-programming-lib/ui/header/pins-header';
+@use 'node_modules/@pins/inspector-programming-lib/ui/footer/pins-footer';
 
 // set font-family for any autocomplete menu items
 .autocomplete__menu {
