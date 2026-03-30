@@ -151,6 +151,69 @@ describe('CasesClient', () => {
 			assert.strictEqual(casesClient.getCaseAgeInWeeks(twoWeeksAgo), 2);
 		});
 	});
+	describe('caseToViewModel', () => {
+		it('should set finalCommentsDate from finalCommentsDueDate regardless of caseType', () => {
+			const mockClient = {};
+			const casesClient = new CasesClient(mockClient);
+			const dueDate = new Date('2025-06-01T00:00:00Z');
+			const hasCase = {
+				caseReference: 'has-ref',
+				caseId: 99,
+				caseStatus: 'ready_to_start',
+				caseType: 'D',
+				caseProcedure: 'written',
+				allocationLevel: 'A',
+				allocationBand: 1,
+				siteAddressPostcode: 'SW1A 1AA',
+				siteAddressLatitude: 51.5,
+				siteAddressLongitude: -0.14,
+				lpaName: 'Test LPA',
+				caseValidDate: new Date(),
+				finalCommentsDueDate: dueDate,
+				linkedCaseStatus: null,
+				leadCaseReference: null,
+				caseCreatedDate: null,
+				ChildCases: [],
+				Specialisms: []
+			};
+			const viewModel = casesClient.caseToViewModel(hasCase);
+			assert.deepStrictEqual(
+				viewModel.finalCommentsDate,
+				dueDate,
+				'finalCommentsDate should match finalCommentsDueDate'
+			);
+		});
+		it('should set finalCommentsDate to null when finalCommentsDueDate is not set', () => {
+			const mockClient = {};
+			const casesClient = new CasesClient(mockClient);
+			const caseWithoutDueDate = {
+				caseReference: 'w-ref',
+				caseId: 100,
+				caseStatus: 'ready_to_start',
+				caseType: 'W',
+				caseProcedure: 'written',
+				allocationLevel: 'A',
+				allocationBand: 1,
+				siteAddressPostcode: 'SW1A 1AA',
+				siteAddressLatitude: 51.5,
+				siteAddressLongitude: -0.14,
+				lpaName: 'Test LPA',
+				caseValidDate: new Date(),
+				finalCommentsDueDate: null,
+				linkedCaseStatus: null,
+				leadCaseReference: null,
+				caseCreatedDate: null,
+				ChildCases: [],
+				Specialisms: []
+			};
+			const viewModel = casesClient.caseToViewModel(caseWithoutDueDate);
+			assert.strictEqual(
+				viewModel.finalCommentsDate,
+				null,
+				'finalCommentsDate should be null when finalCommentsDueDate is not set'
+			);
+		});
+	});
 	describe('deleteCases', () => {
 		it('should call deleteCases', async () => {
 			const mockClient = {
