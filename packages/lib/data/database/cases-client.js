@@ -77,7 +77,7 @@ export class CasesClient {
 			linkedCaseReferences: this.getLinkedCaseReferences(c),
 			linkedCaseStatus: c.linkedCaseStatus,
 			caseReceivedDate: c.caseCreatedDate || null,
-			finalCommentsDate: c.finalCommentsDueDate || new Date(),
+			finalCommentsDate: c.finalCommentsDueDate || null,
 			specialisms: c.Specialisms,
 			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 			leadCaseReference: c.leadCaseReference || null

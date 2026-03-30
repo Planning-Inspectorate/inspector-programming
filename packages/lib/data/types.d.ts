@@ -30,7 +30,7 @@ export interface CaseViewModel {
 	caseAgeColor?: string;
 	linkedCaseReferences: string[];
 	caseReceivedDate: Date | null;
-	finalCommentsDate: Date | string;
+	finalCommentsDate: Date | string | null;
 	linkedCases: number;
 	linkedCaseStatus: string | null;
 	selected: boolean | null;
