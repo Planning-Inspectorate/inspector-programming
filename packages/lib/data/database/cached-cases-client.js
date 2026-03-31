@@ -23,6 +23,8 @@ export class CachedCasesClient {
 	#_cachedCases;
 	/** @type {Date|undefined} */
 	#_cachedCasesUpdatedAt;
+	/** @type {import('../types').CaseViewModel[]|undefined} */
+	#_cachedUnassignableCases;
 
 	/**
 	 *
@@ -77,16 +79,14 @@ export class CachedCasesClient {
 	 */
 	async getUnassignedCases() {
 		const shouldTryCache = await this.shouldTryCache();
-		const key = CACHE_PREFIX + 'getUnassignedCases';
 		if (shouldTryCache) {
-			const cases = this.#cache.get(key);
-			if (cases) {
-				return cases;
+			if (this.#_cachedUnassignableCases) {
+				return this.#_cachedUnassignableCases;
 			}
 		}
 		const allCases = await this.getAllCases();
 		const cases = await this.#client.getUnassignableCases(allCases);
-		this.#cache.set(key, cases);
+		this.#_cachedUnassignableCases = cases;
 		return cases;
 	}
 
