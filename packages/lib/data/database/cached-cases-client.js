@@ -4,19 +4,13 @@ import { filterCases } from '../../util/filtering.js';
 import { filterExcludedStatuses } from './appeal-status.js';
 import { getPageNumber, paginateList } from '../../util/pagination.ts';
 
-const CACHE_PREFIX = 'cases_';
-/**
- * @typedef {import('../../util/map-cache.js').MapCache} MapCache
- */
-
 /**
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
- * @param {MapCache} cache
  * @returns {CachedCasesClient}
  */
-export function buildInitCasesClient(dbClient, cache) {
+export function buildInitCasesClient(dbClient) {
 	const casesClient = new CasesClient(dbClient);
-	return new CachedCasesClient(casesClient, cache);
+	return new CachedCasesClient(casesClient);
 }
 
 /**
@@ -25,17 +19,17 @@ export function buildInitCasesClient(dbClient, cache) {
 export class CachedCasesClient {
 	/** @type {CasesClient} */
 	#client;
-	/** @type {MapCache} */
-	#cache;
+	/** @type {import('../types').CaseViewModel[]|undefined} */
+	#_cachedCases;
+	/** @type {Date|undefined} */
+	#_cachedCasesUpdatedAt;
 
 	/**
 	 *
 	 * @param {CasesClient} client
-	 * @param {MapCache} cache
 	 */
-	constructor(client, cache) {
+	constructor(client) {
 		this.#client = client;
-		this.#cache = cache;
 	}
 
 	/**
@@ -83,15 +77,13 @@ export class CachedCasesClient {
 	 */
 	async getAllCases() {
 		const shouldTryCache = await this.shouldTryCache();
-		const key = CACHE_PREFIX + 'getAllCases';
 		if (shouldTryCache) {
-			const cases = this.#cache.get(key);
-			if (cases) {
-				return cases;
+			if (this.#_cachedCases) {
+				return this.#_cachedCases;
 			}
 		}
 		const cases = await this.#client.getAllCases();
-		this.#cache.set(key, cases);
+		this.#cachedCases = cases;
 		return cases;
 	}
 
@@ -135,12 +127,11 @@ export class CachedCasesClient {
 	async deleteCases(caseIds) {
 		await this.#client.deleteCases(caseIds);
 
-		const key = CACHE_PREFIX + 'getAllCases';
-		let cases = this.#cache.get(key);
+		let cases = this.#_cachedCases;
 
 		if (cases) {
 			cases = cases.filter((/** @type {{ caseId: number; }} */ appeal) => !caseIds.includes(appeal.caseId));
-			this.#cache.set(key, cases);
+			this.#cachedCases = cases;
 		}
 	}
 
@@ -153,9 +144,15 @@ export class CachedCasesClient {
 		if (!latestPoll) {
 			return true; // no updates, so use cache
 		}
-		const oldestEntry = new Date();
-		oldestEntry.setTime(oldestEntry.getTime() - this.#cache.cacheTtlMs);
-		// if latest poll is before the oldest entry, then we can use the cache
-		return latestPoll < oldestEntry;
+		if (!this.#_cachedCasesUpdatedAt) {
+			return false; // no cached result, so don't use the cache
+		}
+		// if latest poll is before the latest fetch, we can use the cache
+		return latestPoll < this.#_cachedCasesUpdatedAt;
+	}
+
+	set #cachedCases(cases) {
+		this.#_cachedCases = cases;
+		this.#_cachedCasesUpdatedAt = new Date();
 	}
 }
