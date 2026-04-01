@@ -777,20 +777,22 @@ describe('controller.js', () => {
 					inspectorId: 'inspectorId',
 					calendarAction: 'prevWeek',
 					currentStartDate: '2025-08-04T12:00:00Z'
-				}
+				},
+				protocol: 'http',
+				get: () => 'localhost',
+				session: { previousUrlList: ['/?inspectorId=inspectorId', '/'] }
 			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostHome(service);
 			await controller(req, res);
 			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const redirectUrl = res.redirect.mock.calls[0].arguments[0];
+			const url = new URL(redirectUrl, 'http://localhost');
+			assert.strictEqual(url.searchParams.get('inspectorId'), 'inspectorId');
+			assert.strictEqual(url.searchParams.get('currentTab'), 'calendar');
 			const expectedDate = new Date(2025, 6, 28, 0, 0, 0, 0);
-			const expectedDateString = convertDateToDateTimeString(expectedDate);
-			assert.strictEqual(
-				res.redirect.mock.calls[0].arguments[0].includes(
-					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
-				),
-				true
-			);
+			const actualDate = new Date(url.searchParams.get('calendarStartDate'));
+			assert.strictEqual(convertDateToDateTimeString(actualDate), convertDateToDateTimeString(expectedDate));
 		});
 		test('should calculate next weeks start date if calendarAction is nextWeek', async () => {
 			const service = mockService();
@@ -799,20 +801,22 @@ describe('controller.js', () => {
 					inspectorId: 'inspectorId',
 					calendarAction: 'nextWeek',
 					currentStartDate: '2025-08-04T12:00:00Z'
-				}
+				},
+				protocol: 'http',
+				get: () => 'localhost',
+				session: { previousUrlList: ['/?inspectorId=inspectorId', '/'] }
 			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostHome(service);
 			await controller(req, res);
 			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const redirectUrl = res.redirect.mock.calls[0].arguments[0];
+			const url = new URL(redirectUrl, 'http://localhost');
+			assert.strictEqual(url.searchParams.get('inspectorId'), 'inspectorId');
+			assert.strictEqual(url.searchParams.get('currentTab'), 'calendar');
 			const expectedDate = new Date(2025, 7, 11, 0, 0, 0, 0);
-			const expectedDateString = convertDateToDateTimeString(expectedDate);
-			assert.strictEqual(
-				res.redirect.mock.calls[0].arguments[0].includes(
-					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
-				),
-				true
-			);
+			const actualDate = new Date(url.searchParams.get('calendarStartDate'));
+			assert.strictEqual(convertDateToDateTimeString(actualDate), convertDateToDateTimeString(expectedDate));
 		});
 		test('should calculate today weeks start date if calendarAction and newStartDate is not given', async (ctx) => {
 			ctx.mock.timers.enable({
@@ -823,20 +827,22 @@ describe('controller.js', () => {
 			const req = {
 				body: {
 					inspectorId: 'inspectorId'
-				}
+				},
+				protocol: 'http',
+				get: () => 'localhost',
+				session: { previousUrlList: ['/?inspectorId=inspectorId', '/'] }
 			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostHome(service);
 			await controller(req, res);
 			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const redirectUrl = res.redirect.mock.calls[0].arguments[0];
+			const url = new URL(redirectUrl, 'http://localhost');
+			assert.strictEqual(url.searchParams.get('inspectorId'), 'inspectorId');
+			assert.strictEqual(url.searchParams.get('currentTab'), 'calendar');
 			const expectedDate = new Date(2023, 9, 2, 0, 0, 0, 0);
-			const expectedDateString = convertDateToDateTimeString(expectedDate);
-			assert.strictEqual(
-				res.redirect.mock.calls[0].arguments[0].includes(
-					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
-				),
-				true
-			);
+			const actualDate = new Date(url.searchParams.get('calendarStartDate'));
+			assert.strictEqual(convertDateToDateTimeString(actualDate), convertDateToDateTimeString(expectedDate));
 		});
 		test('should calculate week beginning of newStartDate', async () => {
 			const service = mockService();
@@ -844,20 +850,22 @@ describe('controller.js', () => {
 				body: {
 					inspectorId: 'inspectorId',
 					newStartDate: '2025-08-16T12:00:00Z'
-				}
+				},
+				protocol: 'http',
+				get: () => 'localhost',
+				session: { previousUrlList: ['/?inspectorId=inspectorId', '/'] }
 			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostHome(service);
 			await controller(req, res);
 			assert.strictEqual(res.redirect.mock.callCount(), 1);
+			const redirectUrl = res.redirect.mock.calls[0].arguments[0];
+			const url = new URL(redirectUrl, 'http://localhost');
+			assert.strictEqual(url.searchParams.get('inspectorId'), 'inspectorId');
+			assert.strictEqual(url.searchParams.get('currentTab'), 'calendar');
 			const expectedDate = new Date(2025, 7, 11, 0, 0, 0, 0);
-			const expectedDateString = convertDateToDateTimeString(expectedDate);
-			assert.strictEqual(
-				res.redirect.mock.calls[0].arguments[0].includes(
-					`/?inspectorId=inspectorId&calendarStartDate=${expectedDateString}`
-				),
-				true
-			);
+			const actualDate = new Date(url.searchParams.get('calendarStartDate'));
+			assert.strictEqual(convertDateToDateTimeString(actualDate), convertDateToDateTimeString(expectedDate));
 		});
 	});
 });
