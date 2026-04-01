@@ -17,6 +17,7 @@ import {
 	inspectorsViewModel
 } from './view-model.js';
 import { paginationValues } from './pagination.js';
+import { getPreviousUrlFromSession } from '#util/session.ts';
 
 /**
  * @param {import('#service').WebService} service
@@ -275,6 +276,16 @@ export function buildPostHome(service) {
 			newStartDate = getWeekStartDate(today);
 		}
 
-		return res.redirect(`/?inspectorId=${req.body.inspectorId}&calendarStartDate=${newStartDate}`);
+		// get previous url for session
+		const previousUrl = getPreviousUrlFromSession(req);
+
+		const url = new URL(previousUrl, `${req.protocol}://${req.get('host')}`);
+		const queryParams = url.searchParams;
+		queryParams.set('calendarStartDate', newStartDate);
+		queryParams.set('currentTab', 'calendar');
+
+		const redirectUrl = queryParams.toString();
+
+		return res.redirect(`/?${redirectUrl}`);
 	};
 }
