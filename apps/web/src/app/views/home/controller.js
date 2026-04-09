@@ -1,5 +1,5 @@
 import { getInspectorList, mapInspectorToCaseSpecialisms } from '../../inspector/inspector.js';
-import { allocationLevels, specialisms } from '../../specialism/specialism.js';
+import { allocationLevels, specialCircumstances, specialisms } from '../../specialism/specialism.js';
 import {
 	getNextWeekStartDate,
 	getPreviousWeekStartDate,
@@ -143,6 +143,7 @@ export function buildViewHome(service, getEventsFunction) {
 			filters: {
 				allocationLevels,
 				specialisms,
+				specialCircumstances,
 				caseTypes: caseTypeOptions,
 				pagination: paginationDetails,
 				query: filterQuery,

@@ -1,4 +1,5 @@
 import { APPEAL_CASE_TYPE, APPEAL_ALLOCATION_LEVEL } from '@planning-inspectorate/data-model';
+import { SPECIAL_CIRCUMSTANCES } from '@pins/inspector-programming-database/src/seed/special-circumstances.js';
 
 const APPEAL_TYPE = Object.freeze({
 	HOUSEHOLDER: 'Householder',
@@ -216,3 +217,6 @@ export const specialisms = [
 		text: 'Water'
 	}
 ];
+
+/** @type {import('#util/types.js').RadioOption[]} */
+export const specialCircumstances = Object.values(SPECIAL_CIRCUMSTANCES).map((v) => ({ value: v, text: v }));
