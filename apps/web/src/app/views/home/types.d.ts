@@ -36,6 +36,7 @@ export interface CalendarViewModel {
 export interface Filters {
 	specialisms: RadioOption[];
 	caseTypes: RadioOption[];
+	specialCircumstances: RadioOption[];
 	pagination: Pagination;
 	query: FilterQuery;
 

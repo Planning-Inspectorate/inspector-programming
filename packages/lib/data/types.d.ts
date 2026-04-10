@@ -37,7 +37,7 @@ export interface CaseViewModel {
 	specialisms: AppealCaseSpecialism[] | null;
 	specialismList: string | null;
 	leadCaseReference: string | null;
-	isGreenBelt: string | null;
+	isGreenBelt: boolean | null;
 	designatedSitesNames: string;
 	typeOfPlanningApplication: string | null;
 	applicationDecision: string | null;
@@ -51,6 +51,7 @@ export interface Filters {
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
 	caseTypes?: string[];
+	specialCircumstances: string[];
 	allocationLevels?: string[];
 }
 
