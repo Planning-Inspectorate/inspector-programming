@@ -518,9 +518,21 @@ describe('view-model', () => {
 	describe('caseTypeOptions', () => {
 		test('should include type shorthand in brackets', () => {
 			assert.strictEqual(caseTypeOptions[0].text, 'Advertisement (Adv)');
-			assert.strictEqual(caseTypeOptions[3].text, 'Commercial advertisement (CAS Ad)');
+			assert.strictEqual(caseTypeOptions[2].text, 'Commercial advertisement (CAS Ad)');
 			// expect if the shorthand matches the name
-			assert.strictEqual(caseTypeOptions[11].text, 'Planning');
+			assert.strictEqual(caseTypeOptions[9].text, 'Planning');
+		});
+
+		test('should not include CIL or Affordable Housing options', () => {
+			const texts = caseTypeOptions.map((o) => o.text);
+			assert.strictEqual(
+				texts.some((t) => t.includes('Community infrastructure levy')),
+				false
+			);
+			assert.strictEqual(
+				texts.some((t) => t.includes('Affordable housing')),
+				false
+			);
 		});
 	});
 });
