@@ -277,8 +277,12 @@ export function toInspectorViewModel(inspector) {
 	};
 }
 
+/** Case types to exclude from the Case Type filter */
+const excludedCaseTypes = [APPEAL_CASE_TYPE.L, APPEAL_CASE_TYPE.S];
+
 /** @type {import('#util/types.js').RadioOption[]} */
 export const caseTypeOptions = Object.values(appealTypes)
+	.filter((v) => !excludedCaseTypes.includes(v.key))
 	.map((v) => {
 		const shorthand = shortCaseType(v.key);
 		let text = v.changeAppealType;
