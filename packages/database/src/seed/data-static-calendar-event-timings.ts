@@ -202,6 +202,21 @@ const calendarEventTimingsRules: CalendarEventTimingRule[] = [
 		siteVisitTime: 2,
 		reportTime: 16,
 		costsTime: 4
+	},
+
+	{
+		id: calendarEventTimingIds[12],
+		AppliesTo: [
+			{
+				caseType: APPEAL_CASE_TYPE.Q, // Planning Obligations
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: [APPEAL_ALLOCATION_LEVEL.C]
+			}
+		],
+		prepTime: 2,
+		siteVisitTime: 2,
+		reportTime: 12,
+		costsTime: 4
 	}
 ];
 
