@@ -175,6 +175,104 @@ describe('filterCases', () => {
 		assert.strictEqual(filtered.length, 1);
 		assert.strictEqual(filtered[0].caseLevel, 'A');
 	});
+	test('should exclude green belt cases when Exclude Green Belt special circumstance is selected', () => {
+		const cases = [
+			{ isGreenBelt: true, caseAge: 10 },
+			{ isGreenBelt: false, caseAge: 20 },
+			{ isGreenBelt: null, caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: ['exclude-green-belt'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.ok(filtered.every((c) => !c.isGreenBelt));
+	});
+	test('should exclude prior approval cases when Exclude Prior Approval special circumstance is selected', () => {
+		const cases = [
+			{ typeOfPlanningApplication: 'prior-approval', caseAge: 10 },
+			{ typeOfPlanningApplication: 'full', caseAge: 20 },
+			{ typeOfPlanningApplication: null, caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: ['exclude-prior-approval'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.ok(filtered.every((c) => c.typeOfPlanningApplication !== 'prior-approval'));
+	});
+	test('should exclude non-refused cases when Exclude Conditions special circumstance is selected', () => {
+		const cases = [
+			{ applicationDecision: 'refused', caseAge: 10 },
+			{ applicationDecision: 'granted', caseAge: 20 },
+			{ applicationDecision: null, caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: ['exclude-conditions'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].applicationDecision, 'refused');
+	});
+	test('should exclude designated sites cases when Exclude SPA / Designated Sites special circumstance is selected', () => {
+		const cases = [
+			{ designatedSitesNames: 'Site A', caseAge: 10 },
+			{ designatedSitesNames: null, caseAge: 20 },
+			{ designatedSitesNames: 'Site B', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: ['exclude-designated-sites'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].designatedSitesNames, null);
+	});
+	test('should apply multiple special circumstances filters together', () => {
+		const cases = [
+			{
+				isGreenBelt: true,
+				typeOfPlanningApplication: 'full',
+				applicationDecision: 'refused',
+				designatedSitesNames: null,
+				caseAge: 10
+			},
+			{
+				isGreenBelt: false,
+				typeOfPlanningApplication: 'prior-approval',
+				applicationDecision: 'refused',
+				designatedSitesNames: null,
+				caseAge: 20
+			},
+			{
+				isGreenBelt: false,
+				typeOfPlanningApplication: 'full',
+				applicationDecision: 'refused',
+				designatedSitesNames: 'Site A',
+				caseAge: 15
+			},
+			{
+				isGreenBelt: false,
+				typeOfPlanningApplication: 'full',
+				applicationDecision: 'granted',
+				designatedSitesNames: null,
+				caseAge: 30
+			},
+			{
+				isGreenBelt: false,
+				typeOfPlanningApplication: 'full',
+				applicationDecision: 'refused',
+				designatedSitesNames: null,
+				caseAge: 25
+			}
+		];
+		const filtered = filterCases(cases, {
+			specialCircumstances: [
+				'exclude-green-belt',
+				'exclude-prior-approval',
+				'exclude-conditions',
+				'exclude-designated-sites'
+			]
+		});
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].caseAge, 25);
+	});
+	test('should handle specialCircumstances as a single string value', () => {
+		const cases = [
+			{ isGreenBelt: true, caseAge: 10 },
+			{ isGreenBelt: false, caseAge: 20 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: 'exclude-green-belt' });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].isGreenBelt, false);
+	});
 });
 
 describe('validateFilters', () => {

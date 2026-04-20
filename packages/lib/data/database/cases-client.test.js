@@ -35,6 +35,10 @@ describe('CasesClient', () => {
 					appellantCostsAppliedFor: null,
 					lpaCostsAppliedFor: null,
 					inspectorId: null,
+					isGreenBelt: true,
+					designatedSitesNames: 'cSAC',
+					typeOfPlanningApplication: 'prior-approval',
+					applicationDecision: 'refused',
 					ChildCases: []
 				},
 				{
@@ -63,6 +67,10 @@ describe('CasesClient', () => {
 					appellantCostsAppliedFor: null,
 					lpaCostsAppliedFor: null,
 					inspectorId: null,
+					isGreenBelt: false,
+					designatedSitesNames: null,
+					typeOfPlanningApplication: 'prior-approval',
+					applicationDecision: null,
 					ChildCases: []
 				}
 			];
@@ -114,7 +122,11 @@ describe('CasesClient', () => {
 					finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 					specialismList: 'None',
 					specialisms: undefined,
-					leadCaseReference: null
+					leadCaseReference: null,
+					isGreenBelt: true,
+					designatedSitesNames: 'cSAC',
+					typeOfPlanningApplication: 'prior-approval',
+					applicationDecision: 'refused'
 				},
 				{
 					allocationBand: 1,
@@ -136,7 +148,11 @@ describe('CasesClient', () => {
 					finalCommentsDate: new Date('2024-10-10T10:26:11.963Z'),
 					specialisms: undefined,
 					specialismList: 'None',
-					leadCaseReference: null
+					leadCaseReference: null,
+					isGreenBelt: null,
+					designatedSitesNames: null,
+					typeOfPlanningApplication: 'prior-approval',
+					applicationDecision: null
 				}
 			]);
 		});

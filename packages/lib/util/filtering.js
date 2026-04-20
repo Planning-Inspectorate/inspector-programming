@@ -1,4 +1,6 @@
 import { distanceBetween } from './distances.js';
+import { SPECIAL_CIRCUMSTANCES } from '../data/special-circumstances.js';
+import { APPEAL_APPLICATION_DECISION, APPEAL_TYPE_OF_PLANNING_APPLICATION } from '@planning-inspectorate/data-model';
 
 /**
  * Normalize query params into Filters object for type safety
@@ -67,6 +69,31 @@ export function filterCases(cases, filters) {
 	if (filters.allocationLevels) {
 		const levels = Array.isArray(filters.allocationLevels) ? filters.allocationLevels : [filters.allocationLevels];
 		cases = cases.filter((c) => c.caseLevel && levels.includes(c.caseLevel));
+	}
+
+	// Filter by specialCircumstances — exclude cases matching selected circumstances
+	if (filters.specialCircumstances) {
+		const circumstances = Array.isArray(filters.specialCircumstances)
+			? filters.specialCircumstances
+			: [filters.specialCircumstances];
+
+		// Map special circumstances to filter functions
+		/** @type {Record<string, (c: import('../data/types.js').CaseViewModel) => boolean>} */
+		const circumstanceExclusions = {
+			[SPECIAL_CIRCUMSTANCES.EXCLUDE_GREEN_BELT]: (c) => !c.isGreenBelt,
+			[SPECIAL_CIRCUMSTANCES.EXCLUDE_PRIOR_APPROVAL]: (c) =>
+				c.typeOfPlanningApplication !== APPEAL_TYPE_OF_PLANNING_APPLICATION.PRIOR_APPROVAL,
+			[SPECIAL_CIRCUMSTANCES.EXCLUDE_CONDITIONS]: (c) => c.applicationDecision === APPEAL_APPLICATION_DECISION.REFUSED,
+			[SPECIAL_CIRCUMSTANCES.EXCLUDE_DESIGNATED_SITES]: (c) => !c.designatedSitesNames
+		};
+
+		// Apply filter functions based on selected circumstances
+		for (const circumstance of circumstances) {
+			const rule = circumstanceExclusions[circumstance];
+			if (rule) {
+				cases = cases.filter(rule);
+			}
+		}
 	}
 
 	return cases.filter((c) => {

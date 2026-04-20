@@ -3,6 +3,7 @@ import { generateCalendar, generateDatesList, generateTimeList, generateWeekTitl
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 import { appealTypes } from '../../specialism/specialism.js';
+import { SPECIAL_CIRCUMSTANCES } from '@pins/inspector-programming-lib/data/special-circumstances.js';
 
 /**
  * @param {Date} currentStartDate
@@ -213,7 +214,7 @@ export function filtersQueryViewModel(query, previousSort) {
 		filters.page = 1;
 	}
 
-	const arrayProps = ['caseSpecialisms', 'lpaRegion', 'caseTypes', 'allocationLevels'];
+	const arrayProps = ['caseSpecialisms', 'lpaRegion', 'caseTypes', 'allocationLevels', 'specialCircumstances'];
 
 	for (const arrayProp of arrayProps) {
 		const value = query[`filters[${arrayProp}]`];
@@ -295,3 +296,9 @@ export const caseTypeOptions = Object.values(appealTypes)
 		return { value: v.key, text };
 	})
 	.sort((a, b) => a.text.localeCompare(b.text));
+
+/** @type {import('#util/types.js').RadioOption[]} */
+export const specialCircumstancesOptions = Object.values(SPECIAL_CIRCUMSTANCES).map((v) => {
+	const text = v.replace(/-/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+	return { value: v, text };
+});
