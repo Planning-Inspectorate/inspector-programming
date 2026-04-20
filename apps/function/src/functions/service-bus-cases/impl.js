@@ -249,13 +249,13 @@ export async function upsertCase(service, message, context) {
 				context.log(`Case upserted successfully: ${caseReference}`);
 
 				// Remove appeal case specialisms that are not present in the incoming specialisms from the database
-				await tx.appealCaseSpecialism.deleteMany({
+				const { count } = await tx.appealCaseSpecialism.deleteMany({
 					where: {
 						caseReference,
 						specialism: { notIn: incomingCaseSpecialisms }
 					}
 				});
-				context.log(`Removed specialisms not present in incoming data: ${caseReference}`);
+				context.log(`Removed ${count} specialisms not present in incoming data: ${caseReference}`);
 
 				// Upsert appeal case specialisms
 				if (incomingCaseSpecialisms.length) {
