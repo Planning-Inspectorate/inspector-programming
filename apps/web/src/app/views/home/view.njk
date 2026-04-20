@@ -90,7 +90,8 @@
                         filters.query.case.lpaRegion or
                         filters.query.case.caseSpecialisms or
                         filters.query.case.caseTypes or
-                        filters.query.case.allocationLevels
+                        filters.query.case.allocationLevels or
+                        filters.query.case.specialCircumstances
                     %}
 
                     {% if hasActiveFilters %}
@@ -147,6 +148,21 @@
                                 {% call filterGroup('Case allocation level') %}
                                     {% for allocationLevel in filters.query.case.allocationLevels %}
                                         {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# Special circumstances #}
+                            {% if filters.query.case.specialCircumstances %}
+                                {% call filterGroup('Special circumstance') %}
+                                    {% for circumstance in filters.query.case.specialCircumstances %}
+                                        {% set circumstanceText = circumstance %}
+                                        {% for item in filters.specialCircumstances %}
+                                            {% if item.value == circumstance %}
+                                                {% set circumstanceText = item.text %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ filterTag(circumstanceText, filters.buildUrlWithoutFilter('specialCircumstances', circumstance)) }}
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
@@ -274,6 +290,25 @@
                                 },
                                 items: filters.allocationLevels,
                                 values: filters.query.case.allocationLevels
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: false
+                        }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Special circumstances",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[specialCircumstances]",
+                                name: "filters[specialCircumstances]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more special circumstances",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.specialCircumstances,
+                                values: filters.query.case.specialCircumstances
                             }),
                             classes: "custom-filter-dropdown",
                             open: false

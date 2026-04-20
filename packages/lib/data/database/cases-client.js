@@ -119,7 +119,11 @@ export class CasesClient {
 			finalCommentsDate: c.finalCommentsDueDate || null,
 			specialisms: c.Specialisms,
 			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
-			leadCaseReference: c.leadCaseReference || null
+			leadCaseReference: c.leadCaseReference || null,
+			isGreenBelt: c.isGreenBelt || null,
+			designatedSitesNames: c.designatedSitesNames || null,
+			typeOfPlanningApplication: c.typeOfPlanningApplication || null,
+			applicationDecision: c.applicationDecision || null
 		};
 	}
 
