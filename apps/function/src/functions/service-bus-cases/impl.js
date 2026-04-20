@@ -103,20 +103,22 @@ export async function deleteCase(service, caseReference, context) {
 
 				// Finally, delete the main AppealCase record
 				await tx.appealCase.delete({ where: { caseReference } });
-				// save in the DB that we have an update
-				await tx.appealCasePollStatus.upsert({
-					where: { id: 1 },
-					create: {
-						lastPollAt: new Date(),
-						casesFetched: -1 // not used
-					},
-					update: {
-						lastPollAt: new Date()
-					}
-				});
 			})
 		);
 		context.log(`Case with caseReference ${caseReference} has been deleted`);
+		// save in the DB that we have an update
+		// this is outside the transaction, it doesn't need to be atomic with the data update
+		await service.dbClient.appealCasePollStatus.upsert({
+			where: { id: 1 },
+			create: {
+				lastPollAt: new Date(),
+				casesFetched: -1 // not used
+			},
+			update: {
+				lastPollAt: new Date()
+			}
+		});
+		context.log(`Poll status has been updated`);
 	} catch (error) {
 		// If case doesn't exist, that's fine - log and continue
 		if (error.code === 'P2025') {
@@ -277,19 +279,21 @@ export async function upsertCase(service, message, context) {
 				} else {
 					context.log(`No specialisms for case ${caseReference}`);
 				}
-				// save in the DB that we have an update
-				await tx.appealCasePollStatus.upsert({
-					where: { id: 1 },
-					create: {
-						lastPollAt: new Date(),
-						casesFetched: -1 // not used
-					},
-					update: {
-						lastPollAt: new Date()
-					}
-				});
 			})
 		);
+		// save in the DB that we have an update
+		// this is outside the transaction, it doesn't need to be atomic with the data update
+		await service.dbClient.appealCasePollStatus.upsert({
+			where: { id: 1 },
+			create: {
+				lastPollAt: new Date(),
+				casesFetched: -1 // not used
+			},
+			update: {
+				lastPollAt: new Date()
+			}
+		});
+		context.log(`Poll status has been updated`);
 	} catch (error) {
 		context.log(`Failed to upsert case ${caseReference}:`, error);
 		throw new Error(`Failed to upsert case ${caseReference}: ${error}`, { cause: error });
