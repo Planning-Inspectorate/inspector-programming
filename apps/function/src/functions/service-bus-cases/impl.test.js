@@ -146,6 +146,7 @@ const svc = (options = {}) => {
 		dbClient: {
 			appealCase: { delete: mocks.delete, upsert: mocks.upsert },
 			appealCaseSpecialism: { deleteMany: mocks.deleteMany, create: mocks.create },
+			appealCasePollStatus: { upsert: mocks.upsertStatus },
 			$transaction: mocks.transaction
 		},
 		osApiClient: { addressesForPostcode: mock.fn(async () => postcodeResponse) },
