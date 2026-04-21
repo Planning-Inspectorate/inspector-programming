@@ -86,7 +86,7 @@ describe('cached-cases-client', () => {
 				lpaName = null,
 				lat = null,
 				lng = null,
-				caseStatus = APPEAL_CASE_STATUS.READY_TO_START
+				caseStatus = APPEAL_CASE_STATUS.AWAITING_EVENT
 			}) => ({
 				caseId,
 				caseAge,
@@ -129,7 +129,7 @@ describe('cached-cases-client', () => {
 				const allCases = [
 					makeCase({ caseId: 1, caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER }),
 					makeCase({ caseId: 2, caseStatus: APPEAL_CASE_STATUS.VALIDATION }),
-					makeCase({ caseId: 3, caseStatus: APPEAL_CASE_STATUS.READY_TO_START })
+					makeCase({ caseId: 3, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT })
 				];
 
 				cacheClient.getAllParentCases = mock.fn(() => Promise.resolve(allCases));
