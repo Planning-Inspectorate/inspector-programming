@@ -42,6 +42,7 @@ export interface CaseViewModel {
 	typeOfPlanningApplication: string | null;
 	applicationDecision: string | null;
 	isAonbNationalLandscape: string | null;
+	siteAddressLine1: string | null;
 }
 
 export interface Filters {

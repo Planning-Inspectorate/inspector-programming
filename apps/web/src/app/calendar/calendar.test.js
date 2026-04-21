@@ -611,6 +611,84 @@ describe('calendar', () => {
 			assertEventDates(res[2], 9, 9, 9, 11);
 			assertEventDates(res[3], 9, 10, 9, 10);
 		});
+		describe('subject line format', () => {
+			it('should format the subject as comma-separated values with short case type and procedure', async () => {
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [appeal]);
+
+				// appeal has caseType 'H' (Adv) and caseProcedure 'W'
+				assert.strictEqual(res[0].subject, 'ref1, Adv, W, test-lpa, prep, 0.25');
+				assert.strictEqual(res[1].subject, 'ref1, Adv, W, test-lpa, siteVisit, 0.375');
+				assert.strictEqual(res[2].subject, 'ref1, Adv, W, test-lpa, report, 0.25');
+				assert.strictEqual(res[3].subject, 'ref1, Adv, W, test-lpa, costs, 0.125');
+			});
+			it('should use short case type HAS for case type D and WR for written procedure', async () => {
+				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => [
+					{
+						id: 2,
+						caseType: 'D',
+						caseProcedure: 'written',
+						allocationLevel: 'C',
+						CalendarEventTiming: { prepTime: 3, siteVisitTime: 4, reportTime: 3, costsTime: 1 }
+					}
+				]);
+				const service = mockService();
+				const hasAppeal = {
+					caseId: 'caseId2',
+					caseReference: 'ref2',
+					lpaName: 'lpa2',
+					caseType: 'D',
+					caseProcedure: 'written',
+					caseLevel: 'C'
+				};
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [hasAppeal]);
+				assert.strictEqual(res[0].subject, 'ref2, HAS, WR, lpa2, prep, 0.375');
+			});
+			it('should use short case type Planning for case type W and H for hearing procedure', async () => {
+				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => [
+					{
+						id: 3,
+						caseType: 'W',
+						caseProcedure: 'hearing',
+						allocationLevel: 'B',
+						CalendarEventTiming: { prepTime: 2, siteVisitTime: 3, reportTime: 2, costsTime: 1 }
+					}
+				]);
+				const service = mockService();
+				const planningAppeal = {
+					caseId: 'caseId3',
+					caseReference: 'ref3',
+					lpaName: 'lpa3',
+					caseType: 'W',
+					caseProcedure: 'hearing',
+					caseLevel: 'B'
+				};
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [planningAppeal]);
+				assert.strictEqual(res[0].subject, 'ref3, Planning, H, lpa3, prep, 0.25');
+			});
+			it('should use short case type Enf. for case type C and LI for inquiry procedure', async () => {
+				mockCalendarClient.getAllCalendarEventTimingRules.mock.mockImplementationOnce(() => [
+					{
+						id: 4,
+						caseType: 'C',
+						caseProcedure: 'inquiry',
+						allocationLevel: 'A',
+						CalendarEventTiming: { prepTime: 4, siteVisitTime: 2, reportTime: 2, costsTime: 1 }
+					}
+				]);
+				const service = mockService();
+				const enfAppeal = {
+					caseId: 'caseId4',
+					caseReference: 'ref4',
+					lpaName: 'lpa4',
+					caseType: 'C',
+					caseProcedure: 'inquiry',
+					caseLevel: 'A'
+				};
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [enfAppeal]);
+				assert.strictEqual(res[0].subject, 'ref4, Enf., LI, lpa4, prep, 0.5');
+			});
+		});
 		it('multiple cases should yield multiple sets of json objects', async () => {
 			const service = mockService();
 			const res = await generateCaseCalendarEvents(service, '2025-10-08', [appeal, appeal, appeal]);
@@ -844,8 +922,8 @@ describe('calendar', () => {
 
 				requiredProps(caseEvents.prep);
 				requiredStages(caseEvents.prep, caseEvents.siteVisit1, caseEvents.report, caseEvents.costs);
-				assert.ok(caseEvents.siteVisit1.subject.includes('siteVisit - 8'));
-				assert.ok(caseEvents.siteVisit2.subject.includes('siteVisit - 4'));
+				assert.ok(caseEvents.siteVisit1.subject.includes('siteVisit, 1'));
+				assert.ok(caseEvents.siteVisit2.subject.includes('siteVisit, 0.5'));
 
 				assert.strictEqual(res.length, 5);
 
@@ -873,8 +951,8 @@ describe('calendar', () => {
 
 				requiredProps(caseEvents.prep);
 				requiredStages(caseEvents.prep, caseEvents.siteVisit, caseEvents.report1, caseEvents.costs);
-				assert.ok(caseEvents.report1.subject.includes('report - 8'));
-				assert.ok(caseEvents.report2.subject.includes('report - 6'));
+				assert.ok(caseEvents.report1.subject.includes('report, 1'));
+				assert.ok(caseEvents.report2.subject.includes('report, 0.75'));
 
 				assert.strictEqual(res.length, 5);
 
@@ -902,8 +980,8 @@ describe('calendar', () => {
 
 				requiredProps(caseEvents.prep1);
 				requiredStages(caseEvents.prep1, caseEvents.siteVisit, caseEvents.report, caseEvents.costs);
-				assert.ok(caseEvents.prep1.subject.includes('prep - 8'));
-				assert.ok(caseEvents.prep2.subject.includes('prep - 2'));
+				assert.ok(caseEvents.prep1.subject.includes('prep, 1'));
+				assert.ok(caseEvents.prep2.subject.includes('prep, 0.25'));
 
 				assert.strictEqual(res.length, 5);
 
@@ -931,8 +1009,8 @@ describe('calendar', () => {
 
 				requiredProps(caseEvents.prep);
 				requiredStages(caseEvents.prep, caseEvents.siteVisit, caseEvents.report, caseEvents.costs1);
-				assert.ok(caseEvents.costs1.subject.includes('costs - 8'));
-				assert.ok(caseEvents.costs2.subject.includes('costs - 8'));
+				assert.ok(caseEvents.costs1.subject.includes('costs, 1'));
+				assert.ok(caseEvents.costs2.subject.includes('costs, 1'));
 
 				assert.strictEqual(res.length, 5);
 
@@ -968,12 +1046,12 @@ describe('calendar', () => {
 
 				requiredProps(caseEvents.prep1);
 				requiredStages(caseEvents.prep1, caseEvents.siteVisit1, caseEvents.report1, caseEvents.costs);
-				assert.ok(caseEvents.prep1.subject.includes('prep - 8'));
-				assert.ok(caseEvents.prep2.subject.includes('prep - 4'));
-				assert.ok(caseEvents.siteVisit1.subject.includes('siteVisit - 8'));
-				assert.ok(caseEvents.siteVisit2.subject.includes('siteVisit - 4'));
-				assert.ok(caseEvents.report1.subject.includes('report - 8'));
-				assert.ok(caseEvents.report2.subject.includes('report - 2'));
+				assert.ok(caseEvents.prep1.subject.includes('prep, 1'));
+				assert.ok(caseEvents.prep2.subject.includes('prep, 0.5'));
+				assert.ok(caseEvents.siteVisit1.subject.includes('siteVisit, 1'));
+				assert.ok(caseEvents.siteVisit2.subject.includes('siteVisit, 0.5'));
+				assert.ok(caseEvents.report1.subject.includes('report, 1'));
+				assert.ok(caseEvents.report2.subject.includes('report, 0.25'));
 
 				assert.strictEqual(res.length, 7);
 
@@ -1009,12 +1087,12 @@ describe('calendar', () => {
 				requiredProps(case2.report);
 				requiredProps(case3.costs);
 
-				assert.ok(case1.siteVisit1.subject.includes('siteVisit - 8'));
-				assert.ok(case1.siteVisit2.subject.includes('siteVisit - 4'));
-				assert.ok(case2.siteVisit1.subject.includes('siteVisit - 8'));
-				assert.ok(case2.siteVisit2.subject.includes('siteVisit - 4'));
-				assert.ok(case3.siteVisit1.subject.includes('siteVisit - 8'));
-				assert.ok(case3.siteVisit2.subject.includes('siteVisit - 4'));
+				assert.ok(case1.siteVisit1.subject.includes('siteVisit, 1'));
+				assert.ok(case1.siteVisit2.subject.includes('siteVisit, 0.5'));
+				assert.ok(case2.siteVisit1.subject.includes('siteVisit, 1'));
+				assert.ok(case2.siteVisit2.subject.includes('siteVisit, 0.5'));
+				assert.ok(case3.siteVisit1.subject.includes('siteVisit, 1'));
+				assert.ok(case3.siteVisit2.subject.includes('siteVisit, 0.5'));
 
 				assert.strictEqual(res.length, 15);
 
@@ -1059,12 +1137,12 @@ describe('calendar', () => {
 				requiredProps(case2.prep2);
 				requiredProps(case3.costs);
 
-				assert.ok(case1.prep1.subject.includes('prep - 8'));
-				assert.ok(case1.prep2.subject.includes('prep - 4'));
-				assert.ok(case2.prep1.subject.includes('prep - 8'));
-				assert.ok(case2.prep2.subject.includes('prep - 4'));
-				assert.ok(case3.prep1.subject.includes('prep - 8'));
-				assert.ok(case3.prep2.subject.includes('prep - 4'));
+				assert.ok(case1.prep1.subject.includes('prep, 1'));
+				assert.ok(case1.prep2.subject.includes('prep, 0.5'));
+				assert.ok(case2.prep1.subject.includes('prep, 1'));
+				assert.ok(case2.prep2.subject.includes('prep, 0.5'));
+				assert.ok(case3.prep1.subject.includes('prep, 1'));
+				assert.ok(case3.prep2.subject.includes('prep, 0.5'));
 
 				assert.strictEqual(res.length, 15);
 

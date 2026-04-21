@@ -34,4 +34,5 @@ export interface CaseToAssign {
 	// used for event generation
 	lpaName: string | null;
 	siteAddressPostcode: string | null;
+	siteAddressLine1: string | null;
 }

@@ -61,7 +61,7 @@ export function toCaseViewModel(c) {
 	};
 }
 
-function shortCaseType(caseType) {
+export function shortCaseType(caseType) {
 	switch (caseType) {
 		case APPEAL_CASE_TYPE.C:
 			return 'Enf.';
@@ -97,7 +97,7 @@ function shortCaseType(caseType) {
 	return caseType;
 }
 
-function shortProcedure(procedure) {
+export function shortProcedure(procedure) {
 	switch (procedure?.toLowerCase()) {
 		case APPEAL_CASE_PROCEDURE.WRITTEN:
 			return 'WR';
