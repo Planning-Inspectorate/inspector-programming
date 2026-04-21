@@ -113,6 +113,7 @@ function mapCaseViewModelToCaseToAssign(caseViewModel, isParent) {
 		caseLevel: caseViewModel.caseLevel,
 		lpaName: caseViewModel.lpaName,
 		siteAddressPostcode: caseViewModel.siteAddressPostcode,
+		siteAddressLine1: caseViewModel.siteAddressLine1,
 		isParent
 	};
 }

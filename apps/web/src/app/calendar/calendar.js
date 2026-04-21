@@ -2,6 +2,7 @@ import { addDays, addHours, addWeeks, format, setHours, subDays, subWeeks } from
 import { tz } from '@date-fns/tz';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 import { fromZonedTime } from 'date-fns-tz';
+import { shortCaseType, shortProcedure } from '../views/home/view-model.js';
 
 const timeZoneName = 'Europe/London';
 const timeZone = tz(timeZoneName);
@@ -353,13 +354,30 @@ function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEve
 			assignment = offsetEventByOne(stage, assignment);
 		}
 
+		/**
+		 * Converts a number of hours into a fractional working day.
+		 * Examples:
+		 * - 2 hours → 0.25 day
+		 * - 4 hours → 0.5 day
+		 * - 6 hours → 0.75 day
+		 * - 8 hours → 1 day
+		 */
+		const dayEquivalent = time / 8;
+
 		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
 		const event = buildEventJson(
 			{
-				subject: `${assignedCase.caseReference} - ${assignedCase.caseType} - ${assignedCase.lpaName} - ${stage} - ${String(time)}`,
+				subject: [
+					assignedCase.caseReference,
+					shortCaseType(assignedCase.caseType),
+					shortProcedure(assignedCase.caseProcedure),
+					assignedCase.lpaName,
+					stage,
+					String(dayEquivalent)
+				].join(', '),
 				startTime: eventTimings.startTime.toISOString(),
 				endTime: eventTimings.endTime.toISOString(),
-				streetAddress: null, //TBC: CaseViewModel only has postcode currently
+				streetAddress: assignedCase.siteAddressLine1,
 				postcode: assignedCase.siteAddressPostcode
 			},
 			{
