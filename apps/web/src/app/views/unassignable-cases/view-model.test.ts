@@ -17,7 +17,7 @@ describe('view-model', () => {
 		test('should support not validated', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER
+					caseStatus: APPEAL_CASE_STATUS.CLOSED
 				},
 				[]
 			);

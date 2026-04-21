@@ -1,7 +1,7 @@
 import { CasesClient } from './cases-client.js';
 import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
-import { filterExcludedStatuses } from './appeal-status.js';
+import { filterAssignableCases } from './appeal-status.js';
 import { getPageNumber, paginateList } from '../../util/pagination.ts';
 
 /**
@@ -49,7 +49,7 @@ export class CachedCasesClient {
 		const allCases = await this.getAllParentCases();
 
 		// get validated cases
-		const validatedCases = filterExcludedStatuses(allCases);
+		const validatedCases = filterAssignableCases(allCases);
 
 		//filter
 		const filteredCases = filterCases(validatedCases, filters);
