@@ -167,6 +167,14 @@ resource "azurerm_cdn_frontdoor_firewall_policy" "web" {
         operator       = "Equals"
         selector       = "selectedCases"
       }
+
+      rule {
+        # SQL Injection Attack: SQL Operator Detected
+        # msal-node v5.1.1 triggers this rule for auth redirect URLS
+        action  = "Log"
+        enabled = true
+        rule_id = "942120"
+      }
     }
 
     # cross site request forgery token
