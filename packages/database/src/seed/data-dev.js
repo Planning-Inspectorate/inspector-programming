@@ -357,7 +357,7 @@ const inspectors = [
 /**
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
  */
-export async function seedDev(dbClient) {
+async function seedCases(dbClient) {
 	const appeals = generateAppeals({
 		targetCount: 600 // to test 250 per-page pagination
 	});
@@ -382,6 +382,18 @@ export async function seedDev(dbClient) {
 		create: { casesFetched: -1, lastPollAt: new Date() },
 		update: { lastPollAt: new Date() }
 	});
+	console.log('seeded', appeals.length, 'appeals');
+}
+
+/**
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').PrismaClient} dbClient
+ * @param {boolean} seedMockCases
+ */
+export async function seedDev(dbClient, seedMockCases) {
+	if (seedMockCases) {
+		// only seed cases if configured to - only really useful locally
+		await seedCases(dbClient);
+	}
 
 	console.log('seeding', inspectors.length, 'inspectors');
 
