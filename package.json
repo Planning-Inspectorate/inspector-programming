@@ -70,7 +70,7 @@
     "@types/node": "^25.5.2",
     "@types/nunjucks": "^3.2.6",
     "cookie-parser": "^1.4.7",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
