@@ -77,7 +77,7 @@ export class CachedCasesClient {
 	 *
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
-	async getUnassignedCases() {
+	async getUnassignableCases() {
 		const shouldTryCache = await this.shouldTryCache();
 		if (shouldTryCache) {
 			if (this.#_cachedUnassignableCases) {

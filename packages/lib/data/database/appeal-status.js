@@ -1,6 +1,17 @@
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 
 /**
+ * Statuses before a case is validated
+ *
+ * @type {string[]}
+ */
+export const PRE_VALIDATION_APPEAL_STATUSES = [
+	APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER,
+	APPEAL_CASE_STATUS.VALIDATION,
+	APPEAL_CASE_STATUS.READY_TO_START
+];
+
+/**
  * Statuses that are allowed to be in the unassigned case list - assignable statuses
  *
  * @type {string[]}
@@ -31,14 +42,13 @@ const END_STATE_APPEAL_STATUSES = [
 export const EXCLUDED_APPEAL_STATUSES = [...ASSIGNABLE_APPEAL_STATUSES, ...END_STATE_APPEAL_STATUSES];
 
 /**
- * Filter a list of unassigned cases, removing those at an assignable status or an end state,
- * keeping only unassignable cases (i.e. cases with non-allocatable, non-end-state statuses)
+ * Filter a list of unassigned cases, keeping only those which are assignable or ended
  *
  * @param {import('../types').CaseViewModel[]} cases
  * @returns {import('../types').CaseViewModel[]}
  */
-export function filterExcludedStatuses(cases) {
-	return cases.filter((item) => !EXCLUDED_APPEAL_STATUSES.includes(item.caseStatus));
+export function filterAssignableOrEndedStatuses(cases) {
+	return cases.filter((item) => EXCLUDED_APPEAL_STATUSES.includes(item.caseStatus));
 }
 
 /**

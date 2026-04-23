@@ -1,4 +1,4 @@
-import { filterExcludedStatuses } from './appeal-status.js';
+import { filterAssignableOrEndedStatuses } from './appeal-status.js';
 
 /**
  * Client for fetching case data from the Prisma database for the application,
@@ -66,14 +66,16 @@ export class CasesClient {
 	async getUnassignableCases(allCases) {
 		// filter out excluded statuses
 		// filter out child appeals
-		const assignableCases = filterExcludedStatuses(allCases).filter((appeal) => appeal.linkedCaseStatus !== 'Child');
+		const assignableOrEndedCases = filterAssignableOrEndedStatuses(allCases).filter(
+			(appeal) => appeal.linkedCaseStatus !== 'Child'
+		);
 
 		// fetch all appeals not in the assignable list
 		// excludes child appeals
 		const appeals = await this.#client.appealCase.findMany({
 			where: {
 				caseReference: {
-					notIn: assignableCases.map((c) => c.caseReference)
+					notIn: assignableOrEndedCases.map((c) => c.caseReference)
 				},
 				OR: [{ linkedCaseStatus: { not: 'Child' } }, { linkedCaseStatus: null }]
 			},
