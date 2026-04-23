@@ -1,5 +1,8 @@
 import { toCaseViewModel } from '../home/view-model.js';
-import { EXCLUDED_APPEAL_STATUSES } from '@pins/inspector-programming-lib/data/database/appeal-status.js';
+import {
+	ASSIGNABLE_APPEAL_STATUSES,
+	PRE_VALIDATION_APPEAL_STATUSES
+} from '@pins/inspector-programming-lib/data/database/appeal-status.js';
 import { getPageNumber, paginateList } from '@pins/inspector-programming-lib/util/pagination.ts';
 import type { CaseViewModel } from '@pins/inspector-programming-lib/data/types.js';
 import type { CalendarEventTimingRuleModel } from '@pins/inspector-programming-database/src/client/models/CalendarEventTimingRule.ts';
@@ -45,6 +48,7 @@ export function toUnassignableCaseViewModel(
 export const UNASSIGNABLE_REASON = {
 	UNKNOWN: 'Unknown',
 	NOT_VALIDATED: 'Not validated',
+	NOT_ASSIGNABLE_STATUS: 'Not an assignable status',
 	MISSING_ALLOCATION: 'Missing allocation level',
 	NOT_SUPPORTED: 'Not yet supported',
 	NOT_SUPPORTED_CASE_TYPE: 'Case type not supported',
@@ -54,8 +58,10 @@ export const UNASSIGNABLE_REASON = {
 
 export function getUnassignableReason(appeal: CaseViewModel, timingRules: CalendarEventTimingRuleModel[]): string {
 	let unassignableReason = UNASSIGNABLE_REASON.UNKNOWN;
-	if (!appeal.caseStatus || EXCLUDED_APPEAL_STATUSES.includes(appeal.caseStatus)) {
+	if (!appeal.caseStatus || PRE_VALIDATION_APPEAL_STATUSES.includes(appeal.caseStatus)) {
 		unassignableReason = UNASSIGNABLE_REASON.NOT_VALIDATED;
+	} else if (!ASSIGNABLE_APPEAL_STATUSES.includes(appeal.caseStatus)) {
+		unassignableReason = UNASSIGNABLE_REASON.NOT_ASSIGNABLE_STATUS;
 	} else if (!appeal.caseLevel) {
 		unassignableReason = UNASSIGNABLE_REASON.MISSING_ALLOCATION;
 	} else if (!timingRules.some((rule) => matchesTimingRule(appeal, rule))) {
