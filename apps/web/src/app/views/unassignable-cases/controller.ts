@@ -4,7 +4,7 @@ import type { Handler } from 'express';
 
 export function buildViewUnassignableCases(service: WebService): Handler {
 	return async (req, res) => {
-		const appeals = await service.casesClient.getUnassignedCases();
+		const appeals = await service.casesClient.getUnassignableCases();
 		const timingRules = await service.dbClient.calendarEventTimingRule.findMany();
 
 		const viewModel = toUnassignableCaseListViewModel(req.query, appeals, timingRules);

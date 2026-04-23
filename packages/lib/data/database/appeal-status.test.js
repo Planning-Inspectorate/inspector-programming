@@ -1,17 +1,17 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
-import { filterExcludedStatuses, filterAssignableCases } from './appeal-status.js';
+import { filterAssignableOrEndedStatuses, filterAssignableCases } from './appeal-status.js';
 
 describe('appeal-status', () => {
-	describe('filterExcludedStatuses', () => {
+	describe('filterAssignableOrEndedStatuses', () => {
 		it('should return all cases when none are excluded', () => {
 			const inputCases = [
-				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.READY_TO_START },
-				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.ISSUE_DETERMINATION }
+				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
+				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.COMPLETE }
 			];
 
-			const results = filterExcludedStatuses(inputCases);
+			const results = filterAssignableOrEndedStatuses(inputCases);
 
 			assert.deepStrictEqual(results, inputCases);
 		});
@@ -23,22 +23,19 @@ describe('appeal-status', () => {
 				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.READY_TO_START }
 			];
 
-			const results = filterExcludedStatuses(inputCases);
+			const results = filterAssignableOrEndedStatuses(inputCases);
 
-			assert.deepStrictEqual(results, [
-				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
-				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.READY_TO_START }
-			]);
+			assert.deepStrictEqual(results, [{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT }]);
 		});
 
 		it('should return empty array when all cases are excluded', () => {
 			const inputCases = [
-				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE },
-				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.WITHDRAWN },
-				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.CLOSED }
+				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
+				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.VALIDATION },
+				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.EVENT }
 			];
 
-			const results = filterExcludedStatuses(inputCases);
+			const results = filterAssignableOrEndedStatuses(inputCases);
 
 			assert.deepStrictEqual(results, []);
 		});
