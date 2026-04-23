@@ -17,16 +17,25 @@ describe('view-model', () => {
 		test('should support not validated', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.CLOSED
+					caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER
 				},
 				[]
 			);
 			assert.strictEqual(reason, UNASSIGNABLE_REASON.NOT_VALIDATED);
 		});
+		test('should support not assignable status', () => {
+			const reason = getUnassignableReason(
+				{
+					caseStatus: APPEAL_CASE_STATUS.EVENT
+				},
+				[]
+			);
+			assert.strictEqual(reason, UNASSIGNABLE_REASON.NOT_ASSIGNABLE_STATUS);
+		});
 		test('should support missing allocation', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.READY_TO_START
+					caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE
 				},
 				[]
 			);
@@ -35,7 +44,7 @@ describe('view-model', () => {
 		test('should support no timing rule for case type', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.READY_TO_START,
+					caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
 					caseLevel: 'H',
 					caseType: APPEAL_CASE_TYPE.D
 				},
@@ -50,7 +59,7 @@ describe('view-model', () => {
 		test('should support no timing rule for procedure', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.READY_TO_START,
+					caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
 					caseLevel: 'H',
 					caseType: APPEAL_CASE_TYPE.D,
 					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN
@@ -66,7 +75,7 @@ describe('view-model', () => {
 		test('should support no timing rule for allocation', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.READY_TO_START,
+					caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE,
 					caseLevel: 'H',
 					caseType: APPEAL_CASE_TYPE.D,
 					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN
