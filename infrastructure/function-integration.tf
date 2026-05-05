@@ -52,6 +52,8 @@ module "function_integration" {
     SERVICE_BUS_CASE_HAS_SUBSCRIPTION                    = azurerm_servicebus_subscription.appeal_has.name
     SERVICE_BUS_CASE_S78_TOPIC                           = data.azurerm_servicebus_topic.appeal_s78.name
     SERVICE_BUS_CASE_S78_SUBSCRIPTION                    = azurerm_servicebus_subscription.appeal_s78.name
+    SERVICE_BUS_APPEAL_EVENT_TOPIC                       = data.azurerm_servicebus_topic.appeal_event.name
+    SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION                = azurerm_servicebus_subscription.appeal_event.name
   }
 }
 
