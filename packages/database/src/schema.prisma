@@ -75,6 +75,8 @@ model AppealCase {
   applicationDecision       String?
   isAonbNationalLandscape   Boolean?
   caseStartedDate           DateTime?
+
+  eventType String? // This field isn’t part of the appeals data model — it comes from appeal‑event.
 }
 
 model AppealCaseSpecialism {
