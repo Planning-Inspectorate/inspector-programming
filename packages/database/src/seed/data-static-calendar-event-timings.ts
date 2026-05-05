@@ -28,6 +28,11 @@ const allocationLevels = {
 	}
 };
 
+/**
+ * Timing rules are the same for APPEAL_CASE_PROCEDURE.WRITTEN, APPEAL_CASE_PROCEDURE.WRITTEN_PART_1
+ * and APPEAL_CASE_PROCEDURE.WRITTEN_PART_2.
+ * Only add entries for APPEAL_CASE_PROCEDURE.WRITTEN, and the others will be added by ruleToCreateInput
+ */
 const calendarEventTimingsRules: CalendarEventTimingRule[] = [
 	{
 		id: calendarEventTimingIds[0],
@@ -235,6 +240,25 @@ function ruleToCreateInput(rule: CalendarEventTimingRule): Prisma.CalendarEventT
 				},
 				create: caseType_caseProcedure_allocationLevel
 			});
+			if (appliesTo.caseProcedure === APPEAL_CASE_PROCEDURE.WRITTEN) {
+				// also add in rules for written part1 and part2 the same as written
+				const part1 = {
+					...caseType_caseProcedure_allocationLevel,
+					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN_PART_1
+				};
+				rules.push({
+					where: { caseType_caseProcedure_allocationLevel: part1 },
+					create: part1
+				});
+				const part2 = {
+					...caseType_caseProcedure_allocationLevel,
+					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN_PART_2
+				};
+				rules.push({
+					where: { caseType_caseProcedure_allocationLevel: part2 },
+					create: part2
+				});
+			}
 		}
 	}
 	return {
