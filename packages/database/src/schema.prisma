@@ -77,6 +77,9 @@ model AppealCase {
   caseStartedDate           DateTime?
 
   eventType String? // This field isn’t part of the appeals data model — it comes from appeal‑event.
+
+  // cases are filtered base on these criteria, to match calendar timing rules
+  @@index([caseType, caseProcedure, allocationLevel])
 }
 
 model AppealCaseSpecialism {
