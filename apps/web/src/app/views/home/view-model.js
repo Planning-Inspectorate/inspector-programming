@@ -104,6 +104,8 @@ export function shortProcedure(procedure) {
 			return 'WR';
 		case APPEAL_CASE_PROCEDURE.WRITTEN_PART_1:
 			return 'WR (1)';
+		case APPEAL_CASE_PROCEDURE.WRITTEN_PART_2:
+			return 'WR (2)';
 		case APPEAL_CASE_PROCEDURE.HEARING:
 			return 'H';
 		case APPEAL_CASE_PROCEDURE.INQUIRY:
