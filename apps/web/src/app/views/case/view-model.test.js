@@ -54,7 +54,7 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.specialismList, 'None');
 		assert.strictEqual(result.caseSpecialisms, 'None');
 		assert.strictEqual(result.caseStartedDate, '');
-		assert.strictEqual(result.eventType, 'No events');
+		assert.strictEqual(result.eventType, 'No site visit event set');
 		assert.strictEqual(result.caseAgeColor, '00703c');
 		assert.strictEqual(result.caseStatus, 'IN PROGRESS');
 		assert.strictEqual(result.designatedSitesNames, 'None');
@@ -81,10 +81,7 @@ describe('case/view-model caseToViewModel', () => {
 				{ id: 's1', specialism: 'Spec 1' },
 				{ id: 's2', specialism: 'Spec 2' }
 			],
-			Events: [
-				{ id: 'e1', eventType: 'Hearing', eventStartDateTime: '2025-03-15T10:00:00Z' },
-				{ id: 'e2', eventType: 'Site Visit', eventStartDateTime: '2025-04-01T09:00:00Z' }
-			],
+			eventType: 'site_visit_access_required',
 			isGreenBelt: true,
 			designatedSitesNames: JSON.stringify(['Site Alpha', 'Site Beta']),
 			typeOfPlanningApplication: 'full-appeal',
@@ -110,7 +107,7 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.specialismList, 'Spec 1, Spec 2');
 		assert.strictEqual(result.caseSpecialisms, 'Spec 1, Spec 2');
 		assert.strictEqual(result.caseStartedDate, '15/03/2025');
-		assert.strictEqual(result.eventType, 'HEARING');
+		assert.strictEqual(result.eventType, 'SITE VISIT ACCESS REQUIRED');
 		assert.strictEqual(result.caseAgeColor, 'f47738');
 		assert.strictEqual(result.linkedCases, 'None');
 		assert.strictEqual(result.caseStatus, 'READY');
