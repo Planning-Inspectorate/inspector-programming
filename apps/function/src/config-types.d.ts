@@ -22,6 +22,10 @@ interface Config {
 			topic: string;
 			subscription: string;
 		};
+		appealEvent: {
+			topic: string;
+			subscription: string;
+		};
 	};
 	syncCases: {
 		transactionWaitTime: number;

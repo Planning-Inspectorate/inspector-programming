@@ -45,6 +45,9 @@ export class FunctionService {
 	get caseS78ServiceBusConfig() {
 		return this.#config.serviceBus.caseS78;
 	}
+	get appealEventServiceBusConfig() {
+		return this.#config.serviceBus.appealEvent;
+	}
 	get syncCasesTransactionOptions() {
 		return {
 			maxWait: this.#config.syncCases.transactionWaitTime,
