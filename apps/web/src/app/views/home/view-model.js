@@ -4,6 +4,7 @@ import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.
 import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 import { appealTypes } from '../../specialism/specialism.js';
 import { SPECIAL_CIRCUMSTANCES } from '@pins/inspector-programming-lib/data/special-circumstances.js';
+import { SITE_VISIT_EVENT_TYPES } from '@pins/inspector-programming-lib/data/site-visit-event-types.js';
 
 /**
  * @param {Date} currentStartDate
@@ -214,7 +215,14 @@ export function filtersQueryViewModel(query, previousSort) {
 		filters.page = 1;
 	}
 
-	const arrayProps = ['caseSpecialisms', 'lpaRegion', 'caseTypes', 'allocationLevels', 'specialCircumstances'];
+	const arrayProps = [
+		'caseSpecialisms',
+		'lpaRegion',
+		'caseTypes',
+		'allocationLevels',
+		'visitTypes',
+		'specialCircumstances'
+	];
 
 	for (const arrayProp of arrayProps) {
 		const value = query[`filters[${arrayProp}]`];
@@ -301,4 +309,23 @@ export const caseTypeOptions = Object.values(appealTypes)
 export const specialCircumstancesOptions = Object.values(SPECIAL_CIRCUMSTANCES).map((v) => {
 	const text = v.replace(/-/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 	return { value: v, text };
+});
+
+/**
+ * Converts event types into radio options for the filter UI.
+ * Strips the "site_visit_" prefix, formats the text, and capitalizes it.
+ *
+ * @example
+ * // "site_visit_accompanied" -> { value: "site_visit_accompanied", text: "Accompanied" }
+ *
+ * @type {import('#util/types.js').RadioOption[]}
+ */
+export const visitTypeOptions = SITE_VISIT_EVENT_TYPES.map((value) => {
+	const text = value
+		.replace(/^site_visit_/, '')
+		.replace(/_/g, ' ')
+		.toLowerCase()
+		.replace(/^\w/, (c) => c.toUpperCase());
+
+	return { value, text };
 });

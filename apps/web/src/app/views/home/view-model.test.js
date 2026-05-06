@@ -8,9 +8,10 @@ import {
 	getCaseColor,
 	inspectorsViewModel,
 	toCaseViewModel,
-	toInspectorViewModel
+	toInspectorViewModel,
+	visitTypeOptions
 } from './view-model.js';
-import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE, APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
 
 describe('view-model', () => {
 	describe('calendarViewModel', () => {
@@ -533,6 +534,26 @@ describe('view-model', () => {
 				texts.some((t) => t.includes('Affordable housing')),
 				false
 			);
+		});
+	});
+
+	describe('visitTypeOptions', () => {
+		test('should use APPEAL_EVENT_TYPE values', () => {
+			const values = visitTypeOptions.map((o) => o.value);
+			assert.ok(values.includes(APPEAL_EVENT_TYPE.SITE_VISIT_ACCESS_REQUIRED));
+			assert.ok(values.includes(APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED));
+			assert.ok(values.includes(APPEAL_EVENT_TYPE.SITE_VISIT_UNACCOMPANIED));
+		});
+
+		test('should have human-readable text labels', () => {
+			const texts = visitTypeOptions.map((o) => o.text);
+			assert.ok(texts.includes('Access required'));
+			assert.ok(texts.includes('Accompanied'));
+			assert.ok(texts.includes('Unaccompanied'));
+		});
+
+		test('should have exactly 3 options', () => {
+			assert.strictEqual(visitTypeOptions.length, 3);
 		});
 	});
 });

@@ -1,5 +1,6 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
+import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { CasesClient } from './cases-client.js';
 
 describe('CasesClient', () => {
@@ -39,6 +40,7 @@ describe('CasesClient', () => {
 					designatedSitesNames: 'cSAC',
 					typeOfPlanningApplication: 'prior-approval',
 					applicationDecision: 'refused',
+					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
 					ChildCases: []
 				},
 				{
@@ -126,7 +128,8 @@ describe('CasesClient', () => {
 					isGreenBelt: true,
 					designatedSitesNames: 'cSAC',
 					typeOfPlanningApplication: 'prior-approval',
-					applicationDecision: 'refused'
+					applicationDecision: 'refused',
+					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED
 				},
 				{
 					allocationBand: 1,
@@ -152,7 +155,8 @@ describe('CasesClient', () => {
 					isGreenBelt: null,
 					designatedSitesNames: null,
 					typeOfPlanningApplication: 'prior-approval',
-					applicationDecision: null
+					applicationDecision: null,
+					eventType: null
 				}
 			]);
 		});

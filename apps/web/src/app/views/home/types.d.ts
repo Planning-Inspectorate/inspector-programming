@@ -37,6 +37,7 @@ export interface Filters {
 	specialisms: RadioOption[];
 	caseTypes: RadioOption[];
 	specialCircumstances: RadioOption[];
+	visitTypes: RadioOption[];
 	pagination: Pagination;
 	query: FilterQuery;
 
@@ -54,6 +55,7 @@ export interface FilterCaseQuery {
 	lpaRegion?: string[];
 	caseTypes?: string[];
 	allocationLevels?: string[];
+	visitTypes?: string[];
 	minimumAge?: string;
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;

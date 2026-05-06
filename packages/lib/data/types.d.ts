@@ -41,6 +41,7 @@ export interface CaseViewModel {
 	designatedSitesNames: string;
 	typeOfPlanningApplication: string | null;
 	applicationDecision: string | null;
+	eventType: string | null;
 	isAonbNationalLandscape: string | null;
 	siteAddressLine1: string | null;
 }
@@ -54,6 +55,7 @@ export interface Filters {
 	caseTypes?: string[];
 	specialCircumstances?: string[];
 	allocationLevels?: string[];
+	visitTypes?: string[];
 }
 
 export interface FilterQuery {

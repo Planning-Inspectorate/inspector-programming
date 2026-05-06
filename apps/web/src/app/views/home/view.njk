@@ -91,6 +91,7 @@
                         filters.query.case.caseSpecialisms or
                         filters.query.case.caseTypes or
                         filters.query.case.allocationLevels or
+                        filters.query.case.visitTypes or
                         filters.query.case.specialCircumstances
                     %}
 
@@ -148,6 +149,21 @@
                                 {% call filterGroup('Case allocation level') %}
                                     {% for allocationLevel in filters.query.case.allocationLevels %}
                                         {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# Visit type #}
+                            {% if filters.query.case.visitTypes %}
+                                {% call filterGroup('Visit type') %}
+                                    {% for visitType in filters.query.case.visitTypes %}
+                                        {% set visitTypeText = visitType %}
+                                        {% for item in filters.visitTypes %}
+                                            {% if item.value == visitType %}
+                                                {% set visitTypeText = item.text %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ filterTag(visitTypeText, filters.buildUrlWithoutFilter('visitTypes', visitType)) }}
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
@@ -313,6 +329,26 @@
                             classes: "custom-filter-dropdown",
                             open: false
                         }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Visit type",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[visitTypes]",
+                                name: "filters[visitTypes]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more visit types",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.visitTypes,
+                                values: filters.query.case.visitTypes
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: false
+                        }) }}
+
                         {{ compileSortPaginationQueryFields(filters) }}
                         <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
                         <input type="hidden" name="page" value="{{ filters.query.page }}">
