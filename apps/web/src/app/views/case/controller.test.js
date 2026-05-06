@@ -105,7 +105,7 @@ describe('buildViewCase', () => {
 			specialismList: 'None',
 			caseStartedDate: '12/12/2024',
 			caseSpecialisms: 'None',
-			eventType: 'No events',
+			eventType: 'No site visit event set',
 			caseAgeColor: '00703c',
 			linkedCases: 'None',
 			caseStatus: 'LPA QUESTIONNAIRE',

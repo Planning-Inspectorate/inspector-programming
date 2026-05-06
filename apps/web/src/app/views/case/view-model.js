@@ -12,7 +12,6 @@ export function caseToViewModel(caseClient, c) {
 	}
 	const caseToViewModel = caseClient.caseToViewModel(c);
 	const hasSpecialisms = Array.isArray(c.Specialisms) && c.Specialisms.length > 0;
-	const hasEvents = Array.isArray(c.Events) && c.Events.length > 0;
 	const hasLinkedCases = Array.isArray(c.ChildCases) && c.ChildCases.length > 0;
 	const hasDesignatedSitesNames = c.designatedSitesNames && JSON.parse(c.designatedSitesNames).length > 0;
 	return {
@@ -21,7 +20,7 @@ export function caseToViewModel(caseClient, c) {
 		specialismList: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		caseStartedDate: formatDateForDisplay(c.caseStartedDate, { format: 'dd/MM/yyyy' }),
 		caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
-		eventType: hasEvents ? formatTag(c.Events[0].eventType) : 'No events',
+		eventType: c.eventType ? formatTag(c.eventType) : 'No site visit event set',
 		caseAgeColor: getCaseColor(caseToViewModel.caseAge),
 		linkedCases: hasLinkedCases ? c.ChildCases.map((c) => c.caseReference).join(', ') : 'None',
 		caseStatus: formatTag(c.caseStatus),
