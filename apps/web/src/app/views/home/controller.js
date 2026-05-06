@@ -15,7 +15,8 @@ import {
 	caseTypeOptions,
 	filtersQueryViewModel,
 	inspectorsViewModel,
-	specialCircumstancesOptions
+	specialCircumstancesOptions,
+	visitTypeOptions
 } from './view-model.js';
 import { paginationValues } from './pagination.js';
 import { getPreviousUrlFromSession } from '#util/session.ts';
@@ -146,6 +147,7 @@ export function buildViewHome(service, getEventsFunction) {
 				specialisms,
 				specialCircumstances: specialCircumstancesOptions,
 				caseTypes: caseTypeOptions,
+				visitTypes: visitTypeOptions,
 				pagination: paginationDetails,
 				query: filterQuery,
 				errors: filterErrors,
