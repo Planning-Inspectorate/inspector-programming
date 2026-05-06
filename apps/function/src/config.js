@@ -22,6 +22,8 @@ export function loadConfig() {
 		SERVICE_BUS_CASE_HAS_SUBSCRIPTION,
 		SERVICE_BUS_CASE_S78_TOPIC,
 		SERVICE_BUS_CASE_S78_SUBSCRIPTION,
+		SERVICE_BUS_APPEAL_EVENT_TOPIC,
+		SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION,
 		SYNC_CASES_TRANSACTION_WAIT_TIME_MS,
 		SYNC_CASES_TRANSACTION_TIMEOUT_MS
 	} = process.env;
@@ -56,6 +58,10 @@ export function loadConfig() {
 			caseS78: {
 				topic: SERVICE_BUS_CASE_S78_TOPIC || 'appeal-s78',
 				subscription: SERVICE_BUS_CASE_S78_SUBSCRIPTION || 'appeal-s78-subscription-placeholder'
+			},
+			appealEvent: {
+				topic: SERVICE_BUS_APPEAL_EVENT_TOPIC || 'appeal-event',
+				subscription: SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION || 'appeal-event-subscription-placeholder'
 			}
 		},
 		syncCases: {
