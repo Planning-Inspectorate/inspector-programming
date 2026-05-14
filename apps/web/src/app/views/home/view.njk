@@ -99,32 +99,11 @@
                         <div class="selected-filters">
                             <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h3>
 
-                            {# Case Age #}
-                            {% if filters.query.case.minimumAge or filters.query.case.maximumAge %}
-                                {% call filterGroup('Case age') %}
-                                    {% if filters.query.case.minimumAge %}
-                                        {{ filterTag('Min ' + filters.query.case.minimumAge + ' weeks', filters.buildUrlWithoutFilter('minimumAge')) }}
-                                    {% endif %}
-                                    {% if filters.query.case.maximumAge %}
-                                        {{ filterTag('Max ' + filters.query.case.maximumAge + ' weeks', filters.buildUrlWithoutFilter('maximumAge')) }}
-                                    {% endif %}
-                                {% endcall %}
-                            {% endif %}
-
                             {# LPA Region #}
                             {% if filters.query.case.lpaRegion %}
                                 {% call filterGroup('LPA region') %}
                                     {% for region in filters.query.case.lpaRegion %}
                                         {{ filterTag(region, filters.buildUrlWithoutFilter('lpaRegion', region)) }}
-                                    {% endfor %}
-                                {% endcall %}
-                            {% endif %}
-
-                            {# Specialisms #}
-                            {% if filters.query.case.caseSpecialisms %}
-                                {% call filterGroup('Specialism') %}
-                                    {% for specialism in filters.query.case.caseSpecialisms %}
-                                        {{ filterTag(specialism, filters.buildUrlWithoutFilter('caseSpecialisms', specialism)) }}
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
@@ -144,15 +123,6 @@
                                 {% endcall %}
                             {% endif %}
 
-                            {# Case allocation #}
-                            {% if filters.query.case.allocationLevels %}
-                                {% call filterGroup('Case allocation level') %}
-                                    {% for allocationLevel in filters.query.case.allocationLevels %}
-                                        {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
-                                    {% endfor %}
-                                {% endcall %}
-                            {% endif %}
-
                             {# Visit type #}
                             {% if filters.query.case.visitTypes %}
                                 {% call filterGroup('Visit type') %}
@@ -164,6 +134,15 @@
                                             {% endif %}
                                         {% endfor %}
                                         {{ filterTag(visitTypeText, filters.buildUrlWithoutFilter('visitTypes', visitType)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# Case allocation #}
+                            {% if filters.query.case.allocationLevels %}
+                                {% call filterGroup('Case allocation level') %}
+                                    {% for allocationLevel in filters.query.case.allocationLevels %}
+                                        {{ filterTag(allocationLevel, filters.buildUrlWithoutFilter('allocationLevels', allocationLevel)) }}
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
@@ -182,6 +161,28 @@
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
+
+                            {# Specialisms #}
+                            {% if filters.query.case.caseSpecialisms %}
+                                {% call filterGroup('Specialism') %}
+                                    {% for specialism in filters.query.case.caseSpecialisms %}
+                                        {{ filterTag(specialism, filters.buildUrlWithoutFilter('caseSpecialisms', specialism)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# Case Age #}
+                            {% if filters.query.case.minimumAge or filters.query.case.maximumAge %}
+                                {% call filterGroup('Case age') %}
+                                    {% if filters.query.case.minimumAge %}
+                                        {{ filterTag('Min ' + filters.query.case.minimumAge + ' weeks', filters.buildUrlWithoutFilter('minimumAge')) }}
+                                    {% endif %}
+                                    {% if filters.query.case.maximumAge %}
+                                        {{ filterTag('Max ' + filters.query.case.maximumAge + ' weeks', filters.buildUrlWithoutFilter('maximumAge')) }}
+                                    {% endif %}
+                                {% endcall %}
+                            {% endif %}
+
                         </div>
                     {% endif %}
 
@@ -196,38 +197,7 @@
                                    id="clear-filters-link">Clear filters</a>
                             {% endif %}
                         </div>
-                        {{ govukDetails({
-                            summaryText: "Case age",
-                            html: (
-                            govukInput({
-                                label: {
-                                    text: "Minimum age (weeks)",
-                                    classes: "govuk-label--s",
-                                    isPageHeading: false
-                                },
-                                idPrefix: "filters[minimumAge]",
-                                name: "filters[minimumAge]",
-                                classes: "govuk-input--width-5",
-                                errorMessage: filters.errors.minimumAge,
-                                value: filters.query.case.minimumAge
-                            }) +
-                            govukInput({
-                                label: {
-                                    text: "Maximum age (weeks)",
-                                    classes: "govuk-label--s",
-                                    isPageHeading: false
-                                },
-                                idPrefix: "filters[maximumAge]",
-                                name: "filters[maximumAge]",
-                                classes: "govuk-input--width-5",
-                                errorMessage: filters.errors.maximumAge,
-                                value: filters.query.case.maximumAge
-                            })
 
-                            ),
-                            classes: "custom-filter-dropdown",
-                            open: false
-                        }) }}
                         {{ govukDetails({
                             summaryText: "LPA region",
                             html: govukCheckboxes({
@@ -248,29 +218,9 @@
                                 values: filters.query.case.lpaRegion
                             }),
                             classes: "custom-filter-dropdown",
-                            open: false
+                            open: true
                         }) }}
-                        {{ govukDetails({
-                            summaryText: "Specialism",
-                            html: checkboxFilter({
-                                idPrefix: "filters[caseSpecialisms]",
-                                name: "filters[caseSpecialisms]",
-                                classes: "govuk-checkboxes--small",
-                                fieldset: {
-                                    legend: {
-                                        text: "Select one or more specialisms",
-                                        classes: "govuk-fieldset__legend--s"
-                                    }
-                                },
-                                items: filters.specialisms,
-                                values: filters.query.case.caseSpecialisms,
-                                textBox: {
-                                    label: 'Find specialism'
-                                }
-                            }),
-                            classes: "custom-filter-dropdown",
-                            open: false
-                        }) }}
+
                         {{ govukDetails({
                             summaryText: "Case type",
                             html: checkboxFilter({
@@ -290,8 +240,28 @@
                                 }
                             }),
                             classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Visit type",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[visitTypes]",
+                                name: "filters[visitTypes]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more visit types",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.visitTypes,
+                                values: filters.query.case.visitTypes
+                            }),
+                            classes: "custom-filter-dropdown",
                             open: false
                         }) }}
+
                         {{ govukDetails({
                             summaryText: "Case allocation",
                             html: govukCheckboxes({
@@ -331,20 +301,56 @@
                         }) }}
 
                         {{ govukDetails({
-                            summaryText: "Visit type",
-                            html: govukCheckboxes({
-                                idPrefix: "filters[visitTypes]",
-                                name: "filters[visitTypes]",
+                            summaryText: "Specialism",
+                            html: checkboxFilter({
+                                idPrefix: "filters[caseSpecialisms]",
+                                name: "filters[caseSpecialisms]",
                                 classes: "govuk-checkboxes--small",
                                 fieldset: {
                                     legend: {
-                                        text: "Select one or more visit types",
+                                        text: "Select one or more specialisms",
                                         classes: "govuk-fieldset__legend--s"
                                     }
                                 },
-                                items: filters.visitTypes,
-                                values: filters.query.case.visitTypes
+                                items: filters.specialisms,
+                                values: filters.query.case.caseSpecialisms,
+                                textBox: {
+                                    label: 'Find specialism'
+                                }
                             }),
+                            classes: "custom-filter-dropdown",
+                            open: false
+                        }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Case age",
+                            html: (
+                            govukInput({
+                                label: {
+                                    text: "Minimum age (weeks)",
+                                    classes: "govuk-label--s",
+                                    isPageHeading: false
+                                },
+                                idPrefix: "filters[minimumAge]",
+                                name: "filters[minimumAge]",
+                                classes: "govuk-input--width-5",
+                                errorMessage: filters.errors.minimumAge,
+                                value: filters.query.case.minimumAge
+                            }) +
+                            govukInput({
+                                label: {
+                                    text: "Maximum age (weeks)",
+                                    classes: "govuk-label--s",
+                                    isPageHeading: false
+                                },
+                                idPrefix: "filters[maximumAge]",
+                                name: "filters[maximumAge]",
+                                classes: "govuk-input--width-5",
+                                errorMessage: filters.errors.maximumAge,
+                                value: filters.query.case.maximumAge
+                            })
+
+                            ),
                             classes: "custom-filter-dropdown",
                             open: false
                         }) }}
