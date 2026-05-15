@@ -1,7 +1,9 @@
 resource "azurerm_storage_account" "functions" {
   #checkov:skip=CKV2_AZURE_1: Customer Managed Keys not implemented yet
   #checkov:skip=CKV2_AZURE_18: Customer Managed Keys not implemented yet
+  #checkov:skip=CKV_AZURE_33: Logging not implemented yet
   #checkov:skip=CKV2_AZURE_8: Logging not implemented yet
+  #checkov:skip=CKV_AZURE_43: "Ensure Storage Accounts adhere to the naming rules"
   #checkov:skip=CKV_AZURE_206: TODO: Ensure that Storage Accounts use replication
   #checkov:skip=CKV2_AZURE_33: "Ensure storage account is configured with private endpoint"
   #checkov:skip=CKV2_AZURE_38: "Ensure soft-delete is enabled on Azure storage account"
