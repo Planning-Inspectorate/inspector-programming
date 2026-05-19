@@ -541,7 +541,9 @@ describe('calendar', () => {
 			lpaName: 'test-lpa',
 			caseType: 'H',
 			caseProcedure: 'W',
-			caseLevel: 'B'
+			caseLevel: 'B',
+			appellantCostsAppliedFor: true,
+			lpaCostsAppliedFor: false
 		};
 
 		//mock implementations
@@ -639,7 +641,9 @@ describe('calendar', () => {
 					lpaName: 'lpa2',
 					caseType: 'D',
 					caseProcedure: 'written',
-					caseLevel: 'C'
+					caseLevel: 'C',
+					appellantCostsAppliedFor: true,
+					lpaCostsAppliedFor: false
 				};
 				const res = await generateCaseCalendarEvents(service, '2025-10-08', [hasAppeal]);
 				assert.strictEqual(res[0].subject, 'ref2, HAS, WR, lpa2, prep, 0.375');
@@ -661,7 +665,9 @@ describe('calendar', () => {
 					lpaName: 'lpa3',
 					caseType: 'W',
 					caseProcedure: 'hearing',
-					caseLevel: 'B'
+					caseLevel: 'B',
+					appellantCostsAppliedFor: true,
+					lpaCostsAppliedFor: false
 				};
 				const res = await generateCaseCalendarEvents(service, '2025-10-08', [planningAppeal]);
 				assert.strictEqual(res[0].subject, 'ref3, Planning, H, lpa3, prep, 0.25');
@@ -683,7 +689,9 @@ describe('calendar', () => {
 					lpaName: 'lpa4',
 					caseType: 'C',
 					caseProcedure: 'inquiry',
-					caseLevel: 'A'
+					caseLevel: 'A',
+					appellantCostsAppliedFor: true,
+					lpaCostsAppliedFor: false
 				};
 				const res = await generateCaseCalendarEvents(service, '2025-10-08', [enfAppeal]);
 				assert.strictEqual(res[0].subject, 'ref4, Enf., LI, lpa4, prep, 0.5');
@@ -718,7 +726,14 @@ describe('calendar', () => {
 		});
 		describe('error cases', () => {
 			it('no timing rule matching case details should error', async () => {
-				const appeal = { caseId: '1', caseType: 'A', caseProcedure: 'P', caseLevel: 'B' };
+				const appeal = {
+					caseId: '1',
+					caseType: 'A',
+					caseProcedure: 'P',
+					caseLevel: 'B',
+					appellantCostsAppliedFor: false,
+					lpaCostsAppliedFor: false
+				};
 				const service = mockService();
 				await assert.rejects(generateCaseCalendarEvents(service, '2025-10-10', [appeal]), {
 					message: 'No timing rules matching case: 1'
@@ -1260,6 +1275,79 @@ describe('calendar', () => {
 
 				requiredProps(caseEvents.prep);
 				assert.strictEqual(res.length, 3);
+			});
+		});
+		describe('costs', () => {
+			it('should not generate costs events when neither appellantCostsAppliedFor nor lpaCostsAppliedFor is set', async () => {
+				const appealNoCosts = {
+					...appeal,
+					appellantCostsAppliedFor: false,
+					lpaCostsAppliedFor: false
+				};
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [appealNoCosts]);
+
+				assert.strictEqual(res.length, 3);
+				assert.ok(res[0].subject.includes('prep'));
+				assert.ok(res[1].subject.includes('siteVisit'));
+				assert.ok(res[2].subject.includes('report'));
+				// no costs event
+				assert.ok(!res.some((e) => e.subject.includes('costs')));
+			});
+			it('should not generate costs events when both costs fields are null', async () => {
+				const appealNullCosts = {
+					...appeal,
+					appellantCostsAppliedFor: null,
+					lpaCostsAppliedFor: null
+				};
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [appealNullCosts]);
+
+				assert.strictEqual(res.length, 3);
+				assert.ok(!res.some((e) => e.subject.includes('costs')));
+			});
+			it('should generate costs events when only appellantCostsAppliedFor is set', async () => {
+				const appealAppellantCosts = {
+					...appeal,
+					appellantCostsAppliedFor: true,
+					lpaCostsAppliedFor: false
+				};
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [appealAppellantCosts]);
+
+				assert.strictEqual(res.length, 4);
+				assert.ok(res[3].subject.includes('costs'));
+				// 1 hour costs = 0.125 day
+				assert.ok(res[3].subject.includes('0.125'));
+			});
+			it('should generate costs events when only lpaCostsAppliedFor is set', async () => {
+				const appealLpaCosts = {
+					...appeal,
+					appellantCostsAppliedFor: false,
+					lpaCostsAppliedFor: true
+				};
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [appealLpaCosts]);
+
+				assert.strictEqual(res.length, 4);
+				assert.ok(res[3].subject.includes('costs'));
+				assert.ok(res[3].subject.includes('0.125'));
+			});
+			it('should double costs time when both appellantCostsAppliedFor and lpaCostsAppliedFor are set', async () => {
+				const appealBothCosts = {
+					...appeal,
+					appellantCostsAppliedFor: true,
+					lpaCostsAppliedFor: true
+				};
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-10-08', [appealBothCosts]);
+
+				assert.strictEqual(res.length, 4);
+				assert.ok(res[3].subject.includes('costs'));
+				// doubled: 2 hours costs = 0.25 day
+				assert.ok(res[3].subject.includes('0.25'));
+				// verify doubled time allocation (2 hours instead of 1)
+				assertEventDates(res[3], 9, 10, 9, 11);
 			});
 		});
 	});

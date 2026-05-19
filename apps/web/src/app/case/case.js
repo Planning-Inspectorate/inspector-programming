@@ -114,6 +114,9 @@ function mapCaseViewModelToCaseToAssign(caseViewModel, isParent) {
 		lpaName: caseViewModel.lpaName,
 		siteAddressPostcode: caseViewModel.siteAddressPostcode,
 		siteAddressLine1: caseViewModel.siteAddressLine1,
-		isParent
+		isParent,
+		// costs
+		appellantCostsAppliedFor: caseViewModel.appellantCostsAppliedFor,
+		lpaCostsAppliedFor: caseViewModel.lpaCostsAppliedFor
 	};
 }

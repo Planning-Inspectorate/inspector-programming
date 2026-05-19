@@ -4,79 +4,78 @@ import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { CasesClient } from './cases-client.js';
 
 describe('CasesClient', () => {
+	const fortyFiveWeeksAgo = new Date();
+	fortyFiveWeeksAgo.setDate(fortyFiveWeeksAgo.getDate() - 45 * 7);
+	const mockCases = [
+		{
+			caseReference: 'testref',
+			caseId: 1,
+			caseStatus: 'lpa_questionnaire',
+			caseType: 'W',
+			caseProcedure: 'inquiry',
+			originalDevelopmentDescription: null,
+			allocationLevel: 'H',
+			allocationBand: 1,
+			siteAddressLine1: '123 Example Street',
+			siteAddressLine2: null,
+			siteAddressTown: 'Example Town',
+			siteAddressCounty: 'Example County',
+			siteAddressPostcode: 'sy10 7fa',
+			siteAddressLatitude: 52.89835,
+			siteAddressLongitude: -3.064346,
+			lpaCode: 'Q9999',
+			lpaName: 'Example Local Planning Authority',
+			lpaRegion: null,
+			caseValidDate: fortyFiveWeeksAgo,
+			finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
+			linkedCaseStatus: null,
+			leadCaseReference: null,
+			appellantCostsAppliedFor: null,
+			lpaCostsAppliedFor: true,
+			inspectorId: null,
+			isGreenBelt: true,
+			designatedSitesNames: 'cSAC',
+			typeOfPlanningApplication: 'prior-approval',
+			applicationDecision: 'refused',
+			eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
+			ChildCases: []
+		},
+		{
+			caseReference: 'ref2',
+			caseId: 2,
+			caseStatus: 'lpa_questionnaire',
+			caseType: 'W',
+			caseProcedure: 'written',
+			originalDevelopmentDescription: null,
+			allocationLevel: 'A',
+			allocationBand: 1,
+			siteAddressLine1: '123 Example Road',
+			siteAddressLine2: null,
+			siteAddressTown: 'Example Village',
+			siteAddressCounty: 'Example County',
+			siteAddressPostcode: 'FY8 3TR',
+			siteAddressLatitude: 53.752716,
+			siteAddressLongitude: -3.001122,
+			lpaCode: 'Q9999',
+			Lpa: { lpaName: 'Other Local Planning Authority' },
+			lpaRegion: null,
+			caseValidDate: fortyFiveWeeksAgo,
+			finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
+			linkedCaseStatus: null,
+			leadCaseReference: null,
+			appellantCostsAppliedFor: null,
+			lpaCostsAppliedFor: null,
+			inspectorId: null,
+			isGreenBelt: false,
+			designatedSitesNames: null,
+			typeOfPlanningApplication: 'prior-approval',
+			applicationDecision: null,
+			ChildCases: []
+		}
+	];
+
 	describe('getAllCases', () => {
 		it('returns mapped cases from the db', async () => {
-			const fortyFiveWeeksAgo = new Date();
-			fortyFiveWeeksAgo.setDate(fortyFiveWeeksAgo.getDate() - 45 * 7);
-
-			const mockCases = [
-				{
-					caseReference: 'testref',
-					caseId: 1,
-					caseStatus: 'lpa_questionnaire',
-					caseType: 'W',
-					caseProcedure: 'inquiry',
-					originalDevelopmentDescription: null,
-					allocationLevel: 'H',
-					allocationBand: 1,
-					siteAddressLine1: '123 Example Street',
-					siteAddressLine2: null,
-					siteAddressTown: 'Example Town',
-					siteAddressCounty: 'Example County',
-					siteAddressPostcode: 'sy10 7fa',
-					siteAddressLatitude: 52.89835,
-					siteAddressLongitude: -3.064346,
-					lpaCode: 'Q9999',
-					lpaName: 'Example Local Planning Authority',
-					lpaRegion: null,
-					caseValidDate: fortyFiveWeeksAgo,
-					finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
-					linkedCaseStatus: null,
-					leadCaseReference: null,
-					appellantCostsAppliedFor: null,
-					lpaCostsAppliedFor: null,
-					inspectorId: null,
-					isGreenBelt: true,
-					designatedSitesNames: 'cSAC',
-					typeOfPlanningApplication: 'prior-approval',
-					applicationDecision: 'refused',
-					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
-					ChildCases: []
-				},
-				{
-					caseReference: 'ref2',
-					caseId: 2,
-					caseStatus: 'lpa_questionnaire',
-					caseType: 'W',
-					caseProcedure: 'written',
-					originalDevelopmentDescription: null,
-					allocationLevel: 'A',
-					allocationBand: 1,
-					siteAddressLine1: '123 Example Road',
-					siteAddressLine2: null,
-					siteAddressTown: 'Example Village',
-					siteAddressCounty: 'Example County',
-					siteAddressPostcode: 'FY8 3TR',
-					siteAddressLatitude: 53.752716,
-					siteAddressLongitude: -3.001122,
-					lpaCode: 'Q9999',
-					Lpa: { lpaName: 'Other Local Planning Authority' },
-					lpaRegion: null,
-					caseValidDate: fortyFiveWeeksAgo,
-					finalCommentsDueDate: new Date('2024-10-10T10:26:11.963Z'),
-					linkedCaseStatus: null,
-					leadCaseReference: null,
-					appellantCostsAppliedFor: null,
-					lpaCostsAppliedFor: null,
-					inspectorId: null,
-					isGreenBelt: false,
-					designatedSitesNames: null,
-					typeOfPlanningApplication: 'prior-approval',
-					applicationDecision: null,
-					ChildCases: []
-				}
-			];
-
 			const timingRules = [
 				{ caseType: 'W', caseProcedure: 'inquiry', allocationLevel: 'H' },
 				{ caseType: 'W', caseProcedure: 'written', allocationLevel: 'A' }
@@ -129,7 +128,9 @@ describe('CasesClient', () => {
 					designatedSitesNames: 'cSAC',
 					typeOfPlanningApplication: 'prior-approval',
 					applicationDecision: 'refused',
-					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED
+					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
+					appellantCostsAppliedFor: null,
+					lpaCostsAppliedFor: true
 				},
 				{
 					allocationBand: 1,
@@ -156,7 +157,9 @@ describe('CasesClient', () => {
 					designatedSitesNames: null,
 					typeOfPlanningApplication: 'prior-approval',
 					applicationDecision: null,
-					eventType: null
+					eventType: null,
+					appellantCostsAppliedFor: null,
+					lpaCostsAppliedFor: null
 				}
 			]);
 		});
@@ -232,6 +235,17 @@ describe('CasesClient', () => {
 				null,
 				'finalCommentsDate should be null when finalCommentsDueDate is not set'
 			);
+		});
+		it('should map cost fields', () => {
+			const casesClient = new CasesClient({});
+			const caseWithCosts = {
+				...mockCases[0],
+				appellantCostsAppliedFor: true,
+				lpaCostsAppliedFor: true
+			};
+			const viewModel = casesClient.caseToViewModel(caseWithCosts);
+			assert.strictEqual(viewModel.appellantCostsAppliedFor, true);
+			assert.strictEqual(viewModel.lpaCostsAppliedFor, true);
 		});
 	});
 	describe('deleteCases', () => {
