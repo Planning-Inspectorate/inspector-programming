@@ -103,6 +103,7 @@ resource "azurerm_monitor_metric_alert" "web_availability" {
     azurerm_application_insights.main.id
   ]
   description = "Metric alert for standard web test (availability) for the web app - which also checks the certificate"
+  severity    = 0
 
   application_insights_web_test_location_availability_criteria {
     web_test_id           = azurerm_application_insights_standard_web_test.web[0].id
