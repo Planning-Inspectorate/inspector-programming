@@ -125,7 +125,11 @@ export class CasesClient {
 			isGreenBelt: c.isGreenBelt || null,
 			designatedSitesNames: c.designatedSitesNames || null,
 			typeOfPlanningApplication: c.typeOfPlanningApplication || null,
-			applicationDecision: c.applicationDecision || null
+			applicationDecision: c.applicationDecision || null,
+
+			// costs
+			appellantCostsAppliedFor: c.appellantCostsAppliedFor,
+			lpaCostsAppliedFor: c.lpaCostsAppliedFor
 		};
 	}
 

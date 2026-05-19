@@ -259,6 +259,18 @@ export async function generateCaseCalendarEvents(service, assignmentDate, assign
 		const stageStartDate = getStageStartDate(stage, assignment, inspectorEvents);
 
 		for (let assignedCase of assignedCases) {
+			let multiplier = 1;
+			if (stage === CALENDAR_EVENT_STAGES.COSTS) {
+				if (!assignedCase.appellantCostsAppliedFor && !assignedCase.lpaCostsAppliedFor) {
+					// Only generate cost events if there is at least one cost application
+					continue;
+				}
+				if (assignedCase.appellantCostsAppliedFor && assignedCase.lpaCostsAppliedFor) {
+					// double the event time if there are two cost applications
+					multiplier = 2;
+				}
+			}
+
 			const rule = matchTimingRuleToCase(timingRules, assignedCase);
 			if (!rule) throw new Error('No timing rules matching case: ' + assignedCase.caseId);
 
@@ -267,8 +279,16 @@ export async function generateCaseCalendarEvents(service, assignmentDate, assign
 			if (stageTime === null)
 				throw new Error('Invalid appeals stage while generating calendar events. Ensure app is correctly configured.');
 			if (!(+stageTime > 0)) continue;
+			const eventDuration = stageTime * multiplier;
 
-			const events = generateEvents(stage, stageTime, assignedCase, stageStartDate, inspectorEvents, bankHolidayEvents);
+			const events = generateEvents(
+				stage,
+				eventDuration,
+				assignedCase,
+				stageStartDate,
+				inspectorEvents,
+				bankHolidayEvents
+			);
 			allEvents.push(...events);
 		}
 	}

@@ -43,6 +43,10 @@ export interface CaseViewModel {
 	applicationDecision: string | null;
 	isAonbNationalLandscape: string | null;
 	siteAddressLine1: string | null;
+
+	// costs
+	appellantCostsAppliedFor: boolean | null;
+	lpaCostsAppliedFor: boolean | null;
 }
 
 export interface Filters {
