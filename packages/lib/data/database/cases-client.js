@@ -126,7 +126,11 @@ export class CasesClient {
 			designatedSitesNames: c.designatedSitesNames || null,
 			typeOfPlanningApplication: c.typeOfPlanningApplication || null,
 			applicationDecision: c.applicationDecision || null,
-			eventType: c.eventType || null
+			eventType: c.eventType || null,
+
+			// costs
+			appellantCostsAppliedFor: c.appellantCostsAppliedFor,
+			lpaCostsAppliedFor: c.lpaCostsAppliedFor
 		};
 	}
 

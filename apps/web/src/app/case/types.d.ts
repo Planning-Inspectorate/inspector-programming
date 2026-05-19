@@ -35,4 +35,8 @@ export interface CaseToAssign {
 	lpaName: string | null;
 	siteAddressPostcode: string | null;
 	siteAddressLine1: string | null;
+
+	// costs
+	appellantCostsAppliedFor: boolean | null;
+	lpaCostsAppliedFor: boolean | null;
 }
