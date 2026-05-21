@@ -200,7 +200,7 @@ export function filtersQueryViewModel(query, previousSort) {
 	/** @type {import('@pins/inspector-programming-lib/data/types.js').FilterQuery} */
 	const filters = {
 		page: query.page ? Number(query.page) : 1,
-		limit: query.limit ? Number(query.limit) : 25,
+		limit: query.limit ? Number(query.limit) : 2000,
 		sort: query.sort ? String(query.sort) : 'age',
 		case: {}
 	};
