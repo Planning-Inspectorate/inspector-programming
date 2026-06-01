@@ -10,11 +10,14 @@ import { withRetry } from '@pins/inspector-programming-lib/util/database.ts';
  */
 export function buildHandleCaseMessage(service, schemaName) {
 	return async function handleCaseMessage(message, context) {
-		context.log(`Received case message for schema: ${schemaName}`);
+		const caseReference = message.caseReference;
+		// prefix all log messages with the case reference
+		const log = (...args) => context.log(`[${caseReference}]`, ...args);
+		log(`Received case message for schema: ${schemaName}`);
 
 		// Get event type from message metadata
 		const eventType = context?.triggerMetadata?.applicationProperties?.type;
-		context.log(`Event type: ${eventType}`);
+		log(`Event type: ${eventType}`);
 
 		// Get cached Ajv instance and validate schema
 		const ajv = await getCachedAjv();
@@ -29,32 +32,32 @@ export function buildHandleCaseMessage(service, schemaName) {
 		if (!validateCase(message)) {
 			throw new Error(`Case message failed schema validation: ${JSON.stringify(validateCase.errors)}`);
 		}
-		context.log(`Message validated successfully against ${schemaName}`);
+		log(`Message validated successfully against ${schemaName}`);
 
 		// If type is Delete, delete the case
 		if (eventType === MESSAGE_EVENT_TYPE.DELETE) {
-			context.log(`Processing DELETE event for case: ${message.caseReference}`);
-			await deleteCase(service, message.caseReference, context);
+			log(`Processing DELETE event for case: ${message.caseReference}`);
+			await deleteCase(service, message.caseReference, log);
 			return;
 		}
 
 		// If inspectorId is set (case is assigned), delete the case from our database
 		if (message.inspectorId) {
-			context.log(`Case ${message.caseReference} has inspectorId set (${message.inspectorId}), deleting from database`);
-			await deleteCase(service, message.caseReference, context);
+			log(`Case ${message.caseReference} has inspectorId set (${message.inspectorId}), deleting from database`);
+			await deleteCase(service, message.caseReference, log);
 			return;
 		}
 
 		// If padsSapId is set (case is assigned), delete the case from our database
 		if (message.padsSapId) {
-			context.log(`Case ${message.caseReference} has padsSapId set (${message.padsSapId}), deleting from database`);
-			await deleteCase(service, message.caseReference, context);
+			log(`Case ${message.caseReference} has padsSapId set (${message.padsSapId}), deleting from database`);
+			await deleteCase(service, message.caseReference, log);
 			return;
 		}
 
 		// Otherwise upsert the case
-		context.log(`Processing upsert for case: ${message.caseReference}`);
-		await upsertCase(service, message, context);
+		log(`Processing upsert for case: ${message.caseReference}`);
+		await upsertCase(service, message, log);
 	};
 }
 
@@ -62,12 +65,12 @@ export function buildHandleCaseMessage(service, schemaName) {
  * Delete a case from the database
  * @param {import('../../service').FunctionService} service
  * @param {string} caseReference
- * @param {import('@azure/functions').InvocationContext} context
+ * @param {import('@azure/functions').InvocationContext['log']} log
  * @returns {Promise<void>}
  */
-export async function deleteCase(service, caseReference, context) {
+export async function deleteCase(service, caseReference, log) {
 	if (!caseReference) {
-		context.log('Delete event missing caseReference');
+		log('Delete event missing caseReference');
 		throw new Error('Delete event missing caseReference');
 	}
 
@@ -82,7 +85,7 @@ export async function deleteCase(service, caseReference, context) {
 					data: { leadCaseReference: null, linkedCaseStatus: null }
 				});
 				if (childCaseUpdate.count > 0) {
-					context.log(`Unlinked ${childCaseUpdate.count} child cases from lead case ${caseReference}`);
+					log(`Unlinked ${childCaseUpdate.count} child cases from lead case ${caseReference}`);
 				}
 
 				// Delete related AppealEvents (explicit delete for clarity, even though cascade should handle this)
@@ -90,7 +93,7 @@ export async function deleteCase(service, caseReference, context) {
 					where: { caseReference }
 				});
 				if (deletedEvents.count > 0) {
-					context.log(`Deleted ${deletedEvents.count} AppealEvents for case ${caseReference}`);
+					log(`Deleted ${deletedEvents.count} AppealEvents for case ${caseReference}`);
 				}
 
 				// Delete related AppealCaseSpecialisms (explicit delete for clarity, even though cascade should handle this)
@@ -98,14 +101,14 @@ export async function deleteCase(service, caseReference, context) {
 					where: { caseReference }
 				});
 				if (deletedSpecialisms.count > 0) {
-					context.log(`Deleted ${deletedSpecialisms.count} AppealCaseSpecialisms for case ${caseReference}`);
+					log(`Deleted ${deletedSpecialisms.count} AppealCaseSpecialisms for case ${caseReference}`);
 				}
 
 				// Finally, delete the main AppealCase record
 				await tx.appealCase.delete({ where: { caseReference } });
 			})
 		);
-		context.log(`Case with caseReference ${caseReference} has been deleted`);
+		log(`Case with caseReference ${caseReference} has been deleted`);
 		// save in the DB that we have an update
 		// this is outside the transaction, it doesn't need to be atomic with the data update
 		await service.dbClient.appealCasePollStatus.upsert({
@@ -118,14 +121,14 @@ export async function deleteCase(service, caseReference, context) {
 				lastPollAt: new Date()
 			}
 		});
-		context.log(`Poll status has been updated`);
+		log(`Poll status has been updated`);
 	} catch (error) {
 		// If case doesn't exist, that's fine - log and continue
 		if (error.code === 'P2025') {
-			context.log(`Case ${caseReference} not found in database, skipping delete`);
+			log(`Case ${caseReference} not found in database, skipping delete`);
 			return;
 		}
-		context.log(`Failed to delete case ${caseReference}:`, error);
+		log(`Failed to delete case ${caseReference}:`, error);
 		throw new Error(`Failed to delete case ${caseReference}: ${error.message}`, { cause: error });
 	}
 }
@@ -212,14 +215,14 @@ export function mapToDatabase(message, coords) {
  * Upsert a case in the database with coordinates and specialisms
  * @param {import('../../service').FunctionService} service
  * @param {AppealCaseMessage} message
- * @param {import('@azure/functions').InvocationContext} context
+ * @param {import('@azure/functions').InvocationContext['log']} log
  * @returns {Promise<void>}
  */
-export async function upsertCase(service, message, context) {
+export async function upsertCase(service, message, log) {
 	// Validate caseReference exists
 	const caseReference = message.caseReference;
 	if (!caseReference) {
-		context.log('Upsert event missing caseReference');
+		log('Upsert event missing caseReference');
 		throw new Error('Upsert event missing caseReference');
 	}
 
@@ -230,13 +233,13 @@ export async function upsertCase(service, message, context) {
 	if (postcode) {
 		try {
 			coords = await fetchPostcodeCoordinates(service.osApiClient, postcode);
-			context.log(`Fetched coordinates for postcode ${postcode}: lat=${coords.latitude}, lng=${coords.longitude}`);
+			log(`Fetched coordinates for postcode ${postcode}: lat=${coords.latitude}, lng=${coords.longitude}`);
 		} catch (error) {
-			context.log(`Warning: Could not fetch coordinates for postcode ${postcode}:`, error);
+			log(`Warning: Could not fetch coordinates for postcode ${postcode}:`, error);
 			// Continue without coordinates - don't fail the whole operation
 		}
 	} else {
-		context.log('No postcode provided, skipping coordinate lookup');
+		log('No postcode provided, skipping coordinate lookup');
 	}
 
 	const data = mapToDatabase(message, coords);
@@ -253,7 +256,7 @@ export async function upsertCase(service, message, context) {
 					create: data,
 					update: data
 				});
-				context.log(`Case upserted successfully: ${caseReference}`);
+				log(`Case upserted successfully: ${caseReference}`);
 
 				// Remove appeal case specialisms that are not present in the incoming specialisms from the database
 				const { count } = await tx.appealCaseSpecialism.deleteMany({
@@ -262,7 +265,7 @@ export async function upsertCase(service, message, context) {
 						specialism: { notIn: incomingCaseSpecialisms }
 					}
 				});
-				context.log(`Removed ${count} specialisms not present in incoming data: ${caseReference}`);
+				log(`Removed ${count} specialisms not present in incoming data: ${caseReference}`);
 
 				// Upsert appeal case specialisms
 				if (incomingCaseSpecialisms.length) {
@@ -280,9 +283,9 @@ export async function upsertCase(service, message, context) {
 							})
 						)
 					);
-					context.log(`Upserted ${incomingCaseSpecialisms.length} specialisms for case: ${caseReference}`);
+					log(`Upserted ${incomingCaseSpecialisms.length} specialisms for case: ${caseReference}`);
 				} else {
-					context.log(`No specialisms for case ${caseReference}`);
+					log(`No specialisms for case ${caseReference}`);
 				}
 			})
 		);
@@ -298,9 +301,9 @@ export async function upsertCase(service, message, context) {
 				lastPollAt: new Date()
 			}
 		});
-		context.log(`Poll status has been updated`);
+		log(`Poll status has been updated`);
 	} catch (error) {
-		context.log(`Failed to upsert case ${caseReference}:`, error);
+		log(`Failed to upsert case ${caseReference}:`, error);
 		throw new Error(`Failed to upsert case ${caseReference}: ${error}`, { cause: error });
 	}
 }
