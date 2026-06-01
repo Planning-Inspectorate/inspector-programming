@@ -101,6 +101,13 @@ export class CasesClient {
 	 * @returns {import('../types').CaseViewModel}
 	 */
 	caseToViewModel(c) {
+		let hasDesignatedSitesNames = false;
+		try {
+			if (c.designatedSitesNames) {
+				hasDesignatedSitesNames = JSON.parse(c.designatedSitesNames).length > 0;
+			}
+			// eslint-disable-next-line no-empty
+		} catch {} // ignore errors for invalid data
 		return {
 			caseReference: c.caseReference,
 			caseId: c.caseId,
@@ -123,7 +130,7 @@ export class CasesClient {
 			specialismList: c.Specialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 			leadCaseReference: c.leadCaseReference || null,
 			isGreenBelt: c.isGreenBelt || null,
-			designatedSitesNames: c.designatedSitesNames || null,
+			designatedSitesNames: hasDesignatedSitesNames ? JSON.parse(c.designatedSitesNames) : null,
 			typeOfPlanningApplication: c.typeOfPlanningApplication || null,
 			applicationDecision: c.applicationDecision || null,
 
