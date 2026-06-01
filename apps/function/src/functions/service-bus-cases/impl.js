@@ -25,11 +25,15 @@ export function buildHandleCaseMessage(service, schemaName) {
 
 		// Check if schema exists
 		if (!validateCase) {
+			// ensure messages are logged in function traces not just exceptions
+			log('schema not found', schemaName);
 			throw new Error(`Schema not found: ${schemaName}. Ensure the schema is registered in the data-model package.`);
 		}
 
 		// Validate message against schema
 		if (!validateCase(message)) {
+			// ensure messages are logged in function traces not just exceptions
+			log('message failed schema validation', JSON.stringify(validateCase.errors));
 			throw new Error(`Case message failed schema validation: ${JSON.stringify(validateCase.errors)}`);
 		}
 		log(`Message validated successfully against ${schemaName}`);
