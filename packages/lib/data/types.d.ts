@@ -38,7 +38,7 @@ export interface CaseViewModel {
 	specialismList: string | null;
 	leadCaseReference: string | null;
 	isGreenBelt: boolean | null;
-	designatedSitesNames: string;
+	designatedSitesNames: string[] | null;
 	typeOfPlanningApplication: string | null;
 	applicationDecision: string | null;
 	eventType: string | null;
