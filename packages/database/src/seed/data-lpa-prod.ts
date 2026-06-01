@@ -1,6 +1,6 @@
 import { LPA_REGION_IDS } from './lpa-regions.js';
 
-// generated content (using `fetch-lpas.ts), so no need to format only multiple lines
+// generated content (using `fetch-lpas.ts`), so no need to format only multiple lines
 // prettier-ignore
 export const LPAS_PROD = Object.freeze([
     {lpaCode: "Q9999", lpaName: "System Test Borough Council", LpaRegion: { connect: { id: LPA_REGION_IDS.NORTH_1 } }},
