@@ -141,6 +141,11 @@ export async function deleteCase(service, caseReference, context) {
  * @returns {import('@pins/inspector-programming-database/src/client/client.js').Prisma.AppealCaseCreateInput}
  */
 export function mapToDatabase(message, coords) {
+	let designatedSitesNames = null;
+	if (Array.isArray(message.designatedSitesNames) && message.designatedSitesNames.length > 0) {
+		designatedSitesNames = JSON.stringify(message.designatedSitesNames);
+	}
+
 	/** @type {import('@pins/inspector-programming-database/src/client/client.js').Prisma.AppealCaseCreateInput} */
 	const data = {
 		caseReference: message.caseReference,
@@ -166,7 +171,7 @@ export function mapToDatabase(message, coords) {
 		appellantCostsAppliedFor: message.appellantCostsAppliedFor ?? null,
 		lpaCostsAppliedFor: message.lpaCostsAppliedFor ?? null,
 		isGreenBelt: message.isGreenBelt ?? null,
-		designatedSitesNames: message.designatedSitesNames ? JSON.stringify(message.designatedSitesNames) : null,
+		designatedSitesNames,
 		typeOfPlanningApplication: message.typeOfPlanningApplication ?? null,
 		applicationDecision: message.applicationDecision ?? null,
 		isAonbNationalLandscape: message.isAonbNationalLandscape ?? null,

@@ -219,6 +219,15 @@ describe('service-bus-cases', () => {
 				}
 			});
 		});
+
+		test('excludes empty designatedSitesNames', () => {
+			const result = mapToDatabase(msg({ designatedSitesNames: [] }), NULL_COORDS);
+			assert.strictEqual(result.designatedSitesNames, null);
+		});
+		test('includes designatedSitesNames array', () => {
+			const result = mapToDatabase(msg({ designatedSitesNames: ['S1', 'S2'] }), NULL_COORDS);
+			assert.strictEqual(result.designatedSitesNames, '["S1","S2"]');
+		});
 	});
 
 	describe('deleteCase', () => {
