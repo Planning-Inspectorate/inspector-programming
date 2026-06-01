@@ -96,7 +96,8 @@ describe('case/view-model caseToViewModel', () => {
 			allocationBand: baseCase.allocationBand,
 			caseProcedure: baseCase.caseProcedure,
 			caseType: baseCase.caseType,
-			caseAge: baseCase.caseAge
+			caseAge: baseCase.caseAge,
+			designatedSitesNames: ['Site Alpha', 'Site Beta']
 		};
 
 		const casesClient = buildCasesClient(() => baseViewModel);

@@ -13,7 +13,8 @@ export function caseToViewModel(caseClient, c) {
 	const caseToViewModel = caseClient.caseToViewModel(c);
 	const hasSpecialisms = Array.isArray(c.Specialisms) && c.Specialisms.length > 0;
 	const hasLinkedCases = Array.isArray(c.ChildCases) && c.ChildCases.length > 0;
-	const hasDesignatedSitesNames = c.designatedSitesNames && JSON.parse(c.designatedSitesNames).length > 0;
+	const hasDesignatedSitesNames =
+		Array.isArray(caseToViewModel.designatedSitesNames) && caseToViewModel.designatedSitesNames.length > 0;
 	return {
 		...caseToViewModel,
 		siteAddress: c.siteAddressLine1,
@@ -26,7 +27,7 @@ export function caseToViewModel(caseClient, c) {
 		caseStatus: formatTag(c.caseStatus),
 		caseProcedure: c.caseProcedure?.toUpperCase(),
 		isGreenBelt: c.isGreenBelt ? 'Yes' : 'No',
-		designatedSitesNames: hasDesignatedSitesNames ? JSON.parse(c.designatedSitesNames).join(', ') : 'None',
+		designatedSitesNames: hasDesignatedSitesNames ? caseToViewModel.designatedSitesNames.join(', ') : 'None',
 		typeOfPlanningApplication: c.typeOfPlanningApplication
 			? c.typeOfPlanningApplication.replace(/[_-]/g, ' ').toUpperCase()
 			: '',

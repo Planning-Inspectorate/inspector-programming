@@ -34,7 +34,7 @@ describe('CasesClient', () => {
 			lpaCostsAppliedFor: true,
 			inspectorId: null,
 			isGreenBelt: true,
-			designatedSitesNames: 'cSAC',
+			designatedSitesNames: '["cSAC"]',
 			typeOfPlanningApplication: 'prior-approval',
 			applicationDecision: 'refused',
 			eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
@@ -125,7 +125,7 @@ describe('CasesClient', () => {
 					specialisms: undefined,
 					leadCaseReference: null,
 					isGreenBelt: true,
-					designatedSitesNames: 'cSAC',
+					designatedSitesNames: ['cSAC'],
 					typeOfPlanningApplication: 'prior-approval',
 					applicationDecision: 'refused',
 					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
@@ -246,6 +246,36 @@ describe('CasesClient', () => {
 			const viewModel = casesClient.caseToViewModel(caseWithCosts);
 			assert.strictEqual(viewModel.appellantCostsAppliedFor, true);
 			assert.strictEqual(viewModel.lpaCostsAppliedFor, true);
+		});
+
+		it('should map designatedSitesNames to null for empty array', () => {
+			const casesClient = new CasesClient({});
+			const caseWithCosts = {
+				...mockCases[0],
+				designatedSitesNames: '[]'
+			};
+			const viewModel = casesClient.caseToViewModel(caseWithCosts);
+			assert.strictEqual(viewModel.designatedSitesNames, null);
+		});
+
+		it('should handle designatedSitesNames parsing errors', () => {
+			const casesClient = new CasesClient({});
+			const caseWithCosts = {
+				...mockCases[0],
+				designatedSitesNames: 'not JSON'
+			};
+			const viewModel = casesClient.caseToViewModel(caseWithCosts);
+			assert.strictEqual(viewModel.designatedSitesNames, null);
+		});
+
+		it('should handle parsing designatedSitesNames', () => {
+			const casesClient = new CasesClient({});
+			const caseWithCosts = {
+				...mockCases[0],
+				designatedSitesNames: '["S1","S2"]'
+			};
+			const viewModel = casesClient.caseToViewModel(caseWithCosts);
+			assert.deepStrictEqual(viewModel.designatedSitesNames, ['S1', 'S2']);
 		});
 	});
 	describe('deleteCases', () => {
