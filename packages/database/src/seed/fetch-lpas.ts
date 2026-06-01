@@ -33,14 +33,25 @@ async function fetchManageAppealsLpaList() {
 	console.log('merged, prod', prod.length);
 
 	// write the new lists to the data-lpa-* files
-	let devFile = `import { LPA_REGION_IDS } from './lpa-regions.js';\n\n// Test LPAs from Manage appeals\nexport const LPAS_DEV = Object.freeze([`;
+	const devHeader = [
+		`import { LPA_REGION_IDS } from './lpa-regions.js';\n`,
+		'// generated content (using `fetch-lpas.ts`), so no need to format only multiple lines',
+		'// Test LPAs from Manage appeals',
+		'// prettier-ignore'
+	];
+	let devFile = devHeader.join('\n') + `\nexport const LPAS_DEV = Object.freeze([`;
 	for (const lpa of dev) {
 		devFile += `\n    ${printLpa(lpa)},`;
 	}
 	devFile += `\n]);\n`;
 	await writeFile(path.join(import.meta.dirname, 'data-lpa-dev.ts'), devFile);
 
-	let prodFile = `import { LPA_REGION_IDS } from './lpa-regions.js';\n\nexport const LPAS_PROD = Object.freeze([`;
+	const prodHeader = [
+		`import { LPA_REGION_IDS } from './lpa-regions.js';\n`,
+		'// generated content (using `fetch-lpas.ts`), so no need to format only multiple lines',
+		'// prettier-ignore'
+	];
+	let prodFile = prodHeader.join('\n') + `\nexport const LPAS_PROD = Object.freeze([`;
 	for (const lpa of prod) {
 		prodFile += `\n    ${printLpa(lpa)},`;
 	}
