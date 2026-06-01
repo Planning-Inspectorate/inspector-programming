@@ -77,10 +77,18 @@ function mergeLpaLists(
 	for (const lpa of manageAppeals) {
 		const existing = local.find((l) => l.lpaCode === lpa.lpaCode);
 		if (existing) {
-			list.push({
+			const updatedLpa = {
 				...existing,
 				lpaName: lpa.name
-			});
+			};
+			if (lpa.teamId) {
+				const regionId = regions.get(lpa.teamId);
+				if (!regionId) {
+					throw new Error(`no region ID for ${lpa.teamId} for LPA ${lpa.name}`);
+				}
+				updatedLpa.LpaRegion = { connect: { id: regionId as any } };
+			}
+			list.push(updatedLpa);
 		} else {
 			// default null or undefined to WEST_1, for test LPAs
 			const regionId = lpa.teamId ? regions.get(lpa.teamId) : LPA_REGION_IDS.WEST_1;
