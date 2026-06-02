@@ -9,7 +9,7 @@ describe('view-model', () => {
 		test('should use default pagination', () => {
 			const viewModel = toUnassignableCaseListViewModel({}, [], []);
 			assert.strictEqual(viewModel.pagination.page, 1);
-			assert.strictEqual(viewModel.pagination.limit, 25);
+			assert.strictEqual(viewModel.pagination.limit, 1000);
 			assert.strictEqual(viewModel.pagination.total, 0);
 		});
 	});
