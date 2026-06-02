@@ -17,7 +17,7 @@ export function toUnassignableCaseListViewModel(
 ): UnassignableCaseListViewModel {
 	const pagination = {
 		page: query.page ? Number(query.page) : 1,
-		limit: query.limit ? Number(query.limit) : 25,
+		limit: query.limit ? Number(query.limit) : 1000,
 		total: 0
 	};
 
