@@ -24,7 +24,7 @@
 
 {% block pageContent %}
     {% if unassignableList | length %}
-        {% set limits = [25, 50, 100, 250] %}
+        {% set limits = [1000, 2000] %}
         {% set perPageLinks %}
             {% for l in limits %}
                 {% if pagination.limit == l %}
