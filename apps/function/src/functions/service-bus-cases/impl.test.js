@@ -1,6 +1,6 @@
 import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
-import { APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { buildHandleCaseMessage, mapToDatabase, deleteCase, upsertCase } from './impl.js';
 
 // BASE TEST DATA - Single source of truth
@@ -365,6 +365,15 @@ describe('service-bus-cases', () => {
 			const service = svc();
 			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(
 				msg({ padsSapId: 'id-1' }),
+				ctx(MESSAGE_EVENT_TYPE.UPDATE)
+			);
+			assertCalls(service.mocks.delete, 1, 'delete');
+			assertCalls(service.mocks.upsert, 0, 'upsert');
+		});
+		test('deletes when end status', async () => {
+			const service = svc();
+			await buildHandleCaseMessage(service, 'appeal-has.schema.json')(
+				msg({ caseStatus: APPEAL_CASE_STATUS.TRANSFERRED }),
 				ctx(MESSAGE_EVENT_TYPE.UPDATE)
 			);
 			assertCalls(service.mocks.delete, 1, 'delete');

@@ -1,4 +1,4 @@
-import { APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { fetchPostcodeCoordinates } from '@pins/inspector-programming-lib/util/fetch-coordinates.js';
 import { getCachedAjv } from '../../util/cached-ajv.js';
 import { withRetry } from '@pins/inspector-programming-lib/util/database.ts';
@@ -55,6 +55,13 @@ export function buildHandleCaseMessage(service, schemaName) {
 		// If padsSapId is set (case is assigned), delete the case from our database
 		if (message.padsSapId) {
 			log(`Case ${message.caseReference} has padsSapId set (${message.padsSapId}), deleting from database`);
+			await deleteCase(service, message.caseReference, log);
+			return;
+		}
+
+		// if the case is done, delete the case from our database
+		if (END_STATE_APPEAL_STATUSES.includes(message.caseStatus)) {
+			log(`Case ${message.caseReference} has an end-state status (${message.caseStatus}), deleting from database`);
 			await deleteCase(service, message.caseReference, log);
 			return;
 		}
@@ -311,3 +318,16 @@ export async function upsertCase(service, message, log) {
 		throw new Error(`Failed to upsert case ${caseReference}: ${error}`, { cause: error });
 	}
 }
+
+/**
+ * end state appeal statuses
+ *
+ * @type {string[]}
+ */
+const END_STATE_APPEAL_STATUSES = [
+	APPEAL_CASE_STATUS.COMPLETE,
+	APPEAL_CASE_STATUS.INVALID,
+	APPEAL_CASE_STATUS.CLOSED,
+	APPEAL_CASE_STATUS.WITHDRAWN,
+	APPEAL_CASE_STATUS.TRANSFERRED
+];
