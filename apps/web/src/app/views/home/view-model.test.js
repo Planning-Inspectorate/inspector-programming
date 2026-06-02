@@ -10,7 +10,7 @@ import {
 	toCaseViewModel,
 	toInspectorViewModel
 } from './view-model.js';
-import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 
 describe('view-model', () => {
 	describe('calendarViewModel', () => {
@@ -110,6 +110,51 @@ describe('view-model', () => {
 			const viewModel = toCaseViewModel(caseData);
 			assert.strictEqual(viewModel.finalCommentsDate, '', 'HAS cases should not display a Final Comments Date');
 			assert.strictEqual(viewModel.caseTypeShort, 'HAS');
+		});
+		test('should simply map most case statuses', () => {
+			for (const status of Object.values(APPEAL_CASE_STATUS)) {
+				if (status === APPEAL_CASE_STATUS.EVENT || status === APPEAL_CASE_STATUS.AWAITING_EVENT) {
+					continue; // these statuses have some mapping
+				}
+				const caseData = {
+					id: 1,
+					caseType: APPEAL_CASE_TYPE.D,
+					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+					caseStatus: status
+				};
+				const viewModel = toCaseViewModel(caseData);
+				assert.strictEqual(viewModel.caseStatus, status.replaceAll('_', ' ').toUpperCase());
+			}
+		});
+		test('should map case status for written', () => {
+			const caseData = {
+				id: 1,
+				caseType: APPEAL_CASE_TYPE.D,
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				caseStatus: APPEAL_CASE_STATUS.EVENT
+			};
+			const viewModel = toCaseViewModel(caseData);
+			assert.strictEqual(viewModel.caseStatus, 'SITE VISIT READY TO SET UP');
+		});
+		test('should map case status for hearings', () => {
+			const caseData = {
+				id: 1,
+				caseType: APPEAL_CASE_TYPE.D,
+				caseProcedure: APPEAL_CASE_PROCEDURE.HEARING,
+				caseStatus: APPEAL_CASE_STATUS.EVENT
+			};
+			const viewModel = toCaseViewModel(caseData);
+			assert.strictEqual(viewModel.caseStatus, 'HEARING READY TO SET UP');
+		});
+		test('should map case status for inquiries', () => {
+			const caseData = {
+				id: 1,
+				caseType: APPEAL_CASE_TYPE.D,
+				caseProcedure: APPEAL_CASE_PROCEDURE.INQUIRY,
+				caseStatus: APPEAL_CASE_STATUS.EVENT
+			};
+			const viewModel = toCaseViewModel(caseData);
+			assert.strictEqual(viewModel.caseStatus, 'INQUIRY READY TO SET UP');
 		});
 	});
 

@@ -1,7 +1,7 @@
 import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
 import { generateCalendar, generateDatesList, generateTimeList, generateWeekTitle } from '../../calendar/calendar.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 import { appealTypes } from '../../specialism/specialism.js';
 import { SPECIAL_CIRCUMSTANCES } from '@pins/inspector-programming-lib/data/special-circumstances.js';
 
@@ -55,10 +55,43 @@ export function toCaseViewModel(c) {
 		...c,
 		procedureShort: shortProcedure(c.caseProcedure),
 		caseTypeShort: shortCaseType(c.caseType),
-		caseStatus: c.caseStatus?.replace('_', ' ').toUpperCase(),
+		caseStatus: toUserCaseStatus(c.caseStatus, c.caseProcedure)?.replaceAll('_', ' ').toUpperCase(),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
 		caseAgeColor: getCaseColor(c.caseAge)
 	};
+}
+
+/**
+ * duplicating logic from Manage appeals for status display
+ *
+ * @see https://github.com/Planning-Inspectorate/appeals-back-office/blob/691c838b99a121fb723bbe2a7e560e657962c83b/appeals/web/src/server/lib/appeal-status.js#L13
+ *
+ * @param {string|null} caseStatus
+ * @param {string|null} caseProcedure
+ * @returns {string|null}
+ */
+export function toUserCaseStatus(caseStatus, caseProcedure) {
+	if (caseStatus === APPEAL_CASE_STATUS.EVENT) {
+		return caseProcedureToEventName(caseProcedure) + '_ready_to_set_up';
+	} else if (caseStatus === APPEAL_CASE_STATUS.AWAITING_EVENT) {
+		return 'awaiting_' + caseProcedureToEventName(caseProcedure);
+	}
+	return caseStatus;
+}
+
+/**
+ * duplicating logic from Manage appeals for status display
+ *
+ * @see https://github.com/Planning-Inspectorate/appeals-back-office/blob/691c838b99a121fb723bbe2a7e560e657962c83b/appeals/web/src/server/lib/appeal-status.js#L33
+ *
+ * @param {string}caseProcedure
+ * @returns {string}
+ */
+function caseProcedureToEventName(caseProcedure) {
+	if (caseProcedure === APPEAL_CASE_PROCEDURE.HEARING || caseProcedure === APPEAL_CASE_PROCEDURE.INQUIRY) {
+		return caseProcedure;
+	}
+	return 'site_visit';
 }
 
 export function shortCaseType(caseType) {
