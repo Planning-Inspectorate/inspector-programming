@@ -19,20 +19,20 @@ describe('appeal-status', () => {
 		it('should filter out excluded statuses', () => {
 			const inputCases = [
 				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
-				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT },
+				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.EVENT },
 				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.READY_TO_START }
 			];
 
 			const results = filterAssignableOrEndedStatuses(inputCases);
 
-			assert.deepStrictEqual(results, [{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT }]);
+			assert.deepStrictEqual(results, [{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.EVENT }]);
 		});
 
 		it('should return empty array when all cases are excluded', () => {
 			const inputCases = [
 				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER },
 				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.VALIDATION },
-				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.EVENT }
+				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT }
 			];
 
 			const results = filterAssignableOrEndedStatuses(inputCases);
@@ -44,7 +44,7 @@ describe('appeal-status', () => {
 	describe('filterAssignableCases', () => {
 		it('should return only cases with allowed statuses', () => {
 			const inputCases = [
-				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT },
+				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.EVENT },
 				{ caseId: 2, caseStatus: APPEAL_CASE_STATUS.CLOSED },
 				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE }
 			];
@@ -52,7 +52,7 @@ describe('appeal-status', () => {
 			const results = filterAssignableCases(inputCases);
 
 			assert.deepStrictEqual(results, [
-				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT },
+				{ caseId: 1, caseStatus: APPEAL_CASE_STATUS.EVENT },
 				{ caseId: 3, caseStatus: APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE }
 			]);
 		});
