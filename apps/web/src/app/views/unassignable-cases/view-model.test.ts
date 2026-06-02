@@ -26,7 +26,7 @@ describe('view-model', () => {
 		test('should support not assignable status', () => {
 			const reason = getUnassignableReason(
 				{
-					caseStatus: APPEAL_CASE_STATUS.EVENT
+					caseStatus: APPEAL_CASE_STATUS.AWAITING_EVENT
 				},
 				[]
 			);
