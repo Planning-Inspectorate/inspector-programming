@@ -1,7 +1,8 @@
-import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { fetchPostcodeCoordinates } from '@pins/inspector-programming-lib/util/fetch-coordinates.js';
 import { getCachedAjv } from '../../util/cached-ajv.js';
 import { withRetry } from '@pins/inspector-programming-lib/util/database.ts';
+import { END_STATE_APPEAL_STATUSES } from '@pins/inspector-programming-lib/data/database/appeal-status.js';
 
 /**
  * @param {import('../../service').FunctionService} service
@@ -318,16 +319,3 @@ export async function upsertCase(service, message, log) {
 		throw new Error(`Failed to upsert case ${caseReference}: ${error}`, { cause: error });
 	}
 }
-
-/**
- * end state appeal statuses
- *
- * @type {string[]}
- */
-const END_STATE_APPEAL_STATUSES = [
-	APPEAL_CASE_STATUS.COMPLETE,
-	APPEAL_CASE_STATUS.INVALID,
-	APPEAL_CASE_STATUS.CLOSED,
-	APPEAL_CASE_STATUS.WITHDRAWN,
-	APPEAL_CASE_STATUS.TRANSFERRED
-];
