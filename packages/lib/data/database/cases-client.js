@@ -1,4 +1,4 @@
-import { filterAssignableOrEndedStatuses } from './appeal-status.js';
+import { END_STATE_APPEAL_STATUSES, filterAssignableOrEndedStatuses } from './appeal-status.js';
 
 /**
  * Client for fetching case data from the Prisma database for the application,
@@ -76,6 +76,10 @@ export class CasesClient {
 			where: {
 				caseReference: {
 					notIn: assignableOrEndedCases.map((c) => c.caseReference)
+				},
+				caseStatus: {
+					// the assignableOrEndedCases list won't include most ended appeals, so explicitly filter them out
+					notIn: END_STATE_APPEAL_STATUSES
 				},
 				OR: [{ linkedCaseStatus: { not: 'Child' } }, { linkedCaseStatus: null }]
 			},
