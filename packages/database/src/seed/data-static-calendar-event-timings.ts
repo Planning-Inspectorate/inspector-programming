@@ -74,6 +74,11 @@ const calendarEventTimingsRules: CalendarEventTimingRule[] = [
 				caseType: APPEAL_CASE_TYPE.ZA, // CAS Advert
 				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
 				allocationLevels: [APPEAL_ALLOCATION_LEVEL.H]
+			},
+			{
+				caseType: APPEAL_CASE_TYPE.H, // Advert
+				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
+				allocationLevels: [APPEAL_ALLOCATION_LEVEL.H]
 			}
 		],
 		prepTime: 2,
