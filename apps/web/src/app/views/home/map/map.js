@@ -10,10 +10,11 @@ const CLUSTER_RADIUS = '300px';
 /**
  * Initialise the OS map
  * @param {string} apiKey
+ * @param {string} cbosUrl
  * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} pins
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').Inspector} [inspector]
  */
-function initialiseMap(apiKey, pins, inspector) {
+function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 	require([
 		'esri/Map',
 		'esri/views/MapView',
@@ -274,7 +275,7 @@ function initialiseMap(apiKey, pins, inspector) {
 				}
 			},
 			popupTemplate: {
-				title: 'Case {caseReference}',
+				title: `<a href="${cbosUrl}appeals-service/appeal-details/{caseId}" class="govuk-link govuk-!-margin-right-2" target="_blank">Case {caseReference}</a>`,
 				content: [
 					{
 						type: 'fields',

@@ -70,4 +70,5 @@ export interface InspectorsViewModel {
 
 export interface MapViewModel {
 	apiKey: string;
+	cbosUrl: string;
 }

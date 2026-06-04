@@ -442,7 +442,7 @@
 
                 {% set mapView %}
                     <div class="home-map">
-                        {{ osMap(map.apiKey, appeals.cases, inspectors.selected) }}
+                        {{ osMap(map.apiKey, map.cbosUrl, appeals.cases, inspectors.selected) }}
                     </div>
                 {% endset %}
 

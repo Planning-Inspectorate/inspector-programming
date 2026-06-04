@@ -39,6 +39,7 @@ describe('controller.js', () => {
 					getEnglandWalesBankHolidays: mock.fn(async () => [])
 				},
 				osMapsApiKey: 'test-api-key',
+				notifyConfig: { cbosLink: 'https://test-cbos-url.com' },
 				getSimplifiedEvents: mock.fn(async () => [])
 			};
 		};
@@ -147,6 +148,9 @@ describe('controller.js', () => {
 			// just check a few fields match
 			assert.strictEqual(args.inspectors.selected.id, inspectorData.id);
 			assert.strictEqual(args.inspectors.selected.name, inspectorData.name);
+			// check map contains both apiKey and cbosUrl
+			assert.strictEqual(args.map.apiKey, 'test-api-key');
+			assert.strictEqual(args.map.cbosUrl, 'https://test-cbos-url.com');
 		});
 		test('should return an error if trying to sort by distance without an inspector selected', async () => {
 			const service = mockService();
@@ -716,7 +720,8 @@ describe('controller.js', () => {
 				},
 				calendarClient: {
 					getEnglandWalesBankHolidays: mock.fn(async () => [])
-				}
+				},
+				notifyConfig: { cbosLink: 'https://test-cbos-url.com' }
 			};
 
 			const req = {
