@@ -161,7 +161,8 @@ export function buildViewHome(service, getEventsFunction) {
 				isCalendarTab || isInspectorTab || selectInspectorError || sortingErrorList.length > 0
 			),
 			map: {
-				apiKey: service.osMapsApiKey
+				apiKey: service.osMapsApiKey,
+				cbosUrl: service.notifyConfig.cbosLink
 			},
 			bankHolidays,
 			successSummary
