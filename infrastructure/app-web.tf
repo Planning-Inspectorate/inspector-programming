@@ -63,6 +63,8 @@ module "app_web" {
     ENTRA_GROUP_ID_TEAM_LEADS    = var.apps_config.auth.groups.team_leads
     ENTRA_GROUP_ID_NATIONAL_TEAM = var.apps_config.auth.groups.national_team
 
+    FEEDBACK_URL = local.key_vault_refs["feedback-url"]
+
     # Gov Notify
     GOV_NOTIFY_API_KEY                                       = local.key_vault_refs["scheduling-gov-notify-api-key"]
     GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE                        = var.apps_config.gov_notify.template_ids.assigned_case

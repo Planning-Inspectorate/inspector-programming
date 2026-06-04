@@ -14,7 +14,8 @@ locals {
   secrets = [
     "os-api-key",
     "scheduling-client-secret",
-    "scheduling-gov-notify-api-key"
+    "scheduling-gov-notify-api-key",
+    "feedback-url"
   ]
 
   key_vault_refs = merge(
