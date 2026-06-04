@@ -10,5 +10,10 @@ import { createBaseApp } from '@pins/inspector-programming-lib/app/app.js';
 export function createApp(service) {
 	const router = buildRouter(service);
 	// create an express app, and configure it for our usage
-	return createBaseApp({ service, configureNunjucks, router, middlewares: [addLocalsConfiguration()] });
+	return createBaseApp({
+		service,
+		configureNunjucks,
+		router,
+		middlewares: [addLocalsConfiguration(service.feedbackUrl)]
+	});
 }

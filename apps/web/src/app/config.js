@@ -62,6 +62,7 @@ export function loadConfig() {
 		NODE_ENV,
 		OS_API_KEY,
 		PORT,
+		FEEDBACK_URL,
 		REDIS_CONNECTION_STRING,
 		SESSION_SECRET,
 		SQL_CONNECTION_STRING
@@ -172,6 +173,7 @@ export function loadConfig() {
 				inspectorGroups: API_INSPECTOR_ENTRA_GROUPS
 			}
 		},
+		feedbackUrl: FEEDBACK_URL || '#',
 		gitSha: GIT_SHA,
 		// the HTTP port to listen on
 		httpPort: httpPort,

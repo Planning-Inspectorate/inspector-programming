@@ -24,6 +24,7 @@ interface Config extends BaseConfig {
 	cases: {
 		casesCacheTtl: number;
 	};
+	feedbackUrl: string;
 	inspectors: {
 		inspectorsCacheTtl: number;
 	};
