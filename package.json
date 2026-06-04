@@ -30,7 +30,7 @@
     "test-coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@azure/functions": "^4.15.0",
+    "@azure/functions": "^4.16.0",
     "@azure/identity": "^4.13.1",
     "@azure/msal-node": "^5.2.2",
     "@date-fns/tz": "^1.5.0",
