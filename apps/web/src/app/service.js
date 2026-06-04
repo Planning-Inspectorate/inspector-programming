@@ -77,6 +77,10 @@ export class WebService extends BaseService {
 		return this.#config.osApi.key;
 	}
 
+	get feedbackUrl() {
+		return this.#config.feedbackUrl;
+	}
+
 	/**
 	 * Returns a cbosApiClient instance for the current user session.
 	 * @param {import('../app/auth/session.service.js').SessionWithAuth} session - The current request session

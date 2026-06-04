@@ -1,6 +1,15 @@
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+
 <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
     document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
 </script>
+
+{{ govukPhaseBanner({
+    tag: {
+        text: "Beta"
+    },
+    html: 'This is a new service. Help us improve it and <a class="govuk-link" href="' + (config.feedbackUrl or '#') + '" target="_blank" rel="noopener noreferrer">give your feedback (opens a new tab)</a>.'
+}) }}
 
 {% block error_summary %}
     {% if errorSummary and errorSummary.length != 0 %}
