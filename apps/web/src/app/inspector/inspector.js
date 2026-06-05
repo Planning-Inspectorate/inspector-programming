@@ -194,8 +194,7 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 		programmeOfficerName: programmeOfficerName,
 		inspectorName: formatInspectorName(inspector),
 		assignmentDate: assignmentDate,
-		selectedCases: caseReferences.join(', '),
-		cbosLink: service.notifyConfig.cbosLink
+		selectedCases: caseReferences.join(', ')
 	};
 	await service.notifyClient.sendAssignedCaseProgrammeOfficerEmail(programmeOfficerEmail, options);
 }
