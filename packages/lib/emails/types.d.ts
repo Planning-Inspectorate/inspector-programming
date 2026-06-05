@@ -25,7 +25,7 @@ export interface AssignedCasePersonalisation extends SelfAssignedCasePersonalisa
 	cbosLink: string;
 }
 
-export interface AssignedCaseProgrammeOfficerPersonalisation extends AssignedCasePersonalisation {
+export interface AssignedCaseProgrammeOfficerPersonalisation extends SelfAssignedCasePersonalisation {
 	programmeOfficerName: string;
 }
 
