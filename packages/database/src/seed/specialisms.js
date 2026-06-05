@@ -1,7 +1,5 @@
 export const SPECIALISMS = Object.freeze([
 	'General allocation',
-	'Schedule 1',
-	'Schedule 2',
 	'Enforcement',
 	'Housing orders',
 	'Rights of way',

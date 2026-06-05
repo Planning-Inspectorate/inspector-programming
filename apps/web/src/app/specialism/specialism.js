@@ -132,14 +132,6 @@ export const specialisms = [
 		text: 'General allocation'
 	},
 	{
-		value: 'Schedule 1',
-		text: 'Schedule 1'
-	},
-	{
-		value: 'Schedule 2',
-		text: 'Schedule 2'
-	},
-	{
 		value: 'Enforcement',
 		text: 'Enforcement'
 	},
