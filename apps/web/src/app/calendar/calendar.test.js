@@ -543,7 +543,9 @@ describe('calendar', () => {
 			caseProcedure: 'W',
 			caseLevel: 'B',
 			appellantCostsAppliedFor: true,
-			lpaCostsAppliedFor: false
+			lpaCostsAppliedFor: false,
+			siteAddressLine1: '1 Main Street',
+			siteAddressPostcode: 'AB12 3YZ'
 		};
 
 		//mock implementations
@@ -1349,6 +1351,66 @@ describe('calendar', () => {
 				// verify doubled time allocation (2 hours instead of 1)
 				assertEventDates(res[3], 9, 10, 9, 11);
 			});
+		});
+		describe('location displayName', () => {
+			const displayNameTests = [
+				{
+					data: {
+						siteAddressLine1: '1 Main Street',
+						siteAddressPostcode: 'AB12 3YZ'
+					},
+					expect: {
+						displayName: '1 Main Street, AB12 3YZ'
+					}
+				},
+				{
+					data: {
+						siteAddressLine1: '1 Main Street',
+						siteAddressPostcode: null
+					},
+					expect: {
+						displayName: '1 Main Street'
+					}
+				},
+				{
+					data: {
+						siteAddressLine1: null,
+						siteAddressPostcode: 'AB12 3YZ'
+					},
+					expect: {
+						displayName: 'AB12 3YZ'
+					}
+				},
+				{
+					data: {
+						siteAddressLine1: null,
+						siteAddressPostcode: null
+					},
+					expect: {
+						displayName: 'Unknown'
+					}
+				}
+			];
+			for (const { data, expect } of displayNameTests) {
+				it(`should handle location: ${JSON.stringify(data)}`, async () => {
+					const service = mockService();
+					const res = await generateCaseCalendarEvents(service, '2025-10-08', [
+						{
+							...appeal,
+							...data
+						}
+					]);
+					assert.strictEqual(res.length, 4);
+
+					//check location information
+					const siteVisit = res[1];
+					assert.ok(siteVisit.location);
+					assert.ok(siteVisit.location.address);
+					assert.strictEqual(siteVisit.location.displayName, expect.displayName);
+					assert.strictEqual(siteVisit.location.address?.street, data.siteAddressLine1);
+					assert.strictEqual(siteVisit.location.address?.postalCode, data.siteAddressPostcode);
+				});
+			}
 		});
 	});
 

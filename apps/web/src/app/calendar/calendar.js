@@ -545,6 +545,14 @@ function stageLookup(stageString, timingRule) {
  * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput}
  */
 function buildEventJson(event, extensionProps) {
+	let locationDisplayName = 'Unknown';
+	if (event.streetAddress && event.postcode) {
+		locationDisplayName = event.streetAddress + ', ' + event.postcode;
+	} else if (event.streetAddress) {
+		locationDisplayName = event.streetAddress;
+	} else if (event.postcode) {
+		locationDisplayName = event.postcode;
+	}
 	return {
 		subject: event.subject,
 		start: {
@@ -556,6 +564,7 @@ function buildEventJson(event, extensionProps) {
 			timeZone: 'GMT Standard Time'
 		},
 		location: {
+			displayName: locationDisplayName,
 			address: {
 				street: event.streetAddress,
 				postalCode: event.postcode

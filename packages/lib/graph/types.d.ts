@@ -1,4 +1,5 @@
 import { CachedEntraClient } from './cached-entra-client';
+import { Event } from '@microsoft/microsoft-graph-types';
 
 export interface GroupMember {
 	id: string;
@@ -55,6 +56,9 @@ interface AuthSession {
 	};
 }
 
+/**
+ * @see https://learn.microsoft.com/en-us/graph/api/resources/event?view=graph-rest-1.0#properties
+ */
 export interface CalendarEventInput {
 	subject: string;
 	start: {
@@ -66,6 +70,7 @@ export interface CalendarEventInput {
 		timeZone: string;
 	};
 	location: {
+		displayName: string;
 		address: {
 			street: string | null;
 			postalCode: string | null;
