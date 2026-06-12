@@ -25,7 +25,11 @@ export function loadConfig() {
 		SERVICE_BUS_APPEAL_EVENT_TOPIC,
 		SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION,
 		SYNC_CASES_TRANSACTION_WAIT_TIME_MS,
-		SYNC_CASES_TRANSACTION_TIMEOUT_MS
+		SYNC_CASES_TRANSACTION_TIMEOUT_MS,
+		APPINSIGHTS_WORKSPACE_ID,
+		GOV_NOTIFY_API_KEY,
+		GOV_NOTIFY_WEEKLY_REPORT_TEMPLATE_ID,
+		WEEKLY_REPORT_EMAIL_ADDRESS
 	} = process.env;
 
 	if (!SQL_CONNECTION_STRING) {
@@ -67,6 +71,12 @@ export function loadConfig() {
 		syncCases: {
 			transactionWaitTime: parseInt(SYNC_CASES_TRANSACTION_WAIT_TIME_MS || 30000), // default to 30s
 			transactionTimeout: parseInt(SYNC_CASES_TRANSACTION_TIMEOUT_MS || 60000) // default to 60s
+		},
+		weeklyReport: {
+			appInsightsWorkspaceId: APPINSIGHTS_WORKSPACE_ID,
+			notifyApiKey: GOV_NOTIFY_API_KEY,
+			notifyTemplateId: GOV_NOTIFY_WEEKLY_REPORT_TEMPLATE_ID,
+			emailAddress: WEEKLY_REPORT_EMAIL_ADDRESS
 		}
 	};
 }
