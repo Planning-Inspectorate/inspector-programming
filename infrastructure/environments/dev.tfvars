@@ -41,6 +41,7 @@ apps_config = {
       assigned_case_programme_officer      = "25645f3f-5775-4316-9778-e99c081d2e18"
       self_assigned_case                   = "99089e3c-179c-4560-ba35-6775ba5e5ca2"
       self_assigned_case_programme_officer = "6dc1cb2f-4ae6-4dfc-8815-22e09601c91c"
+      weekly_report                        = "df5a85cb-ec59-42bc-869f-53eb71e1d935"
     }
   }
 
