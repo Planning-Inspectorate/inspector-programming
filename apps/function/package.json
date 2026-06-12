@@ -16,7 +16,8 @@
     "@pins/inspector-programming-lib": "^0.0.0",
     "@planning-inspectorate/data-model": "*",
     "ajv": "*",
-    "dotenv": "*"
+    "dotenv": "*",
+    "notifications-node-client": "*"
   },
   "imports": {
     "#pins/inspector-programming-lib/*": "./src/packages/inspector-programming-lib/*",

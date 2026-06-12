@@ -31,4 +31,10 @@ interface Config {
 		transactionWaitTime: number;
 		transactionTimeout: number;
 	};
+	weeklyReport: {
+		appInsightsWorkspaceId?: string;
+		notifyApiKey?: string;
+		notifyTemplateId?: string;
+		emailAddress?: string;
+	};
 }

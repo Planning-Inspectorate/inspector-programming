@@ -2,6 +2,8 @@ import { newDatabaseClient } from '@pins/inspector-programming-database';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initLogger } from '@pins/inspector-programming-lib/util/logger.js';
+import { ApplicationInsightsClient } from '@pins/inspector-programming-lib/util/app-insights-client.js';
+import { FunctionGovNotifyClient } from './functions/weekly-report/gov-notify-client.js';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -22,6 +24,14 @@ export class FunctionService {
 	dbClient;
 	/** @type {import('@pins/inspector-programming-lib/os/os-api-client.js').OsApiClient} */
 	osApiClient;
+	/**
+	 * @type {import('@pins/inspector-programming-lib/util/app-insights-client.js').ApplicationInsightsClient|undefined}
+	 */
+	appInsightsClient;
+	/**
+	 * @type {import('./functions/weekly-report/gov-notify-client.js').FunctionGovNotifyClient|undefined}
+	 */
+	govNotifyClient;
 
 	/**
 	 * @param {import('./config-types.js').Config} config
@@ -34,6 +44,16 @@ export class FunctionService {
 		const osApiClient = new OsApiClient(config.osApi.key);
 		this.osApiClient = osApiClient;
 		this.cbosClient = new CbosApiClient(config.cbos, osApiClient, logger);
+
+		if (this.weeklyReportEnabled) {
+			const weeklyReport = config.weeklyReport;
+			this.appInsightsClient = new ApplicationInsightsClient(weeklyReport.appInsightsWorkspaceId, logger);
+			this.govNotifyClient = new FunctionGovNotifyClient(
+				logger,
+				weeklyReport.notifyApiKey,
+				weeklyReport.notifyTemplateId
+			);
+		}
 	}
 
 	get inspectorServiceBusConfig() {
@@ -53,5 +73,16 @@ export class FunctionService {
 			maxWait: this.#config.syncCases.transactionWaitTime,
 			timeout: this.#config.syncCases.transactionTimeout
 		};
+	}
+
+	get weeklyReportEnabled() {
+		const config = this.#config.weeklyReport;
+		return Boolean(
+			config.appInsightsWorkspaceId && config.notifyApiKey && config.notifyTemplateId && config.emailAddress
+		);
+	}
+
+	get weeklyReportEmail() {
+		return this.#config.weeklyReport.emailAddress;
 	}
 }

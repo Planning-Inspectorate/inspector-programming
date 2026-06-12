@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import { formatDateForDisplay } from './date.js';
+import { formatDateForDisplay, getPreviousWeekRange } from './date.js';
 
 describe('date', () => {
 	describe('formatDateForDisplay', () => {
@@ -32,5 +32,49 @@ describe('date', () => {
 				assert.strictEqual(got, expected);
 			});
 		}
+	});
+
+	describe('getPreviousWeekRange', () => {
+		test('returns previous week when called on a Friday', () => {
+			// June 12, 2026 is a Friday
+			const referenceDate = new Date('2026-06-12T12:00:00.000Z');
+			const { weekStart, weekEnd } = getPreviousWeekRange(referenceDate);
+
+			// Midnight Monday 1st June
+			assert.strictEqual(weekStart.toISOString(), new Date('2026-05-31T23:00:00.000Z').toISOString());
+			// Midnight Sunday 7th June
+			assert.strictEqual(weekEnd.toISOString(), new Date('2026-06-07T22:59:59.999Z').toISOString());
+		});
+
+		test('returns previous week when called on a Monday', () => {
+			// June 8, 2026 is a Monday
+			const referenceDate = new Date('2026-06-08T12:00:00.000Z');
+			const { weekStart, weekEnd } = getPreviousWeekRange(referenceDate);
+
+			// Midnight Monday 1st June
+			assert.strictEqual(weekStart.toISOString(), new Date('2026-05-31T23:00:00.000Z').toISOString());
+			// Midnight Sunday 7th June
+			assert.strictEqual(weekEnd.toISOString(), new Date('2026-06-07T22:59:59.999Z').toISOString());
+		});
+
+		test('returns previous week when called on a Sunday', () => {
+			// June 7, 2026 is a Sunday
+			const referenceDate = new Date('2026-06-07T12:00:00.000Z');
+			const { weekStart, weekEnd } = getPreviousWeekRange(referenceDate);
+
+			assert.strictEqual(weekStart.toISOString(), new Date('2026-05-24T23:00:00.000Z').toISOString());
+			assert.strictEqual(weekEnd.toISOString(), new Date('2026-05-31T22:59:59.999Z').toISOString());
+		});
+
+		test('returns valid range for default parameter (current date)', (ctx) => {
+			ctx.mock.timers.enable({
+				apis: ['Date'],
+				now: new Date('2026-02-09T09:00:00Z')
+			});
+			const { weekStart, weekEnd } = getPreviousWeekRange();
+
+			assert.strictEqual(weekStart.toISOString(), new Date('2026-02-02T00:00:00.000Z').toISOString());
+			assert.strictEqual(weekEnd.toISOString(), new Date('2026-02-08T23:59:59.999Z').toISOString());
+		});
 	});
 });
