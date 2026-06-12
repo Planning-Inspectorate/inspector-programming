@@ -54,6 +54,12 @@ module "function_integration" {
     SERVICE_BUS_CASE_S78_SUBSCRIPTION                    = azurerm_servicebus_subscription.appeal_s78.name
     SERVICE_BUS_APPEAL_EVENT_TOPIC                       = data.azurerm_servicebus_topic.appeal_event.name
     SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION                = azurerm_servicebus_subscription.appeal_event.name
+
+    #weekly report config
+    APPINSIGHTS_WORKSPACE_ID             = azurerm_log_analytics_workspace.main.workspace_id
+    GOV_NOTIFY_API_KEY                   = local.key_vault_refs["scheduling-gov-notify-api-key"]
+    GOV_NOTIFY_WEEKLY_REPORT_TEMPLATE_ID = var.apps_config.gov_notify.template_ids.weekly_report
+    WEEKLY_REPORT_EMAIL_ADDRESS          = local.key_vault_refs["weekly-report-email"]
   }
 }
 
@@ -61,5 +67,12 @@ module "function_integration" {
 resource "azurerm_role_assignment" "function_integration_secrets_user" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Secrets User"
+  principal_id         = module.function_integration.principal_id
+}
+
+## RBAC for reading logs
+resource "azurerm_role_assignment" "function_integration_logs" {
+  scope                = azurerm_log_analytics_workspace.main.id
+  role_definition_name = "Log Analytics Data Reader"
   principal_id         = module.function_integration.principal_id
 }

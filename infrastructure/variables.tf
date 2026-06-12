@@ -45,6 +45,7 @@ variable "apps_config" {
         assigned_case_programme_officer      = string
         self_assigned_case                   = string
         self_assigned_case_programme_officer = string
+        weekly_report                        = string
       })
     })
 
