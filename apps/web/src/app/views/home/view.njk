@@ -64,6 +64,38 @@
                     {{ compileSortPaginationQueryFields(filters) }}
                     <input type="hidden" name="page" value="{{ filters.query.page }}">
                 </form>
+                <h2 class="govuk-heading-m">Options</h2>
+
+                <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 20px 0; padding: 0;">
+                    <div style="margin-bottom: 10px;">
+                        <span class="govuk-body">Sort by:</span>
+                        {% set sorts = [
+                            { label: "Age", value: "age" },
+                            { label: "Distance", value: "distance" }
+                        ] %}
+                        {% for s in sorts %}
+                        <a data-sort="{{ s.value }}"
+                           href=''
+                           class="sort-pagination-link {% if filters.query.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                            {{ s.label }}</a>{% if not loop.last %} | {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <span class="govuk-body">Cases per page:</span>
+                        {% set limits = [2000, 1000, 500] %}
+                        {% for l in limits %}
+                        <a  data-limit="{{ l }}"
+                            href=''
+                            class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
+                            {{ l }}</a>{% if not loop.last %} | {% endif %}
+                        {% endfor %}
+                    </div>
+                    {{ compileFilterQueryFields(filters) }}
+                    {{ compileSortPaginationQueryFields(filters)}}
+                    <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                    <input type="hidden" name="page" value="{{ filters.query.page }}">
+                </form>
+
                 <div class="app-filters">
                     <form method="get" novalidate>
                         <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
@@ -370,39 +402,8 @@
                 </h1>
 
                 {% set casesTable %}
-                    <div style="margin: 0; padding: 0;">
-                        <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">
-                            <div style="margin-bottom: 10px;">
-                                <span class="govuk-body">Sort by:</span>
-                                {% set sorts = [
-                                    { label: "Age", value: "age" },
-                                    { label: "Distance", value: "distance" }
-                                ] %}
-                                {% for s in sorts %}
-                                <a data-sort="{{ s.value }}"
-                                   href=''
-                                   class="sort-pagination-link {% if filters.query.sort == s.value %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
-                                    {{ s.label }}</a>{% if not loop.last %} | {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div>
-                                <span class="govuk-body">Cases per page:</span>
-                                {% set limits = [2000, 1000, 500, 250] %}
-                                {% for l in limits %}
-                                <a  data-limit="{{ l }}"
-                                    href=''
-                                    class="sort-pagination-link {% if filters.query.limit == l %} selected govuk-body govuk-!-font-weight-bold{% else %}govuk-link govuk-link--no-visited-state{% endif %}">
-                                    {{ l }}</a>{% if not loop.last %} | {% endif %}
-                                {% endfor %}
-                            </div>
-                            {{ compileFilterQueryFields(filters) }}
-                            {{ compileSortPaginationQueryFields(filters)}}
-                            <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
-                            <input type="hidden" name="page" value="{{ filters.query.page }}">
-                        </form>
-                        <div class="govuk-!-margin-top-2 govuk-body govuk-!-font-weight-bold">
-                            {{ filters.pagination.total }} result{{ 's' if filters.pagination.total != 1 else '' }}{% if hasActiveFilters %} (filter applied){% endif %}
-                        </div>
+                    <div class="govuk-body govuk-!-font-weight-bold govuk-!-margin-0">
+                        {{ filters.pagination.total }} result{{ 's' if filters.pagination.total != 1 else '' }}{% if hasActiveFilters %} (filter applied){% endif %}
                     </div>
                     <form method="post" action="/cases" novalidate>
                         <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
