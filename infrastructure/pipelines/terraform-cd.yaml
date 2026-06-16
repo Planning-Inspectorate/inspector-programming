@@ -25,12 +25,9 @@ extends:
       - name: Test
         dependsOn:
           - Dev
-      - name: Training
-        dependsOn:
-          - Test
       - name: Prod
         dependsOn:
-          - Training
+          - Test
     serviceConnectionPrefix: Azure DevOps Pipelines - Inspector Programming - Infrastructure
     storageAccountName: pinssttfstateuksscheduli
     resourceGroupName: pins-rg-shared-terraform-uks
