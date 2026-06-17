@@ -178,33 +178,92 @@ export function generateCalendar(startDate, events) {
 	}
 
 	if (events) {
-		events.forEach((event) => {
+		// render longer (multi-day/multi-week) events first so that shorter, more specific
+		// events are drawn on top of them where they overlap, regardless of input order
+		const orderedEvents = [...events].sort((a, b) => {
+			const aDuration = new Date(a.endDateTime).getTime() - new Date(a.startDateTime).getTime();
+			const bDuration = new Date(b.endDateTime).getTime() - new Date(b.startDateTime).getTime();
+			return bDuration - aDuration;
+		});
+
+		orderedEvents.forEach((event) => {
 			const start = new Date(event.startDateTime);
 			const end = new Date(event.endDateTime);
 
-			if (start.getTime() >= startDate.getTime() && start.getTime() <= weekEndDate.getTime()) {
-				const dayIndex = parseInt(format(start, 'i', { in: timeZone })) - 1; // Monday = 0, Sunday = 6
-				const startHour = start.getHours();
-				const startMinutes = start.getMinutes();
-				const endHour = end.getHours();
-				const endMinutes = end.getMinutes();
+			// an event may span multiple days (or multiple weeks); render a segment in each day's
+			// column of the displayed week that the event overlaps. Each day is clamped to the
+			// working day window (08:00 - 18:00) so events starting before, or ending after, the
+			// displayed week are handled correctly.
+			for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+				const dayStart = weekDayAtUtc8(startDate, dayIndex); // 08:00 of this column's day
+				const dayEnd = setUtcHours(dayStart, 18); // 18:00 of this column's day
 
-				const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
-				const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
+				// clamp the event to this day's working window
+				const segmentStart = start > dayStart ? start : dayStart;
+				const segmentEnd = end < dayEnd ? end : dayEnd;
 
-				const validStartRow = Math.max(0, startRow);
-				for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
-					calendarGrid[i][dayIndex].text = i === startRow ? event.subject : '';
-					calendarGrid[i][dayIndex].location = i === startRow ? event.location : '';
-					calendarGrid[i][dayIndex].address = i === startRow + 1 ? event.address : '';
-					calendarGrid[i][dayIndex].isEvent = true;
-					calendarGrid[i][dayIndex].status = event.status;
-				}
+				// skip days the event does not overlap
+				if (segmentStart >= segmentEnd) continue;
+
+				fillEventDay(calendarGrid, dayIndex, segmentStart, segmentEnd, event);
 			}
 		});
 	}
 
 	return calendarGrid;
+}
+
+/**
+ * Fills a single day's column of the calendar grid for the given event segment.
+ * @param {import('./types').CalendarEntry[][]} calendarGrid
+ * @param {number} dayIndex
+ * @param {Date} segmentStart
+ * @param {Date} segmentEnd
+ * @param {import("./types").Event} event
+ */
+function fillEventDay(calendarGrid, dayIndex, segmentStart, segmentEnd, event) {
+	const startHour = segmentStart.getHours();
+	const startMinutes = segmentStart.getMinutes();
+	const endHour = segmentEnd.getHours();
+	const endMinutes = segmentEnd.getMinutes();
+
+	const startRow = (startHour - 8) * 2 + (startMinutes === 30 ? 1 : 0);
+	const endRow = (endHour - 8) * 2 + (endMinutes === 30 ? 0 : -1);
+
+	const validStartRow = Math.max(0, startRow);
+	for (let i = validStartRow; i <= endRow && i < calendarGrid.length; i++) {
+		calendarGrid[i][dayIndex].text = i === startRow ? event.subject : '';
+		calendarGrid[i][dayIndex].location = i === startRow ? event.location : '';
+		calendarGrid[i][dayIndex].address = i === startRow + 1 ? event.address : '';
+		calendarGrid[i][dayIndex].isEvent = true;
+		calendarGrid[i][dayIndex].status = event.status;
+	}
+}
+
+/**
+ * Returns the 08:00 (UTC) boundary for the given day column of the displayed week.
+ * The day is derived from the week start's calendar date so it stays consistent
+ * regardless of the host time zone.
+ * @param {Date} weekStartDate
+ * @param {number} dayIndex - 0 = Monday ... 6 = Sunday
+ * @returns {Date}
+ */
+function weekDayAtUtc8(weekStartDate, dayIndex) {
+	return new Date(
+		Date.UTC(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate() + dayIndex, 8, 0, 0, 0)
+	);
+}
+
+/**
+ * Returns a copy of the date with the UTC hours set and minutes/seconds/ms zeroed.
+ * @param {Date} date
+ * @param {number} hours
+ * @returns {Date}
+ */
+function setUtcHours(date, hours) {
+	const d = new Date(date);
+	d.setUTCHours(hours, 0, 0, 0);
+	return d;
 }
 
 /**
