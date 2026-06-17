@@ -221,7 +221,8 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 				{ name: 'caseType', type: 'string' },
 				{ name: 'caseProcedure', type: 'string' },
 				{ name: 'caseLevel', type: 'string' },
-				{ name: 'caseId', type: 'string' }
+				{ name: 'caseId', type: 'string' },
+				{ name: 'finalCommentsDate', type: 'string' }
 			],
 			featureReduction: {
 				type: 'cluster',
@@ -288,6 +289,7 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 							{ fieldName: 'caseType', label: 'Appeal type' },
 							{ fieldName: 'caseProcedure', label: 'Procedure' },
 							{ fieldName: 'caseLevel', label: 'Allocation level' },
+							{ fieldName: 'finalCommentsDate', label: 'Final comments date' },
 							{ fieldName: 'caseId', label: 'Case ID', visible: false }
 						]
 					}
