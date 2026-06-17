@@ -498,6 +498,245 @@ describe('calendar', () => {
 		});
 	});
 
+	it('should support multi-day events', () => {
+		const events = [
+			{
+				subject: 'Test 1',
+				startDateTime: '2025-08-04T09:00:00.000Z',
+				endDateTime: '2025-08-04T09:30:00.000Z',
+				status: 'free',
+				location: 'location 1'
+			},
+			{
+				// this event is Tuesday to Friday
+				subject: 'Test 2',
+				startDateTime: '2025-08-05T10:30:00.000Z',
+				endDateTime: '2025-08-08T11:00:00.000Z',
+				status: 'oof'
+			},
+			{
+				subject: 'Test 3',
+				startDateTime: '2025-08-06T12:00:00.000Z',
+				endDateTime: '2025-08-06T13:00:00.000Z',
+				status: 'busy',
+				address: 'address 3'
+			},
+			{
+				subject: 'Test 4',
+				startDateTime: '2025-08-07T13:30:00.000Z',
+				endDateTime: '2025-08-07T14:30:00.000Z',
+				status: 'tentative',
+				location: 'location 4'
+			},
+			{
+				subject: 'Test 5',
+				startDateTime: '2025-08-08T15:00:00.000Z',
+				endDateTime: '2025-08-08T16:30:00.000Z'
+			}
+		];
+
+		const expectedCalendarData = [
+			{
+				row: ROW_TIMES._09_00,
+				day: COLUMN_DAYS.MONDAY,
+				event: { text: 'Test 1', isEvent: true, isToday: false, status: 'free', location: 'location 1', address: '' }
+			},
+			{
+				row: ROW_TIMES._10_30,
+				day: COLUMN_DAYS.TUESDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.WEDNESDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.THURSDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._12_00,
+				day: COLUMN_DAYS.WEDNESDAY,
+				event: { text: 'Test 3', isEvent: true, isToday: false, status: 'busy', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._12_30,
+				day: COLUMN_DAYS.WEDNESDAY,
+				event: { text: '', isEvent: true, isToday: false, status: 'busy', location: '', address: 'address 3' }
+			},
+			{
+				row: ROW_TIMES._13_30,
+				day: COLUMN_DAYS.THURSDAY,
+				event: {
+					text: 'Test 4',
+					isEvent: true,
+					isToday: false,
+					status: 'tentative',
+					location: 'location 4',
+					address: ''
+				}
+			},
+			{
+				row: ROW_TIMES._14_00,
+				day: COLUMN_DAYS.THURSDAY,
+				event: { text: '', isEvent: true, isToday: false, status: 'tentative', location: '', address: undefined }
+			},
+			{
+				row: ROW_TIMES._15_00,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: 'Test 5', isEvent: true, isToday: false, status: undefined, location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._15_30,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: '', isEvent: true, isToday: false, status: undefined, location: '', address: undefined }
+			},
+			{
+				row: ROW_TIMES._16_00,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: '', isEvent: true, isToday: false, status: undefined, location: '', address: '' }
+			}
+		];
+
+		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0);
+		const calendar = generateCalendar(startDate, events);
+
+		const timezoneOffset = -Math.floor(startDate.getTimezoneOffset() / 30);
+
+		expectedCalendarData.forEach((item) => {
+			assert.deepStrictEqual(calendar[item.row + timezoneOffset][item.day], item.event);
+		});
+	});
+
+	it('should support multi-week events', () => {
+		const events = [
+			{
+				subject: 'Test 1',
+				startDateTime: '2025-08-04T09:00:00.000Z',
+				endDateTime: '2025-08-04T09:30:00.000Z',
+				status: 'free',
+				location: 'location 1'
+			},
+			{
+				// this event is Monday one week til Friday the following week
+				subject: 'Test 2',
+				startDateTime: '2025-07-28T10:30:00.000Z',
+				endDateTime: '2025-08-08T11:00:00.000Z',
+				status: 'oof'
+			},
+			{
+				subject: 'Test 3',
+				startDateTime: '2025-08-06T12:00:00.000Z',
+				endDateTime: '2025-08-06T13:00:00.000Z',
+				status: 'busy',
+				address: 'address 3'
+			},
+			{
+				subject: 'Test 4',
+				startDateTime: '2025-08-07T13:30:00.000Z',
+				endDateTime: '2025-08-07T14:30:00.000Z',
+				status: 'tentative',
+				location: 'location 4'
+			},
+			{
+				subject: 'Test 5',
+				startDateTime: '2025-08-08T15:00:00.000Z',
+				endDateTime: '2025-08-08T16:30:00.000Z'
+			}
+		];
+
+		const expectedCalendarData = [
+			{
+				row: ROW_TIMES._09_00,
+				day: COLUMN_DAYS.MONDAY,
+				event: { text: 'Test 1', isEvent: true, isToday: false, status: 'free', location: 'location 1', address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.MONDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.TUESDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.WEDNESDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.THURSDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._08_00,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: 'Test 2', isEvent: true, isToday: false, status: 'oof', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._12_00,
+				day: COLUMN_DAYS.WEDNESDAY,
+				event: { text: 'Test 3', isEvent: true, isToday: false, status: 'busy', location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._12_30,
+				day: COLUMN_DAYS.WEDNESDAY,
+				event: { text: '', isEvent: true, isToday: false, status: 'busy', location: '', address: 'address 3' }
+			},
+			{
+				row: ROW_TIMES._13_30,
+				day: COLUMN_DAYS.THURSDAY,
+				event: {
+					text: 'Test 4',
+					isEvent: true,
+					isToday: false,
+					status: 'tentative',
+					location: 'location 4',
+					address: ''
+				}
+			},
+			{
+				row: ROW_TIMES._14_00,
+				day: COLUMN_DAYS.THURSDAY,
+				event: { text: '', isEvent: true, isToday: false, status: 'tentative', location: '', address: undefined }
+			},
+			{
+				row: ROW_TIMES._15_00,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: 'Test 5', isEvent: true, isToday: false, status: undefined, location: undefined, address: '' }
+			},
+			{
+				row: ROW_TIMES._15_30,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: '', isEvent: true, isToday: false, status: undefined, location: '', address: undefined }
+			},
+			{
+				row: ROW_TIMES._16_00,
+				day: COLUMN_DAYS.FRIDAY,
+				event: { text: '', isEvent: true, isToday: false, status: undefined, location: '', address: '' }
+			}
+		];
+
+		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0);
+		const calendar = generateCalendar(startDate, events);
+
+		const timezoneOffset = -Math.floor(startDate.getTimezoneOffset() / 30);
+
+		expectedCalendarData.forEach((item) => {
+			assert.deepStrictEqual(calendar[item.row + timezoneOffset][item.day], item.event);
+		});
+	});
+
 	it('should generate default calendar when the events are not scheduled for the current week', () => {
 		const events = [
 			{
