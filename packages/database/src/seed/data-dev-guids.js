@@ -14,7 +14,8 @@ export const inspectorSpecialismIds = [
 	'27fe25d8-8e0a-409b-a22f-fea7104200d8',
 	'03918a8f-37fb-4d17-8fc6-56306a159226',
 	'dcfdbcbf-da14-420a-ba10-4859f578aa17',
-	'd55a9433-70bc-47d3-9fb9-06e774897aee'
+	'd55a9433-70bc-47d3-9fb9-06e774897aee',
+	'a1c3e5f7-9b2d-4e6a-8c0f-1234567890ab'
 ];
 
 export const caseSpecialismIds = [
