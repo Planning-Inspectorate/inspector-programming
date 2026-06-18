@@ -9,6 +9,7 @@ export const SPECIALISMS = Object.freeze([
 	'Access',
 	'Advertisements',
 	'Appearance design',
+	'Architecture design',
 	'High hedges',
 	'Historic heritage',
 	'Listed building and enforcement',

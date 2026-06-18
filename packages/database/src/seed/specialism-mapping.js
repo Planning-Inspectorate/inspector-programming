@@ -3,6 +3,7 @@ export const INSPECTOR_TO_CASE_SPECIALISM_MAP = Object.freeze({
 	Advertisements: 'Advertisements',
 	Airports: 'Transport',
 	'Appearance Design': 'Appearance design',
+	'Architecture Design': 'Architecture design',
 	Enforcement: 'Enforcement',
 	'General Allocation': 'General allocation',
 	Gypsy: 'Gypsy',

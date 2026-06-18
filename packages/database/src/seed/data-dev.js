@@ -348,6 +348,15 @@ const inspectors = [
 						proficiency: 'In Training',
 						validFrom: '2025-06-09T23:00:00Z'
 					}
+				},
+				{
+					where: { id: inspectorSpecialismIds[12] },
+					create: {
+						id: inspectorSpecialismIds[12],
+						name: 'Architecture design',
+						proficiency: 'Trained',
+						validFrom: '2025-06-09T23:00:00Z'
+					}
 				}
 			]
 		}

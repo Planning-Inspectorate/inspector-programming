@@ -168,6 +168,10 @@ export const specialisms = [
 		text: 'Appearance design'
 	},
 	{
+		value: 'Architecture design',
+		text: 'Architecture design'
+	},
+	{
 		value: 'High hedges',
 		text: 'High hedges'
 	},
