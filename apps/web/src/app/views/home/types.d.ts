@@ -1,6 +1,7 @@
 import { CalendarEntry } from '../../calendar/types';
 import { CaseViewModel, Coordinates } from '@pins/inspector-programming-lib/data/types';
 import { InspectorViewModel } from '../../inspector/types';
+import { GeoJsonFeatureCollection } from '@pins/inspector-programming-lib/data/lpa/types';
 import { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from '#util/types';
 
 export interface HomeViewModel extends PageViewModel {
@@ -71,4 +72,5 @@ export interface InspectorsViewModel {
 export interface MapViewModel {
 	apiKey: string;
 	cbosUrl: string;
+	lpaBoundaries?: GeoJsonFeatureCollection;
 }

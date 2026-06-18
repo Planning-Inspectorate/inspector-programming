@@ -1,4 +1,4 @@
-{% macro osMap(apiKey, cbosUrl, cases, selectedInspector) %}
+{% macro osMap(apiKey, cbosUrl, cases, selectedInspector, lpaBoundaries) %}
     <style>
         #map {
             position: absolute;
@@ -44,7 +44,8 @@
 	  const cbosUrl = '{{ cbosUrl }}';
       const inspector = {{ selectedInspector | default({}) | dump | safe }};
       const pins = {{ cases | default([]) | dump | safe }};
+      const lpaBoundaries = {{ lpaBoundaries | default(null) | dump | safe }};
 
-      initialiseMap(apiKey, cbosUrl, pins, inspector);
+      initialiseMap(apiKey, cbosUrl, pins, inspector, lpaBoundaries);
     </script>
 {% endmacro %}

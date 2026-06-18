@@ -1,6 +1,7 @@
 import { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
 import { NotifyConfig } from '@pins/inspector-programming-lib/emails/types';
 import { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
+import { LpaBoundariesApiOptions } from '@pins/inspector-programming-lib/data/lpa/types';
 
 interface Config extends BaseConfig {
 	api: {
@@ -29,6 +30,7 @@ interface Config extends BaseConfig {
 		inspectorsCacheTtl: number;
 	};
 	cbos: ManageAppealsApiOptions;
+	lpaBoundaries?: LpaBoundariesApiOptions;
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;

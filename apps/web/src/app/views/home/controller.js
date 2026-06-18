@@ -134,6 +134,7 @@ export function buildViewHome(service, getEventsFunction) {
 		const successSummary = readSessionData(req, 'success', 'successSummary', null, 'persistence');
 
 		const appeals = appealsViewModel(cases, req);
+		const lpas = await service.lpaBoundariesClient.getLpaBoundaries();
 
 		/** @type {import('./types.js').HomeViewModel} */
 		const viewModel = {
@@ -162,7 +163,8 @@ export function buildViewHome(service, getEventsFunction) {
 			),
 			map: {
 				apiKey: service.osMapsApiKey,
-				cbosUrl: service.notifyConfig.cbosLink
+				cbosUrl: service.notifyConfig.cbosLink,
+				lpas
 			},
 			bankHolidays,
 			successSummary

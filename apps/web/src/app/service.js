@@ -8,6 +8,7 @@ import { ApiService } from '#api-service';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
+import { LpaBoundariesDatabaseClient } from '@pins/inspector-programming-lib/data/database/lpa-boundaries-client.js';
 import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
 
 /**
@@ -44,6 +45,9 @@ export class WebService extends BaseService {
 		this.notifyClient = initGovNotify(config.notify, this.logger);
 
 		this.osApiClient = new OsApiClient(config.osApi.key);
+
+		const oneWeekInMinutes = 60 * 24 * 7;
+		this.lpaBoundariesClient = new LpaBoundariesDatabaseClient(this.dbClient, new MapCache(oneWeekInMinutes));
 	}
 
 	/**

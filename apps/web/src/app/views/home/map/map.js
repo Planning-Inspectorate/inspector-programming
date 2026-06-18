@@ -13,8 +13,9 @@ const CLUSTER_RADIUS = '300px';
  * @param {string} cbosUrl
  * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel[]} pins
  * @param {import('@pins/inspector-programming-database/src/client/client.ts').Inspector} [inspector]
+ * @param {import('@pins/inspector-programming-database/src/client/client.ts').Lpa[]} [lpas]
  */
-function initialiseMap(apiKey, cbosUrl, pins, inspector) {
+function initialiseMap(apiKey, cbosUrl, pins, inspector, lpas) {
 	require([
 		'esri/Map',
 		'esri/views/MapView',
@@ -22,10 +23,22 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 		'esri/layers/VectorTileLayer',
 		'esri/layers/FeatureLayer',
 		'esri/geometry/Point',
+		'esri/geometry/Polygon',
 		'esri/geometry/Circle',
 		'esri/config',
 		'esri/core/reactiveUtils'
-	], function (Map, MapView, Graphic, VectorTileLayer, FeatureLayer, Point, Circle, esriConfig, reactiveUtils) {
+	], function (
+		Map,
+		MapView,
+		Graphic,
+		VectorTileLayer,
+		FeatureLayer,
+		Point,
+		Polygon,
+		Circle,
+		esriConfig,
+		reactiveUtils
+	) {
 		esriConfig.request.interceptors.push({
 			urls: serviceUrl,
 			before: function (params) {
@@ -316,6 +329,79 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 		}
 
 		view.map.add(caseLayer);
+
+		// Add LPA boundary outlines (with name labels) beneath the case markers.
+		// Build esri Polygon graphics directly (rather than a GeoJSONLayer) so we don't
+		// disturb the OS vector basemap's spatial reference / rendering. A FeatureLayer is
+		// used (not a GraphicsLayer) because only FeatureLayers support automatic labelling.
+		function addLpaBoundaries(lpas) {
+			if (!lpas || !Array.isArray(lpas) || lpas.length === 0) {
+				return;
+			}
+
+			const boundaryGraphics = [];
+			let objectId = 1;
+
+			for (const { geometry, lpaName } of lpas) {
+				if (!geometry) {
+					continue;
+				}
+
+				// flatten Polygon / MultiPolygon coordinates into a single rings array
+				let rings;
+				if (geometry.type === 'Polygon') {
+					rings = geometry.coordinates;
+				} else if (geometry.type === 'MultiPolygon') {
+					rings = [];
+					for (const polygon of geometry.coordinates) {
+						rings.push(...polygon);
+					}
+				} else {
+					continue;
+				}
+
+				const polygon = new Polygon({ rings, spatialReference: { wkid: 4326 } });
+				boundaryGraphics.push(
+					new Graphic({
+						geometry: polygon,
+						attributes: { objectId: objectId++, name: lpaName || '' }
+					})
+				);
+			}
+
+			if (boundaryGraphics.length === 0) {
+				return;
+			}
+
+			const boundariesLayer = new FeatureLayer({
+				title: 'LPA boundaries',
+				source: boundaryGraphics,
+				objectIdField: 'objectId',
+				geometryType: 'polygon',
+				spatialReference: { wkid: 4326 },
+				fields: [
+					{ name: 'objectId', type: 'oid' },
+					{ name: 'name', type: 'string' }
+				],
+				popupTemplate: {
+					title: '{name}'
+				},
+				renderer: {
+					type: 'simple',
+					symbol: {
+						type: 'simple-fill',
+						color: [0, 0, 0, 0],
+						outline: { color: '#1d70b8', width: 1 }
+					}
+				}
+			});
+
+			// insert just above the OS basemap (operational layer index 0) so the
+			// boundaries are visible but case/inspector markers still sit on top
+			view.map.add(boundariesLayer, 1);
+		}
+
+		addLpaBoundaries(lpas);
 
 		reactiveUtils.watch(
 			() => view.popup.selectedFeature,
