@@ -160,6 +160,11 @@ model Lpa {
   lpaCode String  @unique
   lpaName String?
 
+  // ONS code (e.g. E60000001) used to link an LPA to its boundary geometry
+  onsCode  String?
+  /// GeoJSON boundary geometry stored as a JSON string
+  geometry String? @db.NVarChar(Max)
+
   lpaRegionId String    @db.UniqueIdentifier
   LpaRegion   LpaRegion @relation(fields: [lpaRegionId], references: [id])
 
