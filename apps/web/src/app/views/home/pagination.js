@@ -14,7 +14,8 @@ export function paginationValues(query, total, formData) {
 	return {
 		previous: page > 1 ? { href: buildQueryString(params, page - 1) } : null,
 		next: page < totalPages ? { href: buildQueryString(params, page + 1) } : null,
-		items: createPaginationItems(page, totalPages, params)
+		items: createPaginationItems(page, totalPages, params),
+		total
 	};
 }
 

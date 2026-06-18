@@ -109,6 +109,29 @@ describe('controller.js', () => {
 			assert.deepStrictEqual(args.filters.query.case.lpaRegion, ['North']);
 		});
 
+		test('should pass filtered total case count to pagination for table results display', async () => {
+			const service = mockService();
+			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
+				cases: [{ id: 1 }, { id: 2 }, { id: 3 }],
+				total: 37,
+				page: 1
+			}));
+
+			const req = {
+				url: '/?filters[lpaRegion][]=North&filters[minimumAge]=10',
+				query: {
+					'filters[lpaRegion]': ['North'],
+					'filters[minimumAge]': '10'
+				},
+				session: {}
+			};
+			const res = { render: mock.fn() };
+			const controller = buildViewHome(service);
+			await controller(req, res);
+			const args = res.render.mock.calls[0].arguments[1];
+			assert.strictEqual(args.filters.pagination.total, 37);
+		});
+
 		test('should fetch inspector data', async () => {
 			const service = mockService();
 			entraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [

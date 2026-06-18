@@ -4,7 +4,7 @@ import assert from 'assert';
 
 describe('pagination', () => {
 	describe('paginationValues', () => {
-		test('should return correct previous and next links and items', () => {
+		test('should return correct previous and next links and items and total', () => {
 			const req = { query: { sort: 'age', page: 2 } };
 			const total = 25;
 			const formData = { page: 2, limit: 10 };
@@ -14,6 +14,7 @@ describe('pagination', () => {
 			assert.deepStrictEqual(result.next, { href: '?sort=age&page=3' });
 			assert.strictEqual(result.items.length, 3);
 			assert.strictEqual(result.items[1].current, true);
+			assert.strictEqual(result.total, total);
 		});
 
 		test('should handle first page correctly', () => {

@@ -27,6 +27,7 @@ export interface Pagination {
 	previous: LinkValue | null;
 	next: LinkValue | null;
 	items: PaginationItem[];
+	total: number;
 }
 
 export type PaginationItem = PaginationEllipsis | PaginationLink;
