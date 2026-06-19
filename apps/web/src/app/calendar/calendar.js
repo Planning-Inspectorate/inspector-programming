@@ -384,6 +384,9 @@ function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEve
 		 */
 		const dayEquivalent = time / 8;
 
+		// remove the +01:00 from the end, the timezone is added separately in the API request
+		const formatDate = (date) => date.toISOString().slice(0, '2026-01-01T00:00:00.000'.length);
+
 		const eventTimings = allocateCalendarEventTime(assignment, inspectorEvents, time);
 		const event = buildEventJson(
 			{
@@ -395,8 +398,8 @@ function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEve
 					stage,
 					String(dayEquivalent)
 				].join(', '),
-				startTime: eventTimings.startTime.toISOString(),
-				endTime: eventTimings.endTime.toISOString(),
+				startTime: formatDate(eventTimings.startTime),
+				endTime: formatDate(eventTimings.endTime),
 				streetAddress: assignedCase.siteAddressLine1,
 				postcode: assignedCase.siteAddressPostcode
 			},
@@ -557,11 +560,11 @@ function buildEventJson(event, extensionProps) {
 		subject: event.subject,
 		start: {
 			dateTime: event.startTime,
-			timeZone: 'GMT Standard Time'
+			timeZone: 'Europe/London'
 		},
 		end: {
 			dateTime: event.endTime,
-			timeZone: 'GMT Standard Time'
+			timeZone: 'Europe/London'
 		},
 		location: {
 			displayName: locationDisplayName,
