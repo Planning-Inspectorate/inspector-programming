@@ -14,6 +14,7 @@ import {
 } from './calendar.js';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 import { fromZonedTime } from 'date-fns-tz';
+import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 
 const timeZoneName = 'Europe/London';
 
@@ -595,8 +596,10 @@ describe('calendar', () => {
 		 * @param {number} hours
 		 */
 		function assertEventDate(dateTime, year, monthIndex, date, hours) {
-			const expected = fromZonedTime(new Date(year, monthIndex, date, hours), timeZoneName).toISOString();
-			assert.strictEqual(new Date(dateTime).toISOString(), expected);
+			const expectedDate = fromZonedTime(new Date(year, monthIndex, date, hours), timeZoneName);
+			const expected = formatDateForDisplay(expectedDate, { format: `yyyy-LL-dd'T'HH:mm:ss.SSS` });
+			// compare formatted strings, e.g. 2025-09-16T13:00:00.000
+			assert.strictEqual(dateTime, expected);
 		}
 
 		it('should generate a list of calendar event json objects for a case', async () => {
