@@ -1,6 +1,8 @@
-const DEFAULT_API_URL = 'https://www.planning.data.gov.uk/entity.json';
+const PLANNING_DATA_API = 'https://www.planning.data.gov.uk/entity.json';
 const DEFAULT_TIMEOUT_MS = 30000;
 const PAGE_LIMIT = 500; // API max page size
+const COUNTIES_API =
+	'https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Counties_and_Unitary_Authorities_December_2025_Boundaries_UK_BFC/FeatureServer/0/query';
 
 /**
  * Client for fetching Local Planning Authority (LPA) boundary geometries from the
@@ -9,6 +11,30 @@ const PAGE_LIMIT = 500; // API max page size
  * @module LpaBoundariesClient
  */
 export class LpaBoundariesClient {
+	async getCountyBoundary(reference: string) {
+		const query = new URLSearchParams({
+			outFields: 'CTYUA25NM',
+			f: 'json',
+			where: `CTYUA25CD = '${reference}'`
+		});
+		const url = COUNTIES_API + '?' + query.toString();
+		const res = await this.fetchWithTimeout(url, 45_000);
+		if (!res.ok) {
+			let body;
+			try {
+				body = await res.text();
+			} catch {}
+			throw new Error(`Failed to fetch county boundary for ${reference}. Status: ${res.status} ${body}`);
+		}
+		const data: ArcgisCountiesResponse | ArcgisErrorResponse = await res.json();
+		if (isError(data)) {
+			throw new Error(`Failed to fetch county boundary for ${reference}, ${JSON.stringify(data.error)}`);
+		}
+		if (data.features.length !== 1) {
+			return null;
+		}
+		return data.features[0].geometry;
+	}
 	/**
 	 * Fetches all LPA boundaries as a single GeoJSON FeatureCollection.
 	 */
@@ -42,7 +68,7 @@ export class LpaBoundariesClient {
 			limit: String(PAGE_LIMIT),
 			offset: String(offset)
 		});
-		const url = `${DEFAULT_API_URL}?${params.toString()}`;
+		const url = `${PLANNING_DATA_API}?${params.toString()}`;
 
 		const response = await this.fetchWithTimeout(url);
 		if (!response.ok) {
@@ -54,8 +80,8 @@ export class LpaBoundariesClient {
 	/**
 	 * Fetch wrapper with timeout.
 	 */
-	async fetchWithTimeout(url: string): Promise<Response> {
-		const timeoutMs = DEFAULT_TIMEOUT_MS;
+	async fetchWithTimeout(url: string, timeout?: number): Promise<Response> {
+		const timeoutMs = timeout || DEFAULT_TIMEOUT_MS;
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -205,4 +231,24 @@ export interface GeoJsonFeature {
 	type: 'Feature';
 	geometry: GeoJsonGeometry | null;
 	properties: Record<string, unknown>;
+}
+
+function isError(res: ArcgisErrorResponse | ArcgisCountiesResponse): res is ArcgisErrorResponse {
+	return 'error' in res;
+}
+
+export interface ArcgisErrorResponse {
+	error: any;
+}
+
+export interface ArcgisCountiesResponse {
+	features: {
+		attributes: {
+			CTYUA25NM: string;
+			CTYUA25CD: string;
+		};
+		geometry: {
+			rings: number[][];
+		};
+	}[];
 }
