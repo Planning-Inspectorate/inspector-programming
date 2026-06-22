@@ -23,7 +23,6 @@
     "date-fns": "*"
   },
   "devDependencies": {
-    "dotenv": "*",
     "prisma": "*"
   }
 }

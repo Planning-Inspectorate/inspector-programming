@@ -1,11 +1,13 @@
-import dotenv from 'dotenv';
+import { loadEnvFile } from 'node:process';
 
 /**
  * @returns {import('./config-types').Config}
  */
 export function loadConfig() {
 	// load configuration from .env file into process.env
-	dotenv.config();
+
+	// prettier-ignore
+	try {loadEnvFile()} catch {/* ignore errors*/}
 
 	// get values from the environment
 	const {
