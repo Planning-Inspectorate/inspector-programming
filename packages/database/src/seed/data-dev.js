@@ -9,7 +9,6 @@ import { mockLocations } from './data-dev-mock-locations.js';
 import { SPECIALISMS, WORKING_ABOVE_BAND_SPECIALISMS } from './specialisms.js';
 import crypto from 'node:crypto';
 import { caseSpecialismIds, inspectorSpecialismIds } from './data-dev-guids.js';
-import { generateCaseEvents } from './data-dev-events.js';
 
 /**
  * @type {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealCaseCreateInput}
@@ -97,8 +96,7 @@ function generateAppeals({ targetCount, idPrefix = 'MOCK-' }) {
 			caseCreatedDate: created,
 			caseValidDate: valid,
 			finalCommentsDueDate: finalCommentsDue,
-			Specialisms: generateCaseSpecialisms(),
-			Events: generateCaseEvents(reference, valid)
+			Specialisms: generateCaseSpecialisms()
 		};
 	});
 
