@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
 import path from 'node:path';
+import { loadEnvFile } from 'node:process';
 import { fileURLToPath } from 'url';
 
 /**
@@ -26,7 +26,8 @@ export function loadConfig() {
 		return config;
 	}
 	// load configuration from .env file into process.env
-	dotenv.config();
+	// prettier-ignore
+	try {loadEnvFile()} catch {/* ignore errors*/}
 
 	// get values from the environment
 	const {
@@ -235,7 +236,8 @@ export function loadBuildConfig() {
  */
 export function loadEnvironmentConfig() {
 	// load configuration from .env file into process.env
-	dotenv.config();
+	// prettier-ignore
+	try {loadEnvFile()} catch {/* ignore errors*/}
 
 	// get values from the environment
 	const { ENVIRONMENT } = process.env;

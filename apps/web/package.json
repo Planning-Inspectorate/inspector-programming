@@ -24,7 +24,6 @@
     "connect-redis": "*",
     "date-fns": "*",
     "date-fns-tz": "*",
-    "dotenv": "*",
     "express": "*",
     "express-session": "*",
     "express-validator": "*",

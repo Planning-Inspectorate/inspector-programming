@@ -10,7 +10,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.21.0"
   },
   "scripts": {
     "check-types": "npx tsc",
@@ -46,7 +46,6 @@
     "connect-redis": "^9.0.0",
     "date-fns": "^4.4.0",
     "date-fns-tz": "^3.2.0",
-    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
