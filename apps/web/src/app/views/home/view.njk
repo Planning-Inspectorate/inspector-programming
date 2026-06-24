@@ -371,6 +371,14 @@
 
                 {% set casesTable %}
                     <div style="margin: 0; padding: 0;">
+
+                        {{ govukButton({
+                            text: "Refresh list",
+                            classes: "govuk-button--secondary",
+                            type: "button",
+                            attributes: { id: "refresh-btn" }
+                        }) }}
+
                         <form id="sort-pagination-form" method="get" class="govuk-form-group" style="margin: 0; padding: 0;">
                             <div style="margin-bottom: 10px;">
                                 <span class="govuk-body">Sort by:</span>
@@ -501,6 +509,14 @@
     </div>
 <script {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
     document.addEventListener('DOMContentLoaded', function () {
+
+      // Handle refresh button click to reload the page
+        const refreshBtn = document.querySelector("#refresh-btn");
+        refreshBtn.addEventListener("click", () => {
+            refreshBtn.disabled = true;
+            refreshBtn.setAttribute("aria-busy", "true");
+            window.location.reload();
+        });
 
         const SELECTED_CASES_KEY = 'selectedCases';
 
