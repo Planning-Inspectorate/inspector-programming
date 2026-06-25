@@ -20,7 +20,7 @@ export class LpaBoundariesDatabaseClient {
 
 	/**
 	 * Fetch all stored LPA boundaries as a GeoJSON FeatureCollection.
-	 * @returns {Promise<import('../lpa/types.d.ts').GeoJsonFeatureCollection>}
+	 * @returns {Promise<{lpaName: string, geometry: []}[]>}
 	 */
 	async getLpaBoundaries() {
 		const cached = this.#cache?.get(CACHE_KEY);
