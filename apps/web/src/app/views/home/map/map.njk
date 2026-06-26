@@ -1,4 +1,4 @@
-{% macro osMap(apiKey, cbosUrl, cases, selectedInspector) %}
+{% macro osMap(apiKey, cbosUrl, cases, selectedInspector, showSelectedFilter) %}
     <style>
         #map {
             position: absolute;
@@ -27,6 +27,18 @@
             height: 100%;
         }
     </style>
+    {% if showSelectedFilter %}
+    <div class="govuk-form-group govuk-!-margin-bottom-2">
+        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="show-selected-cases-only" type="checkbox">
+                <label class="govuk-label govuk-checkboxes__label" for="show-selected-cases-only">
+                    Show selected cases only
+                </label>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     <div class="pins-map">
         <div class="pins-map__container">
             <div id="map" class="pins-map__content"></div>
