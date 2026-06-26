@@ -39,6 +39,16 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 
 		const selectedCaseReferences = new Set();
 
+		// Duplicate colors at boundaries force discrete bands with hard breaks.
+		// Prevents interpolation/gradient between ranges.
+		const colorStops = [
+			{ value: 0, color: '#00703c' },
+			{ value: 20, color: '#00703c' },
+			{ value: 21, color: '#f47738' },
+			{ value: 40, color: '#f47738' },
+			{ value: 41, color: '#d4351c' }
+		];
+
 		/**
 		 * @param {import('@pins/inspector-programming-lib/data/types.js').CaseViewModel} caseData
 		 */
@@ -224,6 +234,22 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 				{ name: 'caseId', type: 'string' },
 				{ name: 'finalCommentsDate', type: 'string' }
 			],
+			// Renderer for individual case markers
+			renderer: {
+				type: 'simple',
+				symbol: {
+					type: 'simple-marker',
+					size: '15px',
+					outline: { color: '#fff', width: 1 }
+				},
+				visualVariables: [
+					{
+						type: 'color',
+						field: 'caseAge',
+						stops: colorStops
+					}
+				]
+			},
 			featureReduction: {
 				type: 'cluster',
 				clusterRadius: CLUSTER_RADIUS,
@@ -252,6 +278,7 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 						onStatisticField: 'caseAge'
 					}
 				],
+				// Renderer for Cluster cases
 				renderer: {
 					type: 'simple',
 					symbol: {
@@ -262,15 +289,7 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 						{
 							type: 'color',
 							field: 'cluster_oldest_case_age',
-							// Duplicate colors at boundaries force discrete bands with hard breaks: 0–20 green, 21–40 orange, 41+ red.
-							// Prevents interpolation/gradient between ranges.
-							stops: [
-								{ value: 0, color: '#00703c' },
-								{ value: 20, color: '#00703c' },
-								{ value: 21, color: '#f47738' },
-								{ value: 40, color: '#f47738' },
-								{ value: 41, color: '#d4351c' }
-							]
+							stops: colorStops
 						}
 					]
 				}
@@ -317,6 +336,22 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 			highlightHandle = caseLayerView.highlight(ids);
 		}
 
+		// keep a reference to the cluster configuration so it can be toggled off/on
+		let showSelectedOnly = false;
+
+		/**
+		 * Restricts the map to show only selected cases, either clustered or individually.
+		 */
+		function applyCaseFilter() {
+			if (showSelectedOnly) {
+				const ids = Array.from(selectedCaseReferences).map((ref) => `'${String(ref).replace(/'/g, "''")}'`);
+				// when nothing is selected, match nothing
+				caseLayer.definitionExpression = ids.length > 0 ? `caseReference IN (${ids.join(',')})` : '1=0';
+			} else {
+				caseLayer.definitionExpression = null;
+			}
+		}
+
 		view.map.add(caseLayer);
 
 		reactiveUtils.watch(
@@ -333,6 +368,15 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 			caseLayerView = layerView;
 			refreshSelectionHighlight();
 		});
+
+		// toggle between showing all (clustered) cases and only the selected cases
+		const showSelectedOnlyToggle = document.getElementById('show-selected-cases-only');
+		if (showSelectedOnlyToggle) {
+			showSelectedOnlyToggle.addEventListener('change', function () {
+				showSelectedOnly = showSelectedOnlyToggle.checked;
+				applyCaseFilter();
+			});
+		}
 
 		for (const graphic of otherGraphics) {
 			view.graphics.add(graphic);
@@ -410,6 +454,10 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 				};
 				graphic.symbol = symbol;
 				refreshSelectionHighlight();
+			}
+			// keep the filtered ("selected only") view in sync with selection changes
+			if (showSelectedOnly) {
+				applyCaseFilter();
 			}
 		});
 	});
