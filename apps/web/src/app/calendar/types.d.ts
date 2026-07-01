@@ -5,6 +5,7 @@ export interface Event {
 	status: string;
 	location: string;
 	address: string;
+	isAllDay: boolean;
 }
 
 export interface CalendarEntry {
