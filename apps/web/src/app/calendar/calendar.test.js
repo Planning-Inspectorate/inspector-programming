@@ -108,7 +108,8 @@ describe('calendar', () => {
 				endDateTime: '2025-08-20T16:00:00.000Z',
 				status: '',
 				location: '',
-				address: 'street 1 city 1 state 1 country 1 post code 1'
+				address: 'street 1 city 1 state 1 country 1 post code 1',
+				isAllDay: undefined
 			},
 			{
 				subject: 'Test 2',
@@ -116,7 +117,8 @@ describe('calendar', () => {
 				endDateTime: '2025-08-20T16:00:00.000Z',
 				status: '',
 				location: 'display name 2',
-				address: ''
+				address: '',
+				isAllDay: undefined
 			},
 			{
 				subject: 'Test 3',
@@ -124,7 +126,8 @@ describe('calendar', () => {
 				endDateTime: '2025-08-20T16:30:00.000Z',
 				status: '',
 				location: '',
-				address: ''
+				address: '',
+				isAllDay: undefined
 			}
 		];
 		const selectedInspector = 'inspector';
@@ -135,10 +138,10 @@ describe('calendar', () => {
 	});
 
 	it('should confine all day event to work hours', async () => {
-		const startDate = new Date(2025, 7, 4, 7, 0, 0, 0).toUTCString();
-		const endDate = new Date(2025, 7, 4, 23, 0, 0, 0).toUTCString();
+		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0).toUTCString();
+		const endDate = new Date(2025, 7, 5, 0, 0, 0, 0).toUTCString();
 		const expectedStartDate = new Date(2025, 7, 4, 8, 0, 0, 0).toISOString();
-		const expectedEndDate = new Date(2025, 7, 4, 18, 0, 0, 0).toISOString();
+		const expectedEndDate = new Date(2025, 7, 4, 18, 0, 59, 999).toISOString();
 
 		const entraEvents = {
 			value: [
@@ -174,7 +177,46 @@ describe('calendar', () => {
 				endDateTime: expectedEndDate,
 				status: '',
 				location: '',
-				address: 'street 1 city 1 state 1 country 1 post code 1'
+				address: 'street 1 city 1 state 1 country 1 post code 1',
+				isAllDay: true
+			}
+		];
+
+		const selectedInspector = 'inspector';
+		mockEntraClient.getUserCalendarEvents.mock.mockImplementationOnce(() => entraEvents);
+		const events = await getSimplifiedEvents(mockInitEntraClient, selectedInspector, mockSession, mockLogger);
+		assert.deepStrictEqual(events, expectedEvents);
+	});
+
+	it('should not add an extra day to a multi-day all day event', async () => {
+		// Outlook reports the end of an all-day event as midnight of the day after it finishes.
+		// A 3-day event (4th-6th) ends at midnight on the 7th; it must not bleed into a 4th day.
+		const startDate = new Date(2025, 7, 4, 0, 0, 0, 0).toUTCString();
+		const endDate = new Date(2025, 7, 7, 0, 0, 0, 0).toUTCString();
+		const expectedStartDate = new Date(2025, 7, 4, 8, 0, 0, 0).toISOString();
+		const expectedEndDate = new Date(2025, 7, 6, 18, 0, 59, 999).toISOString();
+
+		const entraEvents = {
+			value: [
+				{
+					subject: 'Test 1',
+					start: { dateTime: startDate, timeZone: 'Europe/London' },
+					end: { dateTime: endDate, timeZone: 'Europe/London' },
+					location: { displayName: 'display name 1', address: {} },
+					isAllDay: true
+				}
+			]
+		};
+
+		const expectedEvents = [
+			{
+				subject: 'Test 1',
+				startDateTime: expectedStartDate,
+				endDateTime: expectedEndDate,
+				status: '',
+				location: 'display name 1',
+				address: '',
+				isAllDay: true
 			}
 		];
 
@@ -223,7 +265,8 @@ describe('calendar', () => {
 				endDateTime: expectedEndDate,
 				status: '',
 				location: '',
-				address: 'street 1 city 1 state 1 country 1 post code 1'
+				address: 'street 1 city 1 state 1 country 1 post code 1',
+				isAllDay: undefined
 			}
 		];
 
@@ -272,7 +315,8 @@ describe('calendar', () => {
 				endDateTime: expectedEndDate,
 				status: '',
 				location: '',
-				address: 'street 1 city 1 state 1 country 1 post code 1'
+				address: 'street 1 city 1 state 1 country 1 post code 1',
+				isAllDay: undefined
 			}
 		];
 

@@ -40,6 +40,15 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 		const startDateTime = new Date(event.start.dateTime);
 		const endDateTime = new Date(event.end.dateTime);
 
+		// Outlook all-day (and multi-day) events report an exclusive end at midnight of the day
+		// AFTER the event finishes. Roll the end back to the previous day so it doesn't bleed into
+		// an extra day in the calendar.
+		if (event.isAllDay) {
+			startDateTime.setHours(0, 0, 0, 0);
+			endDateTime.setDate(endDateTime.getDate() - 1);
+			endDateTime.setHours(23, 59, 59, 999);
+		}
+
 		if (startDateTime.getHours() < 8) {
 			startDateTime.setHours(8, 0);
 		} else {
@@ -71,7 +80,8 @@ export async function getSimplifiedEvents(initEntraClient, selectedInspector, au
 			endDateTime: endDateTime.toISOString(),
 			status: event.showAs ? event.showAs : '',
 			location: address === '' ? event.location.displayName : '',
-			address: address.trim()
+			address: address.trim(),
+			isAllDay: event.isAllDay
 		};
 	});
 }
@@ -205,6 +215,11 @@ export function generateCalendar(startDate, events) {
 				// skip days the event does not overlap
 				if (segmentStart >= segmentEnd) continue;
 
+				if (event.isAllDay) {
+					fillAllDayEvent(calendarGrid, dayIndex, event);
+					continue;
+				}
+
 				fillEventDay(calendarGrid, dayIndex, segmentStart, segmentEnd, event);
 			}
 		});
@@ -222,6 +237,7 @@ export function generateCalendar(startDate, events) {
  * @param {import("./types").Event} event
  */
 function fillEventDay(calendarGrid, dayIndex, segmentStart, segmentEnd, event) {
+	if (event.isAllDay) return;
 	const startHour = segmentStart.getHours();
 	const startMinutes = segmentStart.getMinutes();
 	const endHour = segmentEnd.getHours();
@@ -238,6 +254,20 @@ function fillEventDay(calendarGrid, dayIndex, segmentStart, segmentEnd, event) {
 		calendarGrid[i][dayIndex].isEvent = true;
 		calendarGrid[i][dayIndex].status = event.status;
 	}
+}
+
+/**
+ * * Fills an entire day's column for an all-day event.
+ * @param {import('./types').CalendarEntry[][]} calendarGrid
+ * @param {number} dayIndex
+ * @param {import('./types').Event} event
+ * */
+function fillAllDayEvent(calendarGrid, dayIndex, event) {
+	for (let i = 0; i < calendarGrid.length; i++) {
+		calendarGrid[i][dayIndex].isEvent = true;
+		calendarGrid[i][dayIndex].status = event.status;
+	}
+	calendarGrid[0][dayIndex].text = event.subject;
 }
 
 /**
