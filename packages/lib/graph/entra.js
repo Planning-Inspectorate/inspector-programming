@@ -3,6 +3,12 @@ import { URL } from 'node:url';
 const PER_PAGE = 500; // max 999 per page
 const MAX_PAGES = 10; // max 5000 entries
 
+/**
+ * the Microsoft Graph $batch endpoint accepts a maximum of 20 requests per batch
+ * https://learn.microsoft.com/en-us/graph/json-batching#batch-size-limitations
+ */
+const MAX_BATCH_SIZE = 20;
+
 // Extension id
 // singleValueExtendedProperty ID for inspector programming extension data
 // GUID is "PS_PUBLIC_STRINGS" - https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/commonly-used-property-sets
@@ -143,6 +149,38 @@ export class EntraClient {
 	 */
 	async createCalendarEvent(event, userId) {
 		await this.#client.api(`users/${userId}/calendar/events`).post(event);
+	}
+
+	/**
+	 * Create multiple calendar events in outlook, batching requests to the Graph $batch endpoint
+	 *
+	 * @see https://learn.microsoft.com/en-us/graph/json-batching
+	 * @param {import('./types').CalendarEventInput[]} events
+	 * @param {string} userId
+	 */
+	async createCalendarEvents(events, userId) {
+		for (let i = 0; i < events.length; i += MAX_BATCH_SIZE) {
+			const batch = events.slice(i, i + MAX_BATCH_SIZE);
+			const requests = batch.map((event, index) => ({
+				id: String(index),
+				method: 'POST',
+				url: `/users/${userId}/calendar/events`,
+				headers: { 'Content-Type': 'application/json' },
+				body: event
+			}));
+
+			const response = await this.#client.api('/$batch').post({ requests });
+
+			// the $batch request itself succeeds even when individual requests fail,
+			// so inspect each response and surface any failures
+			const failures = (response?.responses ?? []).filter((r) => r.status >= 400);
+			if (failures.length > 0) {
+				const details = failures
+					.map((f) => `request ${f.id}: ${f.status} ${f.body?.error?.message ?? ''}`.trim())
+					.join('; ');
+				throw new Error(`Failed to create ${failures.length} calendar event(s): ${details}`);
+			}
+		}
 	}
 
 	async getMetadata() {

@@ -103,7 +103,7 @@ export class CachedEntraClient {
 	 * @param {string} userId
 	 */
 	async createCalendarEvents(events, userId) {
-		await Promise.all(events.map((event) => this.#client.createCalendarEvent(event, userId)));
+		await this.#client.createCalendarEvents(events, userId);
 	}
 
 	async getMetadata() {
