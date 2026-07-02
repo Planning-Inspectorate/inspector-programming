@@ -75,7 +75,7 @@ describe('cached-entra-client', () => {
 		it('should create multiple calendar events', async () => {
 			const cacheMock = {};
 			const clientMock = {
-				createCalendarEvent: mock.fn()
+				createCalendarEvents: mock.fn()
 			};
 			const cacheClient = new CachedEntraClient(clientMock, cacheMock);
 			const userId = 'userID';
@@ -117,11 +117,9 @@ describe('cached-entra-client', () => {
 			};
 
 			await cacheClient.createCalendarEvents([event1, event2], userId);
-			assert.strictEqual(clientMock.createCalendarEvent.mock.callCount(), 2);
-			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[0].arguments[0], event1);
-			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[0].arguments[1], userId);
-			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[1].arguments[0], event2);
-			assert.deepStrictEqual(clientMock.createCalendarEvent.mock.calls[1].arguments[1], userId);
+			assert.strictEqual(clientMock.createCalendarEvents.mock.callCount(), 1);
+			assert.deepStrictEqual(clientMock.createCalendarEvents.mock.calls[0].arguments[0], [event1, event2]);
+			assert.deepStrictEqual(clientMock.createCalendarEvents.mock.calls[0].arguments[1], userId);
 		});
 	});
 });

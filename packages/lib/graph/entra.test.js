@@ -453,4 +453,67 @@ describe('EntraClient', () => {
 			assert.deepStrictEqual(client.post.mock.calls[0].arguments[0], event1);
 		});
 	});
+
+	describe('createCalendarEvents', () => {
+		const buildEvent = (n) => ({
+			subject: `subject${n}`,
+			start: { dateTime: `start${n}`, timeZone: 'timezone' },
+			end: { dateTime: `end${n}`, timeZone: 'timezone' },
+			location: { address: { street: `street ${n}`, postalCode: `postcode ${n}` } }
+		});
+
+		it('should create events in a single batch request', async () => {
+			const client = mockClient();
+			const entra = new EntraClient(client);
+
+			const events = [buildEvent(1), buildEvent(2)];
+			await entra.createCalendarEvents(events, 'userId');
+
+			// a single $batch request containing both events
+			assert.strictEqual(client.post.mock.callCount(), 1);
+			const requests = client.post.mock.calls[0].arguments[0].requests;
+			assert.strictEqual(requests.length, 2);
+			assert.strictEqual(requests[0].method, 'POST');
+			assert.strictEqual(requests[0].url, '/users/userId/calendar/events');
+			assert.deepStrictEqual(requests[0].body, events[0]);
+			assert.deepStrictEqual(requests[1].body, events[1]);
+		});
+
+		it('should split events into batches of 20', async () => {
+			const client = mockClient();
+			const entra = new EntraClient(client);
+
+			const events = Array.from({ length: 45 }, (_, i) => buildEvent(i));
+			await entra.createCalendarEvents(events, 'userId');
+
+			// 45 events -> 20 + 20 + 5 -> 3 batch requests
+			assert.strictEqual(client.post.mock.callCount(), 3);
+			assert.strictEqual(client.post.mock.calls[0].arguments[0].requests.length, 20);
+			assert.strictEqual(client.post.mock.calls[1].arguments[0].requests.length, 20);
+			assert.strictEqual(client.post.mock.calls[2].arguments[0].requests.length, 5);
+		});
+
+		it('should make no requests when there are no events', async () => {
+			const client = mockClient();
+			const entra = new EntraClient(client);
+
+			await entra.createCalendarEvents([], 'userId');
+			assert.strictEqual(client.post.mock.callCount(), 0);
+		});
+
+		it('should throw when an individual request in the batch fails', async () => {
+			const client = mockClient();
+			client.post.mock.mockImplementation(() => ({
+				responses: [
+					{ id: '0', status: 201 },
+					{ id: '1', status: 400, body: { error: { message: 'bad event' } } }
+				]
+			}));
+			const entra = new EntraClient(client);
+
+			await assert.rejects(() => entra.createCalendarEvents([buildEvent(1), buildEvent(2)], 'userId'), {
+				message: /Failed to create 1 calendar event\(s\).*bad event/
+			});
+		});
+	});
 });
