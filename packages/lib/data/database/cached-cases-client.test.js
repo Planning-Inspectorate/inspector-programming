@@ -64,6 +64,21 @@ describe('cached-cases-client', () => {
 			]);
 		});
 
+		it('should return the canonical LPA list from the database as sorted options', async () => {
+			const mockClient = {
+				lastCasesUpdate: mock.fn(),
+				getAllLpaNames: mock.fn(() => ['Bristol City Council', 'Maidstone Borough Council', 'Wiltshire Council'])
+			};
+			const cacheClient = new CachedCasesClient(mockClient);
+			const lpaList = await cacheClient.getLpaList();
+			assert.strictEqual(mockClient.getAllLpaNames.mock.callCount(), 1);
+			assert.deepStrictEqual(lpaList, [
+				{ value: 'Bristol City Council', text: 'Bristol City Council' },
+				{ value: 'Maidstone Borough Council', text: 'Maidstone Borough Council' },
+				{ value: 'Wiltshire Council', text: 'Wiltshire Council' }
+			]);
+		});
+
 		it('should remove cases from cache', async () => {
 			const { cacheClient, mockClient } = await newClientWithCachedValue([
 				{ caseId: 1 },
