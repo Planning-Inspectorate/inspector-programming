@@ -86,6 +86,10 @@ $font-family: arial, helvetica, sans-serif;
 			.govuk-checkboxes__label {
 				padding: 0;
 			}
+
+			.case-row-selected td {
+				background-color: #fff7bfa3;
+			}
 		}
 	}
 }

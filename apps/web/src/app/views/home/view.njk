@@ -520,6 +520,14 @@
 
         const SELECTED_CASES_KEY = 'selectedCases';
 
+        function updateSelectedRowStyle(checkbox) {
+            const row = checkbox?.closest('tr');
+            if (!row) {
+                return;
+            }
+            row.classList.toggle('case-row-selected', checkbox.checked);
+        }
+
         function getStoredSelectedCases() {
             try {
                 return JSON.parse(sessionStorage.getItem(SELECTED_CASES_KEY) || '[]');
@@ -549,7 +557,65 @@
             sessionStorage.removeItem(SELECTED_CASES_KEY);
         {% endif %}
 
-        const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedCases"]');
+        // Cache DOM elements on load
+        const tableBody = document.querySelector('.home-cases-table tbody');
+        const checkboxes = tableBody ? Array.from(tableBody.querySelectorAll('input[type="checkbox"][name="selectedCases"]')) : [];
+
+        /**
+         * Stores the original index of each case row in the table.
+         * Maps caseId -> caseIDToRowIndex.
+         * @type {Map<string, number>}
+         */
+        const caseIDToRowIndex = new Map();
+
+        /**
+         * Maps caseId -> checkbox element for quick lookup
+         * @type {Map<string, HTMLInputElement>}
+         */
+        const caseIdToCheckbox = new Map();
+
+        checkboxes.forEach((cb, index) => {
+            caseIDToRowIndex.set(cb.value, index);
+            caseIdToCheckbox.set(cb.value, cb);
+        });
+
+      // Reorders table rows so checked ones appear first, preserving original order for unchecked rows.
+
+      function syncSelectedCaseRows() {
+
+        if (!tableBody) {
+            return;
+        }
+
+        const selectedRows = [];
+        const unselectedRows = [];
+
+        for (const checkbox of checkboxes) {
+            const row = checkbox.closest('tr');
+            if (!row) {
+                continue;
+            }
+            if (checkbox.checked) {
+                selectedRows.push(row);
+            } else {
+                // Cache the original index so the sort comparator avoids repeated DOM/Map lookups.
+                unselectedRows.push({ row, order: caseIDToRowIndex.get(checkbox.value) });
+            }
+        }
+
+        // Sort unselected rows back into their original page order.
+        unselectedRows.sort((a, b) => a.order - b.order);
+
+        // Batch the reordering into a single reflow
+        const fragment = document.createDocumentFragment();
+        for (const row of selectedRows) {
+            fragment.appendChild(row);
+        }
+        for (const { row } of unselectedRows) {
+            fragment.appendChild(row);
+        }
+        tableBody.appendChild(fragment);
+    }
 
         // Restore checkbox state from sessionStorage on page load
         const storedSelected = getStoredSelectedCases();
@@ -557,7 +623,10 @@
             if (storedSelected.includes(checkbox.value)) {
                 checkbox.checked = true;
             }
+            updateSelectedRowStyle(checkbox);
         });
+
+      syncSelectedCaseRows();
 
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
@@ -575,7 +644,20 @@
             const { caseId, selected } = event.detail;
             console.debug('caseStateChange, syncing checkbox state', caseId, selected);
 
-            document.querySelector(`input[type="checkbox"][name="selectedCases"][value="${caseId}"]`).checked = selected;
+            const checkbox = caseIdToCheckbox.get(String(caseId));
+            if (!checkbox) {
+                return;
+            }
+
+            checkbox.checked = selected;
+            updateSelectedRowStyle(checkbox);
+
+            // Keep selected rows grouped at the top when a case is deselected.
+            // In case lists, we regroup only on deselect — selecting a case doesn’t reorder the list,
+            // as the product decision is to avoid shifting rows on selection.
+            if (!selected) {
+                syncSelectedCaseRows();
+            }
 
             // Persist selection state to sessionStorage
             let stored = getStoredSelectedCases();
@@ -695,6 +777,15 @@
         // this shows an error if no inspector is selected
         registerNoInspectorError('#tab_outlookView', 'calendar');
         registerNoInspectorError('#tab_inspector', 'inspector');
+
+        // Sync the selected rows to the top when the user navigates back to the Cases tab
+        const casesTab = document.querySelector('#tab_cases');
+        if (casesTab) {
+            casesTab.addEventListener('click', () => {
+                syncSelectedCaseRows();
+            });
+        }
+
 
         // configure accessible auto complete for the select inspector input
         if (typeof accessibleAutocomplete !== 'undefined') {
