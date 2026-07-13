@@ -32,7 +32,8 @@ export function caseToViewModel(caseClient, c) {
 			? c.typeOfPlanningApplication.replace(/[_-]/g, ' ').toUpperCase()
 			: '',
 		applicationDecision: c.applicationDecision,
-		isAonbNationalLandscape: c.isAonbNationalLandscape ? 'Yes' : 'No'
+		isAonbNationalLandscape: c.isAonbNationalLandscape ? 'Yes' : 'No',
+		finalCommentsDate: formatDateForDisplay(caseToViewModel.finalCommentsDate, { format: 'dd/MM/yyyy' })
 	};
 }
 
