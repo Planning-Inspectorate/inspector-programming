@@ -114,7 +114,8 @@ describe('buildViewCase', () => {
 			designatedSitesNames: 'None',
 			typeOfPlanningApplication: 'HOUSEHOLDER APPLICATION',
 			applicationDecision: 'refused',
-			isAonbNationalLandscape: 'No'
+			isAonbNationalLandscape: 'No',
+			finalCommentsDate: ''
 		});
 
 		assert.strictEqual(service.db.appealCase.findUnique.mock.calls.length, 1);

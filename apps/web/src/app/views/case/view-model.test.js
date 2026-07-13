@@ -97,7 +97,8 @@ describe('case/view-model caseToViewModel', () => {
 			caseProcedure: baseCase.caseProcedure,
 			caseType: baseCase.caseType,
 			caseAge: baseCase.caseAge,
-			designatedSitesNames: ['Site Alpha', 'Site Beta']
+			designatedSitesNames: ['Site Alpha', 'Site Beta'],
+			finalCommentsDate: new Date('2025-04-30T00:00:00Z')
 		};
 
 		const casesClient = buildCasesClient(() => baseViewModel);
@@ -119,5 +120,6 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.applicationDecision, 'allowed');
 		assert.strictEqual(result.isAonbNationalLandscape, 'Yes');
 		assert.strictEqual(result.caseStartedDate, '15/03/2025');
+		assert.strictEqual(result.finalCommentsDate, '30/04/2025');
 	});
 });
