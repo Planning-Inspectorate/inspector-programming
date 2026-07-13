@@ -129,6 +129,7 @@ describe('CasesClient', () => {
 					typeOfPlanningApplication: 'prior-approval',
 					applicationDecision: 'refused',
 					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
+					siteAddressLine1: '123 Example Street',
 					appellantCostsAppliedFor: null,
 					lpaCostsAppliedFor: true
 				},
@@ -158,6 +159,7 @@ describe('CasesClient', () => {
 					typeOfPlanningApplication: 'prior-approval',
 					applicationDecision: null,
 					eventType: null,
+					siteAddressLine1: '123 Example Road',
 					appellantCostsAppliedFor: null,
 					lpaCostsAppliedFor: null
 				}
