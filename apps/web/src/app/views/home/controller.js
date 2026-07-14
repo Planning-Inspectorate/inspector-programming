@@ -118,6 +118,9 @@ export function buildViewHome(service, getEventsFunction) {
 
 		const paginationDetails = paginationValues(req.query, total, filterQuery);
 
+		// list of LPAs for the LPA filter options
+		const lpaList = await service.casesClient.getLpaList();
+
 		const isCalendarTab = req.query.currentTab === 'calendar';
 		const isInspectorTab = req.query.currentTab === 'inspector';
 
@@ -148,6 +151,7 @@ export function buildViewHome(service, getEventsFunction) {
 				specialCircumstances: specialCircumstancesOptions,
 				caseTypes: caseTypeOptions,
 				visitTypes: visitTypeOptions,
+				lpaNames: lpaList,
 				pagination: paginationDetails,
 				query: filterQuery,
 				errors: filterErrors,

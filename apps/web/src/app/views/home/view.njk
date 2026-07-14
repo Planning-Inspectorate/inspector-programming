@@ -87,6 +87,7 @@
                         filters.query.case.minimumAge or
                         filters.query.case.maximumAge or
                         filters.query.case.lpaRegion or
+                        filters.query.case.lpaNames or
                         filters.query.case.caseSpecialisms or
                         filters.query.case.caseTypes or
                         filters.query.case.allocationLevels or
@@ -106,6 +107,17 @@
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
+
+                            {# LPA (Local Planning Authority) #}
+                            {% if filters.query.case.lpaNames %}
+                                {% call filterGroup('Local Planning Authority') %}
+                                    {% for lpaName in filters.query.case.lpaNames %}
+                                        {{ filterTag(lpaName, filters.buildUrlWithoutFilter('lpaNames', lpaName)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+
 
                             {# Case types #}
                             {% if filters.query.case.caseTypes %}
@@ -215,6 +227,28 @@
                                     { value: 'West', text: 'West' }
                                 ],
                                 values: filters.query.case.lpaRegion
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Local Planning Authority",
+                            html: checkboxFilter({
+                                idPrefix: "filters[lpaNames]",
+                                name: "filters[lpaNames]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more Local Planning Authority",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.lpaNames,
+                                values: filters.query.case.lpaNames,
+                                textBox: {
+                                    label: 'Find Local Planning Authority'
+                                }
                             }),
                             classes: "custom-filter-dropdown",
                             open: true

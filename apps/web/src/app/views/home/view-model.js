@@ -253,6 +253,7 @@ export function filtersQueryViewModel(query, previousSort) {
 	const arrayProps = [
 		'caseSpecialisms',
 		'lpaRegion',
+		'lpaNames',
 		'caseTypes',
 		'allocationLevels',
 		'visitTypes',
