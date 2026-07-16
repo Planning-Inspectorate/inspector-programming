@@ -100,14 +100,6 @@ export async function deleteCase(service, caseReference, log) {
 					log(`Unlinked ${childCaseUpdate.count} child cases from lead case ${caseReference}`);
 				}
 
-				// Delete related AppealEvents (explicit delete for clarity, even though cascade should handle this)
-				const deletedEvents = await tx.appealEvent.deleteMany({
-					where: { caseReference }
-				});
-				if (deletedEvents.count > 0) {
-					log(`Deleted ${deletedEvents.count} AppealEvents for case ${caseReference}`);
-				}
-
 				// Delete related AppealCaseSpecialisms (explicit delete for clarity, even though cascade should handle this)
 				const deletedSpecialisms = await tx.appealCaseSpecialism.deleteMany({
 					where: { caseReference }
