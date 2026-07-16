@@ -85,7 +85,7 @@ describe('view-model', () => {
 		test('should return a view model with formatted finalCommentsDate and color', () => {
 			const caseData = {
 				id: 1,
-				caseAge: 30,
+				caseAge: 12,
 				finalCommentsDate: new Date('2025-08-06T23:00:00Z') // 7th August 2025 in Europe/London timezone
 			};
 			const viewModel = toCaseViewModel(caseData);
@@ -94,7 +94,7 @@ describe('view-model', () => {
 				'07/08/2025',
 				'Final comments date should be formatted in Europe/London timezone'
 			);
-			assert.strictEqual(viewModel.caseAgeColor, 'f47738', 'Color should be orange for case age 30');
+			assert.strictEqual(viewModel.caseAgeColor, 'ffdd00', 'Color should be yellow for case age 12');
 		});
 		test('should map case type and procedure', () => {
 			const caseData = {
@@ -165,17 +165,21 @@ describe('view-model', () => {
 	});
 
 	describe('getCaseColor', () => {
-		test('should return red for case age greater than 40', () => {
-			const color = getCaseColor(41);
-			assert.strictEqual(color, 'd4351c', 'Color should be red for case age > 40');
+		test('should return green for case age 10', () => {
+			const color = getCaseColor(10);
+			assert.strictEqual(color, '00703c', 'Color should be green for case age 10');
 		});
-		test('should return orange for case age between 21 and 40', () => {
-			const color = getCaseColor(30);
-			assert.strictEqual(color, 'f47738', 'Color should be orange for case age between 21 and 40');
+		test('should return yellow for case age 11', () => {
+			const color = getCaseColor(11);
+			assert.strictEqual(color, 'ffdd00', 'Color should be yellow for case age 11');
 		});
-		test('should return green for case age 20 or less', () => {
-			const color = getCaseColor(20);
-			assert.strictEqual(color, '00703c', 'Color should be green for case age <= 20');
+		test('should return yellow for case age 15', () => {
+			const color = getCaseColor(15);
+			assert.strictEqual(color, 'ffdd00', 'Color should be yellow for case age 15');
+		});
+		test('should return red for case age 16', () => {
+			const color = getCaseColor(16);
+			assert.strictEqual(color, 'd4351c', 'Color should be red for case age 16');
 		});
 		test('should return green for case age 0', () => {
 			const color = getCaseColor(0);

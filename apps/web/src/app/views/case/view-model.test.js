@@ -110,7 +110,7 @@ describe('case/view-model caseToViewModel', () => {
 		assert.strictEqual(result.caseSpecialisms, 'Spec 1, Spec 2');
 		assert.strictEqual(result.caseStartedDate, '15/03/2025');
 		assert.strictEqual(result.eventType, 'SITE VISIT ACCESS REQUIRED');
-		assert.strictEqual(result.caseAgeColor, 'f47738');
+		assert.strictEqual(result.caseAgeColor, 'd4351c');
 		assert.strictEqual(result.linkedCases, 'None');
 		assert.strictEqual(result.caseStatus, 'READY');
 		assert.strictEqual(result.caseProcedure, 'HEARING');
