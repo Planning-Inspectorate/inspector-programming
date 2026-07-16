@@ -43,10 +43,10 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 		// Prevents interpolation/gradient between ranges.
 		const colorStops = [
 			{ value: 0, color: '#00703c' },
-			{ value: 20, color: '#00703c' },
-			{ value: 21, color: '#f47738' },
-			{ value: 40, color: '#f47738' },
-			{ value: 41, color: '#d4351c' }
+			{ value: 10, color: '#00703c' },
+			{ value: 11, color: '#ffdd00' },
+			{ value: 15, color: '#ffdd00' },
+			{ value: 16, color: '#d4351c' }
 		];
 
 		/**
