@@ -153,9 +153,9 @@ export function shortProcedure(procedure) {
  * @returns
  */
 export function getCaseColor(caseAge) {
-	if (caseAge > 40) return 'd4351c'; // red (41+ weeks)
-	if (caseAge > 20) return 'f47738'; // orange (21-40 weeks)
-	return '00703c'; // green (0-20 weeks)
+	if (caseAge >= 16) return 'd4351c'; // red (16+ weeks)
+	if (caseAge >= 11) return 'ffdd00'; // yellow (11-15 weeks)
+	return '00703c'; // green (0-10 weeks)
 }
 
 /**
