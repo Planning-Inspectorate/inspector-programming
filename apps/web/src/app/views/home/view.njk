@@ -413,7 +413,11 @@
                     </div>
                     <form method="post" action="/cases" novalidate>
                         <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
+                    {% if inspectors.selected %}
                         <div class="assignment-form">
+                            <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-right-2">
+                                You are assigning cases for {{ inspectors.selected.lastName }}, {{ inspectors.selected.firstName }}.
+                            </p>
                             <div class="govuk-form-group {% if appeals.assignmentDateError %} margin-top-error-40px {% endif %}">
                                 <label class="govuk-label" for="assignment-date">Event date: </label>
                             </div>
@@ -437,6 +441,12 @@
                                 }) }}
                             </div>
                         </div>
+                    {% else %}
+                        <p class="govuk-body govuk-!-text-align-right">
+                            Select an inspector to assign cases
+                        </p>
+                    {% endif %}
+
                         {% include 'views/home/cases-table.njk' %}
                     </form>
 
