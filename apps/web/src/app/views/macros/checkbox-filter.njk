@@ -7,6 +7,7 @@
     {% set idPrefix = params.id if params.id else params.name %}
     {% set inputId = idPrefix + "-checkbox-filter-input" %}
     {% set containerId = idPrefix + "-checkbox-filter-container" %}
+    {% set maxVisibleItems = params.maxVisibleItems if params.maxVisibleItems else 0 %}
 
     {% set innerHtml %}
         {{ govukInput({
@@ -49,22 +50,31 @@
             const container = document.getElementById('{{ containerId }}');
             const textBox = document.getElementById('{{ inputId }}');
             const items = container.querySelectorAll('.govuk-checkboxes__item');
+            const maxVisibleItems = Number('{{ maxVisibleItems }}');
+
+            const updateVisibleItems = function () {
+                const query = textBox.value.trim().toLowerCase();
+                items.forEach(function (item, index) {
+                    const label = item.querySelector('.govuk-label').textContent.toLowerCase();
+                    const isChecked = item.querySelector('.govuk-checkboxes__input').checked;
+                    if (isChecked) {
+                        item.classList.remove('hidden');
+                    } else if (query) {
+                        item.classList.toggle('hidden', !label.includes(query));
+                    } else {
+                        item.classList.toggle('hidden', maxVisibleItems > 0 && index >= maxVisibleItems);
+                    }
+                });
+            };
 
             textBox.addEventListener('keyup', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                 } else {
-                    const query = textBox.value.toLowerCase();
-                    items.forEach(function (item) {
-                        const label = item.querySelector('.govuk-label').textContent.toLowerCase();
-                        if (label.includes(query)) {
-                            item.classList.remove('hidden');
-                        } else {
-                            item.classList.add('hidden');
-                        }
-                    });
+                    updateVisibleItems();
                 }
             });
+            updateVisibleItems();
         });
     </script>
 {% endmacro %}
