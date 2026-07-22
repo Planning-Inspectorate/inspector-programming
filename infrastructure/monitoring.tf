@@ -87,7 +87,7 @@ resource "azurerm_application_insights_standard_web_test" "web" {
   }
   validation_rules {
     ssl_check_enabled           = true
-    ssl_cert_remaining_lifetime = 7
+    ssl_cert_remaining_lifetime = 30
   }
 
   tags = local.tags
