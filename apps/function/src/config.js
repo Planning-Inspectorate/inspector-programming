@@ -16,6 +16,7 @@ export function loadConfig() {
 		CBOS_APPEAL_TYPE_CACHE_TTL,
 		NODE_ENV,
 		SQL_CONNECTION_STRING,
+		SQL_TRANSACTION_WAIT_TIME_MS,
 		LOG_LEVEL,
 		OS_API_KEY,
 		SERVICE_BUS_INSPECTOR_TOPIC,
@@ -45,7 +46,8 @@ export function loadConfig() {
 			appealTypesCachettl: CBOS_APPEAL_TYPE_CACHE_TTL
 		},
 		database: {
-			connectionString: SQL_CONNECTION_STRING
+			connectionString: SQL_CONNECTION_STRING,
+			transactionMaxWait: parseInt(SQL_TRANSACTION_WAIT_TIME_MS || 10000)
 		},
 		logLevel: LOG_LEVEL || 'info',
 		NODE_ENV: NODE_ENV || 'development',

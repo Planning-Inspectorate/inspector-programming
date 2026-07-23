@@ -110,7 +110,7 @@ export async function deleteCase(service, caseReference, log) {
 
 				// Finally, delete the main AppealCase record
 				await tx.appealCase.delete({ where: { caseReference } });
-			})
+			}, service.databaseTransactionOptions)
 		);
 		log(`Case with caseReference ${caseReference} has been deleted`);
 		// save in the DB that we have an update
@@ -291,7 +291,7 @@ export async function upsertCase(service, message, log) {
 				} else {
 					log(`No specialisms for case ${caseReference}`);
 				}
-			})
+			}, service.databaseTransactionOptions)
 		);
 		// save in the DB that we have an update
 		// this is outside the transaction, it doesn't need to be atomic with the data update

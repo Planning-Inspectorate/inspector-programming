@@ -56,7 +56,7 @@ export function buildHandleAppealEventMessage(service) {
 					});
 
 					context.log(`Updated eventType to '${eventType}' for case ${caseReference}`);
-				})
+				}, service.databaseTransactionOptions)
 			);
 		} catch (error) {
 			context.log(`Failed to process appeal event for case ${caseReference}:`, error);

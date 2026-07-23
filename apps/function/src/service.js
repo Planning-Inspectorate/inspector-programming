@@ -56,6 +56,12 @@ export class FunctionService {
 		}
 	}
 
+	get databaseTransactionOptions() {
+		return {
+			maxWait: this.#config.database.transactionMaxWait
+		};
+	}
+
 	get inspectorServiceBusConfig() {
 		return this.#config.serviceBus.inspector;
 	}
