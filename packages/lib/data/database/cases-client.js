@@ -191,6 +191,22 @@ export class CasesClient {
 	}
 
 	/**
+	 * Returns the full list of Local Planning Authorities (LPAs) held in
+	 * the database, sorted alphabetically by name.
+	 *
+	 * @returns {Promise<string[]>}
+	 */
+	async getAllLpaNames() {
+		const lpas = await this.#client.lpa.findMany({
+			where: { lpaName: { not: null } },
+			select: { lpaName: true },
+			distinct: ['lpaName'],
+			orderBy: { lpaName: 'asc' }
+		});
+		return lpas.map((lpa) => lpa.lpaName).filter((name) => Boolean(name));
+	}
+
+	/**
 	 * Returns when the latest cases update was
 	 *
 	 * @returns {Promise<Date|null>}

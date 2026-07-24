@@ -141,6 +141,17 @@ export class CachedCasesClient {
 	}
 
 	/**
+	 * Returns the full canonical list of Local Planning Authorities (LPAs) from the
+	 * database as sorted filter options for the UI.
+	 *
+	 * @returns {Promise<{ value: string, text: string }[]>}
+	 */
+	async getLpaList() {
+		const lpaNames = await this.#client.getAllLpaNames();
+		return lpaNames.map((name) => ({ value: name, text: name }));
+	}
+
+	/**
 	 *
 	 * @param {number[]} caseIds
 	 */

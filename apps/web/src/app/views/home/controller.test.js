@@ -28,7 +28,8 @@ describe('controller.js', () => {
 				},
 				casesClient: {
 					getAllCases: mock.fn(() => []),
-					getCases: mock.fn(() => ({ cases: [], total: 0 }))
+					getCases: mock.fn(() => ({ cases: [], total: 0 })),
+					getLpaList: mock.fn(() => [])
 				},
 				inspectorClient: {
 					getInspectorDetails: mock.fn(),
@@ -734,7 +735,8 @@ describe('controller.js', () => {
 					};
 				},
 				casesClient: {
-					getCases: mock.fn(() => ({ cases: [], total: 0, page: 1 }))
+					getCases: mock.fn(() => ({ cases: [], total: 0, page: 1 })),
+					getLpaList: mock.fn(() => [])
 				},
 				inspectorClient: {
 					getInspectorDetails: mock.fn(() => ({ id: 'inspector-id' })),

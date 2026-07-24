@@ -56,6 +56,7 @@ export interface Filters {
 	inspectorCoordinates?: Coordinates;
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
+	lpaNames?: string[];
 	caseTypes?: string[];
 	specialCircumstances?: string[];
 	allocationLevels?: string[];

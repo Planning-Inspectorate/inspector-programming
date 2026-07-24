@@ -59,6 +59,12 @@ export function filterCases(cases, filters) {
 		cases = cases.filter((c) => c.lpaRegion && regions.some((region) => c.lpaRegion.toLowerCase().startsWith(region)));
 	}
 
+	// Filter by LPA (Local Planning Authority)
+	if (filters.lpaNames) {
+		const names = Array.isArray(filters.lpaNames) ? filters.lpaNames : [filters.lpaNames];
+		cases = cases.filter((c) => c.lpaName && names.includes(c.lpaName));
+	}
+
 	// Filter by case types
 	if (filters.caseTypes) {
 		const types = Array.isArray(filters.caseTypes) ? filters.caseTypes : [filters.caseTypes];
