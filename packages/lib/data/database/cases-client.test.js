@@ -1,7 +1,8 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_STATUS, APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { CasesClient } from './cases-client.js';
+import { END_STATE_APPEAL_STATUSES } from './appeal-status.js';
 
 describe('CasesClient', () => {
 	const fortyFiveWeeksAgo = new Date();
@@ -166,6 +167,42 @@ describe('CasesClient', () => {
 			]);
 		});
 	});
+
+	describe('getUnassignableCases', () => {
+		it('should filter assignable and ended references in memory to avoid large Prisma notIn clauses', async () => {
+			const dbAppeals = [
+				{ ...mockCases[0], caseReference: 'assignable-ref', caseStatus: APPEAL_CASE_STATUS.EVENT },
+				{ ...mockCases[1], caseReference: 'unassignable-ref', caseStatus: APPEAL_CASE_STATUS.READY_TO_START }
+			];
+
+			const mockClient = {
+				appealCase: {
+					findMany: mock.fn(async () => dbAppeals)
+				}
+			};
+
+			const client = new CasesClient(mockClient);
+			const allCases = [
+				{ caseReference: 'assignable-ref', caseStatus: APPEAL_CASE_STATUS.EVENT, linkedCaseStatus: null },
+				{ caseReference: 'ended-ref', caseStatus: APPEAL_CASE_STATUS.COMPLETE, linkedCaseStatus: null },
+				{ caseReference: 'child-ref', caseStatus: APPEAL_CASE_STATUS.EVENT, linkedCaseStatus: 'Child' }
+			];
+
+			const result = await client.getUnassignableCases(allCases);
+
+			assert.deepStrictEqual(
+				result.map((appeal) => appeal.caseReference),
+				['unassignable-ref']
+			);
+
+			const appealFindManyArg = mockClient.appealCase.findMany.mock.calls[0].arguments[0];
+			assert.strictEqual(appealFindManyArg.where.caseReference, undefined);
+			assert.deepStrictEqual(appealFindManyArg.where.caseStatus, {
+				notIn: END_STATE_APPEAL_STATUSES
+			});
+		});
+	});
+
 	describe('getCaseAgeInWeeks', () => {
 		it('should get the correct age of the case', () => {
 			const mockClient = {};

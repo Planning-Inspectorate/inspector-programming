@@ -63,20 +63,18 @@ export class CasesClient {
 	 * @param {import('../types').CaseViewModel[]} allCases
 	 * @returns {Promise<import('../types').CaseViewModel[]>}
 	 */
-	async getUnassignableCases(allCases) {
+	async getUnassignableCases(allCases = []) {
 		// filter out excluded statuses
 		// filter out child appeals
 		const assignableOrEndedCases = filterAssignableOrEndedStatuses(allCases).filter(
 			(appeal) => appeal.linkedCaseStatus !== 'Child'
 		);
+		const assignableOrEndedCaseReferences = new Set(assignableOrEndedCases.map((c) => c.caseReference));
 
-		// fetch all appeals not in the assignable list
+		// Fetch all non-ended appeals
 		// excludes child appeals
-		const appeals = await this.#client.appealCase.findMany({
+		const nonEndedCases = await this.#client.appealCase.findMany({
 			where: {
-				caseReference: {
-					notIn: assignableOrEndedCases.map((c) => c.caseReference)
-				},
 				caseStatus: {
 					// the assignableOrEndedCases list won't include most ended appeals, so explicitly filter them out
 					notIn: END_STATE_APPEAL_STATUSES
@@ -96,6 +94,10 @@ export class CasesClient {
 			},
 			orderBy: [{ caseValidDate: 'asc' }, { caseCreatedDate: 'asc' }, { Lpa: { lpaName: 'asc' } }]
 		});
+
+		// Remove cases that are already assignable or ended
+		const appeals = nonEndedCases.filter((appeal) => !assignableOrEndedCaseReferences.has(appeal.caseReference));
+
 		return appeals.map((c) => this.caseToViewModel(c));
 	}
 
