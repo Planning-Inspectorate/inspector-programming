@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	homeLinks.forEach(function (link) {
 		link.addEventListener('click', function () {
 			try {
-				sessionStorage.removeItem('selectedCases');
+				sessionStorage.removeItem(SELECTED_CASES_KEY);
 			} catch {
 				// Intentionally ignored - sessionStorage may not be available
 			}
