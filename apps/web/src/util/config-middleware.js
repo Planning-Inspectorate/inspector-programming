@@ -8,7 +8,7 @@ export function addLocalsConfiguration(feedbackUrl) {
 		res.locals.config = {
 			feedbackUrl,
 			headerTitle: 'Programme appeals',
-			styleFile: 'style-c5179eee.css'
+			styleFile: 'style-878bb3bb.css'
 		};
 		next();
 	};

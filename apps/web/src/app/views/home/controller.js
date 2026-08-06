@@ -12,6 +12,7 @@ import { addSessionData, clearSessionData, readSessionData } from '@pins/inspect
 import {
 	appealsViewModel,
 	calendarViewModel,
+	lpaViewModel,
 	caseTypeOptions,
 	filtersQueryViewModel,
 	inspectorsViewModel,
@@ -39,6 +40,10 @@ export function buildViewHome(service, getEventsFunction) {
 
 		const selectedInspectorSpecialisms =
 			selectedInspectorDetails?.Specialisms?.map((specialism) => specialism.name) || [];
+
+		/** @type {import('@pins/inspector-programming-lib/data/types.js').Lpa[]} */
+		const lpaList = await service.lpaClient.getLpaList();
+		const lpaListOptions = lpaList.map(lpaViewModel);
 
 		const lastSort = readSessionData(req, 'lastRequest', 'sort', 'age', 'persistence');
 		const filterQuery = filtersQueryViewModel(req.query, lastSort);
@@ -140,6 +145,7 @@ export function buildViewHome(service, getEventsFunction) {
 				specialCircumstances: specialCircumstancesOptions,
 				caseTypes: caseTypeOptions,
 				visitTypes: visitTypeOptions,
+				lpaCodes: lpaListOptions,
 				pagination: paginationDetails,
 				query: filterQuery,
 				errors: filterErrors,

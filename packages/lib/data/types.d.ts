@@ -23,6 +23,7 @@ export interface CaseViewModel {
 	siteAddressPostcode: string | null;
 	siteAddressLongitude: number | null;
 	siteAddressLatitude: number | null;
+	lpaCode: string | null;
 	lpaName: string | null;
 	lpaRegion: string | null;
 	caseStatus: string | null;
@@ -56,10 +57,16 @@ export interface Filters {
 	inspectorCoordinates?: Coordinates;
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
+	lpaCodes?: string[];
 	caseTypes?: string[];
 	specialCircumstances?: string[];
 	allocationLevels?: string[];
 	visitTypes?: string[];
+}
+
+export interface Lpa {
+	lpaName?: string;
+	lpaCode: string;
 }
 
 export interface FilterQuery {

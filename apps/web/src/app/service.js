@@ -9,6 +9,7 @@ import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-ap
 import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
+import { LpaClient } from '@pins/inspector-programming-lib/data/database/lpa-client.js';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -40,6 +41,8 @@ export class WebService extends BaseService {
 		this.entraClient = buildInitEntraClient(!config.auth.disabled, entraGroupCache);
 
 		this.calendarClient = new CalendarClient(this.dbClient);
+
+		this.lpaClient = new LpaClient(this.dbClient);
 
 		this.notifyClient = initGovNotify(config.notify, this.logger);
 

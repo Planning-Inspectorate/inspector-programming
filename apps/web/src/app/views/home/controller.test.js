@@ -38,6 +38,9 @@ describe('controller.js', () => {
 				calendarClient: {
 					getEnglandWalesBankHolidays: mock.fn(async () => [])
 				},
+				lpaClient: {
+					getLpaList: mock.fn(() => [])
+				},
 				osMapsApiKey: 'test-api-key',
 				notifyConfig: { cbosLink: 'https://test-cbos-url.com' },
 				getSimplifiedEvents: mock.fn(async () => [])
@@ -711,6 +714,9 @@ describe('controller.js', () => {
 				},
 				calendarClient: {
 					getEnglandWalesBankHolidays: mock.fn(async () => [])
+				},
+				lpaClient: {
+					getLpaList: mock.fn(() => [])
 				},
 				notifyConfig: { cbosLink: 'https://test-cbos-url.com' }
 			};
