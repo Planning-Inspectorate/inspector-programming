@@ -124,6 +124,7 @@ export class CasesClient {
 			siteAddressPostcode: c.siteAddressPostcode?.toUpperCase() || '',
 			siteAddressLatitude: Number(c.siteAddressLatitude),
 			siteAddressLongitude: Number(c.siteAddressLongitude),
+			lpaCode: c.lpaCode || c.Lpa?.lpaCode || '',
 			lpaName: c.lpaName || c.Lpa?.lpaName || '',
 			lpaRegion: c.Lpa?.LpaRegion?.LpaRegionName?.name || '',
 			caseStatus: c.caseStatus || 'Unassigned',
