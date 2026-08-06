@@ -504,3 +504,9 @@ h4.govuk-heading-s {
 		}
 	}
 }
+
+#lpa-codes-filter .govuk-checkboxes {
+	max-height: 600px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
