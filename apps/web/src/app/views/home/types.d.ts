@@ -38,6 +38,7 @@ export interface Filters {
 	caseTypes: RadioOption[];
 	specialCircumstances: RadioOption[];
 	visitTypes: RadioOption[];
+	lpaCodes: RadioOption[];
 	pagination: Pagination;
 	query: FilterQuery;
 
@@ -53,6 +54,7 @@ export interface FilterErrors {
 export interface FilterCaseQuery {
 	caseSpecialisms?: string[];
 	lpaRegion?: string[];
+	lpaCodes?: string[];
 	caseTypes?: string[];
 	allocationLevels?: string[];
 	visitTypes?: string[];
