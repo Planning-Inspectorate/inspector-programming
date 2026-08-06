@@ -253,6 +253,7 @@ export function filtersQueryViewModel(query, previousSort) {
 	const arrayProps = [
 		'caseSpecialisms',
 		'lpaRegion',
+		'lpaCodes',
 		'caseTypes',
 		'allocationLevels',
 		'visitTypes',
@@ -364,3 +365,17 @@ export const visitTypeOptions = SITE_VISIT_EVENT_TYPES.map((value) => {
 
 	return { value, text };
 });
+
+/**
+ * Converts an LPA object into a view model
+ *
+ * @param {import('@pins/inspector-programming-lib/data/types.js').Lpa} lpa
+ * @returns {import('#util/types.js').RadioOption}
+ */
+export function lpaViewModel(lpa) {
+	const { lpaName, lpaCode } = lpa;
+	return {
+		text: lpaName,
+		value: lpaCode
+	};
+}

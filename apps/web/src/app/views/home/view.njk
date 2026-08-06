@@ -87,6 +87,7 @@
                         filters.query.case.minimumAge or
                         filters.query.case.maximumAge or
                         filters.query.case.lpaRegion or
+                        filters.query.case.lpaCodes or
                         filters.query.case.caseSpecialisms or
                         filters.query.case.caseTypes or
                         filters.query.case.allocationLevels or
@@ -106,6 +107,23 @@
                                     {% endfor %}
                                 {% endcall %}
                             {% endif %}
+
+                            {# LPA (Local Planning Authority) #}
+                            {% if filters.query.case.lpaCodes %}
+                                {% call filterGroup('Local Planning Authority') %}
+                                    {% for lpaCode in filters.query.case.lpaCodes %}
+                                        {% set lpaText = lpaCode %}
+                                        {% for item in filters.lpaCodes %}
+                                            {% if item.value == lpaCode %}
+                                                {% set lpaText = item.text %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ filterTag(lpaText, filters.buildUrlWithoutFilter('lpaCodes', lpaCode)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+
 
                             {# Case types #}
                             {% if filters.query.case.caseTypes %}
@@ -215,6 +233,28 @@
                                     { value: 'West', text: 'West' }
                                 ],
                                 values: filters.query.case.lpaRegion
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Local Planning Authority",
+                            html: checkboxFilter({
+                                idPrefix: "filters[lpaCodes]",
+                                name: "filters[lpaCodes]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more Local Planning Authority",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.lpaCodes,
+                                values: filters.query.case.lpaCodes,
+                                textBox: {
+                                    label: 'Find Local Planning Authority'
+                                }
                             }),
                             classes: "custom-filter-dropdown",
                             open: true
