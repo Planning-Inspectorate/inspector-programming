@@ -115,6 +115,36 @@ describe('filterCases', () => {
 		assert.strictEqual(filtered.length, 1);
 		assert.strictEqual(filtered[0].lpaRegion, 'East');
 	});
+	test('should filter cases by a single LPA code', () => {
+		const cases = [
+			{ lpaCode: 'BRIS', lpaName: 'Bristol City Council', caseAge: 10 },
+			{ lpaCode: 'WILT', lpaName: 'Wiltshire Council', caseAge: 20 },
+			{ lpaCode: 'BRIS', lpaName: 'Bristol City Council', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { lpaCodes: ['BRIS'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.ok(filtered.every((c) => c.lpaCode === 'BRIS'));
+	});
+	test('should filter cases by multiple LPA codes', () => {
+		const cases = [
+			{ lpaCode: 'BRIS', lpaName: 'Bristol City Council', caseAge: 10 },
+			{ lpaCode: 'WILT', lpaName: 'Wiltshire Council', caseAge: 20 },
+			{ lpaCode: 'CORN', lpaName: 'Cornwall Council', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { lpaCodes: ['BRIS', 'CORN'] });
+		assert.strictEqual(filtered.length, 2);
+		assert.deepStrictEqual(filtered.map((c) => c.lpaCode).sort(), ['BRIS', 'CORN']);
+	});
+	test('should exclude cases with missing LPA code when lpaCodes filter is applied', () => {
+		const cases = [
+			{ lpaCode: null, caseAge: 10 },
+			{ lpaCode: undefined, caseAge: 20 },
+			{ lpaCode: 'WILT', caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { lpaCodes: ['WILT'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].lpaCode, 'WILT');
+	});
 	test('should filter cases by case type', () => {
 		const cases = [
 			{ caseType: 'D', caseAge: 10 },
