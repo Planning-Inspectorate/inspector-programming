@@ -227,38 +227,6 @@ describe('controller.js', () => {
 			assert.strictEqual(args.appeals?.cases?.length, 10);
 		});
 
-		test('should mark cases as selected based on session data', async () => {
-			const service = mockService();
-			service.casesClient.getCases.mock.mockImplementationOnce(() => ({
-				cases: [
-					{ caseId: 101, id: 1 },
-					{ caseId: 102, id: 2 },
-					{ caseId: 103, id: 3 }
-				],
-				total: 3
-			}));
-			const req = {
-				url: '/',
-				query: {},
-				session: {
-					persistence: {
-						caseListData: {
-							selectedCases: ['101', '103']
-						}
-					}
-				}
-			};
-			const res = { render: mock.fn() };
-			const controller = buildViewHome(service, service.getSimplifiedEvents);
-			await controller(req, res);
-			assert.strictEqual(res.render.mock.callCount(), 1);
-			const args = res.render.mock.calls[0].arguments[1];
-			assert.strictEqual(args.appeals?.cases?.length, 3);
-			assert.strictEqual(args.appeals.cases[0].selected, true);
-			assert.strictEqual(args.appeals.cases[1].selected, undefined);
-			assert.strictEqual(args.appeals.cases[2].selected, true);
-		});
-
 		test('should show error when on inspector tab without inspector selected', async () => {
 			const service = mockService();
 			service.casesClient.getCases.mock.mockImplementationOnce(() => ({

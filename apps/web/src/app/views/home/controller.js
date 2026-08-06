@@ -121,14 +121,6 @@ export function buildViewHome(service, getEventsFunction) {
 		const isCalendarTab = req.query.currentTab === 'calendar';
 		const isInspectorTab = req.query.currentTab === 'inspector';
 
-		const selectedCaseIds = readSessionData(req, 'caseListData', 'selectedCases', [], 'persistence');
-		for (let caseId of selectedCaseIds) {
-			let caseIndex = cases.findIndex((item) => item.caseId === parseInt(caseId));
-			if (caseIndex !== -1) {
-				cases[caseIndex].selected = true;
-			}
-		}
-
 		// get output from /cases
 		const selectInspectorError = readSessionData(req, 'errors', 'selectInspectorError', false, 'persistence');
 		const successSummary = readSessionData(req, 'success', 'successSummary', null, 'persistence');
