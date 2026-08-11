@@ -40,26 +40,12 @@ const calendarEventTimingsRules: CalendarEventTimingRule[] = [
 			{
 				caseType: APPEAL_CASE_TYPE.D, // householder
 				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
-				allocationLevels: allocationLevels.F_G_H
+				allocationLevels: [APPEAL_ALLOCATION_LEVEL.H]
 			}
 		],
-		prepTime: 0,
+		prepTime: 2,
 		siteVisitTime: 2,
-		reportTime: 6,
-		costsTime: 2
-	},
-	{
-		id: calendarEventTimingIds[1],
-		AppliesTo: [
-			{
-				caseType: APPEAL_CASE_TYPE.D, // householder
-				caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN,
-				allocationLevels: allocationLevels.A_TO_E
-			}
-		],
-		prepTime: 0,
-		siteVisitTime: 2,
-		reportTime: 10,
+		reportTime: 8,
 		costsTime: 2
 	},
 	{
