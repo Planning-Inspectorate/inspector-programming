@@ -26,6 +26,37 @@ async function seedCalendarEventTimings(dbClient) {
 			update: timing
 		});
 	}
+
+	// Delete timings not in seed
+	const desiredTimingIds = calendarEventTimings.map((timing) => timing.id);
+	const deletedTimings = await dbClient.calendarEventTiming.deleteMany({
+		where: { id: { notIn: desiredTimingIds } }
+	});
+
+	if (deletedTimings.count > 0) {
+		console.log('deleted calendar event timings:', deletedTimings.count);
+	}
+
+	// Delete rules not in seed
+	const desiredRuleKeys = calendarEventTimings.flatMap((timing) =>
+		timing.CalendarEventTimingRules.connectOrCreate.map((rule) => rule.where.caseType_caseProcedure_allocationLevel)
+	);
+
+	const deletedRules = await dbClient.calendarEventTimingRule.deleteMany({
+		where: {
+			NOT: desiredRuleKeys.map((key) => ({
+				caseType: key.caseType,
+				caseProcedure: key.caseProcedure,
+				allocationLevel: key.allocationLevel
+			}))
+		}
+	});
+
+	if (deletedRules.count > 0) {
+		console.log('deleted calendar event timing rules:', deletedRules.count);
+	}
+
+	console.log('calendar event timings fully synced');
 }
 
 /**
