@@ -4,7 +4,7 @@
  * Types related to the OS Places API.
  * @see https://docs.os.uk/os-apis/accessing-os-apis/os-places-api/technical-specification
  */
-export module OsPlaces {
+export namespace OsPlaces {
 	export interface DPA {
 		UPRN?: number;
 		UDPRN?: number;

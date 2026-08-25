@@ -1,4 +1,3 @@
-// @ts-ignore - these do exist and work!
 import { APPEAL_ALLOCATION_LEVEL, APPEAL_CASE_PROCEDURE, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';
 import { calendarEventTimingIds } from './data-static-guids.js';
 import type { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';

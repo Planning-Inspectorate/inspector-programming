@@ -1,5 +1,5 @@
-import { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
-import { Pagination } from '#util/types.d.ts';
+import type { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
+import type { Pagination } from '#util/types.d.ts';
 
 export interface UnassignableCaseListViewModel {
 	pageHeading: string;

@@ -1,6 +1,6 @@
-import { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
-import { NotifyConfig } from '@pins/inspector-programming-lib/emails/types';
-import { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
+import type { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
+import type { NotifyConfig } from '@pins/inspector-programming-lib/emails/types';
+import type { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
 
 interface Config extends BaseConfig {
 	api: {

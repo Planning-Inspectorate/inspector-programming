@@ -1,5 +1,4 @@
-import { CachedEntraClient } from './cached-entra-client';
-import { Event } from '@microsoft/microsoft-graph-types';
+import type { CachedEntraClient } from './cached-entra-client';
 
 export interface GroupMember {
 	id: string;
