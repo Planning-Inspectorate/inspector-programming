@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { LPAS_DEV } from './data-lpa-dev.ts';
 import path from 'node:path';
-import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
+import type { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
 import { LPA_REGION_IDS } from './lpa-regions.js';
 import { LPAS_PROD } from './data-lpa-prod.ts';
 
@@ -120,7 +120,7 @@ function lpaRegionVariableName(value: string | undefined): string {
 	if (!value) {
 		throw new Error('no region id');
 	}
-	const entry = Object.entries(LPA_REGION_IDS).find(([k, v]) => v === value);
+	const entry = Object.entries(LPA_REGION_IDS).find(([, v]) => v === value);
 	if (!entry) {
 		throw new Error('No region ID mapping for ' + value);
 	}

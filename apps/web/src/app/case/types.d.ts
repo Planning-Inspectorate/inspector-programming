@@ -1,12 +1,12 @@
-import {
+import type {
 	AppealCase,
 	AppealCaseSpecialism,
 	AppealEvent,
 	Inspector
 } from '@pins/inspector-programming-database/src/client/client.ts';
-import { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
-import { PageViewModel } from '#util/types';
-import { MapViewModel } from '../views/home/types';
+import type { CaseViewModel } from '@pins/inspector-programming-lib/data/types';
+import type { PageViewModel } from '#util/types';
+import type { MapViewModel } from '../views/home/types';
 
 export interface CasePageViewModel extends PageViewModel {
 	map: MapViewModel;

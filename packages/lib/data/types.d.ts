@@ -1,8 +1,8 @@
-import { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/src/schemas.d.ts';
-import { Event } from '@microsoft/microsoft-graph-types';
-import { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client/client.ts';
-import { Inspector } from '@pins/inspector-programming-database/src/client/client.ts';
-import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
+import type { AppealHASCase, AppealS78Case } from '@planning-inspectorate/data-model/src/schemas.d.ts';
+import type { Event } from '@microsoft/microsoft-graph-types';
+import type { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client/client.ts';
+import type { Inspector } from '@pins/inspector-programming-database/src/client/client.ts';
+import type { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;

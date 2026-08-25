@@ -1,7 +1,7 @@
-import { CalendarEntry } from '../../calendar/types';
-import { CaseViewModel, Coordinates } from '@pins/inspector-programming-lib/data/types';
-import { InspectorViewModel } from '../../inspector/types';
-import { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from '#util/types';
+import type { CalendarEntry } from '../../calendar/types';
+import type { CaseViewModel, Coordinates } from '@pins/inspector-programming-lib/data/types';
+import type { InspectorViewModel } from '../../inspector/types';
+import type { ErrorSummary, PageViewModel, Pagination, RadioOption, TextValue } from '#util/types';
 
 export interface HomeViewModel extends PageViewModel {
 	isHomePage: true;
