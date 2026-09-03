@@ -1,5 +1,5 @@
 import { Router as createRouter } from 'express';
-import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
+import { asyncHandler } from '@planning-inspectorate/core/util';
 
 /**
  * @param {import('#service').WebService} service

@@ -8,7 +8,7 @@ import {
 } from '../../calendar/calendar.js';
 import { validateFilters } from '@pins/inspector-programming-lib/util/filtering.js';
 import { validateSorts } from '@pins/inspector-programming-lib/util/sorting.js';
-import { addSessionData, clearSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { addSessionData, clearSessionData, readSessionData } from '@planning-inspectorate/core/util';
 import {
 	appealsViewModel,
 	calendarViewModel,

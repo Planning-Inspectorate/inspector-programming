@@ -1,7 +1,7 @@
 import { describe, test, mock } from 'node:test';
 import assert from 'assert';
 import { buildAssertIsAuthenticated } from './guards.js';
-import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
+import { mockLogger } from '@planning-inspectorate/core/testing';
 
 describe('guards.js', () => {
 	test('returns 401 if authorization header is missing or malformed', async () => {

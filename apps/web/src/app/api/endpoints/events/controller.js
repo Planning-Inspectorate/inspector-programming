@@ -1,5 +1,5 @@
 import { Router as createRouter } from 'express';
-import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
+import { asyncHandler } from '@planning-inspectorate/core/util';
 import { getUsersInEntraGroups } from '../users/controller.js';
 import { EXTENSION_ID } from '@pins/inspector-programming-lib/graph/entra.js';
 

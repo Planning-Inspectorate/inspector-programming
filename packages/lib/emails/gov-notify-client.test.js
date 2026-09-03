@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { GovNotifyClient } from './gov-notify-client.js';
-import { mockLogger } from '../testing/mock-logger.js';
+import { mockLogger } from '@planning-inspectorate/core/testing';
 import assert from 'node:assert';
 
 describe(`gov-notify-client`, () => {

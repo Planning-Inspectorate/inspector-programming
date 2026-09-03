@@ -1,7 +1,7 @@
 import { describe, mock, test } from 'node:test';
 import { buildPostHome, buildViewHome } from './controller.js';
 import assert from 'assert';
-import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
+import { mockLogger } from '@planning-inspectorate/core/testing';
 import { format, toZonedTime } from 'date-fns-tz';
 
 // Shared default session

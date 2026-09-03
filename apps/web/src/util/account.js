@@ -1,4 +1,4 @@
-import * as authSession from '../app/auth/session.service.js';
+import * as authSession from '@planning-inspectorate/core/auth';
 
 /**
  * @param {import('../app/auth/session.service.js').SessionWithAuth} session

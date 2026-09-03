@@ -1,4 +1,4 @@
-import type { BaseConfig } from '@pins/inspector-programming-lib/app/config-types';
+import type { BaseConfig } from '@planning-inspectorate/core/app';
 import type { NotifyConfig } from '@pins/inspector-programming-lib/emails/types';
 import type { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
 
@@ -20,6 +20,7 @@ interface Config extends BaseConfig {
 		redirectUri: string;
 		signoutUrl: string;
 		tenantId: string;
+		tokenScopes?: string[];
 	};
 	cases: {
 		casesCacheTtl: number;

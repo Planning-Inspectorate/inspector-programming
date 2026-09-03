@@ -1,7 +1,7 @@
 import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials/index.js';
 import { DefaultAzureCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
-import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { MapCache } from '@planning-inspectorate/core/util';
 import { EntraClient } from '@pins/inspector-programming-lib/graph/entra.js';
 import { CachedEntraClient } from '@pins/inspector-programming-lib/graph/cached-entra-client.js';
 

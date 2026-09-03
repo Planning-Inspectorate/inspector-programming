@@ -13,8 +13,8 @@ export function configureNunjucks() {
 	const require = createRequire(import.meta.url);
 	// get the path to the govuk-frontend folder, in node_modules, using the node require resolution
 	const govukFrontendRoot = path.resolve(require.resolve('govuk-frontend'), '../..');
-	// get the path to the @pins/inspector-programming-lib folder, in node_modules, using the node require resolution
-	const libUi = path.resolve(require.resolve('@pins/inspector-programming-lib'), '..');
+	// get the path to the @planning-inspectorate/core folder, in node_modules, using the node require resolution
+	const libUi = path.resolve(require.resolve('@planning-inspectorate/core'), '..');
 	const appDir = path.join(config.srcDir, 'app');
 
 	// configure nunjucks

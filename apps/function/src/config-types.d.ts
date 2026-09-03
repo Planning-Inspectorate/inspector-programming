@@ -1,4 +1,4 @@
-import type { DatabaseConfig } from '@pins/inspector-programming-lib/app/config-types';
+import type { DatabaseConfig } from '@planning-inspectorate/core/app';
 import type { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
 
 interface Config {

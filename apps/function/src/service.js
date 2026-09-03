@@ -1,7 +1,7 @@
 import { newDatabaseClient } from '@pins/inspector-programming-database';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
-import { initLogger } from '@pins/inspector-programming-lib/util/logger.js';
+import { initLogger } from '@planning-inspectorate/core/util';
 import { ApplicationInsightsClient } from '@pins/inspector-programming-lib/util/app-insights-client.js';
 import { FunctionGovNotifyClient } from './functions/weekly-report/gov-notify-client.js';
 

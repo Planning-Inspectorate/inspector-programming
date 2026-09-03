@@ -2,7 +2,7 @@ import { test, beforeEach, afterEach, mock, describe } from 'node:test';
 import assert from 'assert';
 import { CbosApiClient } from './cbos-api-client.js';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
-import { mockLogger as newMockLogger } from '../../testing/mock-logger.js';
+import { mockLogger as newMockLogger } from '@planning-inspectorate/core/testing';
 
 let client;
 const mockOsApiClient = {
