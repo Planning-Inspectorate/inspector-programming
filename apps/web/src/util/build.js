@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { loadBuildConfig } from '../app/config.js';
-import { runBuild } from '@pins/inspector-programming-lib/util/build.js';
+import { runBuild } from '@planning-inspectorate/core/util';
 
 /**
  * Do all steps to run the build

@@ -1,4 +1,4 @@
-import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { MapCache } from '@planning-inspectorate/core/util';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import { chunk } from '../../util/chunk.js';
 

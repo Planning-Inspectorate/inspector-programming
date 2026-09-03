@@ -1,4 +1,4 @@
-import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { readSessionData } from '@planning-inspectorate/core/util';
 import { generateCalendar, generateDatesList, generateTimeList, generateWeekTitle } from '../../calendar/calendar.js';
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
 import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS, APPEAL_CASE_TYPE } from '@planning-inspectorate/data-model';

@@ -1,7 +1,7 @@
 import { Router as createRouter } from 'express';
 import { buildApiHealth } from './endpoints/health/controller.js';
 import { buildAssertIsAuthenticated } from './auth/guards.js';
-import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
+import { asyncHandler } from '@planning-inspectorate/core/util';
 import { ApiAuthService } from './auth/api-auth-service.js';
 import { buildMockApiControllers } from './endpoints/mock/controller.js';
 import { createRoutes as createUsersRoutes } from './endpoints/users/controller.js';

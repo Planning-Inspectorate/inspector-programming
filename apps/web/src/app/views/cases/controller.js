@@ -1,4 +1,4 @@
-import { addSessionData, readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { addSessionData, readSessionData } from '@planning-inspectorate/core/util';
 import { assignCasesToInspector, getCasesToAssign } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';

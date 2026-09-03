@@ -1,15 +1,15 @@
 import { Router as createRouter } from 'express';
-import { createRoutesAndGuards as createAuthRoutesAndGuards } from './auth/router.js';
-import { createMonitoringRoutes } from '@pins/inspector-programming-lib/controllers/monitoring.js';
+import { createRoutesAndGuards as createAuthRoutesAndGuards } from '@planning-inspectorate/core/auth';
+import { createMonitoringRoutes } from '@planning-inspectorate/core/controllers';
+import { cacheNoCacheMiddleware } from '@planning-inspectorate/core/middleware';
 import { createErrorRoutes } from './views/static/error/index.js';
-import { cacheNoCacheMiddleware } from '@pins/inspector-programming-lib/middleware/cache.js';
 import { createRoutes as createApiRoutes } from './api/index.js';
 import { buildPostHome, buildViewHome } from './views/home/controller.js';
-import { asyncHandler } from '@pins/inspector-programming-lib/util/async-handler.js';
 import { buildViewCase } from './views/case/controller.js';
 import { buildPostCases } from './views/cases/controller.js';
 import { buildViewUnassignableCases } from './views/unassignable-cases/controller.ts';
 import { saveUrlToSessionMiddleware } from '#util/session.ts';
+import { asyncHandler } from '@planning-inspectorate/core';
 
 /**
  * @param {import('#service').WebService} service

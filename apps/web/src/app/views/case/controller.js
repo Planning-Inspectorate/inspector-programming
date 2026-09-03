@@ -1,7 +1,7 @@
 import { getCaseDetails } from '../../case/case.js';
 import { toInspectorViewModel } from '../home/view-model.js';
 import { caseToViewModel } from './view-model.js';
-import { readSessionData } from '@pins/inspector-programming-lib/util/session.js';
+import { readSessionData } from '@planning-inspectorate/core/util';
 import { getPreviousUrlFromSession } from '#util/session.ts';
 
 /**

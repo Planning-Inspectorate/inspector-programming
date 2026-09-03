@@ -1,15 +1,16 @@
-import { BaseService } from '@pins/inspector-programming-lib/app/base-service.js';
 import { buildInitEntraClient } from '@pins/inspector-programming-lib/graph/cached-entra-client.js';
 import { buildInitCasesClient } from '@pins/inspector-programming-lib/data/database/cached-cases-client.js';
 import { buildInitInspectorClient } from '@pins/inspector-programming-lib/data/database/cached-inspector-client.js';
 import { CalendarClient } from '@pins/inspector-programming-lib/data/database/calendar-client.js';
-import { MapCache } from '@pins/inspector-programming-lib/util/map-cache.js';
+import { MapCache } from '@planning-inspectorate/core/util';
 import { ApiService } from '#api-service';
 import { CbosApiClient } from '@pins/inspector-programming-lib/data/cbos/cbos-api-client.js';
 import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
 import { LpaClient } from '@pins/inspector-programming-lib/data/database/lpa-client.js';
+import { BaseService } from '@planning-inspectorate/core';
+import { initDatabaseClient } from '@pins/inspector-programming-database';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -25,7 +26,7 @@ export class WebService extends BaseService {
 	 * @param {import('./config-types.js').Config} config
 	 */
 	constructor(config) {
-		super(config);
+		super(config, initDatabaseClient);
 		this.#config = config;
 
 		this.apiService = new ApiService(this);

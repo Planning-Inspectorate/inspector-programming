@@ -142,7 +142,13 @@ export function loadConfig() {
 			},
 			redirectUri: `${protocol}${APP_HOSTNAME}/auth/redirect`,
 			signoutUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/logout',
-			tenantId: AZURE_TENANT_ID
+			tenantId: AZURE_TENANT_ID,
+			tokenScopes: [
+				'user.read',
+				'User.ReadBasic.All',
+				'GroupMember.Read.All', // for group memberships
+				'Calendars.ReadWrite.Shared' // for calendar access
+			]
 		},
 		cacheControl: {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'

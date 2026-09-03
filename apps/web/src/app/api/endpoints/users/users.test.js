@@ -2,8 +2,7 @@ import { test, beforeEach, describe, mock } from 'node:test';
 import assert from 'node:assert';
 import express from 'express';
 import { createRoutes } from './controller.js';
-import { mockLogger } from '@pins/inspector-programming-lib/testing/mock-logger.js';
-import { TestServer } from '@pins/inspector-programming-lib/testing/test-server.js';
+import { mockLogger, TestServer } from '@planning-inspectorate/core/testing';
 
 /** @type {import('#service').WebService} */
 let mockService;
