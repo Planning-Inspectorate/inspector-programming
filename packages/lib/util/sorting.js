@@ -74,3 +74,48 @@ export function sortCasesByDistance(inspectorCoordinates, caseA, caseB) {
 	if (distB !== null) return 1;
 	return sortCasesByAge(caseA, caseB);
 }
+
+export const FINAL_COMMENTS_DATE_SORT = {
+	ASCENDING: 'final-comments-date-ascending',
+	DESCENDING: 'final-comments-date-descending'
+};
+
+/**
+ * @param {Date | string | null} date
+ * @returns {number | null}
+ */
+
+function toTimestamp(date) {
+	if (!date) return null;
+
+	const timestamp = new Date(date).getTime();
+	return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+/**
+ * Sort cases by whether a final comments date is present, them by the date itself.
+ * Case without a date come first when sorting ascending and last when sorting descending.
+ * Equal values fall back to the default age sort to keep the result deterministic.
+ *
+ *
+ * @param {boolean} ascending
+ * @return {(caseA: import('../data/types').CaseViewModel, caseB: import('../data/types').CaseViewModel) => number}
+ * */
+
+export function sortCasesByFinalCommentsDate(ascending = true) {
+	return (caseA, caseB) => {
+		const dateA = toTimestamp(caseA.finalCommentsDate);
+		const dateB = toTimestamp(caseB.finalCommentsDate);
+
+		// handle equal final comments dates
+		if (dateA === dateB) return sortCasesByAge(caseA, caseB);
+
+		// handle null final comments dates
+		if (dateA === null) return ascending ? -1 : 1;
+		if (dateB === null) return ascending ? 1 : -1;
+
+		// Otherwise compare normally
+		const comparison = dateA - dateB;
+		return ascending ? comparison : -comparison;
+	};
+}

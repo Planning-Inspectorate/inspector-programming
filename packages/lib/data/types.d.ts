@@ -3,6 +3,7 @@ import type { Event } from '@microsoft/microsoft-graph-types';
 import type { AppealCaseSpecialism } from '@pins/inspector-programming-database/src/client/client.ts';
 import type { Inspector } from '@pins/inspector-programming-database/src/client/client.ts';
 import type { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
+import type { FINAL_COMMENTS_DATE_SORT } from '@pins/inspector-programming-lib/util/sorting.js';
 
 export type AppealCase = AppealHASCase | AppealS78Case;
 export type CalendarEvent = Event;
@@ -69,13 +70,15 @@ export interface Lpa {
 	lpaCode: string;
 }
 
+type FinalCommentsDateSort = (typeof FINAL_COMMENTS_DATE_SORT)[keyof typeof FINAL_COMMENTS_DATE_SORT];
+
 export interface FilterQuery {
 	clearFiltersUrl: string;
 	buildUrlWithoutFilter: (keyType: string, valueToRemove?: string) => string;
 	case?: FilterCaseQuery;
 	limit?: number;
 	page?: number;
-	sort?: string | 'age' | 'distance';
+	sort?: string | 'age' | 'distance' | FinalCommentsDateSort;
 	inspectorId?: string;
 }
 
