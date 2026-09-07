@@ -232,7 +232,8 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 				{ name: 'caseProcedure', type: 'string' },
 				{ name: 'caseLevel', type: 'string' },
 				{ name: 'caseId', type: 'string' },
-				{ name: 'finalCommentsDate', type: 'string' }
+				{ name: 'finalCommentsDate', type: 'string' },
+				{ name: 'eventType', type: 'string' }
 			],
 			// Renderer for individual case markers
 			renderer: {
@@ -309,6 +310,7 @@ function initialiseMap(apiKey, cbosUrl, pins, inspector) {
 							{ fieldName: 'caseProcedure', label: 'Procedure' },
 							{ fieldName: 'caseLevel', label: 'Allocation level' },
 							{ fieldName: 'finalCommentsDate', label: 'Final comments date' },
+							{ fieldName: 'eventType', label: 'Site Visit Type' },
 							{ fieldName: 'caseId', label: 'Case ID', visible: false }
 						]
 					}

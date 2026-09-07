@@ -1,5 +1,5 @@
 import { formatDateForDisplay } from '@pins/inspector-programming-lib/util/date.js';
-import { getCaseColor, toUserCaseStatus } from '../home/view-model.js';
+import { getCaseColor, shortEventType, toUserCaseStatus } from '../home/view-model.js';
 
 /**
  * @param c
@@ -21,7 +21,7 @@ export function caseToViewModel(caseClient, c) {
 		specialismList: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
 		caseStartedDate: formatDateForDisplay(c.caseStartedDate, { format: 'dd/MM/yyyy' }),
 		caseSpecialisms: hasSpecialisms ? c.Specialisms.map((s) => s.specialism).join(', ') : 'None',
-		eventType: c.eventType ? formatTag(c.eventType) : 'No site visit event set',
+		eventType: c.eventType ? shortEventType(c.eventType) : 'Not specified',
 		caseAgeColor: getCaseColor(caseToViewModel.caseAge),
 		linkedCases: hasLinkedCases ? c.ChildCases.map((c) => c.caseReference).join(', ') : 'None',
 		caseStatus: formatTag(toUserCaseStatus(c.caseStatus, c.caseProcedure)),

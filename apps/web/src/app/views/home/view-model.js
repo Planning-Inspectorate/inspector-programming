@@ -5,6 +5,7 @@ import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS, APPEAL_CASE_TYPE } from '@pl
 import { appealTypes } from '../../specialism/specialism.js';
 import { SPECIAL_CIRCUMSTANCES } from '@pins/inspector-programming-lib/data/special-circumstances.js';
 import { SITE_VISIT_EVENT_TYPES } from '@pins/inspector-programming-lib/data/site-visit-event-types.js';
+import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
 
 /**
  * @param {Date} currentStartDate
@@ -56,6 +57,7 @@ export function toCaseViewModel(c) {
 		...c,
 		procedureShort: shortProcedure(c.caseProcedure),
 		caseTypeShort: shortCaseType(c.caseType),
+		eventType: c.eventType ? shortEventType(c.eventType) : 'Not specified',
 		caseStatus: toUserCaseStatus(c.caseStatus, c.caseProcedure)?.replaceAll('_', ' ').toUpperCase(),
 		finalCommentsDate: formatDateForDisplay(c.finalCommentsDate, { format: 'dd/MM/yyyy' }),
 		caseAgeColor: getCaseColor(c.caseAge)
@@ -145,6 +147,18 @@ export function shortProcedure(procedure) {
 			return 'LI';
 	}
 	return procedure;
+}
+
+export function shortEventType(eventType) {
+	switch (eventType?.toLowerCase()) {
+		case APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED:
+			return 'ASV';
+		case APPEAL_EVENT_TYPE.SITE_VISIT_ACCESS_REQUIRED:
+			return 'ARSV';
+		case APPEAL_EVENT_TYPE.SITE_VISIT_UNACCOMPANIED:
+			return 'USV';
+	}
+	return eventType;
 }
 
 /**
