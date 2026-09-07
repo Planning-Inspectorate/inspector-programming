@@ -2,6 +2,7 @@ import { describe, it, mock } from 'node:test';
 import { buildInitCasesClient, CachedCasesClient } from './cached-cases-client.js';
 import assert from 'node:assert';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { FINAL_COMMENTS_DATE_SORT } from '../../util/sorting.js';
 
 describe('cached-cases-client', () => {
 	describe('buildInitCasesClient', () => {
@@ -86,12 +87,14 @@ describe('cached-cases-client', () => {
 				lpaName = null,
 				lat = null,
 				lng = null,
+				finalCommentsDate = null,
 				caseStatus = APPEAL_CASE_STATUS.EVENT
 			}) => ({
 				caseId,
 				caseAge,
 				caseReceivedDate,
 				lpaName,
+				finalCommentsDate,
 				siteAddressLatitude: lat,
 				siteAddressLongitude: lng,
 				caseStatus
@@ -183,6 +186,50 @@ describe('cached-cases-client', () => {
 					[2, 1]
 				);
 				assert.strictEqual(result.total, 2);
+				assert.strictEqual(result.page, 1);
+			});
+
+			it('should sort by final comments date in ascending order when requested', async () => {
+				const mockClient = newMockClient();
+				const cacheClient = new CachedCasesClient(mockClient);
+
+				const allCases = [
+					makeCase({ caseId: 1, finalCommentsDate: '2025-01-03T00:00:00.000Z' }),
+					makeCase({ caseId: 2, finalCommentsDate: '2025-01-01T00:00:00.000Z' }),
+					makeCase({ caseId: 3, finalCommentsDate: '2025-01-02T00:00:00.000Z' })
+				];
+
+				cacheClient.getAllParentCases = mock.fn(() => Promise.resolve(allCases));
+
+				const result = await cacheClient.getCases({}, FINAL_COMMENTS_DATE_SORT.ASCENDING, 1, 10);
+
+				assert.deepStrictEqual(
+					result.cases.map((c) => c.caseId),
+					[2, 3, 1]
+				);
+				assert.strictEqual(result.total, 3);
+				assert.strictEqual(result.page, 1);
+			});
+
+			it('should sort by final comments date in descending order when requested', async () => {
+				const mockClient = newMockClient();
+				const cacheClient = new CachedCasesClient(mockClient);
+
+				const allCases = [
+					makeCase({ caseId: 1, finalCommentsDate: '2025-01-03T00:00:00.000Z' }),
+					makeCase({ caseId: 2, finalCommentsDate: '2025-01-01T00:00:00.000Z' }),
+					makeCase({ caseId: 3, finalCommentsDate: '2025-01-02T00:00:00.000Z' })
+				];
+
+				cacheClient.getAllParentCases = mock.fn(() => Promise.resolve(allCases));
+
+				const result = await cacheClient.getCases({}, FINAL_COMMENTS_DATE_SORT.DESCENDING, 1, 10);
+
+				assert.deepStrictEqual(
+					result.cases.map((c) => c.caseId),
+					[1, 3, 2]
+				);
+				assert.strictEqual(result.total, 3);
 				assert.strictEqual(result.page, 1);
 			});
 
