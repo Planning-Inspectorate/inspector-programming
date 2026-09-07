@@ -162,6 +162,15 @@ describe('view-model', () => {
 			const viewModel = toCaseViewModel(caseData);
 			assert.strictEqual(viewModel.caseStatus, 'INQUIRY READY TO SET UP');
 		});
+
+		test('should map site visit event types to short labels', () => {
+			const caseData = {
+				id: 1,
+				eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED
+			};
+			const viewModel = toCaseViewModel(caseData);
+			assert.strictEqual(viewModel.eventType, 'ASV');
+		});
 	});
 
 	describe('getCaseColor', () => {
