@@ -1,0 +1,35 @@
+{% macro sortableTableHeader(label, sortKey, currentSort) %}
+
+    {% set ascending = sortKey + '-ascending' %}
+    {% set descending = sortKey + '-descending' %}
+
+    {% set nextSort = ascending %}
+    {% set sortIconPath = 'views/macros/icons/sort-none.svg' %}
+
+    {% if currentSort == ascending %}
+        {% set sortIconPath = 'views/macros/icons/sort-ascending.svg' %}
+        {% set nextSort = descending %}
+    {% elif currentSort == descending %}
+        {% set sortIconPath = 'views/macros/icons/sort-descending.svg' %}
+        {% set nextSort = ascending %}
+    {% endif %}
+
+    <a data-sort="{{ nextSort }}" href="" class="sort-pagination-link govuk-link govuk-link--no-visited-state">
+        {{ label }}
+        {% include sortIconPath %}
+    </a>
+
+{% endmacro %}
+
+
+{% macro sortableAriaSort(sortKey, currentSort) %}
+    {%- if currentSort == sortKey + '-ascending' -%}
+            ascending
+    {%- elif currentSort == sortKey + '-descending' -%}
+            descending
+    {%- else -%}
+            none
+    {%- endif -%}
+{% endmacro %}
+
+

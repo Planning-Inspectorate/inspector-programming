@@ -1,5 +1,10 @@
 import { CasesClient } from './cases-client.js';
-import { sortCasesByAge, sortCasesByDistance } from '../../util/sorting.js';
+import {
+	FINAL_COMMENTS_DATE_SORT,
+	sortCasesByAge,
+	sortCasesByDistance,
+	sortCasesByFinalCommentsDate
+} from '../../util/sorting.js';
 import { filterCases } from '../../util/filtering.js';
 import { filterAssignableCases } from './appeal-status.js';
 import { getPageNumber, paginateList } from '../../util/pagination.ts';
@@ -59,6 +64,10 @@ export class CachedCasesClient {
 		switch (sort) {
 			case 'distance':
 				sortedCases = filteredCases.sort((a, b) => sortCasesByDistance(filters.inspectorCoordinates, a, b));
+				break;
+			case FINAL_COMMENTS_DATE_SORT.ASCENDING:
+			case FINAL_COMMENTS_DATE_SORT.DESCENDING:
+				sortedCases = filteredCases.sort(sortCasesByFinalCommentsDate(sort === FINAL_COMMENTS_DATE_SORT.ASCENDING));
 				break;
 			default:
 				sortedCases = filteredCases.sort(sortCasesByAge);
