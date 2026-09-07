@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { sortCasesByAge, sortCasesByDistance } from './sorting.js';
+import { sortCasesByAge, sortCasesByDistance, sortCasesByFinalCommentsDate } from './sorting.js';
 import { Prisma } from '@pins/inspector-programming-database/src/client/client.ts';
 
 const Decimal = Prisma.Decimal;
@@ -260,6 +260,46 @@ describe('sorting', () => {
 				{ siteAddressLatitude: 54.980328, siteAddressLongitude: -1.6157238 }, //newcastle
 				{ siteAddressLatitude: new Decimal(55.953251), siteAddressLongitude: new Decimal(-3.188267) } //edinburgh
 			]);
+		});
+	});
+
+	describe('sortCasesByFinalCommentsDate', () => {
+		const cases = [
+			{ caseId: 'no-date', caseAge: 1, finalCommentsDate: null },
+			{ caseId: 'newest', caseAge: 2, finalCommentsDate: new Date('2026-08-20T00:00:00Z') },
+			{ caseId: 'oldest', caseAge: 3, finalCommentsDate: '2026-06-01T00:00:00Z' }
+		];
+
+		it('sorts missing dates first and dated comments from oldest to newest when ascending', () => {
+			const sortedCases = [...cases].sort(sortCasesByFinalCommentsDate(true));
+
+			assert.deepStrictEqual(
+				sortedCases.map((c) => c.caseId),
+				['no-date', 'oldest', 'newest']
+			);
+		});
+
+		it('sorts dated comments from newest to oldest and missing dates last when descending', () => {
+			const sortedCases = [...cases].sort(sortCasesByFinalCommentsDate(false));
+
+			assert.deepStrictEqual(
+				sortedCases.map((c) => c.caseId),
+				['newest', 'oldest', 'no-date']
+			);
+		});
+
+		it('treats invalid dates as missing and uses age as a stable fallback', () => {
+			const casesWithMissingDates = [
+				{ caseId: 'younger', caseAge: 2, finalCommentsDate: 'not-a-date' },
+				{ caseId: 'older', caseAge: 8, finalCommentsDate: null }
+			];
+
+			const sortedCases = casesWithMissingDates.sort(sortCasesByFinalCommentsDate(true));
+
+			assert.deepStrictEqual(
+				sortedCases.map((c) => c.caseId),
+				['older', 'younger']
+			);
 		});
 	});
 });
