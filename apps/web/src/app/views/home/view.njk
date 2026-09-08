@@ -453,6 +453,7 @@
                         </div>
                     </div>
                     <form method="post" action="/cases" novalidate>
+                        <input type="hidden" name="_csrf" value="{{ _csrf }}">
                         <input type="hidden" name="inspectorId" value="{{ filters.query.inspectorId }}">
                     {% if inspectors.selected %}
                         <div class="assignment-form">
