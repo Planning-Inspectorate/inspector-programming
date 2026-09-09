@@ -39,4 +39,7 @@ export interface CaseToAssign {
 	// costs
 	appellantCostsAppliedFor: boolean | null;
 	lpaCostsAppliedFor: boolean | null;
+
+	//case officer
+	caseOfficerId: string | null;
 }

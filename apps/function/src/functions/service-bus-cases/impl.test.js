@@ -228,6 +228,16 @@ describe('service-bus-cases', () => {
 			const result = mapToDatabase(msg({ designatedSitesNames: ['S1', 'S2'] }), NULL_COORDS);
 			assert.strictEqual(result.designatedSitesNames, '["S1","S2"]');
 		});
+
+		test('maps caseOfficerId from message', () => {
+			const result = mapToDatabase(msg({ caseOfficerId: 'officer-abc' }), NULL_COORDS);
+			assert.strictEqual(result.caseOfficerId, 'officer-abc');
+		});
+
+		test('maps caseOfficerId to null when not provided', () => {
+			const result = mapToDatabase(msg({ caseOfficerId: null }), NULL_COORDS);
+			assert.strictEqual(result.caseOfficerId, null);
+		});
 	});
 
 	describe('deleteCase', () => {

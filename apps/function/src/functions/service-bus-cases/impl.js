@@ -182,7 +182,8 @@ export function mapToDatabase(message, coords) {
 		typeOfPlanningApplication: message.typeOfPlanningApplication ?? null,
 		applicationDecision: message.applicationDecision ?? null,
 		isAonbNationalLandscape: message.isAonbNationalLandscape ?? null,
-		caseStartedDate: message.caseStartedDate ? new Date(message.caseStartedDate) : null
+		caseStartedDate: message.caseStartedDate ? new Date(message.caseStartedDate) : null,
+		caseOfficerId: message.caseOfficerId ?? null
 	};
 
 	// Connect the LPA relation
