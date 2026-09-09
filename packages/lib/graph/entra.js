@@ -205,4 +205,15 @@ export class EntraClient {
 			}
 		}
 	}
+
+	/**
+	 * Fetch a user by their Entra ID
+	 *
+	 * @param {string} userId
+	 * @returns {Promise<import('./types').EntraUser>}
+	 */
+
+	async getUserById(userId) {
+		return this.#client.api(`users/${userId}`).select(['id', 'displayName', 'mail']).get();
+	}
 }

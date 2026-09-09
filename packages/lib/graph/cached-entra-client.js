@@ -109,4 +109,14 @@ export class CachedEntraClient {
 	async getMetadata() {
 		return this.#client.getMetadata();
 	}
+
+	/**
+	 * * Fetch a user by their Entra user ID
+	 * @param {string} userId
+	 * @returns {Promise<import('./types').EntraUser>}
+	 */
+
+	async getUserById(userId) {
+		return this.#client.getUserById(userId);
+	}
 }
