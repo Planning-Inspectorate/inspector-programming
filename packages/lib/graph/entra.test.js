@@ -516,4 +516,23 @@ describe('EntraClient', () => {
 			});
 		});
 	});
+
+	describe('getUserById', () => {
+		it('should fetch user by id and return user detail', async () => {
+			const client = mockClient();
+			client.get.mock.mockImplementation(() => {
+				return {
+					id: 'user-123',
+					displayName: 'Test User',
+					mail: 'user@example.com'
+				};
+			});
+			const entra = new EntraClient(client);
+			const user = await entra.getUserById('user-123');
+			assert.strictEqual(client.get.mock.callCount(), 1);
+			assert.strictEqual(user.id, 'user-123');
+			assert.strictEqual(user.displayName, 'Test User');
+			assert.strictEqual(user.mail, 'user@example.com');
+		});
+	});
 });

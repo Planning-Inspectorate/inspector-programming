@@ -84,3 +84,9 @@ export interface CalendarEventInput {
 }
 
 export type InitEntraClient = (session: AuthSession) => CachedEntraClient | null;
+
+export interface EntraUser {
+	id: string;
+	displayName: string | null;
+	mail: string | null;
+}
