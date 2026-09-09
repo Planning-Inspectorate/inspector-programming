@@ -117,6 +117,9 @@ function mapCaseViewModelToCaseToAssign(caseViewModel, isParent) {
 		isParent,
 		// costs
 		appellantCostsAppliedFor: caseViewModel.appellantCostsAppliedFor,
-		lpaCostsAppliedFor: caseViewModel.lpaCostsAppliedFor
+		lpaCostsAppliedFor: caseViewModel.lpaCostsAppliedFor,
+
+		//case officer
+		caseOfficerId: caseViewModel.caseOfficerId
 	};
 }

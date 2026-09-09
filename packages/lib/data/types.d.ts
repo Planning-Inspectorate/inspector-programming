@@ -46,6 +46,7 @@ export interface CaseViewModel {
 	eventType: string | null;
 	isAonbNationalLandscape: string | null;
 	siteAddressLine1: string | null;
+	caseOfficerId: string | null;
 
 	// costs
 	appellantCostsAppliedFor: boolean | null;

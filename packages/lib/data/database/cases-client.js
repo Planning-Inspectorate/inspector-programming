@@ -142,6 +142,7 @@ export class CasesClient {
 			applicationDecision: c.applicationDecision || null,
 			eventType: c.eventType || null,
 			siteAddressLine1: c.siteAddressLine1 || null,
+			caseOfficerId: c.caseOfficerId || null,
 
 			// costs
 			appellantCostsAppliedFor: c.appellantCostsAppliedFor,

@@ -133,7 +133,8 @@ describe('CasesClient', () => {
 					eventType: APPEAL_EVENT_TYPE.SITE_VISIT_ACCOMPANIED,
 					siteAddressLine1: '123 Example Street',
 					appellantCostsAppliedFor: null,
-					lpaCostsAppliedFor: true
+					lpaCostsAppliedFor: true,
+					caseOfficerId: null
 				},
 				{
 					allocationBand: 1,
@@ -164,7 +165,8 @@ describe('CasesClient', () => {
 					eventType: null,
 					siteAddressLine1: '123 Example Road',
 					appellantCostsAppliedFor: null,
-					lpaCostsAppliedFor: null
+					lpaCostsAppliedFor: null,
+					caseOfficerId: null
 				}
 			]);
 		});

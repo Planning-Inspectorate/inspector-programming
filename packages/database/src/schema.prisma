@@ -65,7 +65,8 @@ model AppealCase {
   appellantCostsAppliedFor Boolean?
   lpaCostsAppliedFor       Boolean?
 
-  inspectorId String? // assigned inspector
+  inspectorId   String? // assigned inspector
+  caseOfficerId String? // assigned case officer
 
   Specialisms AppealCaseSpecialism[]
 
