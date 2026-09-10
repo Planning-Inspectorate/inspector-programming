@@ -409,4 +409,37 @@ describe('validateFilters', () => {
 		);
 		assert.strictEqual(errors.maximumAge.href, '#filters[maximumAge]', 'should return href to maximumAge field');
 	});
+	test('should return an error if include and exclude are selected for the same special circumstance', () => {
+		const filters = {
+			case: {
+				specialCircumstances: ['include-green-belt', 'exclude-green-belt']
+			}
+		};
+		const errors = validateFilters(filters);
+		assert.strictEqual(Object.keys(errors).length, 1, 'should return one error');
+		assert.ok('specialCircumstances' in errors, "result should have a 'specialCircumstances' property");
+		assert.strictEqual(
+			errors.specialCircumstances.text,
+			'You cannot select both include and exclude for the same special circumstance.',
+			'should return a conflict error under specialCircumstances'
+		);
+		assert.strictEqual(
+			errors.specialCircumstances.href,
+			'#filters[specialCircumstances]',
+			'should return href to specialCircumstances field'
+		);
+	});
+	test('should not return an error for mixed include and exclude selections of different special circumstances', () => {
+		const filters = {
+			case: {
+				specialCircumstances: ['include-green-belt', 'exclude-prior-approval']
+			}
+		};
+		const errors = validateFilters(filters);
+		assert.strictEqual(
+			Object.keys(errors).length,
+			0,
+			'should return no errors for mixed include and exclude selections of different special circumstances'
+		);
+	});
 });

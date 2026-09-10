@@ -61,6 +61,7 @@ export interface FilterCaseQuery {
 	minimumAge?: string;
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;
+	specialCircumstances?: string[];
 }
 
 export interface InspectorsViewModel {
