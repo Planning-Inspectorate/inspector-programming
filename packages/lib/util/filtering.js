@@ -1,5 +1,5 @@
 import { distanceBetween } from './distances.js';
-import { SPECIAL_CIRCUMSTANCES } from '../data/special-circumstances.js';
+import { CONFLICTING_SPECIAL_CIRCUMSTANCES, SPECIAL_CIRCUMSTANCES } from '../data/special-circumstances.js';
 import { APPEAL_APPLICATION_DECISION, APPEAL_TYPE_OF_PLANNING_APPLICATION } from '@planning-inspectorate/data-model';
 
 /**
@@ -77,7 +77,7 @@ export function filterCases(cases, filters) {
 		cases = cases.filter((c) => c.caseLevel && levels.includes(c.caseLevel));
 	}
 
-	// Filter by specialCircumstances — exclude cases matching selected circumstances
+	// Filter by special circumstances
 	if (filters.specialCircumstances) {
 		const circumstances = Array.isArray(filters.specialCircumstances)
 			? filters.specialCircumstances
@@ -134,6 +134,25 @@ export function validateFilters(filters) {
 	/** @type {ValidationErrors} */
 	const errors = {};
 	if (!filters) return errors;
+
+	const selectedCircumstances = filters.case?.specialCircumstances ?? [];
+
+	// Check for conflicting special circumstances if more than one is selected
+	if (selectedCircumstances.length > 1) {
+		const selectedSet = new Set(selectedCircumstances);
+
+		// Check if any conflicting pairs are both selected
+		const hasConflict = CONFLICTING_SPECIAL_CIRCUMSTANCES.some(
+			([includeOption, excludeOption]) => selectedSet.has(includeOption) && selectedSet.has(excludeOption)
+		);
+
+		if (hasConflict) {
+			errors.specialCircumstances = {
+				text: 'You cannot select both include and exclude for the same special circumstance.',
+				href: '#filters[specialCircumstances]'
+			};
+		}
+	}
 
 	/** @type {(keyof import('@pins/inspector-programming-lib/data/types.js').Filters)[]} */
 	const keysToValidate = ['minimumAge', 'maximumAge'];
