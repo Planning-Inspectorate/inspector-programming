@@ -83,19 +83,24 @@ export function filterCases(cases, filters) {
 			? filters.specialCircumstances
 			: [filters.specialCircumstances];
 
-		// Map special circumstances to filter functions
+		// Map special circumstances to filter predicates
 		/** @type {Record<string, (c: import('../data/types.js').CaseViewModel) => boolean>} */
-		const circumstanceExclusions = {
+		const circumstanceFilters = {
 			[SPECIAL_CIRCUMSTANCES.EXCLUDE_GREEN_BELT]: (c) => !c.isGreenBelt,
 			[SPECIAL_CIRCUMSTANCES.EXCLUDE_PRIOR_APPROVAL]: (c) =>
 				c.typeOfPlanningApplication !== APPEAL_TYPE_OF_PLANNING_APPLICATION.PRIOR_APPROVAL,
 			[SPECIAL_CIRCUMSTANCES.EXCLUDE_CONDITIONS]: (c) => c.applicationDecision === APPEAL_APPLICATION_DECISION.REFUSED,
-			[SPECIAL_CIRCUMSTANCES.EXCLUDE_DESIGNATED_SITES]: (c) => !c.designatedSitesNames
+			[SPECIAL_CIRCUMSTANCES.EXCLUDE_DESIGNATED_SITES]: (c) => !c.designatedSitesNames,
+			[SPECIAL_CIRCUMSTANCES.INCLUDE_GREEN_BELT]: (c) => c.isGreenBelt,
+			[SPECIAL_CIRCUMSTANCES.INCLUDE_PRIOR_APPROVAL]: (c) =>
+				c.typeOfPlanningApplication === APPEAL_TYPE_OF_PLANNING_APPLICATION.PRIOR_APPROVAL,
+			[SPECIAL_CIRCUMSTANCES.INCLUDE_CONDITIONS]: (c) => c.applicationDecision !== APPEAL_APPLICATION_DECISION.REFUSED,
+			[SPECIAL_CIRCUMSTANCES.INCLUDE_DESIGNATED_SITES]: (c) => !!c.designatedSitesNames
 		};
 
 		// Apply filter functions based on selected circumstances
 		for (const circumstance of circumstances) {
-			const rule = circumstanceExclusions[circumstance];
+			const rule = circumstanceFilters[circumstance];
 			if (rule) {
 				cases = cases.filter(rule);
 			}

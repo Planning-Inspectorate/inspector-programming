@@ -294,6 +294,63 @@ describe('filterCases', () => {
 		assert.strictEqual(filtered.length, 1);
 		assert.strictEqual(filtered[0].caseAge, 25);
 	});
+	test('should include green belt cases when Include Green Belt special circumstance is selected', () => {
+		const cases = [
+			{ isGreenBelt: true, caseAge: 10 },
+			{ isGreenBelt: false, caseAge: 20 },
+			{ isGreenBelt: null, caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: ['include-green-belt'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].isGreenBelt, true);
+	});
+	test('should include prior approval cases when Include Prior Approval special circumstance is selected', () => {
+		const cases = [
+			{ typeOfPlanningApplication: 'prior-approval', caseAge: 10 },
+			{ typeOfPlanningApplication: 'full', caseAge: 20 },
+			{ typeOfPlanningApplication: null, caseAge: 15 }
+		];
+		const filtered = filterCases(cases, { specialCircumstances: ['include-prior-approval'] });
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].typeOfPlanningApplication, 'prior-approval');
+	});
+	test('should apply a mix of include and exclude special circumstances filters together', () => {
+		const cases = [
+			{
+				isGreenBelt: true,
+				typeOfPlanningApplication: 'full',
+				applicationDecision: 'granted',
+				designatedSitesNames: 'Site A',
+				caseAge: 10
+			},
+			{
+				isGreenBelt: false,
+				typeOfPlanningApplication: 'prior-approval',
+				applicationDecision: 'granted',
+				designatedSitesNames: 'Site B',
+				caseAge: 20
+			},
+			{
+				isGreenBelt: false,
+				typeOfPlanningApplication: 'full',
+				applicationDecision: 'refused',
+				designatedSitesNames: null,
+				caseAge: 15
+			},
+			{
+				isGreenBelt: true,
+				typeOfPlanningApplication: 'prior-approval',
+				applicationDecision: 'refused',
+				designatedSitesNames: 'Site C',
+				caseAge: 25
+			}
+		];
+		const filtered = filterCases(cases, {
+			specialCircumstances: ['include-green-belt', 'exclude-prior-approval', 'include-designated-sites']
+		});
+		assert.strictEqual(filtered.length, 1);
+		assert.strictEqual(filtered[0].caseAge, 10);
+	});
 	test('should handle specialCircumstances as a single string value', () => {
 		const cases = [
 			{ isGreenBelt: true, caseAge: 10 },
