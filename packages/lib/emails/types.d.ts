@@ -7,6 +7,7 @@ export interface NotifyConfig {
 
 export interface TemplateIds {
 	assignedCase: string;
+	assignedCaseCaseOfficer: string;
 	assignedCaseProgrammeOfficer: string;
 	selfAssignedCase: string;
 	selfAssignedCaseProgrammeOfficer: string;
@@ -23,6 +24,10 @@ export interface GovNotifyOptions {
 
 export interface AssignedCasePersonalisation extends SelfAssignedCasePersonalisation {
 	cbosLink: string;
+}
+
+export interface AssignedCaseOfficerPersonalisation extends SelfAssignedCasePersonalisation {
+	caseOfficerName: string;
 }
 
 export interface AssignedCaseProgrammeOfficerPersonalisation extends SelfAssignedCasePersonalisation {

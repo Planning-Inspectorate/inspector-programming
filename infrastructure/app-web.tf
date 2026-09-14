@@ -69,6 +69,7 @@ module "app_web" {
     GOV_NOTIFY_API_KEY                                       = local.key_vault_refs["scheduling-gov-notify-api-key"]
     GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE                        = var.apps_config.gov_notify.template_ids.assigned_case
     GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_PROGRAMME_OFFICER      = var.apps_config.gov_notify.template_ids.assigned_case_programme_officer
+    GOV_NOTIFY_TEMPLATE_ASSIGNED_CASE_CASE_OFFICER           = var.apps_config.gov_notify.template_ids.assigned_case_case_officer
     GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE                   = var.apps_config.gov_notify.template_ids.self_assigned_case
     GOV_NOTIFY_TEMPLATE_SELF_ASSIGNED_CASE_PROGRAMME_OFFICER = var.apps_config.gov_notify.template_ids.self_assigned_case_programme_officer
 
