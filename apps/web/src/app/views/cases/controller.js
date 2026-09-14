@@ -2,7 +2,11 @@ import { addSessionData, readSessionData } from '@planning-inspectorate/core/uti
 import { assignCasesToInspector, getCasesToAssign } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
-import { notifyInspectorOfAssignedCases, notifyProgrammeOfficerOfAssignedCases } from '../../inspector/inspector.js';
+import {
+	notifyInspectorOfAssignedCases,
+	notifyProgrammeOfficerOfAssignedCases,
+	notifyCaseOfficerOfAssignedCases
+} from '../../inspector/inspector.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -98,6 +102,19 @@ async function handleCases(selectedCases, service, req, res) {
 	const successfulCaseIds = successfullyAssignedCaseReferences
 		.map((ref) => casesByReference.get(ref)?.caseId)
 		.filter(Boolean);
+
+	// Get case officer IDs for successfully assigned cases
+	/** @type {Map<string, string[]>} */
+	const assignedCaseReferencesByCaseOfficer = successfullyAssignedCases.reduce((acc, assignedCase) => {
+		if (!assignedCase?.caseOfficerId || !assignedCase.caseReference) {
+			return acc;
+		}
+
+		const caseReferences = acc.get(assignedCase.caseOfficerId) ?? [];
+		caseReferences.push(assignedCase.caseReference);
+		acc.set(assignedCase.caseOfficerId, caseReferences);
+		return acc;
+	}, new Map());
 
 	if (successfulCaseIds.length > 0) {
 		try {
@@ -198,6 +215,35 @@ async function handleCases(selectedCases, service, req, res) {
 					},
 					'Failed to send email notification to programme officer after case assignment'
 				);
+			}
+
+			// Send notification email to case officer for successful assignments
+			for (const [caseOfficerId, caseReferencesForCaseOfficer] of assignedCaseReferencesByCaseOfficer) {
+				try {
+					await notifyCaseOfficerOfAssignedCases(
+						service,
+						req.session,
+						caseOfficerId,
+						req.body.assignmentDate,
+						caseReferencesForCaseOfficer,
+						caseOfficerId
+					);
+					service.logger.info(
+						{
+							caseOfficerId,
+							caseCount: caseReferencesForCaseOfficer.length
+						},
+						'Email notification sent successfully to case officer'
+					);
+				} catch (err) {
+					service.logger.warn(
+						{
+							err,
+							caseOfficerId
+						},
+						'Failed to send email notification to case officer after case assignment'
+					);
+				}
 			}
 		} catch (err) {
 			service.logger.error(

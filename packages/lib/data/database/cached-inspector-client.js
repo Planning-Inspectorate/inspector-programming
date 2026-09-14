@@ -41,7 +41,19 @@ export class CachedInspectorClient {
 	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').Inspector|null>}
 	 */
 	async getInspectorDetails(entraId) {
-		return this.#client.getInspectorDetails(entraId);
+		if (!entraId) {
+			return this.#client.getInspectorDetails(entraId);
+		}
+
+		const key = CACHE_PREFIX + 'getInspectorDetails_' + entraId;
+		const inspector = this.#cache.get(key);
+		if (inspector) {
+			return inspector;
+		}
+
+		const inspectorDetails = await this.#client.getInspectorDetails(entraId);
+		this.#cache.set(key, inspectorDetails);
+		return inspectorDetails;
 	}
 
 	/**
