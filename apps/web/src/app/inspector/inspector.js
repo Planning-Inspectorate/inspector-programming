@@ -200,6 +200,58 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 }
 
 /**
+ * Sends an email using GovUK Notify client to the case officer that assigned the cases
+ *
+ * @param {import('#service').WebService} service
+ * @param {import("../auth/session.service").SessionWithAuth} session
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ * @param {string} caseOfficerId - Entra user ID of the case officer
+ * @returns {Promise<void>}
+ */
+export async function notifyCaseOfficerOfAssignedCases(
+	service,
+	session,
+	inspectorId,
+	assignmentDate,
+	caseReferences,
+	caseOfficerId
+) {
+	if (!service.notifyClient) throw new Error('Notify client not configured');
+	if (!caseOfficerId) throw new Error('caseOfficerId is required');
+
+	// Resolve the case officer's email from Entra
+	const entraClient = service.entraClient(session);
+	if (!entraClient) throw new Error('Could not initialise Entra client');
+
+	const caseOfficerUser = await entraClient.getUserById(caseOfficerId);
+	const caseOfficerEmail = caseOfficerUser?.mail;
+	const caseOfficerName = caseOfficerUser?.displayName ?? 'Case Officer';
+
+	if (!caseOfficerEmail) {
+		service.logger.warn(
+			{ caseOfficerId },
+			'Case officer does not have an email address in Entra, skipping notification'
+		);
+		return;
+	}
+
+	// Get inspector details for the email personalisation
+	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
+	if (!inspector?.firstName) throw new Error('Could not retrieve inspector name');
+
+	const options = {
+		caseOfficerName,
+		inspectorName: formatInspectorName(inspector),
+		assignmentDate: assignmentDate,
+		selectedCases: caseReferences.join(', ')
+	};
+
+	await service.notifyClient.sendAssignedCaseCaseOfficerEmail(caseOfficerEmail, options);
+}
+
+/**
  * Fetch all mappings as a normalized lookup.
  * Not much data in this instance - but note we could use select here since we only need two fields.
  * @param {import('#service').WebService} service

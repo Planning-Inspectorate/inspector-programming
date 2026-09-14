@@ -15,6 +15,31 @@ describe('cached-inspector-client', () => {
 		});
 	});
 	describe('CachedInspectorClient', () => {
+		it('should return cached inspector details if present', async () => {
+			const returned = { id: 'inspector-1', firstName: 'Jeff' };
+			const mockClient = {};
+			const mockCache = {
+				get: mock.fn(() => returned)
+			};
+			const cacheClient = new CachedInspectorClient(mockClient, mockCache);
+			const inspector = await cacheClient.getInspectorDetails('inspector-1');
+			assert.strictEqual(mockCache.get.mock.callCount(), 1);
+			assert.deepStrictEqual(inspector, returned);
+		});
+		it('should fetch new inspector details if no cache value', async () => {
+			const returned = { id: 'inspector-1', firstName: 'Jeff' };
+			const mockClient = { getInspectorDetails: mock.fn(() => returned) };
+			const mockCache = {
+				get: mock.fn(() => undefined),
+				set: mock.fn()
+			};
+			const cacheClient = new CachedInspectorClient(mockClient, mockCache);
+			const inspector = await cacheClient.getInspectorDetails('inspector-1');
+			assert.deepStrictEqual(inspector, returned);
+			assert.strictEqual(mockClient.getInspectorDetails.mock.callCount(), 1);
+			assert.strictEqual(mockCache.get.mock.callCount(), 1);
+			assert.strictEqual(mockCache.set.mock.callCount(), 1);
+		});
 		it('should return cached entry if present', async () => {
 			const mockClient = {};
 			const mockCache = {

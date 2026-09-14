@@ -12,7 +12,11 @@ describe('controller.js', () => {
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
 			mockCbosApiClient.fetchAppealDetailsByReference.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseEmail.mock.resetCalls();
+			mockNotifyClient.sendAssignedCaseCaseOfficerEmail.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.resetCalls();
+			if (mockEntraClientInstance.getUserById) {
+				mockEntraClientInstance.getUserById.mock.resetCalls();
+			}
 		});
 		//mock clients
 		const mockCasesClient = {
@@ -25,7 +29,8 @@ describe('controller.js', () => {
 		};
 		const mockEntraClientInstance = {
 			listAllUserCalendarEvents: mock.fn(),
-			createCalendarEvents: mock.fn()
+			createCalendarEvents: mock.fn(),
+			getUserById: mock.fn()
 		};
 		const mockGetCbosApiClientForSession = mock.fn();
 		const mockCalendarClient = {
@@ -43,6 +48,7 @@ describe('controller.js', () => {
 		};
 		const mockNotifyClient = {
 			sendAssignedCaseEmail: mock.fn(),
+			sendAssignedCaseCaseOfficerEmail: mock.fn(),
 			sendAssignedCaseProgrammeOfficerEmail: mock.fn()
 		};
 		const notifyConfig = { cbosLink: 'https://example.com/cbos' };
@@ -459,6 +465,73 @@ describe('controller.js', () => {
 			const programmerArgs = sendAssignedCaseProgrammeOfficerEmail.mock.calls[0].arguments;
 			assert.strictEqual(inspectorArgs[1].selectedCases, 'REF-1, REF-2');
 			assert.strictEqual(programmerArgs[1].selectedCases, 'REF-1, REF-2');
+		});
+
+		test('should notify each unique case officer with only their assigned case references', async () => {
+			// Cases 1 and 2 belong to the same case officer.
+			// Case 3 belongs to a different case officer.
+			mockCasesClient.getCaseById.mock.mockImplementation((id) => ({
+				...appeal,
+				caseId: id,
+				caseReference: 'REF-' + id.toString(),
+				caseOfficerId: id === 3 ? 'case-officer-2' : 'case-officer-1'
+			}));
+
+			// Return a different email address for each case officer.
+			mockEntraClientInstance.getUserById.mock.mockImplementation((caseOfficerId) => ({
+				mail: caseOfficerId === 'case-officer-1' ? 'case.officer.1@example.com' : 'case.officer.2@example.com'
+			}));
+
+			const service = mockService();
+
+			const req = {
+				body: {
+					inspectorId: 'inspectorId',
+					selectedCases: [1, 2, 3],
+					assignmentDate: '2026-09-18'
+				},
+				session: {
+					account: {
+						username: 'officer@test.com',
+						name: 'Test Officer'
+					}
+				}
+			};
+
+			const res = {
+				redirect: mock.fn(),
+				render: mock.fn()
+			};
+
+			const controller = buildPostCases(service);
+
+			await controller(req, res);
+
+			// Find all notification calls made to each case officer.
+			const caseOfficerOneCalls = mockNotifyClient.sendAssignedCaseCaseOfficerEmail.mock.calls.filter(
+				(call) => call.arguments[0] === 'case.officer.1@example.com'
+			);
+
+			const caseOfficerTwoCalls = mockNotifyClient.sendAssignedCaseCaseOfficerEmail.mock.calls.filter(
+				(call) => call.arguments[0] === 'case.officer.2@example.com'
+			);
+
+			// Each case officer should receive only one email,
+			// even when they have multiple assigned cases.
+			assert.strictEqual(caseOfficerOneCalls.length, 1);
+			assert.strictEqual(caseOfficerTwoCalls.length, 1);
+
+			// Case officer 1 should receive only the references for cases 1 and 2.
+			assert.strictEqual(caseOfficerOneCalls[0].arguments[1].selectedCases, 'REF-1, REF-2');
+
+			// Case officer 2 should receive only the reference for case 3.
+			assert.strictEqual(caseOfficerTwoCalls[0].arguments[1].selectedCases, 'REF-3');
+
+			mockCasesClient.getCaseById.mock.mockImplementation((id) => ({
+				...appeal,
+				caseId: id,
+				caseReference: 'REF-' + id.toString()
+			}));
 		});
 
 		describe('email notification status flags', () => {

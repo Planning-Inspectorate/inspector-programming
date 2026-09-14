@@ -7,6 +7,7 @@ import {
 	getInspectorList,
 	notifyInspectorOfAssignedCases,
 	notifyProgrammeOfficerOfAssignedCases,
+	notifyCaseOfficerOfAssignedCases,
 	getInspectorToCaseSpecialismMap,
 	mapInspectorToCaseSpecialisms
 } from './inspector.js';
@@ -42,6 +43,7 @@ const mockService = {
 	},
 	notifyClient: {
 		sendAssignedCaseEmail: mock.fn(),
+		sendAssignedCaseCaseOfficerEmail: mock.fn(),
 		sendSelfAssignedCaseEmail: mock.fn(),
 		sendAssignedCaseProgrammeOfficerEmail: mock.fn()
 	}
@@ -740,6 +742,156 @@ describe('inspectors', () => {
 
 			assert.strictEqual(mockService.inspectorClient.getInspectorDetails.mock.callCount(), 1);
 			assert.strictEqual(mockService.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+		});
+	});
+
+	describe('notifyCaseOfficerOfAssignedCases', () => {
+		const mockEntraClientForCaseOfficer = {
+			getUserById: mock.fn()
+		};
+
+		const mockInitEntraClientForCaseOfficer = mock.fn();
+
+		beforeEach(() => {
+			mockService.inspectorClient.getInspectorDetails.mock.resetCalls();
+			mockService.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.resetCalls();
+			mockEntraClientForCaseOfficer.getUserById.mock.resetCalls();
+			mockInitEntraClientForCaseOfficer.mock.resetCalls();
+			mockInitEntraClientForCaseOfficer.mock.mockImplementation(() => mockEntraClientForCaseOfficer);
+		});
+
+		it('should send allocation email to case officer resolved from Entra', async () => {
+			const caseOfficerService = {
+				...mockService,
+				entraClient: mockInitEntraClientForCaseOfficer
+			};
+			const inspector = { firstName: 'Jeff', lastName: 'Bridges' };
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => inspector);
+			mockEntraClientForCaseOfficer.getUserById.mock.mockImplementationOnce(() => ({
+				id: 'officer-1',
+				mail: 'officer@test.com',
+				displayName: 'Test Officer'
+			}));
+
+			await notifyCaseOfficerOfAssignedCases(
+				caseOfficerService,
+				mockSession,
+				'inspector-1',
+				'2025-01-01',
+				['REF001', 'REF002'],
+				'officer-1'
+			);
+
+			assert.strictEqual(mockEntraClientForCaseOfficer.getUserById.mock.callCount(), 1);
+			assert.strictEqual(mockEntraClientForCaseOfficer.getUserById.mock.calls[0].arguments[0], 'officer-1');
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.callCount(), 1);
+			const notifyCall = mockService.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.calls[0];
+			assert.strictEqual(notifyCall.arguments[0], 'officer@test.com');
+			assert.deepStrictEqual(notifyCall.arguments[1], {
+				caseOfficerName: 'Test Officer',
+				inspectorName: 'Jeff Bridges',
+				assignmentDate: '2025-01-01',
+				selectedCases: 'REF001, REF002'
+			});
+		});
+
+		it('should skip notification when case officer has no email in Entra', async () => {
+			const caseOfficerService = {
+				...mockService,
+				entraClient: mockInitEntraClientForCaseOfficer
+			};
+			mockEntraClientForCaseOfficer.getUserById.mock.mockImplementationOnce(() => ({
+				id: 'officer-1',
+				mail: null,
+				displayName: 'Test Officer'
+			}));
+
+			await notifyCaseOfficerOfAssignedCases(
+				caseOfficerService,
+				mockSession,
+				'inspector-1',
+				'2025-01-01',
+				['REF001'],
+				'officer-1'
+			);
+
+			assert.strictEqual(mockService.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.callCount(), 0);
+			//assert.strictEqual(mockLogger.warn.mock.callCount(), 1);
+		});
+
+		it('should throw error when caseOfficerId is not provided', async () => {
+			await assert.rejects(
+				() => notifyCaseOfficerOfAssignedCases(mockService, mockSession, 'inspector-1', '2025-01-01', ['REF001'], null),
+				{
+					name: 'Error',
+					message: 'caseOfficerId is required'
+				}
+			);
+		});
+
+		it('should throw error when notify client not configured', async () => {
+			const service = { ...mockService, notifyClient: undefined };
+
+			await assert.rejects(
+				() =>
+					notifyCaseOfficerOfAssignedCases(service, mockSession, 'inspector-1', '2025-01-01', ['REF001'], 'officer-1'),
+				{
+					name: 'Error',
+					message: 'Notify client not configured'
+				}
+			);
+		});
+
+		it('should throw error when Entra client cannot be initialised', async () => {
+			const caseOfficerService = {
+				...mockService,
+				entraClient: mock.fn(() => null)
+			};
+
+			await assert.rejects(
+				() =>
+					notifyCaseOfficerOfAssignedCases(
+						caseOfficerService,
+						mockSession,
+						'inspector-1',
+						'2025-01-01',
+						['REF001'],
+						'officer-1'
+					),
+				{
+					name: 'Error',
+					message: 'Could not initialise Entra client'
+				}
+			);
+		});
+
+		it('should throw error when inspector details cannot be retrieved', async () => {
+			const caseOfficerService = {
+				...mockService,
+				entraClient: mockInitEntraClientForCaseOfficer
+			};
+			mockEntraClientForCaseOfficer.getUserById.mock.mockImplementationOnce(() => ({
+				id: 'officer-1',
+				mail: 'officer@test.com',
+				displayName: 'Test Officer'
+			}));
+			mockService.inspectorClient.getInspectorDetails.mock.mockImplementationOnce(() => null);
+
+			await assert.rejects(
+				() =>
+					notifyCaseOfficerOfAssignedCases(
+						caseOfficerService,
+						mockSession,
+						'inspector-1',
+						'2025-01-01',
+						['REF001'],
+						'officer-1'
+					),
+				{
+					name: 'Error',
+					message: 'Could not retrieve inspector name'
+				}
+			);
 		});
 	});
 });
