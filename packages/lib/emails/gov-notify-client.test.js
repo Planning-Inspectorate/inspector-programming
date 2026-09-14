@@ -61,6 +61,7 @@ describe(`gov-notify-client`, () => {
 	describe('emailMethods', () => {
 		const templateIds = {
 			assignedCase: 'assigned-case-template-id',
+			assignedCaseCaseOfficer: 'assigned-case-case-officer-template-id',
 			assignedCaseProgrammeOfficer: 'assigned-case-programme-officer-template-id',
 			selfAssignedCase: 'self-assigned-case-template-id',
 			selfAssignedCaseProgrammeOfficer: 'self-assigned-case-programme-officer-template-id'
@@ -80,6 +81,15 @@ describe(`gov-notify-client`, () => {
 				personalisation: {
 					inspectorName: 'Inspector Name',
 					programmeOfficerName: 'Programme Officer Name',
+					assignmentDate: '1 Jan 2025',
+					selectedCases: 'CASE-123, CASE-456'
+				}
+			},
+			assignedCaseCaseOfficer: {
+				method: 'sendAssignedCaseCaseOfficerEmail',
+				personalisation: {
+					caseOfficerName: 'Case Officer Name',
+					inspectorName: 'Inspector Name',
 					assignmentDate: '1 Jan 2025',
 					selectedCases: 'CASE-123, CASE-456'
 				}

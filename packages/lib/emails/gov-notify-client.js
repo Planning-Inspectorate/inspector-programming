@@ -31,6 +31,22 @@ export class GovNotifyClient {
 
 	/**
 	 * @param {string} email - Recipients email address
+	 * @param {import('./types.js').AssignedCaseOfficerPersonalisation} personalisation
+	 * @returns {Promise<void>}
+	 */
+	async sendAssignedCaseCaseOfficerEmail(email, personalisation) {
+		const fields = ['inspectorName', 'assignmentDate', 'selectedCases', 'caseOfficerName'];
+		await this.sendEmail(
+			this.#templateIds.assignedCaseCaseOfficer,
+			email,
+			{ personalisation },
+			fields,
+			'case officer allocation'
+		);
+	}
+
+	/**
+	 * @param {string} email - Recipients email address
 	 * @param {import('./types.js').AssignedCaseProgrammeOfficerPersonalisation} personalisation
 	 * @returns {Promise<void>}
 	 */

@@ -43,6 +43,7 @@ variable "apps_config" {
       template_ids = object({
         assigned_case                        = string
         assigned_case_programme_officer      = string
+        assigned_case_case_officer           = string
         self_assigned_case                   = string
         self_assigned_case_programme_officer = string
         weekly_report                        = string
