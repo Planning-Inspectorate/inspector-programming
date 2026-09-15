@@ -37,6 +37,7 @@ apps_config = {
     template_ids = {
       assigned_case                        = "c99895a2-1a6a-4278-be7f-fc1628dbd0ab"
       assigned_case_programme_officer      = "cc9a7b28-e997-437e-9a90-adf7e6e97f73"
+      assigned_case_case_officer           = "8b8c0cb9-8cf6-4f37-92c4-9b5730f5e196"
       self_assigned_case                   = "564f2675-1420-42c7-a890-215776bbb498"
       self_assigned_case_programme_officer = "c99895a2-1a6a-4278-be7f-fc1628dbd0ab"
       weekly_report                        = "009c0b6c-972c-46f9-8ffd-ce3197c5196d"
