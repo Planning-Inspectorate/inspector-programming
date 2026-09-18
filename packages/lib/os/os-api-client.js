@@ -32,6 +32,7 @@ export class OsApiClient {
 			postcode,
 			// TODO: check which parameters are actually required
 			maxresults: '10',
+			/* eslint-disable-next-line camelcase */
 			output_srs: 'WGS84' // including this returns LNG and LAT values
 		});
 	}

@@ -277,6 +277,7 @@ export async function upsertCase(service, message, log) {
 					await Promise.all(
 						incomingCaseSpecialisms.map((specialism) =>
 							tx.appealCaseSpecialism.upsert({
+								/* eslint-disable-next-line camelcase */
 								where: { caseReference_specialism: { caseReference, specialism } },
 								create: {
 									caseReference,

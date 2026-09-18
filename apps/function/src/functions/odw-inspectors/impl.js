@@ -117,6 +117,7 @@ export async function upsertInspector(service, message, context) {
 					await Promise.all(
 						incoming.map((s) =>
 							tx.inspectorSpecialism.upsert({
+								/* eslint-disable-next-line camelcase */
 								where: { inspectorId_name: { inspectorId, name: s.name } },
 								create: {
 									inspectorId,
