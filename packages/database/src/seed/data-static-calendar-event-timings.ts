@@ -219,32 +219,35 @@ function ruleToCreateInput(rule: CalendarEventTimingRule): Prisma.CalendarEventT
 	const rules: Prisma.CalendarEventTimingRuleCreateOrConnectWithoutCalendarEventTimingInput[] = [];
 	for (const appliesTo of rule.AppliesTo) {
 		for (const allocationLevel of appliesTo.allocationLevels) {
-			const caseType_caseProcedure_allocationLevel = {
+			const rule = {
 				caseType: appliesTo.caseType,
 				caseProcedure: appliesTo.caseProcedure,
 				allocationLevel
 			};
 			rules.push({
 				where: {
-					caseType_caseProcedure_allocationLevel
+					/* eslint-disable-next-line camelcase */
+					caseType_caseProcedure_allocationLevel: rule
 				},
-				create: caseType_caseProcedure_allocationLevel
+				create: rule
 			});
 			if (appliesTo.caseProcedure === APPEAL_CASE_PROCEDURE.WRITTEN) {
 				// also add in rules for written part1 and part2 the same as written
 				const part1 = {
-					...caseType_caseProcedure_allocationLevel,
+					...rule,
 					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN_PART_1
 				};
 				rules.push({
+					/* eslint-disable-next-line camelcase */
 					where: { caseType_caseProcedure_allocationLevel: part1 },
 					create: part1
 				});
 				const part2 = {
-					...caseType_caseProcedure_allocationLevel,
+					...rule,
 					caseProcedure: APPEAL_CASE_PROCEDURE.WRITTEN_PART_2
 				};
 				rules.push({
+					/* eslint-disable-next-line camelcase */
 					where: { caseType_caseProcedure_allocationLevel: part2 },
 					create: part2
 				});

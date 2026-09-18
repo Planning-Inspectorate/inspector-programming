@@ -27,7 +27,9 @@ export class ApiAuthService {
 	 */
 	get authTokenUrl() {
 		const params = new URLSearchParams({
+			/* eslint-disable-next-line camelcase */
 			client_id: this.#config.clientId,
+			/* eslint-disable-next-line camelcase */
 			response_type: 'token',
 			scope: `${this.#config.appDomain}/Api.Read`
 		});
