@@ -1,7 +1,7 @@
 import { APPEAL_LINKED_CASE_STATUS, MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { fetchPostcodeCoordinates } from '@pins/inspector-programming-lib/util/fetch-coordinates.js';
 import { getCachedAjv } from '../../util/cached-ajv.js';
-import { withRetry } from '@pins/inspector-programming-lib/util/database.ts';
+import { withRetry } from '@planning-inspectorate/core/util';
 import { END_STATE_APPEAL_STATUSES } from '@pins/inspector-programming-lib/data/database/appeal-status.js';
 
 /**

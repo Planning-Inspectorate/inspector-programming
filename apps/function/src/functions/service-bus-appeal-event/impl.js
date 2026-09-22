@@ -1,5 +1,5 @@
 import { SITE_VISIT_EVENT_TYPES } from '@pins/inspector-programming-lib/data/site-visit-event-types.js';
-import { withRetry } from '@pins/inspector-programming-lib/util/database.ts';
+import { withRetry } from '@planning-inspectorate/core/util';
 import { getCachedAjv } from '../../util/cached-ajv.js';
 
 const SITE_VISIT_EVENT_TYPES_SET = new Set(SITE_VISIT_EVENT_TYPES);
