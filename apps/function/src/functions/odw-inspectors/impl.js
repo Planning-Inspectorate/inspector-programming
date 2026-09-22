@@ -1,6 +1,6 @@
 import { MESSAGE_EVENT_TYPE } from '@planning-inspectorate/data-model';
 import { fetchPostcodeCoordinates } from '@pins/inspector-programming-lib/util/fetch-coordinates.js';
-import { withRetry } from '@pins/inspector-programming-lib/util/database.ts';
+import { withRetry } from '@planning-inspectorate/core/util';
 import { getCachedAjv } from '../../util/cached-ajv.js';
 
 /**
