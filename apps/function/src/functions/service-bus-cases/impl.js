@@ -87,30 +87,32 @@ export async function deleteCase(service, caseReference, log) {
 	}
 
 	try {
-		await withRetry(async () =>
-			service.dbClient.$transaction(async (tx) => {
-				/* Case deletions don't usually happen. Deleting a parent/lead should automatically unlink all child cases. */
+		await withRetry(
+			async () =>
+				service.dbClient.$transaction(async (tx) => {
+					/* Case deletions don't usually happen. Deleting a parent/lead should automatically unlink all child cases. */
 
-				// Remove this case as the lead reference from all associated child cases
-				const childCaseUpdate = await tx.appealCase.updateMany({
-					where: { leadCaseReference: caseReference },
-					data: { leadCaseReference: null, linkedCaseStatus: null }
-				});
-				if (childCaseUpdate.count > 0) {
-					log(`Unlinked ${childCaseUpdate.count} child cases from lead case ${caseReference}`);
-				}
+					// Remove this case as the lead reference from all associated child cases
+					const childCaseUpdate = await tx.appealCase.updateMany({
+						where: { leadCaseReference: caseReference },
+						data: { leadCaseReference: null, linkedCaseStatus: null }
+					});
+					if (childCaseUpdate.count > 0) {
+						log(`Unlinked ${childCaseUpdate.count} child cases from lead case ${caseReference}`);
+					}
 
-				// Delete related AppealCaseSpecialisms (explicit delete for clarity, even though cascade should handle this)
-				const deletedSpecialisms = await tx.appealCaseSpecialism.deleteMany({
-					where: { caseReference }
-				});
-				if (deletedSpecialisms.count > 0) {
-					log(`Deleted ${deletedSpecialisms.count} AppealCaseSpecialisms for case ${caseReference}`);
-				}
+					// Delete related AppealCaseSpecialisms (explicit delete for clarity, even though cascade should handle this)
+					const deletedSpecialisms = await tx.appealCaseSpecialism.deleteMany({
+						where: { caseReference }
+					});
+					if (deletedSpecialisms.count > 0) {
+						log(`Deleted ${deletedSpecialisms.count} AppealCaseSpecialisms for case ${caseReference}`);
+					}
 
-				// Finally, delete the main AppealCase record
-				await tx.appealCase.delete({ where: { caseReference } });
-			}, service.databaseTransactionOptions)
+					// Finally, delete the main AppealCase record
+					await tx.appealCase.delete({ where: { caseReference } });
+				}, service.databaseTransactionOptions),
+			service.databaseRetryOptions
 		);
 		log(`Case with caseReference ${caseReference} has been deleted`);
 		// save in the DB that we have an update
@@ -253,47 +255,49 @@ export async function upsertCase(service, message, log) {
 	const incomingCaseSpecialisms = (message.caseSpecialisms || []).filter(Boolean);
 
 	try {
-		await withRetry(async () =>
-			service.dbClient.$transaction(async (tx) => {
-				//upserting the appeal case
-				await tx.appealCase.upsert({
-					where: { caseReference },
-					create: data,
-					update: data
-				});
-				log(`Case upserted successfully: ${caseReference}`);
+		await withRetry(
+			async () =>
+				service.dbClient.$transaction(async (tx) => {
+					//upserting the appeal case
+					await tx.appealCase.upsert({
+						where: { caseReference },
+						create: data,
+						update: data
+					});
+					log(`Case upserted successfully: ${caseReference}`);
 
-				// Remove appeal case specialisms that are not present in the incoming specialisms from the database
-				const { count } = await tx.appealCaseSpecialism.deleteMany({
-					where: {
-						caseReference,
-						specialism: { notIn: incomingCaseSpecialisms }
+					// Remove appeal case specialisms that are not present in the incoming specialisms from the database
+					const { count } = await tx.appealCaseSpecialism.deleteMany({
+						where: {
+							caseReference,
+							specialism: { notIn: incomingCaseSpecialisms }
+						}
+					});
+					log(`Removed ${count} specialisms not present in incoming data: ${caseReference}`);
+
+					// Upsert appeal case specialisms
+					if (incomingCaseSpecialisms.length) {
+						await Promise.all(
+							incomingCaseSpecialisms.map((specialism) =>
+								tx.appealCaseSpecialism.upsert({
+									/* eslint-disable-next-line camelcase */
+									where: { caseReference_specialism: { caseReference, specialism } },
+									create: {
+										caseReference,
+										specialism
+									},
+									update: {
+										specialism
+									}
+								})
+							)
+						);
+						log(`Upserted ${incomingCaseSpecialisms.length} specialisms for case: ${caseReference}`);
+					} else {
+						log(`No specialisms for case ${caseReference}`);
 					}
-				});
-				log(`Removed ${count} specialisms not present in incoming data: ${caseReference}`);
-
-				// Upsert appeal case specialisms
-				if (incomingCaseSpecialisms.length) {
-					await Promise.all(
-						incomingCaseSpecialisms.map((specialism) =>
-							tx.appealCaseSpecialism.upsert({
-								/* eslint-disable-next-line camelcase */
-								where: { caseReference_specialism: { caseReference, specialism } },
-								create: {
-									caseReference,
-									specialism
-								},
-								update: {
-									specialism
-								}
-							})
-						)
-					);
-					log(`Upserted ${incomingCaseSpecialisms.length} specialisms for case: ${caseReference}`);
-				} else {
-					log(`No specialisms for case ${caseReference}`);
-				}
-			}, service.databaseTransactionOptions)
+				}, service.databaseTransactionOptions),
+			service.databaseRetryOptions
 		);
 		// save in the DB that we have an update
 		// this is outside the transaction, it doesn't need to be atomic with the data update
