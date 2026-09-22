@@ -34,6 +34,7 @@ variable "apps_config" {
         team_leads           = string
         national_team        = string
         api_inspector_groups = list(string)
+        programmers          = string
       })
     })
 

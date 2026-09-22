@@ -25,6 +25,8 @@ apps_config = {
       inspectors    = "47783ebb-9c80-422b-9cb7-ba78eba48932"
       team_leads    = "02cb6692-8933-42d3-9e0c-039712cd8954"
       national_team = "a769b229-a843-4ce4-a4e2-e9a82a63cf1f"
+      # TODO: replace with the dedicated programmers (programme officers) Entra group once available
+      programmers = "02cb6692-8933-42d3-9e0c-039712cd8954"
       api_inspector_groups = [
         "dfcab300-f268-4eb3-820e-1758fa69c150"
       ]

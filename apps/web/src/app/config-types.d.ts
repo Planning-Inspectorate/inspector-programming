@@ -43,6 +43,7 @@ interface Config extends BaseConfig {
 			teamLeads: string;
 			nationalTeam: string;
 			inspectorGroups: string;
+			programmers: string;
 		};
 	};
 	inspectors: [{ emailAddress: string; id: string }];

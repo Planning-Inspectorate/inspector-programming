@@ -62,6 +62,7 @@ module "app_web" {
     ENTRA_GROUP_ID_INSPECTORS    = var.apps_config.auth.groups.inspectors
     ENTRA_GROUP_ID_TEAM_LEADS    = var.apps_config.auth.groups.team_leads
     ENTRA_GROUP_ID_NATIONAL_TEAM = var.apps_config.auth.groups.national_team
+    ENTRA_GROUP_ID_PROGRAMMERS   = var.apps_config.auth.groups.programmers
 
     FEEDBACK_URL = local.key_vault_refs["feedback-url"]
 
