@@ -49,6 +49,10 @@ export function loadConfig() {
 			connectionString: SQL_CONNECTION_STRING,
 			transactionMaxWait: parseInt(SQL_TRANSACTION_WAIT_TIME_MS || 10000)
 		},
+		databaseRetry: {
+			baseDelayMs: 250,
+			maxDelayMs: 2000
+		},
 		logLevel: LOG_LEVEL || 'info',
 		NODE_ENV: NODE_ENV || 'development',
 		osApi: {

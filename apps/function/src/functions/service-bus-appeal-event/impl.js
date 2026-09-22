@@ -38,25 +38,27 @@ export function buildHandleAppealEventMessage(service) {
 
 		// Try to find and update the case in the database
 		try {
-			await withRetry(async () =>
-				service.dbClient.$transaction(async (tx) => {
-					const existingCase = await tx.appealCase.findUnique({
-						where: { caseReference }
-					});
+			await withRetry(
+				async () =>
+					service.dbClient.$transaction(async (tx) => {
+						const existingCase = await tx.appealCase.findUnique({
+							where: { caseReference }
+						});
 
-					if (!existingCase) {
-						context.log(`Case ${caseReference} not found in database, ignoring event`);
-						return;
-					}
+						if (!existingCase) {
+							context.log(`Case ${caseReference} not found in database, ignoring event`);
+							return;
+						}
 
-					// Update the eventType on the case
-					await tx.appealCase.update({
-						where: { caseReference },
-						data: { eventType }
-					});
+						// Update the eventType on the case
+						await tx.appealCase.update({
+							where: { caseReference },
+							data: { eventType }
+						});
 
-					context.log(`Updated eventType to '${eventType}' for case ${caseReference}`);
-				}, service.databaseTransactionOptions)
+						context.log(`Updated eventType to '${eventType}' for case ${caseReference}`);
+					}, service.databaseTransactionOptions),
+				service.databaseRetryOptions
 			);
 		} catch (error) {
 			context.log(`Failed to process appeal event for case ${caseReference}:`, error);

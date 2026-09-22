@@ -62,6 +62,10 @@ export class FunctionService {
 		};
 	}
 
+	get databaseRetryOptions() {
+		return this.#config.databaseRetry;
+	}
+
 	get inspectorServiceBusConfig() {
 		return this.#config.serviceBus.inspector;
 	}

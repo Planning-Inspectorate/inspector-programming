@@ -1,9 +1,11 @@
 import type { DatabaseConfig } from '@planning-inspectorate/core/app';
+import type { RetryOptions } from '@planning-inspectorate/core/util';
 import type { ManageAppealsApiOptions } from '@pins/inspector-programming-lib/data/cbos/types';
 
 interface Config {
 	cbos: ManageAppealsApiOptions;
 	database: DatabaseConfig;
+	databaseRetry: RetryOptions;
 	NODE_ENV: string;
 	logLevel: string;
 	osApi: {
