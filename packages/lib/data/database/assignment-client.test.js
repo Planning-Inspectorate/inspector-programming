@@ -67,7 +67,10 @@ describe('AssignmentClient', () => {
 		});
 
 		it('should fetch assignments by programmerId', async () => {
-			const mockData = [{ id: '1', inspectorId: 'insp-1', programmerId: 'prog-1' }];
+			const mockData = [
+				{ id: '1', inspectorId: 'insp-1', programmerId: 'prog-1' },
+				{ id: '2', inspectorId: 'insp-2', programmerId: 'prog-1' }
+			];
 			const mockDb = {
 				inspectorProgrammerAssignment: {
 					findMany: mock.fn(() => mockData)
@@ -112,6 +115,20 @@ describe('AssignmentClient', () => {
 	});
 
 	describe('removeAssignment', () => {
+		it('should return null without querying when no inspectorId is provided', async () => {
+			const mockDb = {
+				inspectorProgrammerAssignment: {
+					delete: mock.fn()
+				}
+			};
+			const client = new AssignmentClient(mockDb);
+
+			const result = await client.removeAssignment('');
+
+			assert.equal(result, null);
+			assert.equal(mockDb.inspectorProgrammerAssignment.delete.mock.callCount(), 0);
+		});
+
 		it('should delete an assignment by inspectorId', async () => {
 			const mockAssignment = { inspectorId: 'insp-1', programmerId: 'prog-1' };
 			const mockDb = {

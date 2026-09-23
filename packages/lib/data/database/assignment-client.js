@@ -81,6 +81,10 @@ export class AssignmentClient {
 	 * @returns {Promise<import('@pins/inspector-programming-database/src/client/client.ts').InspectorProgrammerAssignment|null>}
 	 */
 	async removeAssignment(inspectorId) {
+		if (!inspectorId) {
+			return null;
+		}
+
 		try {
 			return await this.#client.inspectorProgrammerAssignment.delete({
 				where: { inspectorId }

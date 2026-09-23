@@ -73,6 +73,27 @@ describe('view-model', () => {
 			assert.equal(rows[1].inspectorName, 'Lucy Wootton');
 			assert.equal(rows[1].programmerId, 'prog-1');
 		});
+
+		test('should support one programmer assigned to multiple inspectors', () => {
+			const inspectors = [
+				{ id: 'insp-1', firstName: 'Dave', lastName: 'Flower', email: null },
+				{ id: 'insp-2', firstName: 'Lucy', lastName: 'Wootton', email: null }
+			];
+			const assignments = [
+				{ inspectorId: 'insp-1', programmerId: 'prog-1', programmerName: 'Paul Howell' },
+				{ inspectorId: 'insp-2', programmerId: 'prog-1', programmerName: 'Paul Howell' }
+			];
+
+			const rows = toAssignmentRows(inspectors, assignments);
+
+			assert.deepEqual(
+				rows.map(({ inspectorId, programmerId }) => ({ inspectorId, programmerId })),
+				[
+					{ inspectorId: 'insp-1', programmerId: 'prog-1' },
+					{ inspectorId: 'insp-2', programmerId: 'prog-1' }
+				]
+			);
+		});
 	});
 
 	describe('assignmentsViewModel', () => {

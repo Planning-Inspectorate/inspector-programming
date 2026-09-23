@@ -43,9 +43,12 @@ describe('programmer', () => {
 		});
 
 		it('should return an empty array if no group id is configured', async () => {
-			const result = await fetchProgrammerList(mockInitEntraClient, mockSession, mockLogger, undefined);
+			const initEntraClient = mock.fn();
+
+			const result = await fetchProgrammerList(initEntraClient, mockSession, mockLogger, undefined);
 
 			assert.deepEqual(result, []);
+			assert.equal(initEntraClient.mock.callCount(), 0);
 		});
 
 		it('should default missing name/email fields to empty strings', async () => {
@@ -77,6 +80,26 @@ describe('programmer', () => {
 			assert.deepEqual(
 				result.map((p) => p.id),
 				['0', '1', '2']
+			);
+		});
+
+		it('should use the id as a deterministic tie-breaker', async () => {
+			mockEntraClient.listAllGroupMembers.mock.mockImplementationOnce(() => [
+				{ id: '2', givenName: 'Alex', surname: 'Smith', mail: '' },
+				{ id: '1', givenName: 'Alex', surname: 'Smith', mail: '' }
+			]);
+
+			const mockService = {
+				entraClient: mockInitEntraClient,
+				logger: mockLogger,
+				entraGroupIds: { programmers: groupId }
+			};
+
+			const result = await getProgrammerList(mockService, mockSession);
+
+			assert.deepEqual(
+				result.map((p) => p.id),
+				['1', '2']
 			);
 		});
 	});

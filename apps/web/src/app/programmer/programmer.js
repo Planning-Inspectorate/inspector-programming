@@ -17,15 +17,15 @@
  * @returns {Promise<import("../views/assignments/types.js").ProgrammerViewModel[]>}
  */
 export async function fetchProgrammerList(initEntraClient, authSession, logger, groupId) {
+	if (!groupId) {
+		logger.warn('Skipping programmers list, no Entra group configured for programmers');
+		return [];
+	}
+
 	const client = initEntraClient(authSession);
 
 	if (!client) {
 		logger.warn('Skipping programmers list, no Entra Client');
-		return [];
-	}
-
-	if (!groupId) {
-		logger.warn('Skipping programmers list, no Entra group configured for programmers');
 		return [];
 	}
 
@@ -55,10 +55,12 @@ export async function getProgrammerList(service, authSession) {
  */
 function sortProgrammerList(programmerList) {
 	return programmerList.toSorted((a, b) => {
-		if (a.lastName !== b.lastName) {
-			return a.lastName < b.lastName ? -1 : 1;
+		const lastNameOrder = a.lastName.localeCompare(b.lastName);
+		if (lastNameOrder !== 0) {
+			return lastNameOrder;
 		}
-		return a.firstName < b.firstName ? -1 : 1;
+		const firstNameOrder = a.firstName.localeCompare(b.firstName);
+		return firstNameOrder !== 0 ? firstNameOrder : a.id.localeCompare(b.id);
 	});
 }
 
