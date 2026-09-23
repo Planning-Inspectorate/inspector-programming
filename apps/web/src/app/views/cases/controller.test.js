@@ -4,6 +4,8 @@ import { buildPostCases, getSuccessMessage } from './controller.js';
 import { mockLogger } from '@planning-inspectorate/core/testing';
 
 describe('controller.js', () => {
+	const futureAssignmentDate = '3026-09-18';
+
 	describe('buildPostCases', () => {
 		beforeEach(() => {
 			mockGetCbosApiClientForSession.mock.resetCalls();
@@ -133,7 +135,10 @@ describe('controller.js', () => {
 
 		test('should update one case', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: futureAssignmentDate },
+				session: {}
+			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -147,7 +152,7 @@ describe('controller.js', () => {
 		test('should update list of cases', async () => {
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2, 3], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { redirect: mock.fn() };
@@ -166,7 +171,7 @@ describe('controller.js', () => {
 			});
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { render: mock.fn() };
@@ -188,7 +193,7 @@ describe('controller.js', () => {
 			});
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { render: mock.fn() };
@@ -211,7 +216,7 @@ describe('controller.js', () => {
 			});
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { render: mock.fn() };
@@ -230,7 +235,7 @@ describe('controller.js', () => {
 
 		test('should not update cases if no inspector is selected', async () => {
 			const service = mockService();
-			const req = { body: { selectedCases: ['1', '2', '3'], assignmentDate: '2026-09-18' }, session: {} };
+			const req = { body: { selectedCases: ['1', '2', '3'], assignmentDate: futureAssignmentDate }, session: {} };
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -257,7 +262,7 @@ describe('controller.js', () => {
 
 		test('should not update cases if no cases are selected', async () => {
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', assignmentDate: '2026-09-18' }, session: {} };
+			const req = { body: { inspectorId: 'inspectorId', assignmentDate: futureAssignmentDate }, session: {} };
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -272,7 +277,7 @@ describe('controller.js', () => {
 			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { render: mock.fn() };
@@ -301,7 +306,7 @@ describe('controller.js', () => {
 			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { render: mock.fn() };
@@ -324,7 +329,7 @@ describe('controller.js', () => {
 			mockCbosApiClient.fetchAppealDetailsByReference.mock.mockImplementationOnce(() => appealsDetailsList);
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { render: mock.fn() };
@@ -344,7 +349,10 @@ describe('controller.js', () => {
 		test('should redirect to home and set session error when no cases are in the db', async () => {
 			mockCasesClient.getCaseById.mock.mockImplementationOnce(() => undefined);
 			const service = mockService();
-			const req = { body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' }, session: {} };
+			const req = {
+				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: futureAssignmentDate },
+				session: {}
+			};
 			const res = { redirect: mock.fn() };
 			const controller = buildPostCases(service);
 			await controller(req, res);
@@ -364,7 +372,7 @@ describe('controller.js', () => {
 		test('should log info when programme officer notification succeeds', async () => {
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: futureAssignmentDate },
 				session: { account: { username: 'officer@test.com', name: 'Test Officer' } }
 			};
 			const res = { redirect: mock.fn(), render: mock.fn() };
@@ -394,7 +402,7 @@ describe('controller.js', () => {
 			});
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: futureAssignmentDate },
 				session: { account: { username: 'officer@test.com', name: 'Test Officer' } }
 			};
 			const res = { redirect: mock.fn(), render: mock.fn() };
@@ -417,7 +425,7 @@ describe('controller.js', () => {
 		test('should log warning when programme officer notification fails due to missing session data', async () => {
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: futureAssignmentDate },
 				session: {}
 			};
 			const res = { redirect: mock.fn(), render: mock.fn() };
@@ -444,7 +452,7 @@ describe('controller.js', () => {
 		test('should use case references for notification emails', async () => {
 			const service = mockService();
 			const req = {
-				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: '2026-09-18' },
+				body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: futureAssignmentDate },
 				session: { account: { username: 'officer@test.com', name: 'Test Officer' } }
 			};
 			const res = { redirect: mock.fn(), render: mock.fn() };
@@ -488,7 +496,7 @@ describe('controller.js', () => {
 				body: {
 					inspectorId: 'inspectorId',
 					selectedCases: [1, 2, 3],
-					assignmentDate: '2026-09-18'
+					assignmentDate: futureAssignmentDate
 				},
 				session: {
 					account: {
@@ -543,7 +551,7 @@ describe('controller.js', () => {
 			beforeEach(() => {
 				service = mockService();
 				req = {
-					body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: '2026-09-18' },
+					body: { inspectorId: 'inspectorId', selectedCases: 1, assignmentDate: futureAssignmentDate },
 					session: { account: { username: 'officer@test.com', name: 'Test Officer' } }
 				};
 				res = { redirect: mock.fn(), render: mock.fn() };
