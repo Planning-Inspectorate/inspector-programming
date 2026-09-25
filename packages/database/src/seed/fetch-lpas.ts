@@ -69,10 +69,15 @@ interface ManageAppealsLpa {
 
 function printLpa(lpa: Lpa): string {
 	const regionName = lpaRegionVariableName(lpa.LpaRegion.connect?.id);
-	const variables: (keyof Lpa)[] = ['lpaCode', 'lpaName'];
+	const variables: (keyof Lpa)[] = ['lpaCode', 'onsCode', 'lpaName'];
 	let output = '{';
 	for (const variable of variables) {
-		output += variable + ': "' + lpa[variable] + '", ';
+		const value = lpa[variable];
+		if (value === null) {
+			output += variable + ': null, ';
+		} else if (typeof value === 'string') {
+			output += variable + ': "' + value.trim() + '", ';
+		}
 	}
 	output += `LpaRegion: { connect: { id: ${regionName} } }`;
 	output += '}';
