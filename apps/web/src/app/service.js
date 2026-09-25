@@ -11,6 +11,7 @@ import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
 import { LpaClient } from '@pins/inspector-programming-lib/data/database/lpa-client.js';
 import { BaseService } from '@planning-inspectorate/core';
 import { initDatabaseClient } from '@pins/inspector-programming-database';
+import { LpaBoundariesDatabaseClient } from '@pins/inspector-programming-lib/data/database/lpa-boundaries-client.js';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -48,6 +49,9 @@ export class WebService extends BaseService {
 		this.notifyClient = initGovNotify(config.notify, this.logger);
 
 		this.osApiClient = new OsApiClient(config.osApi.key);
+
+		const lpaBoundariesCache = new MapCache(config.lpaBoundaries.cacheTtl);
+		this.lpaBoundariesClient = new LpaBoundariesDatabaseClient(this.dbClient, lpaBoundariesCache, this.logger);
 	}
 
 	/**

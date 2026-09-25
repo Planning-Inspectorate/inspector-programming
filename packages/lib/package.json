@@ -13,6 +13,7 @@
     "@azure/monitor-query-logs": "*",
     "@azure/msal-node": "*",
     "@pins/inspector-programming-database": "*",
+    "@turf/simplify": "*",
     "connect-redis": "*",
     "date-fns": "*",
     "date-fns-tz": "*",

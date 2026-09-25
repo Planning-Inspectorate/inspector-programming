@@ -9,7 +9,7 @@ async function run() {
 	const dbClient = newDatabaseClient(config.db);
 
 	try {
-		await seedStaticData(dbClient, LPAS_DEV);
+		await seedStaticData(dbClient, LPAS_DEV, true);
 		await seedDev(dbClient);
 	} catch (error) {
 		console.error(error);
