@@ -44,6 +44,7 @@ export function loadConfig() {
 		CACHE_CONTROL_MAX_AGE,
 		CASES_CACHE_TTL,
 		INSPECTORS_CACHE_TTL,
+		LPA_BOUNDARIES_CACHE_TTL,
 		CBOS_API_TIMEOUT,
 		CBOS_API_URL,
 		CBOS_APPEAL_TYPE_CACHE_TTL,
@@ -161,6 +162,9 @@ export function loadConfig() {
 		},
 		inspectors: {
 			inspectorsCacheTtl: parseInt(INSPECTORS_CACHE_TTL || 15)
+		},
+		lpaBoundaries: {
+			cacheTtl: parseInt(LPA_BOUNDARIES_CACHE_TTL || 60 * 24 * 7)
 		},
 		cbos: {
 			apiUrl: CBOS_API_URL,

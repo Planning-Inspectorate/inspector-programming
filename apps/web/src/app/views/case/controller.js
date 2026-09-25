@@ -17,6 +17,7 @@ export function buildViewCase(service) {
 		/** @type {string} */
 		const caseId = String(req.params.caseId);
 		const caseData = await getCaseDetails(service.db, caseId);
+		const lpaBoundaries = await service.lpaBoundariesClient.getLpaBoundaries();
 
 		// build back URL from the last home page query params
 		const lastQueryParams = readSessionData(req, 'lastRequest', 'queryParams', '', 'persistence');
@@ -35,6 +36,7 @@ export function buildViewCase(service) {
 			},
 			cbosUrl: service.notifyConfig.cbosLink,
 			inspectorPin: toInspectorViewModel(inspectorData),
+			lpaBoundaries,
 			caseData: caseToViewModel(service.casesClient, caseData),
 			backUrl: previousUrl
 		};
