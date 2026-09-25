@@ -30,6 +30,9 @@ interface Config extends BaseConfig {
 		inspectorsCacheTtl: number;
 	};
 	cbos: ManageAppealsApiOptions;
+	lpaBoundaries: {
+		cacheTtl: number;
+	};
 	entra: {
 		// group cache ttl in minutes
 		cacheTtl: number;

@@ -38,6 +38,9 @@ describe('controller.js', () => {
 				calendarClient: {
 					getEnglandWalesBankHolidays: mock.fn(async () => [])
 				},
+				lpaBoundariesClient: {
+					getLpaBoundaries: mock.fn(async () => ({ type: 'FeatureCollection', features: [] }))
+				},
 				lpaClient: {
 					getLpaList: mock.fn(() => [])
 				},
@@ -717,6 +720,9 @@ describe('controller.js', () => {
 				},
 				lpaClient: {
 					getLpaList: mock.fn(() => [])
+				},
+				lpaBoundariesClient: {
+					getLpaBoundaries: mock.fn(async () => ({ type: 'FeatureCollection', features: [] }))
 				},
 				notifyConfig: { cbosLink: 'https://test-cbos-url.com' }
 			};

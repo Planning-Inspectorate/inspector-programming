@@ -63,6 +63,9 @@ describe('buildViewCase', () => {
 			casesClient: {
 				caseToViewModel: mock.fn(() => caseViewModel)
 			},
+			lpaBoundariesClient: {
+				getLpaBoundaries: mock.fn(async () => [])
+			},
 			inspectorClient: {
 				getInspectorDetails: mock.fn(async (entraId) => (entraId === inspectorData.id ? inspectorData : null))
 			}
@@ -95,6 +98,7 @@ describe('buildViewCase', () => {
 		assert.strictEqual(renderedView, 'views/case/view.njk');
 		assert.strictEqual(renderedModel.pageHeading, 'Case details');
 		assert.strictEqual(renderedModel.map.apiKey, 'test-api-key');
+		assert.deepStrictEqual(renderedModel.lpaBoundaries, []);
 		assert.deepStrictEqual(renderedModel.inspectorPin, toInspectorViewModel(inspectorData));
 		assert.strictEqual(renderedModel.backUrl, '/?inspectorId=test-id&sort=age');
 		// enriched case view model merges stub then overrides siteAddress + adds derived fields
@@ -120,6 +124,7 @@ describe('buildViewCase', () => {
 
 		assert.strictEqual(service.db.appealCase.findUnique.mock.calls.length, 1);
 		assert.strictEqual(service.casesClient.caseToViewModel.mock.calls.length, 1);
+		assert.strictEqual(service.lpaBoundariesClient.getLpaBoundaries.mock.calls.length, 1);
 		assert.strictEqual(service.inspectorClient.getInspectorDetails.mock.calls.length, 1);
 		assert.deepStrictEqual(service.casesClient.caseToViewModel.mock.calls[0].arguments[0], caseData);
 	});
@@ -145,6 +150,9 @@ describe('buildViewCase', () => {
 			},
 			casesClient: {
 				caseToViewModel: mock.fn(() => caseViewModel)
+			},
+			lpaBoundariesClient: {
+				getLpaBoundaries: mock.fn(async () => [])
 			},
 			inspectorClient: {
 				getInspectorDetails: mock.fn(async (entraId) => (entraId === inspectorData.id ? inspectorData : null))
@@ -187,6 +195,9 @@ describe('buildViewCase', () => {
 			},
 			casesClient: {
 				caseToViewModel: mock.fn(() => null)
+			},
+			lpaBoundariesClient: {
+				getLpaBoundaries: mock.fn(async () => [])
 			},
 			inspectorClient: {
 				getInspectorDetails: mock.fn(async () => null)
@@ -233,6 +244,9 @@ describe('buildViewCase', () => {
 			},
 			casesClient: {
 				caseToViewModel: mock.fn(() => caseViewModel)
+			},
+			lpaBoundariesClient: {
+				getLpaBoundaries: mock.fn(async () => [])
 			},
 			inspectorClient: {
 				getInspectorDetails: mock.fn(async (entraId) => (entraId === inspectorData.id ? inspectorData : null))
