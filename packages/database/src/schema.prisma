@@ -120,6 +120,29 @@ model Inspector {
   entraId String? // to link with logged in user
 
   Specialisms InspectorSpecialism[]
+  Assignment  InspectorProgrammerAssignment?
+}
+
+/// Assignment of an Inspector to a Programmer (Programme Officer).
+/// A Programmer may have multiple Inspectors assigned, but an Inspector may only
+/// be assigned to a single Programmer at a time - enforced via the unique inspectorId.
+/// Programmers are sourced from Microsoft Entra ID, so only their id/name/email are stored here.
+model InspectorProgrammerAssignment {
+  id          String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  /// the assigned inspector - one assignment per inspector
+  inspectorId String @unique @db.UniqueIdentifier
+
+  /// Entra ID of the assigned programmer
+  programmerId    String
+  programmerName  String
+  programmerEmail String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Inspector Inspector @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
+
+  @@index([programmerId])
 }
 
 model InspectorSpecialism {
