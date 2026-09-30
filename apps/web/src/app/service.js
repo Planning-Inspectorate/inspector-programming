@@ -9,6 +9,7 @@ import { getAccountId } from '../util/account.js';
 import { OsApiClient } from '@pins/inspector-programming-lib/os/os-api-client.js';
 import { initGovNotify } from '@pins/inspector-programming-lib/emails/index.js';
 import { LpaClient } from '@pins/inspector-programming-lib/data/database/lpa-client.js';
+import { AssignmentClient } from '@pins/inspector-programming-lib/data/database/assignment-client.js';
 import { BaseService } from '@planning-inspectorate/core';
 import { initDatabaseClient } from '@pins/inspector-programming-database';
 import { LpaBoundariesDatabaseClient } from '@pins/inspector-programming-lib/data/database/lpa-boundaries-client.js';
@@ -45,6 +46,8 @@ export class WebService extends BaseService {
 		this.calendarClient = new CalendarClient(this.dbClient);
 
 		this.lpaClient = new LpaClient(this.dbClient);
+
+		this.assignmentClient = new AssignmentClient(this.dbClient);
 
 		this.notifyClient = initGovNotify(config.notify, this.logger);
 
