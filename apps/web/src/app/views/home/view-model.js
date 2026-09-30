@@ -271,7 +271,8 @@ export function filtersQueryViewModel(query, previousSort) {
 		'caseTypes',
 		'allocationLevels',
 		'visitTypes',
-		'specialCircumstances'
+		'specialCircumstances',
+		'caseStatuses'
 	];
 
 	for (const arrayProp of arrayProps) {
