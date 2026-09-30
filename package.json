@@ -30,14 +30,14 @@
     "test-coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@azure/functions": "^4.16.4",
+    "@azure/functions": "^4.16.5",
     "@azure/identity": "^4.13.3",
     "@azure/monitor-query-logs": "^1.0.0",
     "@azure/msal-node": "^6.0.1",
     "@date-fns/tz": "^1.5.0",
     "@faker-js/faker": "^10.6.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "@planning-inspectorate/core": "^1.13.1",
+    "@planning-inspectorate/core": "^1.14.1",
     "@planning-inspectorate/data-model": "^2.52.0",
     "@prisma/adapter-mssql": "^7.10.0",
     "@prisma/client": "^7.10.0",
