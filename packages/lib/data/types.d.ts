@@ -58,6 +58,7 @@ export interface Filters {
 	maximumAge?: string;
 	inspectorCoordinates?: Coordinates;
 	caseSpecialisms?: string[];
+	caseStatuses?: string[];
 	lpaRegion?: string[];
 	lpaCodes?: string[];
 	caseTypes?: string[];

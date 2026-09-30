@@ -50,6 +50,12 @@ export function filterCases(cases, filters) {
 		});
 	}
 
+	// Filter by case statuses
+	if (filters.caseStatuses) {
+		const statuses = Array.isArray(filters.caseStatuses) ? filters.caseStatuses : [filters.caseStatuses];
+		cases = cases.filter((c) => c.caseStatus && statuses.includes(c.caseStatus));
+	}
+
 	// Filter by LPA region
 	if (filters.lpaRegion) {
 		const regions = Array.isArray(filters.lpaRegion)
