@@ -4,6 +4,10 @@
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% from "views/macros/filter-tag.njk" import filterTag, filterGroup %}
 
 {% set tableRows = [] %}
 {% for c in unassignableList %}
@@ -22,55 +26,166 @@
     ]), tableRows) %}
 {% endfor %}
 
-{% block pageContent %}
-    {% if unassignableList | length %}
-        {% set limits = [1000, 2000] %}
-        {% set perPageLinks %}
-            {% for l in limits %}
-                {% if pagination.limit == l %}
-                    <span class="govuk-body-s govuk-!-font-weight-bold">{{ l }}</span>
+{% block container %}
+    <div class="govuk-width-container case-list-container {{ containerClasses }}">
+        {% include 'views/layouts/components/container-start.njk' %}
+        <div class="govuk-grid-row">
+            <aside>
+                <div class="app-filters">
+                    <h2 class="govuk-heading-m">Case filters</h2>
+
+                    {# Selected filters display #}
+                    {% set hasActiveFilters =
+                        filters.query.case.caseStatuses or
+                        filters.query.case.lpaRegion
+                    %}
+
+                    {% if hasActiveFilters %}
+                        <div class="selected-filters">
+                            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h3>
+
+                            {# Case status #}
+                            {% if filters.query.case.caseStatuses %}
+                                {% call filterGroup('Case status') %}
+                                    {% for status in filters.query.case.caseStatuses %}
+                                        {% set statusText = status %}
+                                        {% for item in filters.caseStatuses %}
+                                            {% if item.value == status %}
+                                                {% set statusText = item.text %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ filterTag(statusText, filters.buildUrlWithoutFilter('caseStatuses', status)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+
+                            {# Region #}
+                            {% if filters.query.case.lpaRegion %}
+                                {% call filterGroup('Region') %}
+                                    {% for region in filters.query.case.lpaRegion %}
+                                        {{ filterTag(region, filters.buildUrlWithoutFilter('lpaRegion', region)) }}
+                                    {% endfor %}
+                                {% endcall %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <form id="filter-form" method="get" novalidate>
+                        <div class="filter-actions">
+                            <button class="govuk-button" data-module="govuk-button">
+                                Apply filters
+                            </button>
+                            {% if hasActiveFilters %}
+                                <a href="{{ filters.clearFiltersUrl }}"
+                                   class="govuk-link govuk-link--no-visited-state govuk-body"
+                                   id="clear-filters-link">Clear filters</a>
+                            {% endif %}
+                        </div>
+
+                        {{ govukDetails({
+                            summaryText: "Case status",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[caseStatuses]",
+                                name: "filters[caseStatuses]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more case statuses",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.caseStatuses,
+                                values: filters.query.case.caseStatuses
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+
+                        {{ govukDetails({
+                            summaryText: "Region",
+                            html: govukCheckboxes({
+                                idPrefix: "filters[lpaRegion]",
+                                name: "filters[lpaRegion]",
+                                classes: "govuk-checkboxes--small",
+                                fieldset: {
+                                    legend: {
+                                        text: "Select one or more regions",
+                                        classes: "govuk-fieldset__legend--s"
+                                    }
+                                },
+                                items: filters.lpaRegions,
+                                values: filters.query.case.lpaRegion
+                            }),
+                            classes: "custom-filter-dropdown",
+                            open: true
+                        }) }}
+
+                        <input type="hidden" name="limit" value="{{ pagination.limit }}">
+                        <input type="hidden" name="page" value="1">
+                    </form>
+                </div>
+            </aside>
+            <main class="govuk-main-wrapper" id="main-content">
+                <h1 class="govuk-heading-l">
+                    {% if pageCaption %}
+                        <span class="govuk-caption-xl">{{ pageCaption }}</span>
+                    {% endif %}
+                    {{ pageHeading }}
+                </h1>
+
+                {% if unassignableList | length %}
+                    {% set perPageLinksHtml %}
+                        {% for link in perPageLinks %}
+                            {% if link.current %}
+                                <span class="govuk-body-s govuk-!-font-weight-bold">{{ link.limit }}</span>
+                            {% else %}
+                                <a href="{{ link.href }}" class="govuk-body-s govuk-link govuk-link--no-visited-state">{{ link.limit }}</a>
+                            {% endif %}{% if not loop.last %} | {% endif %}
+                        {% endfor %}
+                    {% endset %}
+
+                    {{ govukSummaryList({
+                        classes: 'govuk-summary-list--no-border govuk-!-width-one-half govuk-!-margin-bottom-2',
+                        rows: [
+                            {
+                                key: { text: "Cases per page", classes: 'govuk-!-font-weight-regular govuk-body-s' },
+                                value: { html: perPageLinksHtml }
+                            },
+                            {
+                                key: { text: "Total unassignable cases", classes: 'govuk-!-font-weight-regular govuk-body-s' },
+                                value: { text: pagination.total, classes: 'govuk-body-s' }
+                            }
+                        ]
+                    }) }}
+
+                    {{ govukTable({
+                        head: [
+                            { text: "Case reference" },
+                            { text: "Unassignable reason" },
+                            { text: "Case type" },
+                            { text: "Procedure" },
+                            { text: "Band" },
+                            { text: "Level" },
+                            { text: "Postcode" },
+                            { text: "LPA" },
+                            { text: "Region" },
+                            { text: "Case status" },
+                            { text: "Age (weeks)" }
+                        ],
+                        rows: tableRows
+                    }) }}
+
+                    {% if pagination.total > pagination.limit %}
+                        {{ govukPagination(paginationLinks) }}
+                    {% endif %}
                 {% else %}
-                    <a href='/unassignable-cases?limit={{ l }}' class="sort-pagination-link govuk-body-s govuk-link govuk-link--no-visited-state">{{ l }}</a>
-                {% endif %}{% if not loop.last %} | {% endif %}
-            {% endfor %}
-        {% endset %}
-
-        {{ govukSummaryList({
-            classes: 'govuk-summary-list--no-border govuk-!-width-one-half govuk-!-margin-bottom-2',
-            rows: [
-                {
-                    key: { text: "Cases per page", classes: 'govuk-!-font-weight-regular govuk-body-s' },
-                    value: { html: perPageLinks }
-                },
-                {
-                    key: { text: "Total unassignable cases", classes: 'govuk-!-font-weight-regular govuk-body-s' },
-                    value: { text: pagination.total, classes: 'govuk-body-s' }
-                }
-            ]
-        }) }}
-
-        {{ govukTable({
-            head: [
-                { text: "Case reference" },
-                { text: "Unassignable reason" },
-                { text: "Case type" },
-                { text: "Procedure" },
-                { text: "Band" },
-                { text: "Level" },
-                { text: "Postcode" },
-                { text: "LPA" },
-                { text: "Region" },
-                { text: "Case status" },
-                { text: "Age (weeks)" }
-            ],
-            rows: tableRows
-        }) }}
-
-        {% if pagination.total > pagination.limit %}
-            {{ govukPagination(paginationLinks) }}
-        {% endif %}
-    {% else %}
-        <p class="govuk-body">No unassignable cases found</p>
-    {% endif %}
-
+                    {% if hasActiveFilters %}
+                        <p class="govuk-body">No unassignable cases match the selected filters</p>
+                    {% else %}
+                        <p class="govuk-body">No unassignable cases found</p>
+                    {% endif %}
+                {% endif %}
+            </main>
+        </div>
+    </div>
 {% endblock %}

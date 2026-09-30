@@ -54,6 +54,7 @@ export interface FilterErrors {
 
 export interface FilterCaseQuery {
 	caseSpecialisms?: string[];
+	caseStatuses?: string[];
 	lpaRegion?: string[];
 	lpaCodes?: string[];
 	caseTypes?: string[];
