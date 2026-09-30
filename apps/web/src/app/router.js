@@ -8,6 +8,7 @@ import { buildPostHome, buildViewHome } from './views/home/controller.js';
 import { buildViewCase } from './views/case/controller.js';
 import { buildPostCases } from './views/cases/controller.js';
 import { buildViewUnassignableCases } from './views/unassignable-cases/controller.ts';
+import { createRoutes as createAssignmentsRoutes } from './views/assignments/index.js';
 import { saveUrlToSessionMiddleware } from '#util/session.ts';
 import { asyncHandler } from '@planning-inspectorate/core';
 
@@ -53,6 +54,7 @@ export function buildRouter(service) {
 	const viewCase = buildViewCase(service);
 	const postCases = buildPostCases(service);
 	const viewUnassignableCases = buildViewUnassignableCases(service);
+	const assignmentsRoutes = createAssignmentsRoutes(service);
 
 	router.use(saveUrlToSessionMiddleware);
 
@@ -61,6 +63,7 @@ export function buildRouter(service) {
 	router.post('/', asyncHandler(postHome));
 	router.get('/case/:caseId', asyncHandler(viewCase));
 	router.get('/unassignable-cases', asyncHandler(viewUnassignableCases));
+	router.use('/assignments', assignmentsRoutes);
 
 	return router;
 }
