@@ -119,7 +119,13 @@ model Inspector {
   email   String?
   entraId String? // to link with logged in user
 
+  /// Entra ID of the assigned programmer
+  programmerId         String?
+  programmerAssignedAt DateTime?
+
   Specialisms InspectorSpecialism[]
+
+  @@index([programmerId])
 }
 
 model InspectorSpecialism {
