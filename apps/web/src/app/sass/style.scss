@@ -478,6 +478,15 @@ h4.govuk-heading-s {
 	padding: 5px !important;
 }
 
+// keep the inspector autocomplete and programmer select the same width
+.assignments-assign-form {
+	.govuk-select,
+	.autocomplete__wrapper {
+		width: 100%;
+		max-width: 400px;
+	}
+}
+
 .pins-case-details {
 	.govuk-summary-list__row > .govuk-summary-list__key {
 		white-space: normal;
