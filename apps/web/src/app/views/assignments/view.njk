@@ -1,0 +1,177 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set inspectorItems = [{ text: '', value: '' }] %}
+{% for i in inspectorOptions %}
+    {% set inspectorItems = (inspectorItems.push({
+        text: i.name,
+        value: i.id,
+        selected: i.id == form.inspectorId
+    }), inspectorItems) %}
+{% endfor %}
+
+{% set programmerItems = [{ text: 'Select a programmer', value: '' }] %}
+{% for p in programmerOptions %}
+    {% set programmerItems = (programmerItems.push({
+        text: p.name,
+        value: p.id,
+        selected: p.id == form.programmerId
+    }), programmerItems) %}
+{% endfor %}
+
+{% set submitButtonText = "Reassign" if form.inspectorId in assignedInspectorIds else "Assign" %}
+
+{% block pageContent %}
+    {% if successMessage %}
+        {{ govukNotificationBanner({
+            type: "success",
+            text: successMessage,
+            classes: "govuk-!-margin-top-6"
+        }) }}
+    {% endif %}
+    <aside>
+        {% set assignmentFormHtml %}
+            <p class="govuk-body">Assign or reassign an inspector to a programmer. An inspector can only be assigned to one programmer at a time.</p>
+            <form method="post" action="/assignments/assign" class="assignments-assign-form" novalidate>
+                <input type="hidden" name="_csrf" value="{{ _csrf }}">
+                {{ govukSelect({
+                    id: "inspectorId",
+                    name: "inspectorId",
+                    label: { text: "Inspector" },
+                    items: inspectorItems,
+                    errorMessage: errors.inspectorId
+                }) }}
+                {{ govukSelect({
+                    id: "programmerId",
+                    name: "programmerId",
+                    label: { text: "Programmer" },
+                    items: programmerItems,
+                    errorMessage: errors.programmerId
+                }) }}
+                {{ govukButton({
+                    text: submitButtonText,
+                    type: "submit",
+                    attributes: { id: "assignmentSubmitButton" }
+                }) }}
+            </form>
+        {% endset %}
+
+        {{ govukDetails({
+            summaryText: "Assign or reassign an inspector to programmer",
+            html: assignmentFormHtml
+        }) }}
+    </aside>
+    <section>
+        <h2 class="govuk-heading-m">Inspector list</h2>
+        <div>
+            {% if assignments.length %}
+                {% set tableRows = [] %}
+                {% for a in assignments %}
+                    {% set actionsHtml %}
+                        {% if a.programmerId %}
+                            <form method="post" action="/assignments/remove" class="assignment-remove-form">
+                                <input type="hidden" name="_csrf" value="{{ _csrf }}">
+                                <input type="hidden" name="inspectorId" value="{{ a.inspectorId }}">
+                                {{ govukButton({
+                                    text: "Remove",
+                                    classes: "govuk-button--warning govuk-button--small govuk-!-margin-bottom-0",
+                                    type: "submit",
+                                    attributes: { 'aria-label': "Remove assignment for " + a.inspectorName }
+                                }) }}
+                            </form>
+                        {% else %}
+                            <span class="govuk-hint govuk-!-margin-bottom-0">Not assigned</span>
+                        {% endif %}
+                    {% endset %}
+                    {% set tableRows = (tableRows.push([
+                        { text: a.inspectorName },
+                        { text: a.inspectorEmail or "-" },
+                        { text: a.programmerName or "Unassigned" },
+                        { text: a.programmerEmail or "-" },
+                        { text: a.lastUpdated or "-" },
+                        { html: actionsHtml }
+                    ]), tableRows) %}
+                {% endfor %}
+
+                <div class="assignments-table-wrapper">
+                    {{ govukTable({
+                        caption: "Inspector to programmer assignments",
+                        captionClasses: "govuk-visually-hidden",
+                        classes: "assignments-table",
+                        head: [
+                            { text: "Inspector name" },
+                            { text: "Inspector email" },
+                            { text: "Assigned programmer" },
+                            { text: "Programmer email" },
+                            { text: "Last updated" },
+                            { text: "Actions" }
+                        ],
+                        rows: tableRows,
+                        attributes: { 'data-testid': 'assignments-table' }
+                    }) }}
+                </div>
+            {% else %}
+                <p class="govuk-body">No inspectors found.</p>
+            {% endif %}
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block bodyEnd %}
+    <script
+        {% if cspNonce %}nonce={{ cspNonce }}{% endif %}>
+			const assignedInspectorIds = new Set({{ assignedInspectorIds | dump | safe }});
+			const inspectorSelect = document.getElementById('inspectorId');
+			const submitButton = document.getElementById('assignmentSubmitButton');
+
+			const updateSubmitButtonText = () => {
+				if (inspectorSelect && submitButton) {
+					submitButton.textContent = assignedInspectorIds.has(inspectorSelect.value) ? 'Reassign' : 'Assign';
+				}
+			};
+
+			if (inspectorSelect) {
+				inspectorSelect.addEventListener('change', updateSubmitButtonText);
+
+				// configure accessible auto complete for the select inspector input
+				if (typeof accessibleAutocomplete !== 'undefined') {
+					accessibleAutocomplete.enhanceSelectElement({
+						selectElement: inspectorSelect,
+						autoselect: false,
+						confirmOnBlur: false,
+						showAllValues: true,
+						displayMenu: 'overlay',
+						// the default onConfirm doesn't fire a change event on the underlying select
+						onConfirm: (selected) => {
+							if (selected === undefined) {
+								return;
+							}
+							const option = Array.from(inspectorSelect.options).find((o) => o.textContent === selected);
+							if (option) {
+								option.selected = true;
+								updateSubmitButtonText();
+							}
+						}
+					});
+
+					// reset the underlying select when the autocomplete input is cleared
+					const autocompleteInput = document.getElementById('inspectorId');
+					if (autocompleteInput) {
+						autocompleteInput.addEventListener('input', () => {
+							if (autocompleteInput.value.trim() === '') {
+								inspectorSelect.value = '';
+								updateSubmitButtonText();
+							}
+						});
+					}
+				}
+			}
+    </script>
+{% endblock %}
