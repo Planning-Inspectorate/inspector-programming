@@ -11,6 +11,7 @@ import { buildViewUnassignableCases } from './views/unassignable-cases/controlle
 import { createRoutes as createAssignmentsRoutes } from './views/assignments/index.js';
 import { saveUrlToSessionMiddleware } from '#util/session.ts';
 import { asyncHandler } from '@planning-inspectorate/core';
+import { buildCanManageAssignmentsMiddleware } from '#util/account.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -57,6 +58,8 @@ export function buildRouter(service) {
 	const assignmentsRoutes = createAssignmentsRoutes(service);
 
 	router.use(saveUrlToSessionMiddleware);
+
+	router.use(buildCanManageAssignmentsMiddleware(service.entraGroupIds));
 
 	router.get('/', asyncHandler(viewHome));
 	router.post('/cases', asyncHandler(postCases));

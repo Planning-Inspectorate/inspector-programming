@@ -1,33 +1,22 @@
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 {% from "ui/header/pins-header.njk" import pinsHeader %}
 
-{% macro header(serviceName, isHomePage, isUnassignableCasesPage, isAssignmentsPage) %}
+{% macro header(serviceName, isHomePage, isUnassignableCasesPage, isAssignmentsPage, canManageAssignments) %}
     {{ pinsHeader({isExternal: false}) }}
+
+    {% set navigation = [
+        { href: "/", text: "Home", active: isHomePage },
+        { href: "/unassignable-cases", text: "Unassignable cases", active: isUnassignableCasesPage }
+    ] %}
+    {% if canManageAssignments %}
+        {% set navigation = navigation.concat([{ href: "/assignments", text: "Assignments", active: isAssignmentsPage }]) %}
+    {% endif %}
+    {% set navigation = navigation.concat([{ href: "/auth/signout", text: "Sign out" }]) %}
 
     {{ govukServiceNavigation({
         serviceName: serviceName,
         serviceUrl: "/",
         classes: 'pins-service-navigation',
-        navigation: [
-            {
-                href: "/",
-                text: "Home",
-                active: isHomePage
-            },
-            {
-                href: "/unassignable-cases",
-                text: "Unassignable cases",
-                active: isUnassignableCasesPage
-            },
-            {
-                href: "/assignments",
-                text: "Assignments",
-                active: isAssignmentsPage
-            },
-            {
-                href: "/auth/signout",
-                text: "Sign out"
-            }
-        ]
+        navigation: navigation
     }) }}
 {% endmacro %}
