@@ -23,3 +23,38 @@ export function checkAccountGroupAccess(session, groupId) {
 
 	return false;
 }
+
+/**
+ * the group IDs for the Entra groups that have access to manage assignments.
+ * @typedef {object} EntraGroupIds
+ * @property {string} teamLeads
+ * @property {string} nationalTeam
+ */
+
+/**
+ * Only team leads and national team members can manage inspector to programmer assignments.
+ * @param {import('../app/auth/session.service.js').SessionWithAuth} session
+ * @param {EntraGroupIds | undefined} entraGroupIds
+ * @returns {boolean}
+ */
+export function canManageAssignments(session, entraGroupIds) {
+	if (!entraGroupIds) {
+		return false;
+	}
+	return (
+		checkAccountGroupAccess(session, entraGroupIds.teamLeads) ||
+		checkAccountGroupAccess(session, entraGroupIds.nationalTeam)
+	);
+}
+
+/**
+ * Middleware to set res.locals.canManageAssignments for use in views
+ * @param  {EntraGroupIds | undefined} entraGroupIds
+ * @returns {import('express').RequestHandler}
+ */
+export function buildCanManageAssignmentsMiddleware(entraGroupIds) {
+	return (req, res, next) => {
+		res.locals.canManageAssignments = canManageAssignments(req.session, entraGroupIds);
+		next();
+	};
+}

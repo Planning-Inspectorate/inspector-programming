@@ -1,4 +1,4 @@
-import { checkAccountGroupAccess } from '#util/account.js';
+import { canManageAssignments } from '#util/account.js';
 /**
  * Programmer (Programme Officer) list fetching from Microsoft Entra ID.
  *
@@ -17,7 +17,7 @@ import { checkAccountGroupAccess } from '#util/account.js';
  */
 export async function getProgrammerList(service, authSession) {
 	// Only team leads and national team members can view programmers.
-	if (!isTeamLeadOrNationalTeamMember(service, authSession)) {
+	if (!canManageAssignments(authSession, service.entraGroupIds)) {
 		return [];
 	}
 
@@ -62,7 +62,7 @@ export async function getProgrammerList(service, authSession) {
  */
 export async function getAssignmentPersonByEntraUserId(service, authSession, userId) {
 	// Only team leads and national team members can get inspectors or programmers by user ID.
-	if (!isTeamLeadOrNationalTeamMember(service, authSession)) {
+	if (!canManageAssignments(authSession, service.entraGroupIds)) {
 		return null;
 	}
 
@@ -106,15 +106,4 @@ function mapToProgrammer(groupMember) {
 		name: groupMember.displayName || '',
 		email: groupMember.mail || ''
 	};
-}
-
-/**
- * @param {import('#service').WebService} service
- * @param {import("../auth/session.service").SessionWithAuth} authSession
- */
-function isTeamLeadOrNationalTeamMember(service, authSession) {
-	return (
-		checkAccountGroupAccess(authSession, service.entraGroupIds.teamLeads) ||
-		checkAccountGroupAccess(authSession, service.entraGroupIds.nationalTeam)
-	);
 }
