@@ -16,6 +16,7 @@ describe('controller.js', () => {
 			mockNotifyClient.sendAssignedCaseEmail.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseCaseOfficerEmail.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.resetCalls();
+			mockInspectorClient.getInspectorDetails.mock.resetCalls();
 			if (mockEntraClientInstance.getUserById) {
 				mockEntraClientInstance.getUserById.mock.resetCalls();
 			}
@@ -523,6 +524,11 @@ describe('controller.js', () => {
 			const caseOfficerTwoCalls = mockNotifyClient.sendAssignedCaseCaseOfficerEmail.mock.calls.filter(
 				(call) => call.arguments[0] === 'case.officer.2@example.com'
 			);
+
+			// Verify that the inspector details were fetched
+			const inspectorDetailsCalls = mockInspectorClient.getInspectorDetails.mock.calls;
+			assert.ok(inspectorDetailsCalls.length > 0);
+			assert.ok(inspectorDetailsCalls.every((call) => call.arguments[0] === 'inspectorId'));
 
 			// Each case officer should receive only one email,
 			// even when they have multiple assigned cases.
