@@ -223,7 +223,7 @@ async function handleCases(selectedCases, service, req, res) {
 					await notifyCaseOfficerOfAssignedCases(
 						service,
 						req.session,
-						caseOfficerId,
+						req.body.inspectorId,
 						req.body.assignmentDate,
 						caseReferencesForCaseOfficer,
 						caseOfficerId
