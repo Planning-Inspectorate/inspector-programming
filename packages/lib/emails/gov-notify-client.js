@@ -108,7 +108,8 @@ export class GovNotifyClient {
 			// log the original error
 			const errors = e?.response?.data?.errors;
 			this.logger.error({ error: e, templateId, errors }, 'failed to dispatch email');
-			throw new Error(`email failed to dispatch: ${e.message}`, { cause: e });
+			const detail = Array.isArray(errors) ? errors.map((err) => `${err.error}: ${err.message}`).join('; ') : e.message;
+			throw new Error(`email failed to dispatch (${name}): ${detail}`, { cause: e });
 		}
 	}
 

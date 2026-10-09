@@ -28,10 +28,22 @@ describe(`gov-notify-client`, () => {
 					await client.sendEmail('templateId', 'emailAddress', { personalisation: {} });
 				},
 				{
-					message: 'email failed to dispatch: Notify API error'
+					message: 'email failed to dispatch (templateId): Notify API error'
 				}
 			);
 			assert.strictEqual(logger.error.mock.callCount(), 1);
+		});
+		it('should include Notify error details in the thrown message', async (ctx) => {
+			const logger = mockLogger();
+			const client = new GovNotifyClient(logger, 'key', {});
+			ctx.mock.method(client.notifyClient, 'sendEmail', () => {
+				const err = new Error('Request failed with status code 400');
+				err.response = { data: { errors: [{ error: 'BadRequestError', message: 'Template not found' }] } };
+				throw err;
+			});
+			await assert.rejects(() => client.sendEmail('templateId', 'emailAddress', { personalisation: {} }, [], 'test'), {
+				message: 'email failed to dispatch (test): BadRequestError: Template not found'
+			});
 		});
 		it('should throw if required fields aren`t set', async (ctx) => {
 			const logger = mockLogger();
