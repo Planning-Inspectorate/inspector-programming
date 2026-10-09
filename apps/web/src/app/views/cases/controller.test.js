@@ -14,9 +14,12 @@ describe('controller.js', () => {
 			mockCalendarClient.getAllCalendarEventTimingRules.mock.resetCalls();
 			mockCbosApiClient.fetchAppealDetailsByReference.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseEmail.mock.resetCalls();
+			mockNotifyClient.sendSelfAssignedCaseEmail.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseCaseOfficerEmail.mock.resetCalls();
 			mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.resetCalls();
 			mockInspectorClient.getInspectorDetails.mock.resetCalls();
+			mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.resetCalls();
+			mockAssignmentClient.getAssignmentByInspectorId.mock.resetCalls();
 			if (mockEntraClientInstance.getUserById) {
 				mockEntraClientInstance.getUserById.mock.resetCalls();
 			}
@@ -51,8 +54,13 @@ describe('controller.js', () => {
 		};
 		const mockNotifyClient = {
 			sendAssignedCaseEmail: mock.fn(),
+			sendSelfAssignedCaseEmail: mock.fn(),
 			sendAssignedCaseCaseOfficerEmail: mock.fn(),
-			sendAssignedCaseProgrammeOfficerEmail: mock.fn()
+			sendAssignedCaseProgrammeOfficerEmail: mock.fn(),
+			sendSelfAssignedCaseProgrammeOfficerEmail: mock.fn()
+		};
+		const mockAssignmentClient = {
+			getAssignmentByInspectorId: mock.fn(() => ({ inspectorId: 'inspectorId', programmerId: 'programmer-1' }))
 		};
 		const notifyConfig = { cbosLink: 'https://example.com/cbos' };
 		const mockService = () => {
@@ -64,6 +72,7 @@ describe('controller.js', () => {
 				entraClient: mock.fn(() => mockEntraClientInstance),
 				inspectorClient: mockInspectorClient,
 				notifyClient: mockNotifyClient,
+				assignmentClient: mockAssignmentClient,
 				notifyConfig
 			};
 		};
@@ -546,6 +555,150 @@ describe('controller.js', () => {
 				caseId: id,
 				caseReference: 'REF-' + id.toString()
 			}));
+		});
+
+		describe('self-selected assignment programme officer notification', () => {
+			let service;
+			let req;
+			let res;
+			let controller;
+
+			beforeEach(() => {
+				mockEntraClientInstance.getUserById.mock.mockImplementation(() => ({
+					mail: 'programmer@example.com',
+					displayName: 'Assigned Programmer'
+				}));
+				mockAssignmentClient.getAssignmentByInspectorId.mock.mockImplementation(() => ({
+					inspectorId: 'inspectorId',
+					programmerId: 'programmer-1'
+				}));
+				service = mockService();
+				req = {
+					body: { inspectorId: 'inspectorId', selectedCases: [1, 2], assignmentDate: futureAssignmentDate },
+					// session account ID matches the inspector's Entra ID => self-selection
+					session: {
+						account: { localAccountId: 'inspectorId', username: 'Inspector@Example.com', name: 'Test Inspector' }
+					}
+				};
+				res = { redirect: mock.fn(), render: mock.fn() };
+				controller = buildPostCases(service);
+			});
+
+			test('should notify the assigned programmer instead of the session user when self-selected', async () => {
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(res.redirect.mock.calls[0].arguments[0], '/?inspectorId=inspectorId');
+
+				assert.strictEqual(mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+				assert.strictEqual(mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+				assert.strictEqual(mockNotifyClient.sendSelfAssignedCaseEmail.mock.callCount(), 1);
+				assert.strictEqual(mockNotifyClient.sendAssignedCaseEmail.mock.callCount(), 0);
+				assert.strictEqual(mockAssignmentClient.getAssignmentByInspectorId.mock.callCount(), 1);
+				assert.strictEqual(mockAssignmentClient.getAssignmentByInspectorId.mock.calls[0].arguments[0], 'inspectorId');
+				assert.strictEqual(mockEntraClientInstance.getUserById.mock.calls[0].arguments[0], 'programmer-1');
+
+				const [email, options] = mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.calls[0].arguments;
+				assert.strictEqual(email, 'programmer@example.com');
+				assert.strictEqual(options.programmeOfficerName, 'Assigned Programmer');
+				assert.strictEqual(options.inspectorName, 'Test Inspector');
+				assert.strictEqual(options.assignmentDate, futureAssignmentDate);
+				assert.strictEqual(options.selectedCases, 'REF-1, REF-2');
+
+				const selfSelectionInfoCall = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Self-selection notification processed for programmer'
+				);
+				assert.ok(selfSelectionInfoCall, 'Self-selection info log should exist');
+				assert.deepStrictEqual(selfSelectionInfoCall.arguments[0], {
+					inspectorId: 'inspectorId',
+					caseCount: 2,
+					notificationSent: true
+				});
+
+				const poInfoCall = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Email notification sent successfully to programme officer'
+				);
+				assert.strictEqual(poInfoCall, undefined, 'Non self-selection PO log should NOT exist');
+			});
+
+			test('should skip notification and log notificationSent false when no programmer is assigned', async () => {
+				mockAssignmentClient.getAssignmentByInspectorId.mock.mockImplementation(() => null);
+
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+				assert.strictEqual(mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+
+				const skipWarnCall = service.logger.warn.mock.calls.find(
+					(call) =>
+						call.arguments[1] === 'No programmer assigned to the self-selecting inspector, skipping notification'
+				);
+				assert.ok(skipWarnCall, 'Skip warning log should exist');
+
+				const selfSelectionInfoCall = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Self-selection notification processed for programmer'
+				);
+				assert.ok(selfSelectionInfoCall, 'Self-selection info log should exist');
+				assert.strictEqual(selfSelectionInfoCall.arguments[0].notificationSent, false);
+			});
+
+			test('should skip notification when the assigned programmer has no email in Entra', async () => {
+				mockEntraClientInstance.getUserById.mock.mockImplementation(() => ({ displayName: 'No Mail' }));
+
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+
+				const skipWarnCall = service.logger.warn.mock.calls.find(
+					(call) => call.arguments[1] === 'Programmer does not have an email address in Entra, skipping notification'
+				);
+				assert.ok(skipWarnCall, 'Missing email warning log should exist');
+
+				const selfSelectionInfoCall = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Self-selection notification processed for programmer'
+				);
+				assert.strictEqual(selfSelectionInfoCall.arguments[0].notificationSent, false);
+			});
+
+			test('should log warning when self-selection notification fails', async () => {
+				mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.mockImplementationOnce(() => {
+					throw new Error('Self-selection email failed');
+				});
+
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+
+				const poWarningCall = service.logger.warn.mock.calls.find(
+					(call) => call.arguments[1] === 'Failed to send email notification to programme officer after case assignment'
+				);
+				assert.ok(poWarningCall, 'Programme officer warning log should exist');
+				assert.strictEqual(poWarningCall.arguments[0].programmeOfficerEmail, 'Inspector@Example.com');
+				assert.strictEqual(poWarningCall.arguments[0].err.message, 'Self-selection email failed');
+
+				const selfSelectionInfoCall = service.logger.info.mock.calls.find(
+					(call) => call.arguments[1] === 'Self-selection notification processed for programmer'
+				);
+				assert.strictEqual(selfSelectionInfoCall, undefined, 'Self-selection info log should NOT exist');
+			});
+
+			test('should use the standard programme officer notification when session user is not the inspector', async () => {
+				req.session.account = { username: 'officer@test.com', name: 'Test Officer' };
+
+				await controller(req, res);
+
+				assert.strictEqual(res.redirect.mock.callCount(), 1);
+				assert.strictEqual(mockNotifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+				assert.strictEqual(mockAssignmentClient.getAssignmentByInspectorId.mock.callCount(), 0);
+				assert.strictEqual(mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+				assert.strictEqual(
+					mockNotifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.calls[0].arguments[0],
+					'officer@test.com'
+				);
+			});
 		});
 
 		describe('email notification status flags', () => {
