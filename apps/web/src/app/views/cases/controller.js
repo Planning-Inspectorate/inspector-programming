@@ -2,14 +2,7 @@ import { addSessionData, readSessionData } from '@planning-inspectorate/core/uti
 import { assignCasesToInspector, getCasesToAssign } from '../../case/case.js';
 import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
-import {
-	notifyInspectorOfAssignedCases,
-	notifyInspectorOfSelfAssignedCases,
-	notifyProgrammeOfficerOfAssignedCases,
-	notifyCaseOfficerOfAssignedCases,
-	notifyProgrammeOfficerOfSelfAssignedCases,
-	isSelfSelectedAssignment
-} from '../../inspector/inspector.js';
+import { notifyAssignedCases } from '../../inspector/inspector.js';
 
 /**
  * @param {import('#service').WebService} service
@@ -61,8 +54,7 @@ async function handleCases(selectedCases, service, req, res) {
 	 *    - generate calendar events
 	 *    - create the calendar events
 	 *    - remove the case locally
-	 * - send inspector notify email
-	 * - send programme officer notify email
+	 * - send inspector, programme officer and case officer notify emails (in parallel)
 	 * - display success page
 	 *
 	 * Note: as soon as assignCasesToInspector has run, the case will be updated in Manage appeals
@@ -156,74 +148,15 @@ async function handleCases(selectedCases, service, req, res) {
 				);
 			}
 
-			const { notifyInspector, notifyProgrammeOfficer } = getAssignmentNotifiers(
-				service,
-				req,
-				successfullyAssignedCaseReferences
-			);
-
-			// Send notification emails to inspector for successful assignments
-			try {
-				await notifyInspector();
-				emailNotificationSent = true;
-				service.logger.info(
-					{
-						inspectorId: req.body.inspectorId,
-						caseCount: successfullyAssignedCaseReferences.length
-					},
-					'Email notification sent successfully to inspector'
-				);
-			} catch (err) {
-				service.logger.warn(
-					{
-						err,
-						inspectorId: req.body.inspectorId
-					},
-					'Failed to send email notification to inspector after case assignment'
-				);
-			}
-
-			// Send notification email to programme officer for successful assignments
-			try {
-				poEmailSent = await notifyProgrammeOfficer();
-			} catch (err) {
-				service.logger.warn(
-					{
-						err,
-						programmeOfficerEmail: req.session?.account?.username
-					},
-					'Failed to send email notification to programme officer after case assignment'
-				);
-			}
-
-			// Send notification email to case officer for successful assignments
-			for (const [caseOfficerId, caseReferencesForCaseOfficer] of assignedCaseReferencesByCaseOfficer) {
-				try {
-					await notifyCaseOfficerOfAssignedCases(
-						service,
-						req.session,
-						req.body.inspectorId,
-						req.body.assignmentDate,
-						caseReferencesForCaseOfficer,
-						caseOfficerId
-					);
-					service.logger.info(
-						{
-							caseOfficerId,
-							caseCount: caseReferencesForCaseOfficer.length
-						},
-						'Email notification sent successfully to case officer'
-					);
-				} catch (err) {
-					service.logger.warn(
-						{
-							err,
-							caseOfficerId
-						},
-						'Failed to send email notification to case officer after case assignment'
-					);
-				}
-			}
+			// Send notification emails (inspector, programme officer, case officers) in parallel
+			const { inspectorNotified, programmeOfficerNotified } = await notifyAssignedCases(service, req.session, {
+				inspectorId: req.body.inspectorId,
+				assignmentDate: req.body.assignmentDate,
+				caseReferences: successfullyAssignedCaseReferences,
+				caseReferencesByCaseOfficer: assignedCaseReferencesByCaseOfficer
+			});
+			emailNotificationSent = inspectorNotified;
+			poEmailSent = programmeOfficerNotified;
 		} catch (err) {
 			service.logger.error(
 				{
@@ -416,31 +349,4 @@ export function saveSelectedData(selectedCases, req) {
 function redirectToHome(req, res) {
 	const redirectUrl = `/?inspectorId=${req.body.inspectorId}`;
 	return res.redirect(redirectUrl);
-}
-
-/**
- * Resolves the inspector and programme officer notifications for an assignment.
- * Self-selected assignments use the self-assigned templates and notify the inspector's assigned programme officer;
- * otherwise the standard templates are used and the user in session is notified as the programme officer.
- * @param {import('#service').WebService} service
- * @param {import('express').Request} req
- * @param {string[]} caseReferences
- * @returns {{ notifyInspector: () => Promise<void>, notifyProgrammeOfficer: () => Promise<boolean> }}
- */
-function getAssignmentNotifiers(service, req, caseReferences) {
-	const { inspectorId, assignmentDate } = req.body;
-
-	if (isSelfSelectedAssignment(req.session, inspectorId)) {
-		return {
-			notifyInspector: () => notifyInspectorOfSelfAssignedCases(service, inspectorId, assignmentDate, caseReferences),
-			notifyProgrammeOfficer: () =>
-				notifyProgrammeOfficerOfSelfAssignedCases(service, req.session, inspectorId, assignmentDate, caseReferences)
-		};
-	}
-
-	return {
-		notifyInspector: () => notifyInspectorOfAssignedCases(service, inspectorId, assignmentDate, caseReferences),
-		notifyProgrammeOfficer: () =>
-			notifyProgrammeOfficerOfAssignedCases(service, req.session, inspectorId, assignmentDate, caseReferences)
-	};
 }
