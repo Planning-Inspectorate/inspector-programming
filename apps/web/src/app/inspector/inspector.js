@@ -124,6 +124,93 @@ function formatInspectorName(inspector) {
 	return `${inspector.firstName} ${inspector?.lastName || ''}`.trim();
 }
 
+/** Notifiers for assignments made by a programme officer on behalf of an inspector */
+const STANDARD_NOTIFIERS = {
+	notifyInspector: notifyInspectorOfAssignedCases,
+	notifyProgrammeOfficer: notifyProgrammeOfficerOfAssignedCases
+};
+
+/** Notifiers for assignments an inspector made to themselves */
+const SELF_ASSIGNED_NOTIFIERS = {
+	notifyInspector: notifyInspectorOfSelfAssignedCases,
+	notifyProgrammeOfficer: notifyProgrammeOfficerOfSelfAssignedCases
+};
+
+/**
+ * Sends all the notification emails for a case assignment in parallel: inspector, programme officer and case officers.
+ * Self-selected assignments use the self-assigned templates and notify the inspector's assigned programme officer;
+ * otherwise the standard templates are used and the user in session is notified as the programme officer.
+ * Failures are logged and never thrown, so one failed email doesn't prevent the others from being sent.
+ *
+ * @param {import('#service').WebService} service
+ * @param {import("../auth/session.service").SessionWithAuth} session
+ * @param {Object} assignment
+ * @param {string} assignment.inspectorId
+ * @param {string} assignment.assignmentDate
+ * @param {string[]} assignment.caseReferences
+ * @param {Map<string, string[]>} [assignment.caseReferencesByCaseOfficer] - case references keyed by case officer ID
+ * @returns {Promise<{ inspectorNotified: boolean, programmeOfficerNotified: boolean }>}
+ */
+export async function notifyAssignedCases(service, session, assignment) {
+	const { inspectorId, assignmentDate, caseReferences, caseReferencesByCaseOfficer = new Map() } = assignment;
+	const { notifyInspector, notifyProgrammeOfficer } = isSelfSelectedAssignment(session, inspectorId)
+		? SELF_ASSIGNED_NOTIFIERS
+		: STANDARD_NOTIFIERS;
+
+	/**
+	 * @param {string} caseOfficerId - Entra user ID of the case officer
+	 * @param {string[]} officerCases - case references assigned to the case officer
+	 */
+	const notifyCaseOfficer = (caseOfficerId, officerCases) =>
+		notifyCaseOfficerOfAssignedCases(service, session, inspectorId, assignmentDate, officerCases, caseOfficerId);
+
+	const inspectorNotification = {
+		promise: notifyInspector(service, inspectorId, assignmentDate, caseReferences),
+		logContext: { inspectorId, caseCount: caseReferences.length },
+		successMessage: 'Email notification sent successfully to inspector',
+		failureMessage: 'Failed to send email notification to inspector after case assignment'
+	};
+
+	// no successMessage: success is logged by the programme officer notifiers themselves
+	const programmeOfficerNotification = {
+		promise: notifyProgrammeOfficer(service, session, inspectorId, assignmentDate, caseReferences),
+		logContext: { programmeOfficerEmail: session?.account?.username },
+		failureMessage: 'Failed to send email notification to programme officer after case assignment'
+	};
+
+	const caseOfficerNotifications = [...caseReferencesByCaseOfficer].map(([caseOfficerId, officerCases]) => ({
+		promise: notifyCaseOfficer(caseOfficerId, officerCases),
+		logContext: { caseOfficerId, caseCount: officerCases.length },
+		successMessage: 'Email notification sent successfully to case officer',
+		failureMessage: 'Failed to send email notification to case officer after case assignment'
+	}));
+
+	const notifications = [inspectorNotification, programmeOfficerNotification, ...caseOfficerNotifications];
+
+	const results = await Promise.allSettled(notifications.map(({ promise }) => promise));
+	const [inspectorNotified, programmeOfficerNotified] = results.map((result, i) =>
+		logNotificationResult(service, result, notifications[i])
+	);
+
+	return { inspectorNotified, programmeOfficerNotified };
+}
+
+/**
+ * Logs the outcome of a settled notification
+ * @param {import('#service').WebService} service
+ * @param {PromiseSettledResult<boolean|void>} result - a fulfilled value of false means the notification was skipped
+ * @param {{ logContext: Object, successMessage?: string, failureMessage: string }} notification
+ * @returns {boolean} whether the notification was sent
+ */
+function logNotificationResult(service, result, { logContext, successMessage, failureMessage }) {
+	if (result.status === 'rejected') {
+		service.logger.warn({ err: result.reason, ...logContext }, failureMessage);
+		return false;
+	}
+	if (successMessage) service.logger.info(logContext, successMessage);
+	return result.value !== false;
+}
+
 /**
  * sends an email using GovUK Notify client to the inspector that the cases have been assigned to
  * @param {import('#service').WebService} service
@@ -161,13 +248,10 @@ async function sendInspectorAssignmentEmail(service, inspectorId, assignmentDate
 	if (!(inspector?.email && inspector?.firstName)) throw new Error('Could not retrieve inspector email and name');
 
 	const options = {
-		inspectorName: formatInspectorName(inspector),
-		assignmentDate: assignmentDate,
-		selectedCases: caseReferences.join(', '),
+		...buildAssignmentEmailOptions(inspector, assignmentDate, caseReferences),
 		cbosLink: service.notifyConfig.cbosLink
 	};
-	if (!service.notifyClient) throw new Error('Notify client not configured');
-	await service.notifyClient[sendMethod](inspector.email, options);
+	await getNotifyClient(service)[sendMethod](inspector.email, options);
 }
 
 /**
@@ -186,7 +270,7 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 	assignmentDate,
 	caseReferences
 ) {
-	if (!service.notifyClient) throw new Error('Notify client not configured');
+	const notifyClient = getNotifyClient(service);
 
 	// Get programme officer details from session account
 	const programmeOfficerEmail = session?.account?.username;
@@ -195,17 +279,10 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 	if (!programmeOfficerEmail) throw new Error('Could not retrieve programme officer email from session');
 	if (!programmeOfficerName) throw new Error('Could not retrieve programme officer name from session');
 
-	// Get inspector details
-	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
-	if (!inspector?.firstName) throw new Error('Could not retrieve inspector name');
-
-	const options = {
-		programmeOfficerName: programmeOfficerName,
-		inspectorName: formatInspectorName(inspector),
-		assignmentDate: assignmentDate,
-		selectedCases: caseReferences.join(', ')
-	};
-	await service.notifyClient.sendAssignedCaseProgrammeOfficerEmail(programmeOfficerEmail, options);
+	await notifyClient.sendAssignedCaseProgrammeOfficerEmail(programmeOfficerEmail, {
+		programmeOfficerName,
+		...(await getAssignmentEmailOptions(service, inspectorId, assignmentDate, caseReferences))
+	});
 
 	service.logger.info(
 		{
@@ -235,19 +312,14 @@ export async function notifyProgrammeOfficerOfSelfAssignedCases(
 	assignmentDate,
 	caseReferences
 ) {
-	if (!service.notifyClient) throw new Error('Notify client not configured');
+	const notifyClient = getNotifyClient(service);
 
 	const programmer = await getAssignedProgrammer(service, session, inspectorId);
 	const notificationSent = Boolean(programmer);
 
 	if (programmer) {
-		const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
-		if (!inspector?.firstName) throw new Error('Could not retrieve inspector name');
-
-		await service.notifyClient.sendSelfAssignedCaseProgrammeOfficerEmail(programmer.email, {
-			inspectorName: formatInspectorName(inspector),
-			assignmentDate,
-			selectedCases: caseReferences.join(', '),
+		await notifyClient.sendSelfAssignedCaseProgrammeOfficerEmail(programmer.email, {
+			...(await getAssignmentEmailOptions(service, inspectorId, assignmentDate, caseReferences)),
 			programmeOfficerName: programmer.name
 		});
 	}
@@ -277,10 +349,7 @@ async function getAssignedProgrammer(service, session, inspectorId) {
 		return null;
 	}
 
-	const entraClient = service.entraClient(session);
-	if (!entraClient) throw new Error('Could not initialise Entra client');
-
-	const programmer = await entraClient.getUserById(assignment.programmerId);
+	const programmer = await getEntraUser(service, session, assignment.programmerId);
 	if (!programmer?.mail) {
 		service.logger.warn(
 			{ inspectorId, programmerId: assignment.programmerId },
@@ -311,16 +380,11 @@ export async function notifyCaseOfficerOfAssignedCases(
 	caseReferences,
 	caseOfficerId
 ) {
-	if (!service.notifyClient) throw new Error('Notify client not configured');
+	const notifyClient = getNotifyClient(service);
 	if (!caseOfficerId) throw new Error('caseOfficerId is required');
 
-	// Resolve the case officer's email from Entra
-	const entraClient = service.entraClient(session);
-	if (!entraClient) throw new Error('Could not initialise Entra client');
-
-	const caseOfficerUser = await entraClient.getUserById(caseOfficerId);
+	const caseOfficerUser = await getEntraUser(service, session, caseOfficerId);
 	const caseOfficerEmail = caseOfficerUser?.mail;
-	const caseOfficerName = caseOfficerUser?.displayName ?? 'Case Officer';
 
 	if (!caseOfficerEmail) {
 		service.logger.warn(
@@ -330,18 +394,57 @@ export async function notifyCaseOfficerOfAssignedCases(
 		return;
 	}
 
-	// Get inspector details for the email personalisation
+	await notifyClient.sendAssignedCaseCaseOfficerEmail(caseOfficerEmail, {
+		caseOfficerName: caseOfficerUser?.displayName ?? 'Case Officer',
+		...(await getAssignmentEmailOptions(service, inspectorId, assignmentDate, caseReferences))
+	});
+}
+
+/**
+ * @param {import('#service').WebService} service
+ * @returns {NonNullable<import('#service').WebService['notifyClient']>}
+ */
+function getNotifyClient(service) {
+	if (!service.notifyClient) throw new Error('Notify client not configured');
+	return service.notifyClient;
+}
+
+/**
+ * @param {import('#service').WebService} service
+ * @param {import("../auth/session.service").SessionWithAuth} session
+ * @param {string} userId - Entra user ID
+ */
+async function getEntraUser(service, session, userId) {
+	const entraClient = service.entraClient(session);
+	if (!entraClient) throw new Error('Could not initialise Entra client');
+	return entraClient.getUserById(userId);
+}
+
+/**
+ * Fetches the inspector and builds the personalisation shared by all assignment emails
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ */
+async function getAssignmentEmailOptions(service, inspectorId, assignmentDate, caseReferences) {
 	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
 	if (!inspector?.firstName) throw new Error('Could not retrieve inspector name');
+	return buildAssignmentEmailOptions(inspector, assignmentDate, caseReferences);
+}
 
-	const options = {
-		caseOfficerName,
+/**
+ * @param {{ firstName: string, lastName?: string }} inspector
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ * @returns {{ inspectorName: string, assignmentDate: string, selectedCases: string }}
+ */
+function buildAssignmentEmailOptions(inspector, assignmentDate, caseReferences) {
+	return {
 		inspectorName: formatInspectorName(inspector),
-		assignmentDate: assignmentDate,
+		assignmentDate,
 		selectedCases: caseReferences.join(', ')
 	};
-
-	await service.notifyClient.sendAssignedCaseCaseOfficerEmail(caseOfficerEmail, options);
 }
 
 /**

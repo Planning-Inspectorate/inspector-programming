@@ -10,6 +10,7 @@ import {
 	notifyProgrammeOfficerOfAssignedCases,
 	notifyCaseOfficerOfAssignedCases,
 	notifyProgrammeOfficerOfSelfAssignedCases,
+	notifyAssignedCases,
 	isSelfSelectedAssignment,
 	getInspectorToCaseSpecialismMap,
 	mapInspectorToCaseSpecialisms
@@ -1074,6 +1075,174 @@ describe('inspectors', () => {
 					message: 'Could not retrieve inspector name'
 				}
 			);
+		});
+	});
+
+	describe('notifyAssignedCases', () => {
+		const inspector = { email: 'inspector@test.com', firstName: 'Jeff', lastName: 'Bridges' };
+		const entraUsers = {
+			'officer-1': { mail: 'officer1@test.com', displayName: 'Officer One' },
+			'officer-2': { mail: 'officer2@test.com', displayName: 'Officer Two' },
+			'programmer-1': { mail: 'programmer@test.com', displayName: 'Test Programmer' }
+		};
+		const programmeOfficerSession = { account: { username: 'po@test.com', name: 'Test PO' } };
+		const selfSelectedSession = {
+			account: { localAccountId: 'inspector-1', username: 'inspector@test.com', name: 'Jeff Bridges' }
+		};
+		const assignment = {
+			inspectorId: 'inspector-1',
+			assignmentDate: '2025-01-01',
+			caseReferences: ['REF001', 'REF002', 'REF003'],
+			caseReferencesByCaseOfficer: new Map([
+				['officer-1', ['REF001', 'REF002']],
+				['officer-2', ['REF003']]
+			])
+		};
+
+		/** @returns {*} */
+		const buildService = () => ({
+			...mockService,
+			logger: { info: mock.fn(), warn: mock.fn() },
+			inspectorClient: { ...mockService.inspectorClient, getInspectorDetails: mock.fn(() => inspector) },
+			entraClient: mock.fn(() => ({ getUserById: mock.fn((id) => entraUsers[id]) })),
+			assignmentClient: { getAssignmentByInspectorId: mock.fn(() => ({ programmerId: 'programmer-1' })) },
+			notifyClient: {
+				sendAssignedCaseEmail: mock.fn(),
+				sendSelfAssignedCaseEmail: mock.fn(),
+				sendAssignedCaseProgrammeOfficerEmail: mock.fn(),
+				sendSelfAssignedCaseProgrammeOfficerEmail: mock.fn(),
+				sendAssignedCaseCaseOfficerEmail: mock.fn()
+			}
+		});
+		/** @param {*} fn */
+		const recipients = (fn) => fn.mock.calls.map((call) => call.arguments[0]);
+		/** @param {*} logFn @param {string} message */
+		const findLog = (logFn, message) => logFn.mock.calls.find((call) => call.arguments[1] === message);
+
+		it('should send the standard emails to the inspector, programme officer and each case officer', async () => {
+			const service = buildService();
+
+			const result = await notifyAssignedCases(service, programmeOfficerSession, assignment);
+
+			assert.deepStrictEqual(result, { inspectorNotified: true, programmeOfficerNotified: true });
+			const { notifyClient } = service;
+			assert.deepStrictEqual(recipients(notifyClient.sendAssignedCaseEmail), ['inspector@test.com']);
+			assert.deepStrictEqual(recipients(notifyClient.sendAssignedCaseProgrammeOfficerEmail), ['po@test.com']);
+			assert.deepStrictEqual(recipients(notifyClient.sendAssignedCaseCaseOfficerEmail), [
+				'officer1@test.com',
+				'officer2@test.com'
+			]);
+			assert.strictEqual(notifyClient.sendSelfAssignedCaseEmail.mock.callCount(), 0);
+			assert.strictEqual(notifyClient.sendSelfAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+			assert.strictEqual(
+				notifyClient.sendAssignedCaseCaseOfficerEmail.mock.calls[1].arguments[1].selectedCases,
+				'REF003'
+			);
+			assert.ok(findLog(service.logger.info, 'Email notification sent successfully to inspector'));
+			assert.strictEqual(
+				service.logger.info.mock.calls.filter(
+					(call) => call.arguments[1] === 'Email notification sent successfully to case officer'
+				).length,
+				2
+			);
+		});
+
+		it('should send the self-assigned emails when the inspector assigned the cases to themselves', async () => {
+			const service = buildService();
+
+			const result = await notifyAssignedCases(service, selfSelectedSession, assignment);
+
+			assert.deepStrictEqual(result, { inspectorNotified: true, programmeOfficerNotified: true });
+			const { notifyClient } = service;
+			assert.deepStrictEqual(recipients(notifyClient.sendSelfAssignedCaseEmail), ['inspector@test.com']);
+			assert.deepStrictEqual(recipients(notifyClient.sendSelfAssignedCaseProgrammeOfficerEmail), [
+				'programmer@test.com'
+			]);
+			assert.strictEqual(notifyClient.sendAssignedCaseEmail.mock.callCount(), 0);
+			assert.strictEqual(notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 0);
+			assert.strictEqual(notifyClient.sendAssignedCaseCaseOfficerEmail.mock.callCount(), 2);
+		});
+
+		it('should report the programme officer as not notified when the self-selection notification is skipped', async () => {
+			const service = buildService();
+			service.assignmentClient.getAssignmentByInspectorId.mock.mockImplementation(() => null);
+
+			const result = await notifyAssignedCases(service, selfSelectedSession, assignment);
+
+			assert.deepStrictEqual(result, { inspectorNotified: true, programmeOfficerNotified: false });
+		});
+
+		it('should send the emails in parallel', async () => {
+			const service = buildService();
+			/** @type {() => void} */
+			let resolveInspectorEmail = () => {};
+			service.notifyClient.sendAssignedCaseEmail.mock.mockImplementation(
+				() => new Promise((resolve) => (resolveInspectorEmail = resolve))
+			);
+
+			const pending = notifyAssignedCases(service, programmeOfficerSession, assignment);
+			// let the other notifications run while the inspector email is still in flight
+			await new Promise((resolve) => setImmediate(resolve));
+
+			assert.strictEqual(service.notifyClient.sendAssignedCaseEmail.mock.callCount(), 1);
+			assert.strictEqual(service.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.callCount(), 1);
+			assert.strictEqual(service.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.callCount(), 2);
+
+			resolveInspectorEmail();
+			assert.deepStrictEqual(await pending, { inspectorNotified: true, programmeOfficerNotified: true });
+		});
+
+		it('should log failures without preventing the other emails from being sent', async () => {
+			const service = buildService();
+			service.notifyClient.sendAssignedCaseEmail.mock.mockImplementation(() => {
+				throw new Error('Inspector email failed');
+			});
+			service.notifyClient.sendAssignedCaseProgrammeOfficerEmail.mock.mockImplementation(() => {
+				throw new Error('PO email failed');
+			});
+			service.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.mockImplementation((email) => {
+				if (email === 'officer1@test.com') throw new Error('Case officer email failed');
+			});
+
+			const result = await notifyAssignedCases(service, programmeOfficerSession, assignment);
+
+			assert.deepStrictEqual(result, { inspectorNotified: false, programmeOfficerNotified: false });
+			assert.strictEqual(service.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.callCount(), 2);
+
+			const inspectorWarning = findLog(
+				service.logger.warn,
+				'Failed to send email notification to inspector after case assignment'
+			);
+			assert.strictEqual(inspectorWarning.arguments[0].inspectorId, 'inspector-1');
+			assert.strictEqual(inspectorWarning.arguments[0].err.message, 'Inspector email failed');
+
+			const poWarning = findLog(
+				service.logger.warn,
+				'Failed to send email notification to programme officer after case assignment'
+			);
+			assert.strictEqual(poWarning.arguments[0].programmeOfficerEmail, 'po@test.com');
+			assert.strictEqual(poWarning.arguments[0].err.message, 'PO email failed');
+
+			const caseOfficerWarning = findLog(
+				service.logger.warn,
+				'Failed to send email notification to case officer after case assignment'
+			);
+			assert.strictEqual(caseOfficerWarning.arguments[0].caseOfficerId, 'officer-1');
+
+			const caseOfficerSuccess = findLog(service.logger.info, 'Email notification sent successfully to case officer');
+			assert.strictEqual(caseOfficerSuccess.arguments[0].caseOfficerId, 'officer-2');
+		});
+
+		it('should not send case officer emails when there are no case officers', async () => {
+			const service = buildService();
+
+			const result = await notifyAssignedCases(service, programmeOfficerSession, {
+				...assignment,
+				caseReferencesByCaseOfficer: undefined
+			});
+
+			assert.deepStrictEqual(result, { inspectorNotified: true, programmeOfficerNotified: true });
+			assert.strictEqual(service.notifyClient.sendAssignedCaseCaseOfficerEmail.mock.callCount(), 0);
 		});
 	});
 });
