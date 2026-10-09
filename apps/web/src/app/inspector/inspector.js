@@ -127,23 +127,38 @@ function formatInspectorName(inspector) {
 /**
  * sends an email using GovUK Notify client to the inspector that the cases have been assigned to
  * @param {import('#service').WebService} service
- * @param {Object} sessionAccount
  * @param {string} inspectorId
  * @param {string} assignmentDate
  * @param {string[]} caseReferences
  * @returns {Promise<void>}
  */
-export async function notifyInspectorOfAssignedCases(
-	service,
-	sessionAccount,
-	inspectorId,
-	assignmentDate,
-	caseReferences
-) {
+export async function notifyInspectorOfAssignedCases(service, inspectorId, assignmentDate, caseReferences) {
+	await sendInspectorAssignmentEmail(service, inspectorId, assignmentDate, caseReferences, 'sendAssignedCaseEmail');
+}
+
+/**
+ * sends an email using GovUK Notify client to an inspector that assigned the cases to themselves
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ * @returns {Promise<void>}
+ */
+export async function notifyInspectorOfSelfAssignedCases(service, inspectorId, assignmentDate, caseReferences) {
+	await sendInspectorAssignmentEmail(service, inspectorId, assignmentDate, caseReferences, 'sendSelfAssignedCaseEmail');
+}
+
+/**
+ * @param {import('#service').WebService} service
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ * @param {'sendAssignedCaseEmail'|'sendSelfAssignedCaseEmail'} sendMethod - Notify client method to send the email with
+ * @returns {Promise<void>}
+ */
+async function sendInspectorAssignmentEmail(service, inspectorId, assignmentDate, caseReferences, sendMethod) {
 	const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
 	if (!(inspector?.email && inspector?.firstName)) throw new Error('Could not retrieve inspector email and name');
-	const sessionAccountEmail = sessionAccount.username.toLowerCase();
-	const inspectorEmail = inspector.email.toLowerCase();
 
 	const options = {
 		inspectorName: formatInspectorName(inspector),
@@ -152,27 +167,21 @@ export async function notifyInspectorOfAssignedCases(
 		cbosLink: service.notifyConfig.cbosLink
 	};
 	if (!service.notifyClient) throw new Error('Notify client not configured');
-	if (sessionAccountEmail === inspectorEmail) {
-		await service.notifyClient.sendSelfAssignedCaseEmail(inspector.email, options);
-	} else {
-		await service.notifyClient.sendAssignedCaseEmail(inspector.email, options);
-	}
+	await service.notifyClient[sendMethod](inspector.email, options);
 }
 
 /**
  * sends an email using GovUK Notify client to the programme officer that assigned the cases
  * @param {import('#service').WebService} service
- * @param {Object} sessionAccount
- * @param {string} sessionAccount.username
- * @param {string} sessionAccount.name
+ * @param {import("../auth/session.service").SessionWithAuth} session - the programme officer is the account in session
  * @param {string} inspectorId
  * @param {string} assignmentDate
  * @param {string[]} caseReferences
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} whether the notification was sent
  */
 export async function notifyProgrammeOfficerOfAssignedCases(
 	service,
-	sessionAccount,
+	session,
 	inspectorId,
 	assignmentDate,
 	caseReferences
@@ -180,8 +189,8 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 	if (!service.notifyClient) throw new Error('Notify client not configured');
 
 	// Get programme officer details from session account
-	const programmeOfficerEmail = sessionAccount?.username;
-	const programmeOfficerName = sessionAccount?.name;
+	const programmeOfficerEmail = session?.account?.username;
+	const programmeOfficerName = session?.account?.name;
 
 	if (!programmeOfficerEmail) throw new Error('Could not retrieve programme officer email from session');
 	if (!programmeOfficerName) throw new Error('Could not retrieve programme officer name from session');
@@ -197,6 +206,90 @@ export async function notifyProgrammeOfficerOfAssignedCases(
 		selectedCases: caseReferences.join(', ')
 	};
 	await service.notifyClient.sendAssignedCaseProgrammeOfficerEmail(programmeOfficerEmail, options);
+
+	service.logger.info(
+		{
+			programmeOfficerEmail,
+			caseCount: caseReferences.length
+		},
+		'Email notification sent successfully to programme officer'
+	);
+
+	return true;
+}
+
+/**
+ * Sends an email using GovUK Notify client to the case programme officer assigned to a self-selecting inspector
+ *
+ * @param {import('#service').WebService} service
+ * @param {import("../auth/session.service").SessionWithAuth} session
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {string[]} caseReferences
+ * @returns {Promise<boolean>} whether the notification was sent
+ */
+export async function notifyProgrammeOfficerOfSelfAssignedCases(
+	service,
+	session,
+	inspectorId,
+	assignmentDate,
+	caseReferences
+) {
+	if (!service.notifyClient) throw new Error('Notify client not configured');
+
+	const programmer = await getAssignedProgrammer(service, session, inspectorId);
+	const notificationSent = Boolean(programmer);
+
+	if (programmer) {
+		const inspector = await service.inspectorClient.getInspectorDetails(inspectorId);
+		if (!inspector?.firstName) throw new Error('Could not retrieve inspector name');
+
+		await service.notifyClient.sendSelfAssignedCaseProgrammeOfficerEmail(programmer.email, {
+			inspectorName: formatInspectorName(inspector),
+			assignmentDate,
+			selectedCases: caseReferences.join(', '),
+			programmeOfficerName: programmer.name
+		});
+	}
+
+	service.logger.info(
+		{ inspectorId, caseCount: caseReferences.length, notificationSent },
+		'Self-selection notification processed for programmer'
+	);
+	return notificationSent;
+}
+
+/**
+ * Resolves the programmer assigned to an inspector, or null (with a warning) if they can't be notified
+ *
+ * @param {import('#service').WebService} service
+ * @param {import("../auth/session.service").SessionWithAuth} session
+ * @param {string} inspectorId
+ * @returns {Promise<{ email: string, name: string } | null>}
+ */
+async function getAssignedProgrammer(service, session, inspectorId) {
+	const assignment = await service.assignmentClient.getAssignmentByInspectorId(inspectorId);
+	if (!assignment?.programmerId) {
+		service.logger.warn(
+			{ inspectorId },
+			'No programmer assigned to the self-selecting inspector, skipping notification'
+		);
+		return null;
+	}
+
+	const entraClient = service.entraClient(session);
+	if (!entraClient) throw new Error('Could not initialise Entra client');
+
+	const programmer = await entraClient.getUserById(assignment.programmerId);
+	if (!programmer?.mail) {
+		service.logger.warn(
+			{ inspectorId, programmerId: assignment.programmerId },
+			'Programmer does not have an email address in Entra, skipping notification'
+		);
+		return null;
+	}
+
+	return { email: programmer.mail, name: programmer.displayName ?? 'Programme Officer' };
 }
 
 /**
@@ -289,4 +382,16 @@ export async function mapInspectorToCaseSpecialisms(service, inspectorSpecialism
 	}
 
 	return Array.from(seenCaseSpecialisms);
+}
+
+/**
+ * Determines whether the cases were allocated by the inspector to themselves (self-selection).
+ * The inspectorId is the inspector's Entra ID, so it can be compared directly with the logged-in user's account ID.
+ * @param {import("../auth/session.service").SessionWithAuth} session
+ * @param {string} inspectorId
+ * @returns {boolean}
+ */
+export function isSelfSelectedAssignment(session, inspectorId) {
+	const accountId = getAccountId(session);
+	return Boolean(accountId && inspectorId && accountId === inspectorId);
 }
