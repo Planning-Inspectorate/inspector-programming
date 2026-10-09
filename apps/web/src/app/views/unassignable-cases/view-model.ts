@@ -1,14 +1,19 @@
-import { toCaseViewModel } from '../home/view-model.js';
+import { filtersQueryViewModel, toCaseViewModel } from '../home/view-model.js';
 import {
 	ASSIGNABLE_APPEAL_STATUSES,
+	END_STATE_APPEAL_STATUSES,
 	PRE_VALIDATION_APPEAL_STATUSES
 } from '@pins/inspector-programming-lib/data/database/appeal-status.js';
 import { getPageNumber, paginateList } from '@pins/inspector-programming-lib/util/pagination.ts';
+import { filterCases } from '@pins/inspector-programming-lib/util/filtering.js';
 import type { CaseViewModel } from '@pins/inspector-programming-lib/data/types.js';
 import type { CalendarEventTimingRuleModel } from '@pins/inspector-programming-database/src/client/models/CalendarEventTimingRule.ts';
-import type { UnassignableCaseListViewModel, UnassignableCaseViewModel } from './types.d.ts';
+import type { PerPageLink, UnassignableCaseListViewModel, UnassignableCaseViewModel } from './types.d.ts';
 import type { ParsedQs } from 'qs';
-import { paginationValues } from '../home/pagination.js';
+import type { RadioOption } from '#util/types.d.ts';
+import { buildQueryString, paginationValues } from '../home/pagination.js';
+import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { LPA_REGION_NAMES } from '@pins/inspector-programming-database/src/seed/lpa-regions.js';
 
 export function toUnassignableCaseListViewModel(
 	query: ParsedQs,
@@ -20,10 +25,12 @@ export function toUnassignableCaseListViewModel(
 		limit: query.limit ? Number(query.limit) : 1000,
 		total: 0
 	};
+	const filterQuery = filtersQueryViewModel(query);
+	const filteredAppeals = filterCases(appeals, filterQuery.case ?? {});
 
-	const totalPages = Math.max(1, Math.ceil((appeals.length || 0) / pagination.limit)) || 1;
+	const totalPages = Math.max(1, Math.ceil((filteredAppeals.length || 0) / pagination.limit)) || 1;
 	const processedPage = getPageNumber(pagination.page, totalPages);
-	const { list, total } = paginateList(appeals, processedPage, pagination.limit);
+	const { list, total } = paginateList(filteredAppeals, processedPage, pagination.limit);
 	pagination.total = total;
 	return {
 		pageHeading: 'Unassignable Cases',
@@ -31,9 +38,31 @@ export function toUnassignableCaseListViewModel(
 		isUnassignableCasesPage: true,
 		unassignableList: list.map((appeal) => toUnassignableCaseViewModel(appeal, timingRules)),
 		paginationLinks: paginationValues(query, total, pagination),
-		pagination
+		perPageLinks: perPageLinks(query, pagination.limit),
+		pagination,
+		filters: {
+			caseStatuses: caseStatusOptions,
+			lpaRegions: lpaRegionOptions,
+			query: filterQuery,
+			buildUrlWithoutFilter: filterQuery.buildUrlWithoutFilter,
+			clearFiltersUrl: filterQuery.clearFiltersUrl
+		}
 	};
 }
+
+export const PER_PAGE_LIMITS = [1000, 2000];
+
+/**
+ * Build the "cases per page" links, preserving current filters and resetting to the first page
+ */
+export function perPageLinks(query: ParsedQs, currentLimit: number): PerPageLink[] {
+	return PER_PAGE_LIMITS.map((limit) => ({
+		limit,
+		href: buildQueryString({ ...query, limit }, 1),
+		current: limit === currentLimit
+	}));
+}
+
 export function toUnassignableCaseViewModel(
 	c: CaseViewModel,
 	timingRules: CalendarEventTimingRuleModel[]
@@ -92,3 +121,27 @@ function matchesTimingRule(appeal: CaseViewModel, rule: CalendarEventTimingRuleM
 function matchesTypeAndProcedure(appeal: CaseViewModel, rule: CalendarEventTimingRuleModel) {
 	return appeal.caseType === rule.caseType && appeal.caseProcedure === rule.caseProcedure;
 }
+
+/**
+ * LPA region filter options, matching the options offered on the unassigned case list
+ */
+const lpaRegionOptions: RadioOption[] = Object.values(LPA_REGION_NAMES).map((value) => ({ value, text: value }));
+
+/**
+ * Case status filter options. End state statuses are omitted, as the cases client never returns
+ * cases at those statuses in the unassignable list.
+ *
+ * @example
+ * // "lpa_questionnaire" -> { value: "lpa_questionnaire", text: "LPA questionnaire" }
+ */
+const caseStatusOptions: RadioOption[] = Object.values(APPEAL_CASE_STATUS)
+	.filter((value) => !END_STATE_APPEAL_STATUSES.includes(value))
+	.map((value) => {
+		const text = value
+			.replace(/_/g, ' ')
+			.replace(/^\w/, (c) => c.toUpperCase())
+			.replace(/^Lpa\b/, 'LPA');
+
+		return { value, text };
+	})
+	.sort((a, b) => a.text.localeCompare(b.text));

@@ -9,6 +9,27 @@ describe('filterCases', () => {
 		const filteredCases = filterCases(cases, filters);
 		assert.strictEqual(filteredCases.length, 3, 'Should return all cases when no filters are applied');
 	});
+	test('should filter cases by case status', () => {
+		const cases = [
+			{ caseStatus: 'lpa_questionnaire', caseAge: 10 },
+			{ caseStatus: 'validation', caseAge: 20 },
+			{ caseStatus: 'statements', caseAge: 15 }
+		];
+		const filteredCases = filterCases(cases, { caseStatuses: 'validation' });
+		assert.strictEqual(filteredCases.length, 1, 'Should return only cases with the selected status');
+		assert.deepStrictEqual(filteredCases, [{ caseStatus: 'validation', caseAge: 20 }]);
+	});
+	test('should filter cases by multiple case statuses', () => {
+		const cases = [
+			{ caseStatus: 'lpa_questionnaire', caseAge: 10 },
+			{ caseStatus: 'validation', caseAge: 20 },
+			{ caseStatus: 'statements', caseAge: 15 },
+			{ caseStatus: null, caseAge: 25 }
+		];
+		const filteredCases = filterCases(cases, { caseStatuses: ['lpa_questionnaire', 'validation'] });
+		assert.strictEqual(filteredCases.length, 2, 'Should return only cases whose status matches one of the selections');
+		assert.deepStrictEqual(filteredCases.map((c) => c.caseStatus).sort(), ['lpa_questionnaire', 'validation']);
+	});
 	test('should filter cases by minimum age', () => {
 		const cases = [{ caseAge: 30 }, { caseAge: 10 }, { caseAge: 20 }];
 		const filters = { minimumAge: 15 };
