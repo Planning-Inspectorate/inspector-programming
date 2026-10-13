@@ -37,7 +37,7 @@ apps_config = {
       assigned_case_programme_officer      = "5ca31c2b-abd5-4d43-a019-36b7a0229634"
       assigned_case_case_officer           = "ccffd01f-09c4-4bc8-822c-dca1c57515d6"
       self_assigned_case                   = "969ba4e0-7676-4f5b-97b4-6d6826cf04de"
-      self_assigned_case_programme_officer = "fbaadce7-43dc-4f20-a05e-572e61d1363d"
+      self_assigned_case_programme_officer = "ba955834-f5a1-41cf-8d0c-dfca83f0b50b"
       weekly_report                        = "65279c44-2757-498d-a27c-65bf1446713d"
     }
   }
