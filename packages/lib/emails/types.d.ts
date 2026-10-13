@@ -44,4 +44,5 @@ export interface SelfAssignedCasePersonalisation {
 
 export interface SelfAssignedCaseProgrammeOfficerPersonalisation extends SelfAssignedCasePersonalisation {
 	programmeOfficerName: string;
+	cbosLink: string;
 }

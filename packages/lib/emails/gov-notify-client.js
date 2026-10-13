@@ -77,7 +77,7 @@ export class GovNotifyClient {
 	 * @returns {Promise<void>}
 	 */
 	async sendSelfAssignedCaseProgrammeOfficerEmail(email, personalisation) {
-		const fields = ['inspectorName', 'assignmentDate', 'selectedCases', 'programmeOfficerName'];
+		const fields = ['inspectorName', 'assignmentDate', 'selectedCases', 'programmeOfficerName', 'cbosLink'];
 		await this.sendEmail(
 			this.#templateIds.selfAssignedCaseProgrammeOfficer,
 			email,

@@ -604,6 +604,7 @@ describe('controller.js', () => {
 				assert.strictEqual(options.inspectorName, 'Test Inspector');
 				assert.strictEqual(options.assignmentDate, futureAssignmentDate);
 				assert.strictEqual(options.selectedCases, 'REF-1, REF-2');
+				assert.strictEqual(options.cbosLink, 'https://example.com/cbos');
 
 				const selfSelectionInfoCall = service.logger.info.mock.calls.find(
 					(call) => call.arguments[1] === 'Self-selection notification processed for programmer'

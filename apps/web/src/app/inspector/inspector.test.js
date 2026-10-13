@@ -983,7 +983,8 @@ describe('inspectors', () => {
 				programmeOfficerName: 'Test Programmer',
 				inspectorName: 'Jeff Bridges',
 				assignmentDate: '2025-01-01',
-				selectedCases: 'REF001, REF002'
+				selectedCases: 'REF001, REF002',
+				cbosLink: 'test link'
 			});
 		});
 

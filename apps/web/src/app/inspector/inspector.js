@@ -320,7 +320,8 @@ export async function notifyProgrammeOfficerOfSelfAssignedCases(
 	if (programmer) {
 		await notifyClient.sendSelfAssignedCaseProgrammeOfficerEmail(programmer.email, {
 			...(await getAssignmentEmailOptions(service, inspectorId, assignmentDate, caseReferences)),
-			programmeOfficerName: programmer.name
+			programmeOfficerName: programmer.name,
+			cbosLink: service.notifyConfig.cbosLink
 		});
 	}
 

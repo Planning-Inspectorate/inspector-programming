@@ -119,6 +119,7 @@ describe(`gov-notify-client`, () => {
 				personalisation: {
 					inspectorName: 'Inspector Name',
 					programmeOfficerName: 'Programme Officer Name',
+					cbosLink: 'https://example.com/cbos',
 					assignmentDate: '1 Jan 2025',
 					selectedCases: 'CASE-123, CASE-456'
 				}
