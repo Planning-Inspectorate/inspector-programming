@@ -42,6 +42,10 @@ export interface SelfAssignedCasePersonalisation {
 	selectedCases: string;
 }
 
+export interface SelfAssignedCaseInspectorPersonalisation extends SelfAssignedCasePersonalisation {
+	cbosLink: string;
+}
+
 export interface SelfAssignedCaseProgrammeOfficerPersonalisation extends SelfAssignedCasePersonalisation {
 	programmeOfficerName: string;
 	cbosLink: string;
