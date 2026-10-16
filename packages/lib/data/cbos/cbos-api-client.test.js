@@ -144,6 +144,7 @@ describe('cboas-api-client', () => {
 			},
 			isParentAppeal: true,
 			isChildAppeal: false,
+			caseOfficer: 'case-officer-entra-id',
 			linkedAppeals: [{ appealReference: 'linked reference 1' }]
 		};
 
@@ -180,7 +181,8 @@ describe('cboas-api-client', () => {
 			linkedCaseStatus: 'Parent',
 			leadCaseReference: undefined,
 			childCaseReferences: [{ caseReference: 'linked reference 1' }],
-			caseStartedDate: caseStartedDate
+			caseStartedDate: caseStartedDate,
+			caseOfficerId: 'case-officer-entra-id'
 		};
 
 		const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
@@ -302,7 +304,8 @@ describe('cboas-api-client', () => {
 			linkedCaseStatus: 'Child',
 			leadCaseReference: 'linked reference 1',
 			childCaseReferences: [],
-			caseStartedDate: caseStartedDate
+			caseStartedDate: caseStartedDate,
+			caseOfficerId: null
 		};
 
 		const mappedCase = await client.appealToAppealCaseModel(c, lpaData);
@@ -374,7 +377,8 @@ describe('cboas-api-client', () => {
 			linkedCaseStatus: 'Child',
 			leadCaseReference: 'linked reference 1',
 			childCaseReferences: [],
-			caseStartedDate: caseStartedDate
+			caseStartedDate: caseStartedDate,
+			caseOfficerId: null
 		};
 
 		const mappedCase = await client.appealToAppealCaseModel(c, lpaData);

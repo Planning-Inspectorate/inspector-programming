@@ -136,7 +136,8 @@ export class CbosApiClient {
 			linkedCaseStatus,
 			leadCaseReference,
 			childCaseReferences,
-			caseStartedDate: c.startedAt ? new Date(c.startedAt) : null
+			caseStartedDate: c.startedAt ? new Date(c.startedAt) : null,
+			caseOfficerId: c.caseOfficer || null
 			// appellantCostsAppliedFor
 			// lpaCostsAppliedFor
 			// inspectorId
