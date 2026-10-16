@@ -467,6 +467,8 @@ export interface AppealCaseModel {
 	childCaseReferences: {
 		caseReference: string;
 	}[];
+	caseStartedDate: Date | null;
+	caseOfficerId: string | null;
 }
 
 export interface CbosAppealTypes {
