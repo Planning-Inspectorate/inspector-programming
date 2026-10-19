@@ -685,10 +685,10 @@ describe('cboas-api-client', () => {
 				}
 			};
 
-			await assert.rejects(
-				() => client.fetchAppealDetailsByReference(['101', '102', '103']),
-				/Failed to fetch details for appealReference 102. Status: 404/
-			);
+			await assert.rejects(() => client.fetchAppealDetailsByReference(['101', '102', '103']), {
+				message: 'Failed to fetch details for appealReference 102. Status: 404',
+				status: 404
+			});
 		});
 
 		test('returns empty array when passed empty array', async () => {
