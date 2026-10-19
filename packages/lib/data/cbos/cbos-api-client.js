@@ -264,7 +264,7 @@ export class CbosApiClient {
 	 * Fetch details for each appeal reference in parallel.
 	 * @param {string[]} appealReferences - Array of appeal References
 	 * @returns {Promise<import("../types").CbosSingleAppealResponse[]>} Promise resolving to an array of appeal detail objects.
-	 * @throws {Error} If fetching any appeal details fails.
+	 * @throws {Error & { status?: number }} If fetching any appeal details fails; `status` is the HTTP status code of a failed response.
 	 */
 	async fetchAppealDetailsByReference(appealReferences) {
 		const logger = this.logger.child({ method: 'fetchAppealDetailsByReference' });
@@ -279,7 +279,10 @@ export class CbosApiClient {
 				const response = await this.fetchWithTimeout(url);
 
 				if (!response.ok) {
-					throw new Error(`Failed to fetch details for appealReference ${appealReference}. Status: ${response.status}`);
+					const error = new Error(
+						`Failed to fetch details for appealReference ${appealReference}. Status: ${response.status}`
+					);
+					throw Object.assign(error, { status: response.status });
 				}
 				return await response.json();
 			});
