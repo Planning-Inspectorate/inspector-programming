@@ -45,6 +45,7 @@
     "accessible-autocomplete": "^3.0.2",
     "ajv": "^8.20.0",
     "body-parser": "^2.4.0",
+    "compression": "^1.8.2",
     "connect-redis": "^10.0.0",
     "date-fns": "^4.4.0",
     "date-fns-tz": "^3.2.0",

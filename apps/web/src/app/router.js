@@ -12,6 +12,7 @@ import { createRoutes as createAssignmentsRoutes } from './views/assignments/ind
 import { saveUrlToSessionMiddleware } from '#util/session.ts';
 import { asyncHandler } from '@planning-inspectorate/core';
 import { buildCanManageAssignmentsMiddleware } from '#util/account.js';
+import compression from 'compression';
 
 /**
  * @param {import('#service').WebService} service
@@ -64,7 +65,8 @@ export function buildRouter(service) {
 	router.get('/', asyncHandler(viewHome));
 	router.post('/cases', asyncHandler(postCases));
 	router.post('/', asyncHandler(postHome));
-	router.get('/case/:caseId', asyncHandler(viewCase));
+	// compressed because the case page embeds the large LPA boundary geometries on every request.
+	router.get('/case/:caseId', compression(), asyncHandler(viewCase));
 	router.get('/unassignable-cases', asyncHandler(viewUnassignableCases));
 	router.use('/assignments', assignmentsRoutes);
 
