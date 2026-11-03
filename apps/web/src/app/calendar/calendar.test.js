@@ -9,6 +9,8 @@ import {
 	getSimplifiedEvents,
 	getWeekStartDate,
 	generateCaseCalendarEvents,
+	getInspectorOutOfOfficeEvents,
+	getOutOfOfficeDays,
 	submitCalendarEvents,
 	matchTimingRuleToCase
 } from './calendar.js';
@@ -1141,6 +1143,45 @@ describe('calendar', () => {
 				// 20th and 21st skipped - weekend
 				assertEventDates(res[3], 8, 22, 9, 10);
 			});
+			it('Out of Office days should be skipped when allocating events', async () => {
+				const outOfOfficeEvents = await getInspectorOutOfOfficeEvents(
+					() => ({
+						getUserCalendarEvents: async () => ({
+							value: [
+								// all-day, multi-day OOF covering 26th, 29th and 30th (end is exclusive)
+								{
+									showAs: 'oof',
+									start: { dateTime: '2025-09-26T00:00:00.0000000' },
+									end: { dateTime: '2025-10-01T00:00:00.0000000' }
+								},
+								// busy entries should not block the day
+								{
+									showAs: 'busy',
+									start: { dateTime: '2025-10-01T09:00:00.0000000' },
+									end: { dateTime: '2025-10-01T10:00:00.0000000' }
+								}
+							]
+						})
+					}),
+					mockSession,
+					'inspector-id',
+					'2025-09-25',
+					mockLogger
+				);
+
+				const service = mockService();
+				const res = await generateCaseCalendarEvents(service, '2025-09-25', [appeal], outOfOfficeEvents);
+				assert.strictEqual(res.length, 4);
+
+				const case1 = { prep: res[0], siteVisit: res[1], report: res[2], costs: res[3] };
+				requiredStages(case1.prep, case1.siteVisit, case1.report, case1.costs);
+
+				assertEventDates(case1.prep, 8, 24, 9, 11);
+				assertEventDates(case1.siteVisit, 8, 25, 9, 12);
+				// 26th, 29th, 30th Out of Office; 27th and 28th weekend
+				assertEventDates(case1.report, 9, 1, 9, 11);
+				assertEventDates(case1.costs, 9, 2, 9, 10);
+			});
 			it('bank holidays should be accounted for when allocating events', async () => {
 				mockCalendarClient.getEnglandWalesBankHolidays.mock.mockImplementationOnce(() => ['2025-09-29']);
 
@@ -1827,5 +1868,46 @@ describe('calendar', () => {
 			assert.ok(result);
 			assert.strictEqual(result.caseType, 'C');
 		});
+	});
+});
+
+describe('getOutOfOfficeDays', () => {
+	it('should treat end times at midnight as exclusive', () => {
+		const days = getOutOfOfficeDays([
+			{ start: { dateTime: '2025-10-06T00:00:00.0000000' }, end: { dateTime: '2025-10-08T00:00:00.0000000' } }
+		]);
+		assert.deepStrictEqual(days, ['2025-10-06', '2025-10-07']);
+	});
+	it('should include the end day for partial-day entries and dedupe days', () => {
+		const days = getOutOfOfficeDays([
+			{ start: { dateTime: '2025-10-06T13:00:00.0000000' }, end: { dateTime: '2025-10-07T12:00:00.0000000' } },
+			{ start: { dateTime: '2025-10-07T09:00:00.0000000' }, end: { dateTime: '2025-10-07T10:00:00.0000000' } }
+		]);
+		assert.deepStrictEqual(days, ['2025-10-06', '2025-10-07']);
+	});
+});
+
+describe('getInspectorOutOfOfficeEvents', () => {
+	it('should return an empty list and log if fetching events fails', async () => {
+		const logger = { warn: mock.fn(), error: mock.fn() };
+		const res = await getInspectorOutOfOfficeEvents(
+			() => ({
+				getUserCalendarEvents: async () => {
+					throw new Error('graph error');
+				}
+			}),
+			mockSession,
+			'inspector-id',
+			'2025-10-08',
+			logger
+		);
+		assert.deepStrictEqual(res, []);
+		assert.strictEqual(logger.error.mock.callCount(), 1);
+	});
+	it('should return an empty list if there is no entra client', async () => {
+		const logger = { warn: mock.fn(), error: mock.fn() };
+		const res = await getInspectorOutOfOfficeEvents(() => null, mockSession, 'inspector-id', '2025-10-08', logger);
+		assert.deepStrictEqual(res, []);
+		assert.strictEqual(logger.warn.mock.callCount(), 1);
 	});
 });

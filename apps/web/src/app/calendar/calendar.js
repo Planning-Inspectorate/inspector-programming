@@ -319,9 +319,10 @@ export function getNextWeekStartDate(currentStartDate) {
  * @param {import('#service').WebService} service
  * @param {string} assignmentDate
  * @param {import('../case/types.d.ts').CaseToAssign[]} assignedCases
+ * @param {import('./types').BookedEventTimeslot[]} [outOfOfficeEvents] - days the inspector is unavailable
  * @returns {Promise<import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]>}
  */
-export async function generateCaseCalendarEvents(service, assignmentDate, assignedCases) {
+export async function generateCaseCalendarEvents(service, assignmentDate, assignedCases, outOfOfficeEvents = []) {
 	/** @type {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} */
 	const allEvents = [];
 	/** @type {import('./types').BookedEventTimeslot[]} */
@@ -339,7 +340,7 @@ export async function generateCaseCalendarEvents(service, assignmentDate, assign
 			return holidayDate > pastLimit && holidayDate < futureLimit;
 		});
 
-	const bankHolidayEvents = compileBankHolidays(bankHolidays);
+	const unavailableDayEvents = [...compileBankHolidays(bankHolidays), ...outOfOfficeEvents];
 
 	//we want to iterate stages FIRST - go through a stage for all cases before moving onto the next
 	//then they can be grouped by stage in the calendar
@@ -376,7 +377,7 @@ export async function generateCaseCalendarEvents(service, assignmentDate, assign
 				assignedCase,
 				stageStartDate,
 				inspectorEvents,
-				bankHolidayEvents
+				unavailableDayEvents
 			);
 			allEvents.push(...events);
 		}
@@ -397,6 +398,84 @@ function compileBankHolidays(bankHolidays) {
 			endTime: setHours(new Date(holidayString), 23, { in: timeZone })
 		};
 	});
+}
+
+/**
+ * Fetches the inspector's Out of Office entries around the assignment date and maps each day
+ * they cover into a full-day BookedEventTimeslot, so no activity is scheduled on those days.
+ *
+ * @param {import('@pins/inspector-programming-lib/graph/types.js').InitEntraClient} initEntraClient
+ * @param {import('src/app/auth/session.service.js').SessionWithAuth} authSession
+ * @param {string} inspectorId
+ * @param {string} assignmentDate
+ * @param {import('pino').Logger} logger
+ * @returns {Promise<import('./types').BookedEventTimeslot[]>}
+ */
+export async function getInspectorOutOfOfficeEvents(initEntraClient, authSession, inspectorId, assignmentDate, logger) {
+	try {
+		const client = initEntraClient(authSession);
+		if (!client) {
+			logger.warn('No Entra Client, skipping Out of Office check');
+			return [];
+		}
+
+		const assignment = new Date(assignmentDate);
+
+		/**
+		 * Retrieve calendar events within a planning window around the assignment date for the inspector:
+		 * - 10 days before: captures recent or overlapping leave periods.
+		 * - 60 days after: supports availability checks for upcoming casework and hearings.
+		 *
+		 * Keep this range reasonably small to avoid fetching excessive calendar data.
+		 */
+		const startDate = new Date(subDays(assignment, 10, { in: timeZone }).getTime());
+		const endDate = new Date(addDays(assignment, 60, { in: timeZone }).getTime());
+
+		const response = await client.getUserCalendarEvents(inspectorId, false, startDate, endDate);
+		const events = Array.isArray(response?.value) ? response.value : [];
+		const outOfOfficeDays = getOutOfOfficeDays(events.filter((e) => (e.showAs || '').toLowerCase() === 'oof'));
+		return compileBankHolidays(outOfOfficeDays);
+	} catch (error) {
+		logger.error({ error, inspectorId }, 'Failed to fetch inspector Out of Office events');
+		return [];
+	}
+}
+
+/**
+ * Expands Out of Office events into the list of dates (yyyy-MM-dd, Europe/London) they cover.
+ * Event times are expected in Europe/London (as requested from Graph), and end times are exclusive.
+ *
+ * @param {{ start: { dateTime: string }, end: { dateTime: string } }[]} events
+ * @returns {string[]}
+ */
+export function getOutOfOfficeDays(events) {
+	/** @type {Set<string>} */
+	const days = new Set();
+	for (const event of events) {
+		const startDay = event?.start?.dateTime?.slice(0, 10);
+		const endDay = event?.end?.dateTime?.slice(0, 10);
+		if (!startDay || !endDay) continue;
+		const endsAtMidnight = isMidnight(event.end.dateTime);
+		const current = new Date(`${startDay}T00:00:00Z`);
+		const last = new Date(`${endDay}T00:00:00Z`);
+		if (endsAtMidnight && last > current) last.setUTCDate(last.getUTCDate() - 1);
+
+		while (current <= last) {
+			days.add(current.toISOString().slice(0, 10));
+			current.setUTCDate(current.getUTCDate() + 1);
+		}
+	}
+	return [...days];
+}
+
+/**
+ * checks if the time portion of the given dateTime string (e.g. 2026-01-01T00:00:00) is midnight (00:00).
+ * @param {string} dateTimeString
+ * @returns {boolean}
+ */
+function isMidnight(dateTimeString) {
+	const timePart = dateTimeString.slice(11);
+	return /^00:00(:00(\.0+)?)?$/.test(timePart);
 }
 
 /**
@@ -445,10 +524,10 @@ export function matchTimingRuleToCase(timingRules, assignedCase) {
  * @param {import('../case/types.d.ts').CaseToAssign} assignedCase
  * @param {Date} assignment
  * @param {import('./types').BookedEventTimeslot[]} inspectorEvents
- * @param {import('./types').BookedEventTimeslot[]} bankHolidayEvents
+ * @param {import('./types').BookedEventTimeslot[]} unavailableDayEvents bank holidays and out-of-office days
  * @returns {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]}
  */
-function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEvents, bankHolidayEvents) {
+function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEvents, unavailableDayEvents) {
 	/** @type {import('@pins/inspector-programming-lib/graph/types.js').CalendarEventInput[]} */
 	const events = [];
 
@@ -457,7 +536,7 @@ function generateEvents(stage, stageTime, assignedCase, assignment, inspectorEve
 
 	for (const time of stageTimes) {
 		while (
-			!eventFitsIntoDay([...inspectorEvents, ...bankHolidayEvents], assignment, time) ||
+			!eventFitsIntoDay([...inspectorEvents, ...unavailableDayEvents], assignment, time) ||
 			[0, 6].includes(assignment.getDay())
 		) {
 			assignment = offsetEventByOne(stage, assignment);
