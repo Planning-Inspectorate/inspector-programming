@@ -35,6 +35,7 @@ describe('controller.js', () => {
 		};
 		const mockEntraClientInstance = {
 			listAllUserCalendarEvents: mock.fn(),
+			getUserCalendarEvents: mock.fn(async () => ({ value: [] })),
 			createCalendarEvents: mock.fn(),
 			getUserById: mock.fn()
 		};

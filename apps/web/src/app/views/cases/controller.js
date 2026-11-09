@@ -1,6 +1,10 @@
 import { addSessionData, readSessionData } from '@planning-inspectorate/core/util';
 import { assignCasesToInspector, getCasesToAssign } from '../../case/case.js';
-import { generateCaseCalendarEvents, submitCalendarEvents } from '../../calendar/calendar.js';
+import {
+	generateCaseCalendarEvents,
+	getInspectorOutOfOfficeEvents,
+	submitCalendarEvents
+} from '../../calendar/calendar.js';
 import { validateAssignmentDate } from './assignment-date-validation.js';
 import { notifyAssignedCases } from '../../inspector/inspector.js';
 
@@ -113,8 +117,22 @@ async function handleCases(selectedCases, service, req, res) {
 
 	if (successfulCaseIds.length > 0) {
 		try {
+			// Get inspector out-of-office events
+			const outOfOfficeEvents = await getInspectorOutOfOfficeEvents(
+				service.entraClient,
+				req.session,
+				req.body.inspectorId,
+				req.body.assignmentDate,
+				service.logger
+			);
+
 			// Generate calendar events for successful assignments
-			const eventsToAdd = await generateCaseCalendarEvents(service, req.body.assignmentDate, successfullyAssignedCases);
+			const eventsToAdd = await generateCaseCalendarEvents(
+				service,
+				req.body.assignmentDate,
+				successfullyAssignedCases,
+				outOfOfficeEvents
+			);
 			service.logger.info(
 				{
 					eventsCount: eventsToAdd.length,
