@@ -71,11 +71,11 @@
     "@planning-inspectorate/coding-standards": "^2.0.0",
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@types/nunjucks": "^3.2.6",
     "@typescript/native": "npm:typescript@^7.0.2",
     "cookie-parser": "^1.4.7",
-    "eslint": "^10.13.0",
+    "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
@@ -83,7 +83,7 @@
     "prettier": "^3.9.10",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.10.1",
-    "sass": "^1.106.1",
+    "sass": "^1.107.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "lint-staged": {
