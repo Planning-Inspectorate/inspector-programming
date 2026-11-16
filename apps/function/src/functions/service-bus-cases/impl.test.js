@@ -238,6 +238,22 @@ describe('service-bus-cases', () => {
 			const result = mapToDatabase(msg({ caseOfficerId: null }), NULL_COORDS);
 			assert.strictEqual(result.caseOfficerId, null);
 		});
+
+		test('maps caseManagementConferenceDate to a Date', () => {
+			const result = mapToDatabase(msg({ caseManagementConferenceDate: '2025-03-04T10:30:00.000Z' }), NULL_COORDS);
+			assert.ok(result.caseManagementConferenceDate instanceof Date);
+			assert.strictEqual(result.caseManagementConferenceDate.toISOString(), '2025-03-04T10:30:00.000Z');
+		});
+
+		test('maps caseManagementConferenceDate to null when null', () => {
+			const result = mapToDatabase(msg({ caseManagementConferenceDate: null }), NULL_COORDS);
+			assert.strictEqual(result.caseManagementConferenceDate, null);
+		});
+
+		test('maps caseManagementConferenceDate to null when not provided (e.g. HAS message)', () => {
+			const result = mapToDatabase(msg(), NULL_COORDS);
+			assert.strictEqual(result.caseManagementConferenceDate, null);
+		});
 	});
 
 	describe('deleteCase', () => {
