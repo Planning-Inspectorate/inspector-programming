@@ -28,7 +28,7 @@ const ctx = () => ({
 });
 
 const svc = (options = {}) => {
-	const { caseExists = true, updateThrow = false } = options;
+	const { caseExists = true, updateThrow = false, upsertThrow = false } = options;
 
 	const appealCase = {
 		findUnique: mock.fn(async () => (caseExists ? { caseReference: BASE_EVENT_MESSAGE.caseReference } : null)),
@@ -38,10 +38,18 @@ const svc = (options = {}) => {
 		})
 	};
 
+	const appealEvent = {
+		upsert: mock.fn(async () => {
+			if (upsertThrow) throw new Error('db upsert failed');
+			return { eventId: BASE_EVENT_MESSAGE.eventId };
+		})
+	};
+
 	return {
 		dbClient: {
 			appealCase,
-			$transaction: mock.fn(async (callback) => callback({ appealCase }))
+			appealEvent,
+			$transaction: mock.fn(async (callback) => callback({ appealCase, appealEvent }))
 		}
 	};
 };
@@ -92,23 +100,80 @@ describe('service-bus-appeal-event', () => {
 			});
 		});
 
-		test('ignores non-site-visit event types (hearing)', async () => {
+		for (const eventType of ['hearing', 'hearing_virtual', 'inquiry', 'inquiry_virtual']) {
+			test(`upserts AppealEvent by eventId for ${eventType}`, async () => {
+				const service = svc();
+				const context = ctx();
+				await buildHandleAppealEventMessage(service)(msg({ eventType }), context);
+
+				assert.strictEqual(service.dbClient.appealCase.findUnique.mock.callCount(), 1);
+				assert.strictEqual(service.dbClient.appealCase.update.mock.callCount(), 0);
+				assert.strictEqual(service.dbClient.appealEvent.upsert.mock.callCount(), 1);
+
+				const expectedData = {
+					caseReference: 'APP/W1234/D/25/1234567',
+					eventType,
+					eventStartDateTime: new Date('2025-03-01T10:00:00.000Z'),
+					eventEndDateTime: new Date('2025-03-01T12:00:00.000Z')
+				};
+				assert.deepStrictEqual(service.dbClient.appealEvent.upsert.mock.calls[0].arguments[0], {
+					where: { eventId: '7000000-1' },
+					create: { eventId: '7000000-1', ...expectedData },
+					update: expectedData
+				});
+			});
+		}
+
+		test('stores null dates when hearing has no start/end date', async () => {
 			const service = svc();
+			const context = ctx();
+			await buildHandleAppealEventMessage(service)(
+				msg({ eventType: 'hearing', eventStartDateTime: null, eventEndDateTime: null }),
+				context
+			);
+
+			const { update } = service.dbClient.appealEvent.upsert.mock.calls[0].arguments[0];
+			assert.strictEqual(update.eventStartDateTime, null);
+			assert.strictEqual(update.eventEndDateTime, null);
+		});
+
+		test('does not upsert AppealEvent for site visit event types', async () => {
+			const service = svc();
+			const context = ctx();
+			await buildHandleAppealEventMessage(service)(msg(), context);
+
+			assert.strictEqual(service.dbClient.appealEvent.upsert.mock.callCount(), 0);
+		});
+
+		test('ignores hearing event if case not found in database', async () => {
+			const service = svc({ caseExists: false });
 			const context = ctx();
 			await buildHandleAppealEventMessage(service)(msg({ eventType: 'hearing' }), context);
 
-			assert.strictEqual(service.dbClient.appealCase.findUnique.mock.callCount(), 0);
-			assert.strictEqual(service.dbClient.appealCase.update.mock.callCount(), 0);
+			assert.strictEqual(service.dbClient.appealCase.findUnique.mock.callCount(), 1);
+			assert.strictEqual(service.dbClient.appealEvent.upsert.mock.callCount(), 0);
 		});
 
-		test('ignores non-site-visit event types (inquiry)', async () => {
-			const service = svc();
+		test('throws on AppealEvent upsert failure', async () => {
+			const service = svc({ upsertThrow: true });
 			const context = ctx();
-			await buildHandleAppealEventMessage(service)(msg({ eventType: 'inquiry' }), context);
-
-			assert.strictEqual(service.dbClient.appealCase.findUnique.mock.callCount(), 0);
-			assert.strictEqual(service.dbClient.appealCase.update.mock.callCount(), 0);
+			await assert.rejects(() => buildHandleAppealEventMessage(service)(msg({ eventType: 'inquiry' }), context), {
+				message: 'Failed to process appeal event for case APP/W1234/D/25/1234567: db upsert failed'
+			});
 		});
+
+		for (const eventType of ['in_house', 'pre_inquiry', 'pre_inquiry_virtual']) {
+			test(`ignores unsupported event type (${eventType})`, async () => {
+				const service = svc();
+				const context = ctx();
+				await buildHandleAppealEventMessage(service)(msg({ eventType }), context);
+
+				assert.strictEqual(service.dbClient.$transaction.mock.callCount(), 0);
+				assert.strictEqual(service.dbClient.appealCase.findUnique.mock.callCount(), 0);
+				assert.strictEqual(service.dbClient.appealCase.update.mock.callCount(), 0);
+				assert.strictEqual(service.dbClient.appealEvent.upsert.mock.callCount(), 0);
+			});
+		}
 
 		test('ignores event if case not found in database', async () => {
 			const service = svc({ caseExists: false });

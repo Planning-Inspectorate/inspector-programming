@@ -1,8 +1,10 @@
 import { SITE_VISIT_EVENT_TYPES } from '@pins/inspector-programming-lib/data/site-visit-event-types.js';
+import { HEARING_INQUIRY_EVENT_TYPES } from '@pins/inspector-programming-lib/data/hearing-inquiry-event-types.js';
 import { withRetry } from '@planning-inspectorate/core/util';
 import { getCachedAjv } from '../../util/cached-ajv.js';
 
 const SITE_VISIT_EVENT_TYPES_SET = new Set(SITE_VISIT_EVENT_TYPES);
+const HEARING_INQUIRY_EVENT_TYPES_SET = new Set(HEARING_INQUIRY_EVENT_TYPES);
 
 /**
  * @param {import('../../service').FunctionService} service
@@ -28,13 +30,17 @@ export function buildHandleAppealEventMessage(service) {
 
 		const { caseReference, eventType } = message;
 
-		// Ignore messages that are not site visit event types
-		if (!SITE_VISIT_EVENT_TYPES_SET.has(eventType)) {
-			context.log(`Ignoring non-site-visit event type: ${eventType} for case ${caseReference}`);
+		const isSiteVisit = SITE_VISIT_EVENT_TYPES_SET.has(eventType);
+		const isHearingOrInquiry = HEARING_INQUIRY_EVENT_TYPES_SET.has(eventType);
+
+		if (!isSiteVisit && !isHearingOrInquiry) {
+			context.log(`Ignoring unsupported event type: ${eventType} for case ${caseReference}`);
 			return;
 		}
 
-		context.log(`Processing site visit event type: ${eventType} for case ${caseReference}`);
+		context.log(
+			`Processing ${isSiteVisit ? 'site visit' : 'hearing/inquiry'} event type: ${eventType} for case ${caseReference}`
+		);
 
 		// Try to find and update the case in the database
 		try {
@@ -50,13 +56,25 @@ export function buildHandleAppealEventMessage(service) {
 							return;
 						}
 
-						// Update the eventType on the case
-						await tx.appealCase.update({
-							where: { caseReference },
-							data: { eventType }
+						if (isSiteVisit) {
+							// Update the eventType on the case
+							await tx.appealCase.update({
+								where: { caseReference },
+								data: { eventType }
+							});
+
+							context.log(`Updated eventType to '${eventType}' for case ${caseReference}`);
+							return;
+						}
+
+						const data = mapToAppealEvent(message);
+						await tx.appealEvent.upsert({
+							where: { eventId: message.eventId },
+							create: { eventId: message.eventId, ...data },
+							update: data
 						});
 
-						context.log(`Updated eventType to '${eventType}' for case ${caseReference}`);
+						context.log(`Upserted ${eventType} event ${message.eventId} for case ${caseReference}`);
 					}, service.databaseTransactionOptions),
 				service.databaseRetryOptions
 			);
@@ -66,5 +84,19 @@ export function buildHandleAppealEventMessage(service) {
 				cause: error
 			});
 		}
+	};
+}
+
+/**
+ * Map an appeal event message to AppealEvent fields (excluding eventId)
+ *
+ * @param {import('@planning-inspectorate/data-model/src/schemas').AppealEvent} message
+ */
+export function mapToAppealEvent(message) {
+	return {
+		caseReference: message.caseReference,
+		eventType: message.eventType,
+		eventStartDateTime: message?.eventEndDateTime ? new Date(message.eventStartDateTime) : null,
+		eventEndDateTime: message?.eventEndDateTime ? new Date(message.eventEndDateTime) : null
 	};
 }
