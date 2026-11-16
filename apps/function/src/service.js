@@ -78,6 +78,9 @@ export class FunctionService {
 	get appealEventServiceBusConfig() {
 		return this.#config.serviceBus.appealEvent;
 	}
+	get appealEventEstimateServiceBusConfig() {
+		return this.#config.serviceBus.appealEventEstimate;
+	}
 	get syncCasesTransactionOptions() {
 		return {
 			maxWait: this.#config.syncCases.transactionWaitTime,

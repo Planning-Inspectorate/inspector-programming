@@ -28,6 +28,10 @@ interface Config {
 			topic: string;
 			subscription: string;
 		};
+		appealEventEstimate: {
+			topic: string;
+			subscription: string;
+		};
 	};
 	syncCases: {
 		transactionWaitTime: number;
