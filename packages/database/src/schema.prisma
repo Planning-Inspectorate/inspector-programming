@@ -77,6 +77,8 @@ model AppealCase {
   isAonbNationalLandscape   Boolean?
   caseStartedDate           DateTime?
 
+  caseManagementConferenceDate DateTime? // S78 appeals only
+
   eventType String? // This field isn’t part of the appeals data model — it comes from appeal‑event.
 
   // cases are filtered base on these criteria, to match calendar timing rules
