@@ -70,6 +70,8 @@ model AppealCase {
 
   Specialisms AppealCaseSpecialism[]
 
+  Events AppealEvent[] // hearings, inquiries events
+
   isGreenBelt               Boolean?
   designatedSitesNames      String?
   typeOfPlanningApplication String?
@@ -93,6 +95,20 @@ model AppealCaseSpecialism {
   AppealCase AppealCase @relation(fields: [caseReference], references: [caseReference], onDelete: Cascade)
 
   @@unique([caseReference, specialism])
+}
+
+/// an appeal event (e.g. hearing or inquiry), using PINS data-model fields
+/// see https://github.com/Planning-Inspectorate/data-model/blob/main/schemas/appeal-event.schema.json
+model AppealEvent {
+  eventId            String    @id
+  caseReference      String
+  eventType          String
+  eventStartDateTime DateTime?
+  eventEndDateTime   DateTime?
+
+  AppealCase AppealCase @relation(fields: [caseReference], references: [caseReference], onDelete: Cascade)
+
+  @@index([caseReference])
 }
 
 /// The poll status to track when the latest appeal cases were fetched
