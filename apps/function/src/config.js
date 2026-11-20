@@ -27,6 +27,8 @@ export function loadConfig() {
 		SERVICE_BUS_CASE_S78_SUBSCRIPTION,
 		SERVICE_BUS_APPEAL_EVENT_TOPIC,
 		SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION,
+		SERVICE_BUS_APPEAL_EVENT_ESTIMATE_TOPIC,
+		SERVICE_BUS_APPEAL_EVENT_ESTIMATE_SUBSCRIPTION,
 		SYNC_CASES_TRANSACTION_WAIT_TIME_MS,
 		SYNC_CASES_TRANSACTION_TIMEOUT_MS,
 		APPINSIGHTS_WORKSPACE_ID,
@@ -74,6 +76,10 @@ export function loadConfig() {
 			appealEvent: {
 				topic: SERVICE_BUS_APPEAL_EVENT_TOPIC || 'appeal-event',
 				subscription: SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION || 'appeal-event-subscription-placeholder'
+			},
+			appealEventEstimate: {
+				topic: SERVICE_BUS_APPEAL_EVENT_ESTIMATE_TOPIC || 'appeal-event-estimate',
+				subscription: SERVICE_BUS_APPEAL_EVENT_ESTIMATE_SUBSCRIPTION || 'appeal-event-estimate-subscription-placeholder'
 			}
 		},
 		syncCases: {
