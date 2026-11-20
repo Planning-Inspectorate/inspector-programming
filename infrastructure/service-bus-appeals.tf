@@ -18,6 +18,11 @@ data "azurerm_servicebus_topic" "appeal_event" {
   namespace_id = data.azurerm_servicebus_namespace.appeals.id
 }
 
+data "azurerm_servicebus_topic" "appeal_event_estimate" {
+  name         = var.service_bus_config.topics.appeal_event_estimate
+  namespace_id = data.azurerm_servicebus_namespace.appeals.id
+}
+
 resource "azurerm_servicebus_subscription" "appeal_has" {
   name                                 = "appeal-has-scheduling-sub"
   topic_id                             = data.azurerm_servicebus_topic.appeal_has.id
@@ -42,6 +47,14 @@ resource "azurerm_servicebus_subscription" "appeal_event" {
   default_message_ttl                  = var.service_bus_config.ttl
 }
 
+resource "azurerm_servicebus_subscription" "appeal_event_estimate" {
+  name                                 = "appeal-event-estimate-scheduling-sub"
+  topic_id                             = data.azurerm_servicebus_topic.appeal_event_estimate.id
+  max_delivery_count                   = 1
+  dead_lettering_on_message_expiration = true
+  default_message_ttl                  = var.service_bus_config.ttl
+}
+
 resource "azurerm_role_assignment" "appeal_has_receiver" {
   scope                = azurerm_servicebus_subscription.appeal_has.id
   role_definition_name = "Azure Service Bus Data Receiver"
@@ -56,6 +69,12 @@ resource "azurerm_role_assignment" "appeal_s78_receiver" {
 
 resource "azurerm_role_assignment" "appeal_event_receiver" {
   scope                = azurerm_servicebus_subscription.appeal_event.id
+  role_definition_name = "Azure Service Bus Data Receiver"
+  principal_id         = module.function_integration.principal_id
+}
+
+resource "azurerm_role_assignment" "appeal_event_estimate_receiver" {
+  scope                = azurerm_servicebus_subscription.appeal_event_estimate.id
   role_definition_name = "Azure Service Bus Data Receiver"
   principal_id         = module.function_integration.principal_id
 }

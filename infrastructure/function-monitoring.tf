@@ -2,6 +2,7 @@ locals {
   integration_functions = {
     "odw-inspectors-message" : "ODW Inspectors",
     "service-bus-appeal-event" : "Manage appeals - appeal-event",
+    "service-bus-appeal-event-estimate" : "Manage appeals - appeal-event-estimate",
     "service-bus-cases-has" : "Manage appeals - appeal-has case",
     "service-bus-cases-s78" : "Manage appeals - appeal-s78 case"
   }
