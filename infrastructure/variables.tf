@@ -130,10 +130,11 @@ variable "service_bus_config" {
   description = "Service bus"
   type = object({
     topics = object({
-      appeal_has   = string
-      appeal_s78   = string
-      appeal_event = string
-      inspectors   = string
+      appeal_has            = string
+      appeal_s78            = string
+      appeal_event          = string
+      appeal_event_estimate = string
+      inspectors            = string
     })
     ttl = string
   })

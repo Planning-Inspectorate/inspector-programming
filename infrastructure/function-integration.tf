@@ -54,6 +54,8 @@ module "function_integration" {
     SERVICE_BUS_CASE_S78_SUBSCRIPTION                    = azurerm_servicebus_subscription.appeal_s78.name
     SERVICE_BUS_APPEAL_EVENT_TOPIC                       = data.azurerm_servicebus_topic.appeal_event.name
     SERVICE_BUS_APPEAL_EVENT_SUBSCRIPTION                = azurerm_servicebus_subscription.appeal_event.name
+    SERVICE_BUS_APPEAL_EVENT_ESTIMATE_TOPIC              = data.azurerm_servicebus_topic.appeal_event_estimate.name
+    SERVICE_BUS_APPEAL_EVENT_ESTIMATE_SUBSCRIPTION       = azurerm_servicebus_subscription.appeal_event_estimate.name
 
     #weekly report config
     APPINSIGHTS_WORKSPACE_ID             = azurerm_log_analytics_workspace.main.workspace_id
