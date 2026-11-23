@@ -92,7 +92,7 @@ model AppealCase {
 /// an appeal event estimate, a case has only one event estimate
 /// see https://github.com/Planning-Inspectorate/data-model/blob/main/schemas/appeal-event-estimate.schema.json
 model AppealEventEstimate {
-  id            Int    @id
+  id            String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   caseReference String @unique
 
   preparationTime Decimal? @db.Decimal(6, 2)
