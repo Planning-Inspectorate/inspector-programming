@@ -97,7 +97,7 @@ function generateAppeals({ targetCount, idPrefix = 'MOCK-' }) {
 			caseValidDate: valid,
 			finalCommentsDueDate: finalCommentsDue,
 			Specialisms: generateCaseSpecialisms(),
-			AppealEventEstimate: generateEventEstimate(index + 1_000_001)
+			AppealEventEstimate: generateEventEstimate(reference, index)
 		};
 	});
 
@@ -171,14 +171,15 @@ const eventEstimates = [
 ];
 
 /**
- * @param {number} id - The ID to use for the event estimate. This is used to deterministically select an estimate from the `eventEstimates` array.
+ * @param {string} caseReference - The case the event estimate belongs to.
+ * @param {number} index - Used to deterministically select an estimate from the `eventEstimates` array.
  * @returns {import('@pins/inspector-programming-database/src/client/client.ts').Prisma.AppealEventEstimateCreateNestedOneWithoutAppealCaseInput}
  */
-function generateEventEstimate(id) {
+function generateEventEstimate(caseReference, index) {
 	return {
 		connectOrCreate: {
-			where: { id },
-			create: { id, ...eventEstimates[id % eventEstimates.length] }
+			where: { caseReference },
+			create: { ...eventEstimates[index % eventEstimates.length] }
 		}
 	};
 }

@@ -61,7 +61,6 @@ export function buildHandleAppealEventEstimateMessage(service) {
  */
 export function mapToDatabase(message) {
 	return {
-		id: message.id,
 		caseReference: message.caseReference,
 		preparationTime: message.preparationTime ?? null,
 		sittingTime: message.sittingTime ?? null,
@@ -79,13 +78,17 @@ export function mapToDatabase(message) {
 export async function deleteAppealEventEstimate(service, message, log) {
 	try {
 		const { count } = await withRetry(
-			async () => service.dbClient.appealEventEstimate.deleteMany({ where: { id: message.id } }),
+			async () => service.dbClient.appealEventEstimate.deleteMany({ where: { caseReference: message.caseReference } }),
 			service.databaseRetryOptions
 		);
 		// Log whether the estimate was deleted or not found
-		log(count > 0 ? `Deleted event estimate ${message.id}` : `Event estimate ${message.id} not found, skipping delete`);
+		log(
+			count > 0
+				? `Deleted event estimate for ${message.caseReference}`
+				: `Event estimate for ${message.caseReference} not found, skipping delete`
+		);
 	} catch (error) {
-		log(`Failed to delete event estimate ${message.id}:`, error);
+		log(`Failed to delete event estimate for ${message.caseReference}:`, error);
 		throw new Error(
 			`Failed to delete event estimate ${message.id} for case ${message.caseReference}: ${error.message}`,
 			{ cause: error }
@@ -123,12 +126,12 @@ export async function upsertAppealEventEstimate(service, message, log) {
 						create: data,
 						update: data
 					});
-					log(`Upserted event estimate ${message.id}`);
+					log(`Upserted event estimate ${message.id} for case ${caseReference} successfully`);
 				}, service.databaseTransactionOptions),
 			service.databaseRetryOptions
 		);
 	} catch (error) {
-		log(`Failed to upsert event estimate ${message.id}:`, error);
+		log(`Failed to upsert event estimate ${message.id} for case ${caseReference}:`, error);
 		throw new Error(`Failed to upsert event estimate for case ${caseReference}: ${error.message}`, { cause: error });
 	}
 }

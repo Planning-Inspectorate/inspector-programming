@@ -45,7 +45,7 @@ describe('service-bus-appeal-event-estimate', () => {
 			await buildHandleAppealEventEstimateMessage(service)(msg(), ctx(type));
 
 			assert.strictEqual(service.dbClient.appealEventEstimate.upsert.mock.callCount(), 1);
-			const expected = { ...BASE_MESSAGE };
+			const { id, ...expected } = BASE_MESSAGE;
 			assert.deepStrictEqual(service.dbClient.appealEventEstimate.upsert.mock.calls[0].arguments[0], {
 				where: { caseReference: '6000123' },
 				create: expected,
@@ -61,7 +61,7 @@ describe('service-bus-appeal-event-estimate', () => {
 
 		assert.strictEqual(service.dbClient.appealEventEstimate.deleteMany.mock.callCount(), 1);
 		assert.deepStrictEqual(service.dbClient.appealEventEstimate.deleteMany.mock.calls[0].arguments[0], {
-			where: { id: 101 }
+			where: { caseReference: '6000123' }
 		});
 		assert.strictEqual(service.dbClient.appealEventEstimate.upsert.mock.callCount(), 0);
 	});
